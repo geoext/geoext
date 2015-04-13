@@ -10,30 +10,24 @@ Ext.define("GeoExt.panel.Map",{
 
     config: {
 
-        center: null,
+        mapConf: {
+            center: null,
 
-        extent: null,
+            extent: null,
 
-        layers: null,
+            layers: null,
 
-        map: null,
+            map: null,
 
-        mapRendered: false,
+            mapRendered: false,
 
-        zoom: null
+            zoom: null
+        }
 
     },
 
     html: "This is a mappanel!!",
 
-    layout: 'fit',
-
-    constructor: function(mapConf){
-        if(!Ext.isempty(mapConf)){
-            Ext.Object.each(mapConf, function(k,v){
-                this[k] = v;
-            })
-        }
-    }
+    layout: 'fit'
 
 });
