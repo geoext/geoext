@@ -7,8 +7,8 @@
         desktop-like GIS applications through the web. It is a JavaScript
         framework that combines the GIS functionality of OpenLayers with the
         user interface savvy of the ExtJS library provided by Sencha.",
-    "version": "3.0.0-alpha",
-    "compatVersion": "3.0.0-alpha",
+    "version": "3.0.0",
+    "compatVersion": "3.0.0",
     "format": "1",
     "slicer": {
         "js": [
