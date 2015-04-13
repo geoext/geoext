@@ -31,10 +31,10 @@
       "version": "33f446bd02c3fd24eb27891582eff6a2e789796b",
       "parameters": {
         "extRelPath": "../../ext",
-        "pkgName": "geoext",
+        "pkgName": "GeoExt",
         "pkgType": "code",
         "senchadir": ".sencha",
-        "touchRelPath": "../../${touch.dir}"
+        "touchRelPath": "${touch.dir}"
       }
     },
     "sass/example/custom.js": {
@@ -42,10 +42,10 @@
       "version": "199e99bbd15c3c0415569425cb21e77c95e9042a",
       "parameters": {
         "extRelPath": "../../ext",
-        "pkgName": "geoext",
+        "pkgName": "GeoExt",
         "pkgType": "code",
         "senchadir": ".sencha",
-        "touchRelPath": "../../${touch.dir}"
+        "touchRelPath": "${touch.dir}"
       }
     },
     "sass/example/theme.html": {
@@ -53,10 +53,10 @@
       "version": "32f685a8af28baafcc7999862d0bd1f25df0e48b",
       "parameters": {
         "extRelPath": "../../ext",
-        "pkgName": "geoext",
+        "pkgName": "GeoExt",
         "pkgType": "code",
         "senchadir": ".sencha",
-        "touchRelPath": "../../${touch.dir}"
+        "touchRelPath": "${touch.dir}"
       }
     },
     "sass/etc/all.scss": {
@@ -64,10 +64,10 @@
       "version": "da39a3ee5e6b4b0d3255bfef95601890afd80709",
       "parameters": {
         "extRelPath": "../../ext",
-        "pkgName": "geoext",
+        "pkgName": "GeoExt",
         "pkgType": "code",
         "senchadir": ".sencha",
-        "touchRelPath": "../../${touch.dir}"
+        "touchRelPath": "${touch.dir}"
       }
     },
     ".sencha/package/sencha.cfg": {
@@ -75,10 +75,10 @@
       "version": "6d1982cce48163a98dc46012d1d0cdfa209fbda6",
       "parameters": {
         "extRelPath": "../../ext",
-        "pkgName": "geoext",
+        "pkgName": "GeoExt",
         "pkgType": "code",
         "senchadir": ".sencha",
-        "touchRelPath": "../../${touch.dir}"
+        "touchRelPath": "${touch.dir}"
       }
     },
     ".sencha/package/testing.properties": {
@@ -86,10 +86,10 @@
       "version": "e65f969c42eb4f355c850fc58fea852582f20db8",
       "parameters": {
         "extRelPath": "../../ext",
-        "pkgName": "geoext",
+        "pkgName": "GeoExt",
         "pkgType": "code",
         "senchadir": ".sencha",
-        "touchRelPath": "../../${touch.dir}"
+        "touchRelPath": "${touch.dir}"
       }
     },
     ".sencha/package/build.properties": {
@@ -97,10 +97,10 @@
       "version": "8b81315dbe73ce9c08478f4c1d2df84f456efcf5",
       "parameters": {
         "extRelPath": "../../ext",
-        "pkgName": "geoext",
+        "pkgName": "GeoExt",
         "pkgType": "code",
         "senchadir": ".sencha",
-        "touchRelPath": "../../${touch.dir}"
+        "touchRelPath": "${touch.dir}"
       }
     },
     "package.json": {
@@ -108,10 +108,10 @@
       "version": "9c7e7135be031f8d06045d338200cbf4a4222f88",
       "parameters": {
         "extRelPath": "../../ext",
-        "pkgName": "geoext",
+        "pkgName": "GeoExt",
         "pkgType": "code",
         "senchadir": ".sencha",
-        "touchRelPath": "../../${touch.dir}"
+        "touchRelPath": "${touch.dir}"
       }
     }
   }
