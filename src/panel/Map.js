@@ -4,7 +4,7 @@ Ext.define("GeoExt.panel.Map",{
 
     requires: [
         'GeoExt.data.LayerStore',
-        'GeoExt.panel.MapController',
+        'GeoExt.panel.MapController'
 //        'GeoExt.panel.MapModel'
     ],
 

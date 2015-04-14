@@ -1,5 +1,5 @@
 Ext.require(
-    'GeoExt.*'
+    'GeoExt.panel.Map'
 );
 
 Ext.onReady(function(){
