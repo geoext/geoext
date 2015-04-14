@@ -31,7 +31,6 @@ Ext.define('GeoExt.data.LayerStore', {
             var mapLayers = map.getLayers();
             mapLayers.forEach(function(layer, index, array){
                 me.add(layer);
-                console.log(layer, ' bound to store.');
             });
         } else {
             Ext.Error.raise('No ol.Map is provided to the MapPanel');
