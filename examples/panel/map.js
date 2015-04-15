@@ -1,6 +1,6 @@
-Ext.require(
+Ext.require([
     'GeoExt.panel.Map'
-);
+]);
 
 Ext.onReady(function(){
     var source,
@@ -32,7 +32,7 @@ Ext.onReady(function(){
         height: 600,
         map: olMap,
         renderTo: 'mapDiv'
-    })
+    });
 
     gridPanel = Ext.create('Ext.grid.Panel', {
         title: 'gridPanel',
@@ -46,5 +46,5 @@ Ext.onReady(function(){
         height: 600,
         store: mapPanel.getStore(),
         renderTo: 'gridDiv'
-    })
+    });
 });
