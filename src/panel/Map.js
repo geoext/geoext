@@ -95,22 +95,50 @@ Ext.define("GeoExt.panel.Map",{
         this.getView().fitExtent(extent, this.getMap().getSize());
     },
 
-//    // The layer part may be adapted to an upcoming layer store.
-//    /**
-//     * Returns the layers of the map.
-//     * @return ol.Collection
-//     */
-//    getLayers: function(){
-//        return this.getMap().getLayers();
-//    },
-//
-//    /**
-//     * Add a layer to the map.
-//     * @param layer ol.layer.Base
-//     */
-//    addLayer: function(layer){
-//        this.getMap().addLayer(layer);
-//    },
+    // The layer part may be adapted to an upcoming layer store.
+    /**
+     * Returns the layers of the map.
+     * @return ol.Collection
+     */
+    getLayers: function(){
+        return this.getMap().getLayers();
+    },
+
+    /**
+     * Add a layer to the map.
+     * @param layer ol.layer.Base
+     */
+    addLayer: function(layer){
+        if(layer instanceof ol.layer.Base){
+            this.getMap().addLayer(layer);
+        } else {
+            Ext.Error.raise('Can not add layer '+layer+
+                           ' cause it is not an instance of ol.layer.Base');
+        }
+    },
+
+    /**
+     * Add a layer to the map.
+     * @param layer ol.layer.Base
+     */
+    removeLayer: function(layer){
+        if(layer instanceof ol.layer.Base){
+            if(Ext.Array.contains(this.getLayers().getArray(), layer)){
+                this.getMap().removeLayer(layer);
+            }
+        } else {
+            Ext.Error.raise('Can not remove layer '+layer+
+                           ' cause it is not an instance of ol.layer.Base');
+        }
+    },
+
+    /**
+     * Returns the GeoExt.data.LayerStore
+     * @return GeoExt.data.LayerStore
+     */
+    getStore: function(){
+        return this.layerStore;
+    },
 
     /**
      * Returns the view of the map.

@@ -71,6 +71,29 @@ describe('GeoExt.panel.Map', function() {
             expect(mapPanel.getExtent()[3]).to.be.a('number');
         });
 
+        it('mapPanel.addLayer() adds an ol.layer.Base to the ol.Map', function(){
+            var source2 = new ol.source.MapQuest({layer: 'osm'});
+            var layer2 = new ol.layer.Tile({
+              source: source2
+            });
+            mapPanel.addLayer(layer2);
+            expect(olMap.getLayers().getArray()).to.contain(layer2);
+        });
+
+        it('mapPanel.removeLayer() removes an ol.layer.Base from the ol.Map', function(){
+            expect(olMap.getLayers().getArray()).to.contain(layer);
+            mapPanel.removeLayer(layer);
+            expect(olMap.getLayers().getArray()).to.not.contain(layer);
+        });
+
+        it('mapPanel.getLayers() returns an ol.Collection containing instances of ol.layers.Base', function(){
+            var layers = mapPanel.getLayers();
+            expect(layers).to.be.an(ol.Collection);
+            layers.forEach(function(layer){
+                expect(layer).to.be.an(ol.layer.Base);
+            })
+        });
+
         it('mapPanel.getView() returns an ol.View instance', function(){
             expect(mapPanel.getView()).to.be.an(ol.View);
         });
