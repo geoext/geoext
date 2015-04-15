@@ -3,7 +3,9 @@
 ;(function(doc, global){
     var specPath = './spec/',
         dependencies = [
-            'GeoExt/panel/Map.test.js'
+            'GeoExt/panel/Map.test.js',
+            'GeoExt/data/LayerModel.test.js',
+            'GeoExt/data/LayerStore.test.js'
         ],
         getScriptTag = global.TestUtil.getExternalScriptTag,
         dependencyCnt = dependencies.length,
