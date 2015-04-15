@@ -32,14 +32,14 @@ Ext.define('GeoExt.data.LayerStore', {
             mapLayers.forEach(function(layer, index, array){
                 me.add(layer);
             });
+            
+            //TODO 2. bind events from collection to store
+            mapLayers.forEach(function(layer) {
+                layer.on('propertychange', me.onChangeLayer, me);
+            });
+            mapLayers.on('add', me.onAddLayer, me);
+            mapLayers.on('remove', me.onRemoveLayer, me);
         }
-
-        //TODO 2. bind events from collection to store
-        mapLayers.forEach(function(layer) {
-            layer.on('propertychange', me.onChangeLayer, me);
-        });
-        mapLayers.on('add', me.onAddLayer, me);
-        mapLayers.on('remove', me.onRemoveLayer, me);
 
         //TODO 3. bind store events to collection
         me.on({
@@ -149,8 +149,8 @@ Ext.define('GeoExt.data.LayerStore', {
      * @private
      */
     onLoad: function(store, records, successful) {
-        if (successful) {
             var me = this;
+        if (successful) {
             if (!Ext.isArray(records)) {
                 records = [records];
             }
