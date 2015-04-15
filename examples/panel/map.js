@@ -13,6 +13,11 @@ Ext.onReady(function(){
       source: source
     });
 
+    source2 = new ol.source.MapQuest({layer: 'osm'});
+    layer2 = new ol.layer.Tile({
+      source: source2
+    });
+
     olMap = new ol.Map({
         layers: [layer],
         view: new ol.View({
@@ -39,7 +44,7 @@ Ext.onReady(function(){
         ],
         width: 800,
         height: 600,
-        store: mapPanel.layerStore,
+        store: mapPanel.getStore(),
         renderTo: 'gridDiv'
     })
 });
