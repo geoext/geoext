@@ -95,7 +95,6 @@ Ext.define("GeoExt.panel.Map",{
         this.getView().fitExtent(extent, this.getMap().getSize());
     },
 
-    // The layer part may be adapted to an upcoming layer store.
     /**
      * Returns the layers of the map.
      * @return ol.Collection
