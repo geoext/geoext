@@ -32,8 +32,6 @@ Ext.define('GeoExt.data.LayerStore', {
             mapLayers.forEach(function(layer, index, array){
                 me.add(layer);
             });
-        } else {
-            Ext.Error.raise('No ol.Map is provided to the MapPanel');
         }
 
         //TODO 2. bind events from collection to store

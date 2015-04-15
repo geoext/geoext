@@ -19,7 +19,7 @@ Ext.onReady(function(){
           center: [0, 0],
           zoom: 2
         })
-      });
+    });
 
     mapPanel = Ext.create('GeoExt.panel.Map', {
         title: 'GeoExt.panel.Map Example',
@@ -27,5 +27,19 @@ Ext.onReady(function(){
         height: 600,
         map: olMap,
         renderTo: 'mapDiv'
+    })
+    
+    gridPanel = Ext.create('Ext.grid.Panel', {
+        title: 'gridPanel',
+        columns:[
+            {text: 'Opacity', dataIndex:'opacity', flex: 1},
+            {text: 'Visible', dataIndex: 'visible', flex: 1},
+            {text: 'minResolution', dataIndex: 'minResolution', flex: 1},
+            {text: 'maxResolution', dataIndex: 'maxResolution', flex: 1}
+        ],
+        width: 800,
+        height: 600,
+        store: mapPanel.layerStore,
+        renderTo: 'gridDiv'
     })
 });
