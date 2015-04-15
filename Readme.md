@@ -1,5 +1,7 @@
 # GeoExt 3
 
+[![Build Status](https://travis-ci.org/KaiVolland/geoext3.svg?branch=master)](https://travis-ci.org/KaiVolland/geoext3)
+
 This is the first approach for an new geoext structure.
 
 The goal is to implement upcoming geoext releases as an 
