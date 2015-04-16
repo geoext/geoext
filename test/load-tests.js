@@ -4,6 +4,7 @@
     var specPath = './spec/',
         dependencies = [
             'GeoExt/panel/Map.test.js',
+            'GeoExt/component/OverviewMap.test.js',
             'GeoExt/data/LayerModel.test.js',
             'GeoExt/data/LayerStore.test.js'
         ],
