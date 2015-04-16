@@ -1,0 +1,146 @@
+Ext.define("GeoExt.component.OverviewMap", {
+    extend: 'Ext.Component',
+    xtype: 'gx_overviewmap',
+
+    requires: [
+        'GeoExt.component.OverviewMapController'
+    ],
+
+    config: {
+        /**
+         * A configured map or a configuration object for the map constructor.
+         * @cfg {ol.Map} map
+         */
+        map: null,
+
+        /**
+         * If set to true the overview will be reinitialized on "baselayerchange"
+         * events of its bound map.
+         * This can be used to make sure that the overview shows the same baselayer
+         * as the map.
+         *
+         * @cfg {Boolean}
+         */
+        dynamic: false,
+
+        /**
+         * The overview options that the underlying OpenLayers.Control.OverviewMap
+         * will be initialized with. Following settings are defaults and should
+         * generally not be overridden:
+         *
+         * - "div" configuration will default to the containers DOM element
+         * - "size" will default to the containers actual dimensions
+         * - "maximized" will always be true to make the overview visible
+         *
+         * If you want to hide the overview map, simple use the components show/hide
+         * methods.
+         *
+         * @cfg {Object}
+         */
+        overviewOptions: null
+    },
+
+    /**
+     * Reference to the OpenLayers.Control.OverviewMap control.
+     *
+     * @property @readonly {OpenLayers.Control.OverviewMap}
+     */
+    ctrl: null,
+
+    initComponent: function() {
+        if (!this.map) {
+            Ext.Error.raise('No Map defined for overviewMap');
+        }
+
+        // add gx class making sure it won't be overridden on accident
+        this.addCls(this.ovCls);
+
+        // bind to the components lifecycle events to make sure the overview is
+        // added and removed from the map when the component is (in-)visible.
+        this.on({
+            'show': this.reinitControl,
+            'resize': this.reinitControl,
+            'hide': this.destroyControl,
+            scope: this
+        });
+
+        if (this.dynamic) {
+            this.map.events.on({
+                changebaselayer: this.reinitControl,
+                scope: this
+            });
+        }
+
+        this.callParent();
+    },
+
+    /**
+     * Destroys the encapsulated OpenLayers.Control.OverviewMap removing it from
+     * the map controls and unbinds all events from this component.
+     * Deletes the components ctrl, map and overviewOptions members.
+     *
+     * @private
+     */
+    destroy: function() {
+        this.destroyControl();
+
+        this.un({
+            'show': this.reinitControl,
+            'resize': this.reinitControl,
+            'hide': this.destroyControl,
+            scope: this
+        });
+
+        this.map.events.un({
+            changebaselayer: this.onChangeBaseLayer,
+            scope: this
+        });
+
+        delete this.ctrl;
+        delete this.map;
+        delete this.overviewOptions;
+
+        this.callParent(arguments);
+    },
+
+    /**
+     * Helper method that refers to the private initControl and destroyControl
+     * methods to force an update of the overview map by bluntly creating a new one.
+     * This can be called to update the map after setting new #overviewOptions.
+     */
+    reinitControl: function() {
+        this.destroyControl();
+        this.initControl();
+    },
+
+    /**
+     * Initializes an OpenLayers.Control.OverviewMap control adding it to the
+     * configured map.
+     *
+     * @private
+     */
+    initControl: function() {
+        var map = this.map,
+            size = this.getSize(),
+            baselayer;
+
+        this.ctrl = new ol.control.OverviewMap();
+
+        debugger
+        map.addControl(this.ctrl);
+    },
+
+    /**
+     * Destroys the OpenLayers.Control.OverviewMap control after removing it
+     * from this components bound map.
+     *
+     * @private
+     */
+    destroyControl: function() {
+        if (this.ctrl && (this.ctrl instanceof ol.control.OverviewMap)) {
+            this.map.removeControl(this.ctrl);
+            this.ctrl.destroy();
+        }
+    }
+
+});
