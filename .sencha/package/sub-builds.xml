@@ -83,8 +83,7 @@
                          inheritall="false" 
                          inheritrefs="true"
                          target="@{target}">
-                        <property name="compiler.ref.id" 
-                                  value="compiler-${sub.name}"/>
+                        <property name="compiler.ref.id" value="compiler-${sub.name}"/>
                         <properties/>
                     </ant>
                 </then>
@@ -119,14 +118,16 @@
     <target name="-subpkgs">
         <x-process-sub-packages>
             <local name="sub.name"/>
-            <basename file="@{dir}"
+            <basename file="@{pkg-dir}"
                       property="sub.name"/>
+            <x-echo>Building sub package ${sub.name}</x-echo>
             <if>
                 <x-is-true value="${build.subpkgs.inherit.version}"/>
                 <then>
                     <x-sencha-command dir="@{pkg-dir}" inheritall="false">
                         <property name="compiler.ref.id" value="compiler-${sub.name}"/>
                         <property name="build.version" value="${build.version}"/>
+                        <property name="package.sass.rhino" value="${package.sass.rhino}"/>
                         package
                         build
                     </x-sencha-command>
@@ -134,6 +135,7 @@
                 <else>
                     <x-sencha-command dir="@{pkg-dir}" inheritall="false">
                         <property name="compiler.ref.id" value="compiler-${sub.name}"/>
+                        <property name="package.sass.rhino" value="${package.sass.rhino}"/>
                         package
                         build
                     </x-sencha-command>
@@ -146,6 +148,7 @@
     <target name="-after-clean-subpkgs"/>
     <target name="-clean-subpkgs">
         <x-process-sub-packages>
+            <x-echo>Cleaning sub package in @{pkg-dir}</x-echo>
             <x-sub-build dir="@{pkg-dir}"
                          target="clean"
                          inherit-version="${build.subpkgs.inherit.version}"/>
@@ -155,7 +158,8 @@
     <target name="-before-upgrade-subpkgs"/>
     <target name="-after-upgrade-subpkgs"/>
     <target name="-upgrade-subpkgs">
-        <x-process-sub-packages all="true">
+        <x-process-sub-packages>
+            <x-echo>Upgrading sub package in @{pkg-dir}</x-echo>
             <x-sencha-command dir="@{pkg-dir}" inheritall="false">
                 <property name="args.force" value="true"/>
                 package
@@ -169,8 +173,9 @@
     <target name="-after-examples"/>
     <target name="-examples">
         <x-process-examples>
-            <echo>Building example in @{example-dir}</echo>
+            <x-echo>Building example in @{example-dir}</x-echo>
             <x-sencha-command dir="@{example-dir}" inheritall="false">
+                <property name="app.sass.rhino" value="${package.sass.rhino}"/>
                 app
                 build
             </x-sencha-command>
@@ -180,8 +185,8 @@
     <target name="-before-upgrade-examples"/>
     <target name="-after-upgrade-examples"/>
     <target name="-upgrade-examples">
-        <x-process-examples all="true">
-            <echo>Upgrading example in @{example-dir}</echo>
+        <x-process-examples>
+            <x-echo>Upgrading example in @{example-dir}</x-echo>
             <x-sencha-command dir="@{example-dir}" inheritall="false">
                 <property name="args.force" value="true"/>
                 app
@@ -194,8 +199,8 @@
     <target name="-before-clean-examples"/>
     <target name="-after-clean-examples"/>
     <target name="-clean-examples">
-        <x-process-examples all="true">
-            <echo>Cleaning example in @{example-dir}</echo>
+        <x-process-examples>
+            <x-echo>Cleaning example in @{example-dir}</x-echo>
             <x-sub-build dir="@{example-dir}"
                          target="clean"/>
         </x-process-examples>

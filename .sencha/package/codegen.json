@@ -23,6 +23,9 @@
     },
     "package.json.tpl.merge": {
       "9c7e7135be031f8d06045d338200cbf4a4222f88": "eJx1kD9PwzAQxfd+CitiREmYkJgZgaUIBuhwjS+pW9tn/AcRRfnuxMYxylBP997vfH7naceWU2lQWD2wajKX4WWp5+r2D/jRFPC61AV0FsGTjQw06VFRcCtzQSmwY2T7E1nPViNzjh6ERP6IrrPCeEE69j6RHhj/9xj1zEB3gQHXm99oXe6+q9u6LWlIGfBvV2hPVoFPdokoRYcx/ZR08s5u0R9FxzNtVOpa3jnFUTefoW3vjzlgzYWdGwfONfgDykhsuuA8qfq8fstminDvgg/on0GLHl0M523ATeNc1CFVc85OwZvgr2U4BiH5uqakDmSenS2LX0FYTLsedvMvLXaLQg\u003d\u003d"
+    },
+    "fashion.html.tpl.merge": {
+      "e27edf75982e4b8e1e05a4112718424540b46b10": "eJytU8FuEzEQvecrpnuCCMdp4VClm1xCESAkkJoeODreSdat1zaeySYRot+OvRsgCXBB+LArz/Ob9+xnlxevP84Xnz/dQs2NnQ3KCyEGADD3YR/NumZ4pp/D1fjySqTPyxHcodO1gndOjwZCJMKBV6OqZpkJJRu2OLvdMby/g0WNDcJbFR0SlbLH+nUNskqyHAR+2Zh2Wsy9Y3QsFvuABeh+Ni0YdyyzzA0k6UjI0/vFG3FdzAZ9o4Nn+OBVBcpaiLlhxAqscY8EylVAOprA1K3LvjtiXwROegeZB9WqvloART0t5JNuKpkgdGS8I0ndAYiVojrN5dl/9EDFrJR9i/+nQopIaN8EYzH+o8bSeyaOKpzxDw14/yOYPEZbU62RRQ5BGYcRvv7E8mhUXBs3gctx2N2cIInI9QRejX9DgifDaTeTlI9VbFo8xX2LcWX9dgKtIbO0R/C3wS9nO0HWaIyCkwfkF39FYHhm2gelDe+T6z92lkNIx7+JCEtf7aHySOA8d76sCsA1QvQbV6WLpX260JHAr2AVVZMqQTm0cmtc5bewrdFBNmPcGoby2GK3TmSFE+c9saufuV4q/bjudCeQ4nMUVEzv4ngLXYLyEGEpj95i7pey7n4Z6R7rd2BDMTo\u003d"
     }
   },
   "targets": {
@@ -106,6 +109,17 @@
     "package.json": {
       "source": "package.json.tpl.merge",
       "version": "9c7e7135be031f8d06045d338200cbf4a4222f88",
+      "parameters": {
+        "extRelPath": "../../ext",
+        "pkgName": "GeoExt",
+        "pkgType": "code",
+        "senchadir": ".sencha",
+        "touchRelPath": "${touch.dir}"
+      }
+    },
+    "sass/example/fashion.html": {
+      "source": "fashion.html.tpl.merge",
+      "version": "e27edf75982e4b8e1e05a4112718424540b46b10",
       "parameters": {
         "extRelPath": "../../ext",
         "pkgName": "GeoExt",
