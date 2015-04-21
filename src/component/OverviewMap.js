@@ -47,10 +47,14 @@ Ext.define("GeoExt.component.OverviewMap", {
     }),
 
     initComponent: function() {
-        if (!this.getParentMap()) {
-            Ext.Error.raise('No Map defined for overviewMap');
+        if (!this.getParentMap()){
+            Ext.Error.raise('No parentMap defined for overviewMap');
         } else {
-            this.initOverviewMap();
+            if (!(this.getParentMap() instanceof ol.Map)){
+                Ext.Error.raise('parentMap is not an instance of ol.Map');
+            } else {
+                this.initOverviewMap();
+            }
         }
         this.callParent();
     },
