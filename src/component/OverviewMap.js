@@ -10,20 +10,10 @@ Ext.define("GeoExt.component.OverviewMap", {
 
     config: {
         /**
-         * If set to true the overview will be reinitialized on "baselayerchange"
-         * events of its bound map.
-         * This can be used to make sure that the overview shows the same baselayer
-         * as the map.
-         *
-         * @cfg {Boolean}
-         */
-        dynamic: false,
-
-        /**
          * An ol.Collection of ol.layers.Base. If not defined on construction, the
          * layers of the parentMap will be used.
          */
-        layers: null,
+        layers: new ol.Collection,
 
         /**
          * A configured map or a configuration object for the map constructor.
@@ -37,16 +27,24 @@ Ext.define("GeoExt.component.OverviewMap", {
          * This should be the map the overviewMap is bind to.
          * @cfg {ol.Map} map
          */
-        parentMap: null
+        parentMap: null,
+
+        /**
+         * The magnification is the relationship in which the resolution of the
+         * overviewmaps view is bigger then resolution of the parentMaps view.
+         * @cfg {Number} magnification
+         */
+        magnification: 10,
     },
 
-    
     /**
-     * Reference to the OpenLayers.Control.OverviewMap control.
-     *
-     * @property @readonly {OpenLayers.Control.OverviewMap}
+     * The ol.layer.Vector displaying the extent geometry of the parentMap.
      */
-    ctrl: null,
+    extentLayer: new ol.layer.Vector({
+        source: new ol.source.Vector({
+            features: [new ol.Feature()]
+        })
+    }),
 
     initComponent: function() {
         if (!this.getParentMap()) {
@@ -54,27 +52,70 @@ Ext.define("GeoExt.component.OverviewMap", {
         } else {
             this.initOverviewMap();
         }
-
         this.callParent();
     },
 
     initOverviewMap: function(){
         var me = this,
-            overviewMap = me.getMap(),
-            layers = me.getLayers();
+            parentMap = me.getParentMap();
 
-        if(!layers){
-            layers = me.getParentMap().getLayers();
-            me.setLayers(layers);
+        if(me.getLayers().getLength() < 1){
+            parentLayers = me.getParentMap().getLayers();
+            parentLayers.forEach(function(layer, index, parentLayers){
+                if(layer instanceof ol.layer.Tile ||
+                   layer instanceof ol.layer.Image){
+                    me.getLayers().push(layer);
+                }
+            })
         }
+        me.getLayers().push(me.extentLayer);
 
-        if(!overviewMap){
+        if(!me.getMap()){
             var olMap = new ol.Map({
+                target: 'overviewDiv',
                 controls: new ol.Collection(),
                 interactions: new ol.Collection(),
-                layers: layers
+                layers: me.getLayers(),
+                view: new ol.View({
+                    center: parentMap.getView().getCenter(),
+                    zoom: parentMap.getView().getZoom()
+                  })
             });
             me.setMap(olMap);
         }
+
+        /*
+         * Sync the maps centers and resolutions (with magnification).
+         */
+        parentMap.getView().bindTo('center', me.getMap().getView());
+        parentMap.getView().bindTo('resolution', me.getMap().getView())
+        .transform(
+                function(parentMapResolution) {
+                    // from sourceView.resolution to targetView.resolution
+                    return me.getMagnification() * parentMapResolution;
+                },
+                function(overviewMapResolution) {
+                    // from targetView.resolution to sourceView.resolution
+                    return overviewMapResolution / me.getMagnification();
+                }
+        );
+
+        /*
+         * Update the box after rendering a new frame of the parentMap.
+         */
+        parentMap.on('postrender', function(){
+            me.updateBox();
+        });
+    },
+
+    /**
+     * Updates the Geometry of the extentLayer.
+     */
+    updateBox: function(){
+        var me = this,
+            parentExtent = me.getParentMap().getView()
+                .calculateExtent(me.getParentMap().getSize()),
+            geom = ol.geom.Polygon.fromExtent(parentExtent);
+        me.extentLayer.getSource().getFeatures()[0].setGeometry(geom)
     }
 });
