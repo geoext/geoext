@@ -144,7 +144,10 @@
         <if>
             <not>
                 <and>
-                    <equals arg1="${package.type}" arg2="framework"/>
+                    <or>
+                        <equals arg1="${package.type}" arg2="framework"/>
+                        <equals arg1="${package.type}" arg2="toolkit"/>
+                    </or>
                     <available file="${package.subpkgs.dir}" type="dir"/>
                 </and>
             </not>
@@ -195,6 +198,17 @@
             <exclude name="**/theme-capture.*"/>
         </fileset>
                 
+        
+        <if>
+            <isset property="package.toolkit"/>
+            <then>
+                <property name="package.sass.fashion" value="true"/>
+            </then>
+        </if>
+
+        <property name="package.sass.fashion" value="false"/>
+        <property name="package.sass.rhino" value="false"/>
+
         <!--
         this property is set indicating we've reached the end of the
         core init phase.  it's presence will indicate that we've already
@@ -263,4 +277,17 @@
             ]]>
         </x-compile>
     </target>
+
+    <target name="-init-web-server">
+        <x-server port="${build.web.port}"
+                  portPropertyName="build.web.port"
+                  defaultSassFile="${package.example.scss}"
+                  defaultCssFile="${package.example.css}"
+                  refid="package.web.server">
+            <mapping name="~cmd" path="${cmd.dir}"/>
+            <mapping name="" path="${build.web.root}"/>
+        </x-server>
+        <x-echo>Package web server available at http://localhost:${build.web.port}</x-echo>
+    </target>
+
 </project>

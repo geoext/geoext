@@ -77,7 +77,8 @@ this file in most cases.
                      -before-init-defaults,
                      -init-defaults,
                      -after-init-defaults,
-                     -init-compiler"/>
+                     -init-compiler,
+                     -init-web-server"/>
 
     <!--
     ===============================================================
@@ -92,8 +93,8 @@ this file in most cases.
             depends="js,
                      inherit-resources,
                      copy-resources,
-                     sass,
                      slice,
+                     sass,
                      subpkgs,
                      examples,
                      pkg"/>

@@ -28,5 +28,18 @@
         <copy todir="${build.out.resources.dir}" overwrite="true">
             <fileset dir="${package.resources.dir}" includes="**/*"/>
         </copy>
+        <property name="target.json.resources.dir" value="${package.output.base}"/>
+        <property name="target.config.resources.dir" value="${build.resources.dir}"/>
+        <x-compile refid="${compiler.ref.id}">
+            <![CDATA[
+                resources
+                    -excludes=-all*.css
+                    -out=${target.config.resources.dir}
+                and
+                resources
+                    -model=true
+                    -out=${target.json.resources.dir}
+            ]]>
+        </x-compile>
     </target>
 </project>
