@@ -1,3 +1,41 @@
+/**
+ * An GeoExt.OverviewMap displays an overview map of an parent map.
+ * You can use this component as any other Ext.Component, e.g give it as an item
+ * to a panel.
+ * 
+ * Example:
+ *
+ *     var mapPanel = Ext.create('GeoExt.panel.Map', {
+ *         title: 'GeoExt.component.OverviewMap Example',
+ *         width: 800,
+ *         height: 600,
+ *         map: new ol.Map({
+ *             layers: [layer],
+ *             view: new ol.View({
+ *                 center: [0, 0],
+ *                 zoom: 2
+ *             })
+ *         }),
+ *         renderTo: 'mapDiv' // ID of the target <div>. Optional.
+ *     });
+ *
+ *     var overviewMap = Ext.create('GeoExt.component.OverviewMap', {
+ *         parentMap: olMap
+ *     });
+ *
+ *     var extPanel = Ext.create('Ext.panel.Panel', {
+ *         title: 'OverviewMap in Panel',
+ *         width: 400,
+ *         height: 200,
+ *         layout: 'fit',
+ *         items: [
+ *             overviewMap
+ *         ],
+ *         renderTo: 'panelDiv' // ID of the target <div>. Optional.
+ *     });
+ *
+ * @class GeoExt.OverviewMap
+ */
 Ext.define("GeoExt.component.OverviewMap", {
     extend: 'Ext.Component',
     xtype: 'gx_overviewmap',
