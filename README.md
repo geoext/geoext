@@ -1,6 +1,6 @@
 # GeoExt 3
 
-[![Build Status](https://travis-ci.org/KaiVolland/geoext3.svg?branch=master)](https://travis-ci.org/KaiVolland/geoext3)
+[![Build Status](https://travis-ci.org/KaiVolland/geoext3.svg?branch=master)](https://travis-ci.org/KaiVolland/geoext3) [![Coverage Status](https://coveralls.io/repos/KaiVolland/geoext3/badge.svg)](https://coveralls.io/r/KaiVolland/geoext3)
 
 This is the first approach for an new geoext structure.
 
