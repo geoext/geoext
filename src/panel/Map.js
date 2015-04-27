@@ -1,3 +1,24 @@
+/**
+ * Create a panel container for a map.
+ *
+ * Example:
+ *
+ *     var mapPanel = Ext.create('GeoExt.panel.Map', {
+ *         title: 'GeoExt.panel.Map Example',
+ *         width: 800,
+ *         height: 600,
+ *         map: new ol.Map({
+ *             layers: [layer],
+ *             view: new ol.View({
+ *                 center: [0, 0],
+ *                 zoom: 2
+ *             })
+ *         }),
+ *         renderTo: 'mapDiv' // ID of the target <div>. Optional.
+ *     });
+ *
+ * @class GeoExt.panel.Map
+ */
 Ext.define("GeoExt.panel.Map",{
     extend: "Ext.panel.Panel",
     xtype: "gx_mappanel",
@@ -13,6 +34,10 @@ Ext.define("GeoExt.panel.Map",{
 //        type: "panel-map"
 //    },
 
+    /**
+     * @cfg
+     * @inheritdoc
+     */
     layout: 'fit',
 
     /**
@@ -24,6 +49,10 @@ Ext.define("GeoExt.panel.Map",{
      */
     mapRendered: false,
 
+    /**
+     * @property {GeoExt.data.LayerStore} layerStore
+     * @private
+     */
     layerStore: null,
 
     config: {
@@ -61,8 +90,6 @@ Ext.define("GeoExt.panel.Map",{
         resize: 'onResize'
     },
 
-    // We need to figure out what we want to be able to do via GeoExt
-
     /**
      * Returns the center coordinate of the view.
      * @return ol.Coordinate
@@ -73,7 +100,7 @@ Ext.define("GeoExt.panel.Map",{
 
     /**
      * Set the center of the view.
-     * @param center ol.Coordinate
+     * @param {ol.Coordinate} center
      */
     setCenter: function(center){
         this.getMap().getView().setCenter(center);
@@ -89,7 +116,7 @@ Ext.define("GeoExt.panel.Map",{
 
     /**
      * Set the extent of the view.
-     * @param extent ol.Extent
+     * @param {ol.Extent} extent
      */
     setExtent: function(extent){
         this.getView().fitExtent(extent, this.getMap().getSize());
@@ -105,7 +132,7 @@ Ext.define("GeoExt.panel.Map",{
 
     /**
      * Add a layer to the map.
-     * @param layer ol.layer.Base
+     * @param {ol.layer.Base} layer
      */
     addLayer: function(layer){
         if(layer instanceof ol.layer.Base){
@@ -118,7 +145,7 @@ Ext.define("GeoExt.panel.Map",{
 
     /**
      * Add a layer to the map.
-     * @param layer ol.layer.Base
+     * @param {ol.layer.Base} layer
      */
     removeLayer: function(layer){
         if(layer instanceof ol.layer.Base){
@@ -149,7 +176,7 @@ Ext.define("GeoExt.panel.Map",{
 
     /**
      * Set the view of the map.
-     * @param view ol.View
+     * @param {ol.View} view
      */
     setView: function(view){
         this.getMap().setView(view);

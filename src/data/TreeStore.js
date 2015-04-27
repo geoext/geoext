@@ -1,15 +1,30 @@
+/**
+ * A store that is synchronized with a GeoExt.data.LayerStore. It will be used 
+ * by a GeoExt.tree.Panel.
+ *
+ * @class GeoExt.data.TreeStore
+ */
 Ext.define('GeoExt.data.TreeStore', {
     extend: 'Ext.data.TreeStore',
     requires: [
        'GeoExt.data.LayerModel'
     ],
 
+    /**
+     * @property
+     * @private
+     * @inheritdoc
+     */
     model: 'GeoExt.data.LayerModel',
 
     config: {
         layerStore: null
     },
 
+    /**
+     * @cfg
+     * @inheritdoc Ext.data.TreeStore
+     */
     proxy: {
         type: 'memory',
         reader: {
@@ -33,7 +48,7 @@ Ext.define('GeoExt.data.TreeStore', {
             if(node.isRoot()){
                 Ext.each(me.getLayerStore().getRange(),
                     function(rec, index, range){
-                        me.addLayerNodes(node, rec);
+                        me.addLayerNode(node, rec);
                     }
                 )
             }
@@ -45,7 +60,14 @@ Ext.define('GeoExt.data.TreeStore', {
         }
     },
 
-    addLayerNodes: function(node ,rec){
+    /**
+     * Adds a layer as a child to a node. It can be either an 
+     * GeoExt.data.LayerModel or an ol.layer.Base.
+     *
+     * @param {Ext.data.NodeInterface} node
+     * @rec {GeoExt.data.LayerModel/ol.layer.Base} rec
+     */
+    addLayerNode: function(node ,rec){
         var me = this,
             layer = rec instanceof ol.layer.Base ? rec : rec.data;
 
@@ -59,7 +81,7 @@ Ext.define('GeoExt.data.TreeStore', {
             Ext.each(layer.getLayersArray(),
                 function(childLayer, index, groupArray){
                     childLayer.visible = layer.visible;
-                    me.addLayerNodes(folderNode, childLayer);
+                    me.addLayerNode(folderNode, childLayer);
                 }
             );
         } else {
@@ -70,6 +92,13 @@ Ext.define('GeoExt.data.TreeStore', {
         }
     },
 
+    /**
+     * Checks/Unchecks the checkbox of a treenode if the layers visibility
+     * changed from mapside.
+     *
+     * @private
+     * @param {ol.ObjectEvent} evt
+     */
     onLayerVisibleChange: function(evt){
         var me = this,
             layer = evt.target;
