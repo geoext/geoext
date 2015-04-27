@@ -1,0 +1,7 @@
+language: node_js
+node_js: 0.10
+# installs dependencies for testing
+install: npm install
+# command to run tests
+script: ./node_modules/phantomjs/bin/phantomjs ./node_modules/mocha-phantomjs/lib/mocha-phantomjs.coffee test/index.html
+
