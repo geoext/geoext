@@ -34,7 +34,7 @@ Ext.define("GeoExt.component.OverviewMap", {
          * overviewmaps view is bigger then resolution of the parentMaps view.
          * @cfg {Number} magnification
          */
-        magnification: 10,
+        magnification: 5,
     },
 
     /**
@@ -46,6 +46,9 @@ Ext.define("GeoExt.component.OverviewMap", {
         })
     }),
 
+    /**
+     * TODO
+     */
     initComponent: function() {
         if (!this.getParentMap()){
             Ext.Error.raise('No parentMap defined for overviewMap');
@@ -59,6 +62,9 @@ Ext.define("GeoExt.component.OverviewMap", {
         this.callParent();
     },
 
+    /**
+     * TODO
+     */
     initOverviewMap: function(){
         var me = this,
             parentMap = me.getParentMap();
@@ -89,20 +95,14 @@ Ext.define("GeoExt.component.OverviewMap", {
         }
 
         /*
-         * Sync the maps centers and resolutions (with magnification).
+         * Set the OverviewMaps center or resolution, on property changed
+         * in parentMap.
          */
-        parentMap.getView().bindTo('center', me.getMap().getView());
-        parentMap.getView().bindTo('resolution', me.getMap().getView())
-        .transform(
-                function(parentMapResolution) {
-                    // from sourceView.resolution to targetView.resolution
-                    return me.getMagnification() * parentMapResolution;
-                },
-                function(overviewMapResolution) {
-                    // from targetView.resolution to sourceView.resolution
-                    return overviewMapResolution / me.getMagnification();
-                }
-        );
+        parentMap.getView().on('propertychange', function(evt){
+            if (evt.key == 'center' || evt.key == 'resolution'){
+                this.setOverviewMapProperty(evt.key);
+            }
+        }, this);
 
         /*
          * Update the box after rendering a new frame of the parentMap.
@@ -110,8 +110,15 @@ Ext.define("GeoExt.component.OverviewMap", {
         parentMap.on('postrender', function(){
             me.updateBox();
         });
+
+        /*
+         * Initially set the center and resolution of the overviewMap.
+         */
+        this.setOverviewMapProperty('center');
+        this.setOverviewMapProperty('resolution');
     },
 
+    // TODO: This should be moved to the controller.
     /**
      * Updates the Geometry of the extentLayer.
      */
@@ -121,5 +128,23 @@ Ext.define("GeoExt.component.OverviewMap", {
                 .calculateExtent(me.getParentMap().getSize()),
             geom = ol.geom.Polygon.fromExtent(parentExtent);
         me.extentLayer.getSource().getFeatures()[0].setGeometry(geom)
+    },
+
+    // TODO: This should be moved to the controller.
+    /**
+     * Set an OverviewMap property (center or resolution).
+     */
+    setOverviewMapProperty: function(key){
+        var me = this,
+        parentView = me.getParentMap().getView(),
+        overviewView = me.getMap().getView();
+
+        if(key == 'center'){
+            overviewView.set('center', parentView.getCenter());
+        }
+        if(key == 'resolution'){
+            overviewView.set('resolution',
+                   me.getMagnification() * parentView.getResolution());
+        }
     }
 });
