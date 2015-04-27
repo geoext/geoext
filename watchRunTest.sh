@@ -5,5 +5,5 @@
 # ======================================================================
 
 while true; do inotifywait -e modify -rq test/ src/ --format %T' '%w%f' modified ' --timefmt %T &&
- ./node_modules/phantomjs/bin/phantomjs ./node_modules/mocha-phantomjs/lib/mocha-phantomjs.coffee test/index.html;
+ npm test;
 done
