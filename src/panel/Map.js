@@ -47,6 +47,7 @@ Ext.define("GeoExt.panel.Map",{
         }
 
         me.layerStore = Ext.create('GeoExt.data.LayerStore', {
+            storeId: me.getId() + "-store",
             map: me.getMap()
         });
 
