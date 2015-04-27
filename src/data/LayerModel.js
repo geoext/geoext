@@ -2,12 +2,26 @@ Ext.define('GeoExt.data.LayerModel', {
     extend: 'Ext.data.Model',
 
     fields: [
-        { name: 'opacity', type: 'int' },
-        { name: 'visible', type: 'boolean' },
-        { name: 'extent', type: 'auto' },
-        { name: 'minResolution', type: 'int' },
-        { name: 'maxResolution', type: 'int' }
+        { name: 'opacity', type: 'int', convert: function(v, record){
+            return record.data.getOpacity();
+        } },
+        { name: 'visible', type: 'boolean', convert: function(v, record){
+            return record.data.getVisible();
+        } },
+        { name: 'minResolution', type: 'auto', convert: function(v, record){
+            return record.data.getMinResolution();
+        } },
+        { name: 'maxResolution', type: 'auto', convert: function(v, record){
+            return record.data.getMaxResolution();
+        } }
     ],
+
+    proxy: {
+        type: 'memory',
+        reader: {
+            type: 'json'
+        }
+    },
 
     /**
      * Returns the {ol.layer.Layer} layer object used in this model instance.
