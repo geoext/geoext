@@ -39,10 +39,6 @@ Ext.define('GeoExt.data.TreeStore', {
             }
         },
         update: function(store, record, operation, modifiedFieldNames, details, eOpts){
-            /*
-             * I would really like to this with the ol3 .bindTo method but i dont
-             * get it working
-             */
             if(record.data instanceof ol.layer.Base){
                 record.data.setVisible(record.data.checked);
             }
@@ -74,11 +70,13 @@ Ext.define('GeoExt.data.TreeStore', {
         }
     },
 
-    //TODO: Uncheck Checkbox in Tree, when layer in map is hidden. See listeners
-    // update for further information
     onLayerVisibleChange: function(evt){
         var me = this,
             layer = evt.target;
             layerNode = me.getNodeById(layer.id);
+
+            if(layerNode && layer){
+                layerNode.set('checked', layer.getVisible());
+            }
     }
 });

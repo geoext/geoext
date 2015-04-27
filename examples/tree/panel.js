@@ -49,10 +49,7 @@ Ext.onReady(function(){
 
     treeStore = Ext.create('GeoExt.data.TreeStore', {
         model: 'GeoExt.data.TreeModel',
-        rootVisible: false,
         layerStore: mapPanel.getStore()
-        // i'd appreciate if we could use the layerstore instead
-        //layerCollection: mapPanel.getLayers()
     });
 
     treePanel = Ext.create('GeoExt.tree.Panel', {
@@ -61,8 +58,6 @@ Ext.onReady(function(){
         height: 600,
         store: treeStore,
         renderTo: 'treeDiv',
-        root: {
-            expanded: true
-        }
+        rootVisible: false
     });
 });
