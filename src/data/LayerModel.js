@@ -1,3 +1,8 @@
+/**
+ * The layer model class used by the stores.
+ *
+ * @class GeoExt.data.LayerModel
+ */
 Ext.define('GeoExt.data.LayerModel', {
     extend: 'Ext.data.Model',
 
@@ -24,9 +29,9 @@ Ext.define('GeoExt.data.LayerModel', {
     },
 
     /**
-     * Returns the {ol.layer.Layer} layer object used in this model instance.
+     * Returns the {ol.layer.Base} layer object used in this model instance.
      *
-     * @return {ol.layer.Layer}
+     * @return {ol.layer.Base}
      */
     getLayer: function() {
         return this.data;

@@ -1,7 +1,21 @@
+/**
+ * A store that synchronizes a layers array of an OpenLayers.Map with a
+ * layer store holding {@link GeoExt.data.LayerModel} instances.
+ *
+ * @class GeoExt.data.LayerStore
+ */
 Ext.define('GeoExt.data.LayerStore', {
     extend: 'Ext.data.Store',
     requires: ['GeoExt.data.LayerModel'],
     model: 'GeoExt.data.LayerModel',
+
+    config: {
+        /**
+         * A configured map or a configuration object for the map constructor.
+         * @cfg {ol.Map} map
+         */
+        map: null
+    },
 
     constructor: function(config) {
         var me = this;
@@ -14,7 +28,10 @@ Ext.define('GeoExt.data.LayerStore', {
     },
 
     /**
+     * Bind this store to a map instance, once bound the store
+     * is synchronized with the map and vice-versa.
      *
+     * @param {ol.Map} map map The map instance.
      */
     bindMap: function(map){
         var me = this;
@@ -23,17 +40,12 @@ Ext.define('GeoExt.data.LayerStore', {
             me.map = map;
         }
 
-        //TODO 1. Bring LayerModel in line
-        /*
-         * Bind Layers from map to Store if we have an ol.Map object
-         */
         if(map instanceof ol.Map){
             var mapLayers = map.getLayers();
             mapLayers.forEach(function(layer, index, array){
                 me.add(layer);
             });
-            
-            //TODO 2. bind events from collection to store
+
             mapLayers.forEach(function(layer) {
                 layer.on('propertychange', me.onChangeLayer, me);
             });
@@ -41,7 +53,6 @@ Ext.define('GeoExt.data.LayerStore', {
             mapLayers.on('remove', me.onRemoveLayer, me);
         }
 
-        //TODO 3. bind store events to collection
         me.on({
             "load": me.onLoad,
             "clear": me.onClear,
@@ -59,7 +70,7 @@ Ext.define('GeoExt.data.LayerStore', {
     },
 
     /**
-     *
+     * Unbind this store from the map it is currently bound.
      */
     unbindMap: function() {
         var me = this;
