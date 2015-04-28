@@ -3,6 +3,8 @@ node_js: "0.12"
 # installs dependencies for testing
 install: npm install
 # command to run tests
-script: npm test
+script:
+  - ./node_modules/eslint/bin/eslint.js src/
+  - npm test
 after_success: npm run ci-coverage
 
