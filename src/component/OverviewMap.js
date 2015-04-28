@@ -2,7 +2,7 @@
  * An GeoExt.OverviewMap displays an overview map of an parent map.
  * You can use this component as any other Ext.Component, e.g give it as an item
  * to a panel.
- * 
+ *
  * Example:
  *
  *     var mapPanel = Ext.create('GeoExt.panel.Map', {
