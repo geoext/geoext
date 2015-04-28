@@ -42,7 +42,7 @@ Ext.define('GeoExt.data.LayerStore', {
 
         if(map instanceof ol.Map){
             var mapLayers = map.getLayers();
-            mapLayers.forEach(function(layer, index, array){
+            mapLayers.forEach(function(layer){
                 me.add(layer);
             });
 
@@ -63,7 +63,7 @@ Ext.define('GeoExt.data.LayerStore', {
         });
 
         me.data.on({
-            "replace" : me.onReplace,
+            "replace": me.onReplace,
             scope: me
         });
         me.fireEvent("bind", me, map);
@@ -99,7 +99,7 @@ Ext.define('GeoExt.data.LayerStore', {
      */
     onChangeLayer: function(evt) {
         var layer = evt.target;
-        var recordIndex = this.findBy(function(rec, id) {
+        var recordIndex = this.findBy(function(rec) {
             return rec.getLayer() === layer;
         });
         if(recordIndex > -1) {
@@ -125,7 +125,7 @@ Ext.define('GeoExt.data.LayerStore', {
         layer.on('propertychange', me.onChangeLayer, me);
         if(!me._adding) {
             me._adding = true;
-            var result  = me.proxy.reader.read(layer);
+            var result = me.proxy.reader.read(layer);
             me.insert(index, result.records);
             delete me._adding;
         }
@@ -191,10 +191,9 @@ Ext.define('GeoExt.data.LayerStore', {
     /**
      * Handler for a store's clear event.
      *
-     * @param {Ext.data.Store} store
      * @private
      */
-    onClear: function(store) {
+    onClear: function() {
         var me = this;
         me._removing = true;
         me.map.getLayers().forEach(function(layer) {
@@ -217,7 +216,7 @@ Ext.define('GeoExt.data.LayerStore', {
         if (!me._adding) {
             me._adding = true;
             var layer;
-            for (var i=0, ii=records.length; i<ii; ++i) {
+            for (var i = 0, ii = records.length; i < ii; ++i) {
                 layer = records[i].getLayer();
                 layer.on('propertychange', me.onChangeLayer, me);
                 if (index === 0) {
@@ -235,10 +234,9 @@ Ext.define('GeoExt.data.LayerStore', {
      *
      * @param {Ext.data.Store} store
      * @param {Ext.data.Model} record
-     * @param {Number} index
      * @private
      */
-    onRemove: function(store, record, index){
+    onRemove: function(store, record){
         var me = this;
         if(!me._removing) {
             var layer = record.getLayer();
@@ -292,11 +290,9 @@ Ext.define('GeoExt.data.LayerStore', {
      * @param {String} key
      * @param {Ext.data.Model} oldRecord In this case, a record that has
      *     been replaced.
-     * @param {Ext.data.Model} newRecord In this case, a record that is
-     *     replacing oldRecord.
      * @private
      */
-    onReplace: function(key, oldRecord, newRecord){
+    onReplace: function(key, oldRecord){
         this.removeMapLayer(oldRecord);
     },
 
@@ -381,9 +377,9 @@ Ext.define('GeoExt.data.LayerStore', {
      * of [version 4.2.1](http://docs-origin.sencha.com/extjs/4.2.1/source/
      * Store.html#Ext-data-Store-method-loadRawData).
      */
-    loadRawData : function(data, append) {
-        var me      = this,
-            result  = me.proxy.reader.read(data),
+    loadRawData: function(data, append) {
+        var me = this,
+            result = me.proxy.reader.read(data),
             records = result.records;
 
         if (result.success) {
