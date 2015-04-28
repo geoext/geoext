@@ -21,6 +21,9 @@ Ext.onReady(function(){
 
     olMap = new ol.Map({
         layers: [layer],
+        interactions: ol.interaction.defaults().extend([
+            new ol.interaction.DragRotateAndZoom()
+        ]),
         view: new ol.View({
           center: [0, 0],
           zoom: 2
@@ -36,7 +39,30 @@ Ext.onReady(function(){
     });
 
     overviewMap = Ext.create('GeoExt.component.OverviewMap', {
-        parentMap: olMap
+        parentMap: olMap,
+        magnification: 10,
+        layers: [layer2],
+        anchorStyle: new ol.style.Style({
+            fill: new ol.style.Fill({
+                color: 'rgba(255, 255, 255, 0.2)'
+              }),
+              stroke: new ol.style.Stroke({
+                color: '#ffcc33',
+                width: 2
+              }),
+              image: new ol.style.Circle({
+                radius: 7,
+                fill: new ol.style.Fill({
+                  color: '#ffcc33'
+                })
+              })
+        }),
+        boxStyle: new ol.style.Style({
+            stroke: new ol.style.Stroke({
+                color: '#ffcc33',
+                width: 2
+            })
+        })
     });
 
     extPanel = Ext.create('Ext.panel.Panel', {
