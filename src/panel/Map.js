@@ -19,7 +19,7 @@
  *
  * @class GeoExt.panel.Map
  */
-Ext.define("GeoExt.panel.Map",{
+Ext.define("GeoExt.panel.Map", {
     extend: "Ext.panel.Panel",
     xtype: "gx_mappanel",
 
@@ -138,8 +138,8 @@ Ext.define("GeoExt.panel.Map",{
         if(layer instanceof ol.layer.Base){
             this.getMap().addLayer(layer);
         } else {
-            Ext.Error.raise('Can not add layer '+layer+
-                           ' cause it is not an instance of ol.layer.Base');
+            Ext.Error.raise('Can not add layer ' + layer + ' cause it is not ' +
+                'an instance of ol.layer.Base');
         }
     },
 
@@ -153,8 +153,8 @@ Ext.define("GeoExt.panel.Map",{
                 this.getMap().removeLayer(layer);
             }
         } else {
-            Ext.Error.raise('Can not remove layer '+layer+
-                           ' cause it is not an instance of ol.layer.Base');
+            Ext.Error.raise('Can not add layer ' + layer + ' cause it is not ' +
+                'an instance of ol.layer.Base');
         }
     },
 
