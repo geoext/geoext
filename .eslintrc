@@ -1,0 +1,12 @@
+{
+    "globals": {
+        "Ext": false,
+        "GeoExt": true,
+        "ol": false
+    },
+    "rules": {
+        "no-underscore-dangle": false,
+        "quotes": "single",
+        "strict": "never"
+    }
+}
