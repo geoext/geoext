@@ -48,10 +48,29 @@ Ext.define("GeoExt.component.OverviewMap", {
 
     config: {
         /**
+         * TODO
+         * @cfg {ol.Style} olStyle
+         */
+        anchorStyle: null,
+
+        /**
+         * TODO
+         * @cfg {ol.Style} olStyle
+         */
+        boxStyle: null,
+
+        /**
          * An ol.Collection of ol.layers.Base. If not defined on construction, the
          * layers of the parentMap will be used.
          */
-        layers: new ol.Collection(),
+        layers: [], //new ol.Collection(),
+
+        /**
+         * The magnification is the relationship in which the resolution of the
+         * overviewmaps view is bigger then resolution of the parentMaps view.
+         * @cfg {Number} magnification
+         */
+        magnification: 5,
 
         /**
          * A configured map or a configuration object for the map constructor.
@@ -65,23 +84,66 @@ Ext.define("GeoExt.component.OverviewMap", {
          * This should be the map the overviewMap is bind to.
          * @cfg {ol.Map} map
          */
-        parentMap: null,
+        parentMap: null
+    },
+
+    statics: {
+        /**
+         *
+         */
+        rotateCoordsAroundCoords: function(coords, center, rotation){
+            var cosTheta = Math.cos(rotation);
+            var sinTheta = Math.sin(rotation);
+
+            var x = (cosTheta * (coords[0] - center[0]) - sinTheta *
+                    (coords[1] - center[1]) + center[0]);
+
+            var y = (sinTheta * (coords[0] - center[0]) + cosTheta *
+                    (coords[1] - center[1]) + center[1]);
+
+            return [x, y];
+        },
 
         /**
-         * The magnification is the relationship in which the resolution of the
-         * overviewmaps view is bigger then resolution of the parentMaps view.
-         * @cfg {Number} magnification
+         *
          */
-        magnification: 5
+        rotateGeomAroundCoords: function(geom, centerCoords, rotation){
+            var me = this;
+            var ar = [];
+            var coords;
+
+            if(geom instanceof ol.geom.Point){
+                ar.push(me.rotateCoordsAroundCoords(geom.getCoordinates(), centerCoords,
+                        rotation));
+                geom.setCoordinates(ar[0]);
+            } else if (geom instanceof ol.geom.Polygon){
+                coords = geom.getCoordinates()[0];
+                coords.forEach(function(coord){
+                    ar.push(me.rotateCoordsAroundCoords(coord, centerCoords, rotation));
+                });
+                geom.setCoordinates([ar]);
+            }
+            return geom;
+        }
     },
 
     /**
+     * @private
+     */
+    boxFeature: new ol.Feature(),
+
+    /**
+     * @private
+     */
+    anchorFeature: new ol.Feature(),
+
+    /**
      * The ol.layer.Vector displaying the extent geometry of the parentMap.
+     *
+     * @private
      */
     extentLayer: new ol.layer.Vector({
-        source: new ol.source.Vector({
-            features: [new ol.Feature()]
-        })
+        source: new ol.source.Vector()
     }),
 
     /**
@@ -97,6 +159,10 @@ Ext.define("GeoExt.component.OverviewMap", {
                 this.initOverviewMap();
             }
         }
+
+        this.extentLayer.getSource().addFeatures([this.boxFeature,
+                                                  this.anchorFeature]);
+
         this.callParent();
     },
 
@@ -108,7 +174,7 @@ Ext.define("GeoExt.component.OverviewMap", {
             parentMap = me.getParentMap(),
             parentLayers;
 
-        if(me.getLayers().getLength() < 1){
+        if(me.getLayers().length < 1){
             parentLayers = me.getParentMap().getLayers();
             parentLayers.forEach(function(layer){
                 if(layer instanceof ol.layer.Tile ||
@@ -124,7 +190,6 @@ Ext.define("GeoExt.component.OverviewMap", {
                 target: 'overviewDiv',
                 controls: new ol.Collection(),
                 interactions: new ol.Collection(),
-                layers: me.getLayers(),
                 view: new ol.View({
                     center: parentMap.getView().getCenter(),
                     zoom: parentMap.getView().getZoom()
@@ -132,6 +197,10 @@ Ext.define("GeoExt.component.OverviewMap", {
             });
             me.setMap(olMap);
         }
+
+        Ext.each(me.getLayers(), function(layer){
+            me.getMap().addLayer(layer);
+        });
 
         /*
          * Set the OverviewMaps center or resolution, on property changed
@@ -157,19 +226,26 @@ Ext.define("GeoExt.component.OverviewMap", {
         this.setOverviewMapProperty('resolution');
     },
 
-    // TODO: This should be moved to the controller.
+    // TODO: This should be moved to the controller?!
     /**
      * Updates the Geometry of the extentLayer.
      */
     updateBox: function(){
         var me = this,
-            parentExtent = me.getParentMap().getView()
-                .calculateExtent(me.getParentMap().getSize()),
+            parentExtent = me.getParentMap().getView().calculateExtent(me.getParentMap().getSize()),
+            parentRotation = me.getParentMap().getView().getRotation(),
+            parentCenter = me.getParentMap().getView().getCenter(),
             geom = ol.geom.Polygon.fromExtent(parentExtent);
-        me.extentLayer.getSource().getFeatures()[0].setGeometry(geom);
+
+        geom = me.self.rotateGeomAroundCoords(geom, parentCenter, parentRotation);
+        me.boxFeature.setGeometry(geom);
+
+        var anchor = new ol.geom.Point(ol.extent.getTopLeft(parentExtent));
+        anchor = me.self.rotateGeomAroundCoords(anchor, parentCenter, parentRotation);
+        me.anchorFeature.setGeometry(anchor);
     },
 
-    // TODO: This should be moved to the controller.
+    // TODO: This should be moved to the controller?!
     /**
      * Set an OverviewMap property (center or resolution).
      */
@@ -185,5 +261,21 @@ Ext.define("GeoExt.component.OverviewMap", {
             overviewView.set('resolution',
                    me.getMagnification() * parentView.getResolution());
         }
+    },
+
+    /**
+     *
+     */
+    applyAnchorStyle: function(style){
+        this.anchorFeature.setStyle(style);
+        return style;
+    },
+
+    /**
+     *
+     */
+    applyBoxStyle: function(style){
+        this.boxFeature.setStyle(style);
+        return style;
     }
 });
