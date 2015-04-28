@@ -1,5 +1,5 @@
 /**
- * A store that is synchronized with a GeoExt.data.LayerStore. It will be used 
+ * A store that is synchronized with a GeoExt.data.LayerStore. It will be used
  * by a GeoExt.tree.Panel.
  *
  * @class GeoExt.data.TreeStore
@@ -61,7 +61,7 @@ Ext.define('GeoExt.data.TreeStore', {
     },
 
     /**
-     * Adds a layer as a child to a node. It can be either an 
+     * Adds a layer as a child to a node. It can be either an
      * GeoExt.data.LayerModel or an ol.layer.Base.
      *
      * @param {Ext.data.NodeInterface} node
