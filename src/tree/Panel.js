@@ -1,8 +1,8 @@
 /**
  * An Ext.tree.Panel.
- * 
+ *
  * Example:
- * 
+ *
  *     var mapPanel = Ext.create('GeoExt.panel.Map', {
  *         title: 'GeoExt.panel.Map Example',
  *         width: 800,

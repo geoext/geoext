@@ -18,9 +18,9 @@
   "output": "${package.dir}/build",
   "local": true,
   "requires": [],
-  "repository" : {
-    "type" : "git",
-    "url" : "https://github.com/KaiVolland/geoext3.git"
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/KaiVolland/geoext3.git"
   },
   "scripts": {
     "test": "./node_modules/phantomjs/bin/phantomjs ./node_modules/mocha-phantomjs/lib/mocha-phantomjs.coffee test/index.html",
@@ -32,6 +32,7 @@
   "dependencies": {},
   "devDependencies": {
     "coveralls": "2.11.2",
+    "eslint": "0.20.0",
     "expect.js": "0.3.1",
     "istanbul": "0.3.13",
     "jshint": "2.5.6",

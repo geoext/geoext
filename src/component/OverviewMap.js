@@ -2,7 +2,7 @@
  * An GeoExt.OverviewMap displays an overview map of an parent map.
  * You can use this component as any other Ext.Component, e.g give it as an item
  * to a panel.
- * 
+ *
  * Example:
  *
  *     var mapPanel = Ext.create('GeoExt.panel.Map', {
@@ -51,7 +51,7 @@ Ext.define("GeoExt.component.OverviewMap", {
          * An ol.Collection of ol.layers.Base. If not defined on construction, the
          * layers of the parentMap will be used.
          */
-        layers: new ol.Collection,
+        layers: new ol.Collection(),
 
         /**
          * A configured map or a configuration object for the map constructor.
@@ -72,7 +72,7 @@ Ext.define("GeoExt.component.OverviewMap", {
          * overviewmaps view is bigger then resolution of the parentMaps view.
          * @cfg {Number} magnification
          */
-        magnification: 5,
+        magnification: 5
     },
 
     /**
@@ -105,16 +105,17 @@ Ext.define("GeoExt.component.OverviewMap", {
      */
     initOverviewMap: function(){
         var me = this,
-            parentMap = me.getParentMap();
+            parentMap = me.getParentMap(),
+            parentLayers;
 
         if(me.getLayers().getLength() < 1){
             parentLayers = me.getParentMap().getLayers();
-            parentLayers.forEach(function(layer, index, parentLayers){
+            parentLayers.forEach(function(layer){
                 if(layer instanceof ol.layer.Tile ||
                    layer instanceof ol.layer.Image){
                     me.getLayers().push(layer);
                 }
-            })
+            });
         }
         me.getLayers().push(me.extentLayer);
 
@@ -137,7 +138,7 @@ Ext.define("GeoExt.component.OverviewMap", {
          * in parentMap.
          */
         parentMap.getView().on('propertychange', function(evt){
-            if (evt.key == 'center' || evt.key == 'resolution'){
+            if (evt.key === 'center' || evt.key === 'resolution'){
                 this.setOverviewMapProperty(evt.key);
             }
         }, this);
@@ -165,7 +166,7 @@ Ext.define("GeoExt.component.OverviewMap", {
             parentExtent = me.getParentMap().getView()
                 .calculateExtent(me.getParentMap().getSize()),
             geom = ol.geom.Polygon.fromExtent(parentExtent);
-        me.extentLayer.getSource().getFeatures()[0].setGeometry(geom)
+        me.extentLayer.getSource().getFeatures()[0].setGeometry(geom);
     },
 
     // TODO: This should be moved to the controller.
@@ -177,10 +178,10 @@ Ext.define("GeoExt.component.OverviewMap", {
         parentView = me.getParentMap().getView(),
         overviewView = me.getMap().getView();
 
-        if(key == 'center'){
+        if(key === 'center'){
             overviewView.set('center', parentView.getCenter());
         }
-        if(key == 'resolution'){
+        if(key === 'resolution'){
             overviewView.set('resolution',
                    me.getMagnification() * parentView.getResolution());
         }

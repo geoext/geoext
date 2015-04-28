@@ -1,5 +1,5 @@
 /**
- * A store that is synchronized with a GeoExt.data.LayerStore. It will be used 
+ * A store that is synchronized with a GeoExt.data.LayerStore. It will be used
  * by a GeoExt.tree.Panel.
  *
  * @class GeoExt.data.TreeStore
@@ -36,24 +36,22 @@ Ext.define('GeoExt.data.TreeStore', {
         var me = this;
 
         if(!me.getLayerStore()){
-            me.setLayerStore(config.layerStore)
+            me.setLayerStore(config.layerStore);
         }
 
         me.callParent(config);
     },
 
     listeners: {
-        nodebeforeExpand: function(node, eOpts){
+        nodebeforeExpand: function(node){
             var me = this;
             if(node.isRoot()){
-                Ext.each(me.getLayerStore().getRange(),
-                    function(rec, index, range){
-                        me.addLayerNode(node, rec);
-                    }
-                )
+                Ext.each(me.getLayerStore().getRange(), function(rec){
+                    me.addLayerNode(node, rec);
+                });
             }
         },
-        update: function(store, record, operation, modifiedFieldNames, details, eOpts){
+        update: function(store, record){
             if(record.data instanceof ol.layer.Base){
                 record.data.setVisible(record.data.checked);
             }
@@ -61,13 +59,13 @@ Ext.define('GeoExt.data.TreeStore', {
     },
 
     /**
-     * Adds a layer as a child to a node. It can be either an 
+     * Adds a layer as a child to a node. It can be either an
      * GeoExt.data.LayerModel or an ol.layer.Base.
      *
      * @param {Ext.data.NodeInterface} node
      * @rec {GeoExt.data.LayerModel/ol.layer.Base} rec
      */
-    addLayerNode: function(node ,rec){
+    addLayerNode: function(node, rec){
         var me = this,
             layer = rec instanceof ol.layer.Base ? rec : rec.data;
 
@@ -75,11 +73,11 @@ Ext.define('GeoExt.data.TreeStore', {
         layer.on('change:visible', me.onLayerVisibleChange, me);
 
         if(layer instanceof ol.layer.Group){
-            folderNode = node.appendChild(layer);
+            var folderNode = node.appendChild(layer);
             layer.text = 'ol.layer.Group';
             layer.treeNode = folderNode;
             Ext.each(layer.getLayersArray(),
-                function(childLayer, index, groupArray){
+                function(childLayer){
                     childLayer.visible = layer.visible;
                     me.addLayerNode(folderNode, childLayer);
                 }
@@ -87,7 +85,7 @@ Ext.define('GeoExt.data.TreeStore', {
         } else {
             layer.text = layer.getSource().getLayer();
             layer.leaf = true;
-            layerNode = node.appendChild(layer);
+            var layerNode = node.appendChild(layer);
             layer.treeNode = layerNode;
         }
     },
@@ -101,11 +99,11 @@ Ext.define('GeoExt.data.TreeStore', {
      */
     onLayerVisibleChange: function(evt){
         var me = this,
-            layer = evt.target;
+            layer = evt.target,
             layerNode = me.getNodeById(layer.id);
 
-            if(layerNode && layer){
-                layerNode.set('checked', layer.getVisible());
-            }
+        if(layerNode && layer){
+            layerNode.set('checked', layer.getVisible());
+        }
     }
 });

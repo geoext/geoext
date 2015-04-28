@@ -3,6 +3,5 @@ Ext.define('GeoExt.tree.PanelController', {
     alias: 'controller.tree-panel',
 
     onBeforePrefetch: function(){
-        console.log('onBeforePrefetch called');
     }
 });
