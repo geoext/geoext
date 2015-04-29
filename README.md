@@ -43,3 +43,44 @@ Alternatively, if your source isn't living inside of a sencha workspace, you can
 $ sencha config --prop workspace.config.dir=/path/to/workspace/.sencha/workspace then package build
 ```
 
+## Adding GeoExt to a local sencha repository
+
+Initalize the local "GeoExt Contributors" repository:
+
+```
+$ sencha package repo init -name "GeoExt Contributors" -email "dev@geoext.org"
+```
+
+Add the package to this repository:
+
+```
+$ sencha package add /path/to/workspace/build/GeoExt/GeoExt.pkg 
+```
+
+To use this package in a sencha app just add "GeoExt" to the "requires"-array
+in your app.json:
+
+```javascript
+    /**
+     * The list of required packages (with optional versions; default is "latest").
+     *
+     * For example,
+     *
+     *      "requires": [
+     *          "charts"
+     *      ]
+     */
+    "requires": [
+        "GeoExt"
+    ],
+```
+
+
+In the future we will most probably host the package on a remote resource so
+that you can do:
+
+```
+#NOT WORKING AT THE MOMENT!
+sencha package repo add GeoExt http://geoext.github.io/geoext3/repo
+```
+
