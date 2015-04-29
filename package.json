@@ -17,7 +17,9 @@
   },
   "output": "${package.dir}/build",
   "local": true,
+  "theme": "theme-neptune",
   "requires": [],
+  "toolkit": "classic",
   "repository": {
     "type": "git",
     "url": "https://github.com/KaiVolland/geoext3.git"
