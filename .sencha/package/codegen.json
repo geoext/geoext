@@ -6,6 +6,9 @@
     "custom.js.merge": {
       "199e99bbd15c3c0415569425cb21e77c95e9042a": "eJxlj0FOxDAMRfdziq9ZwUjTHIAlYslquIAncdtA4lSxC8PtSdoREmIV6f/4+dmdDjjhbY6KMSZGeycWrmQcQAqCGlWLMmEpUQzXb1xY/Ex4zgFnRMNXTAlSWseovCTybbbUDl6XsJHa1FH3sYX8B03cqqlS4OPQ//2V8CQ7K5fPriEBNjPU17gYjCZE6UnmYbacfj/GsaUNslUIhbVzu5lwq/2qVjIohGixCCVkkjiyWrOFzqWaXw0sViPr0IRYGVQ7yq+55X2HdObg7meo45udt4XnKyk7Je0Z5SWxqyyB6/Cu/Uh3ODj3crNhN28ar/f1D49P/7rLXUd7+QPuPI9g"
     },
+    "fashion.html.tpl.merge": {
+      "e27edf75982e4b8e1e05a4112718424540b46b10": "eJytU8FuEzEQvecrpnuCCMdp4VClm1xCESAkkJoeODreSdat1zaeySYRot+OvRsgCXBB+LArz/Ob9+xnlxevP84Xnz/dQs2NnQ3KCyEGADD3YR/NumZ4pp/D1fjySqTPyxHcodO1gndOjwZCJMKBV6OqZpkJJRu2OLvdMby/g0WNDcJbFR0SlbLH+nUNskqyHAR+2Zh2Wsy9Y3QsFvuABeh+Ni0YdyyzzA0k6UjI0/vFG3FdzAZ9o4Nn+OBVBcpaiLlhxAqscY8EylVAOprA1K3LvjtiXwROegeZB9WqvloART0t5JNuKpkgdGS8I0ndAYiVojrN5dl/9EDFrJR9i/+nQopIaN8EYzH+o8bSeyaOKpzxDw14/yOYPEZbU62RRQ5BGYcRvv7E8mhUXBs3gctx2N2cIInI9QRejX9DgifDaTeTlI9VbFo8xX2LcWX9dgKtIbO0R/C3wS9nO0HWaIyCkwfkF39FYHhm2gelDe+T6z92lkNIx7+JCEtf7aHySOA8d76sCsA1QvQbV6WLpX260JHAr2AVVZMqQTm0cmtc5bewrdFBNmPcGoby2GK3TmSFE+c9saufuV4q/bjudCeQ4nMUVEzv4ngLXYLyEGEpj95i7pey7n4Z6R7rd2BDMTo\u003d"
+    },
     "theme.html.tpl.merge": {
       "32f685a8af28baafcc7999862d0bd1f25df0e48b": "eJx1U02P0zAQvedXzPoEFW66CwfUTXopiwAhgbTlwNF1po13HdvY0zYR4r9jOwXSBXxI5HnzPqyxq6s3n9abr5/voKVOr4rqivMCANbWDV7tW4Jn8jncLK5vePy8nMM9GtkKeG/kvOA8Es68FkWzSkyoSJHG1V1P8OEeNi12CO+ENxhCVY7Y2NchiWhLjuO3gzrWbG0NoSG+GRwykOOuZoQ9lcnmFqK1D0j1l81b/pqtilHonBk+WtGA0Bp8EvTYgFbmMYAwDQTplaOQ+1LuTExwbNY1CzRoDC0iMaBof3aVITBoPe5qhr3onMZ5LpVngVF1yngQRzFWGQQva7a1lgJ54eYPga2qcgR/Rc++o1ha85Nq9kg8nV0ogx6+/8bS6oTfK7OE64Xrby+QSKR2Ca8WfyHOBkXKRlY8qSB1xEvcHtHvtD0t4aiC2uoJ/KP4k6znQSuJnlPMgPTivwjMnoS2TkhFQ0z9T+VyBmjCwSNsbTNAYzGAsZRzaeGAWgRvD6aJ85Q23iMfwO5g50UXK04Y1OVJmcae4NSigRRGmT3MymnE3MeTw0XykZjrT1JvhXzcZ98lxPGZ4ISP13F6hDzB8jzCqpw8gaQXZ51/Cclv5CfT2f4m"
     },
@@ -20,12 +23,6 @@
     },
     "build.properties.merge": {
       "8b81315dbe73ce9c08478f4c1d2df84f456efcf5": "eJytkEtOxEAMRPdzipKyhbkBCzQrFnzE5AKetJNYdOzI3UnE7XGA3GC8K5f9/GnwdM84NWhHKeglM2a3VRIXkMJWdg+B2UQrenMk7mnJFSu50C1HXWREOUEUAfr3yzk4M3sVLudTE8bL68f7Z/v81uIRV9ZuJFymhE1yxsQ+ML5tcUReh6BuUkdILbBNkRYXHbDMg1P6BaI10GqSYrXKWoUOSmfaZ+mi88+f6GvvzRTmA8rGPO/6mFMtYPW4fiff97U/al6C1w\u003d\u003d"
-    },
-    "package.json.tpl.merge": {
-      "9c7e7135be031f8d06045d338200cbf4a4222f88": "eJx1kD9PwzAQxfd+CitiREmYkJgZgaUIBuhwjS+pW9tn/AcRRfnuxMYxylBP997vfH7naceWU2lQWD2wajKX4WWp5+r2D/jRFPC61AV0FsGTjQw06VFRcCtzQSmwY2T7E1nPViNzjh6ERP6IrrPCeEE69j6RHhj/9xj1zEB3gQHXm99oXe6+q9u6LWlIGfBvV2hPVoFPdokoRYcx/ZR08s5u0R9FxzNtVOpa3jnFUTefoW3vjzlgzYWdGwfONfgDykhsuuA8qfq8fstminDvgg/on0GLHl0M523ATeNc1CFVc85OwZvgr2U4BiH5uqakDmSenS2LX0FYTLsedvMvLXaLQg\u003d\u003d"
-    },
-    "fashion.html.tpl.merge": {
-      "e27edf75982e4b8e1e05a4112718424540b46b10": "eJytU8FuEzEQvecrpnuCCMdp4VClm1xCESAkkJoeODreSdat1zaeySYRot+OvRsgCXBB+LArz/Ob9+xnlxevP84Xnz/dQs2NnQ3KCyEGADD3YR/NumZ4pp/D1fjySqTPyxHcodO1gndOjwZCJMKBV6OqZpkJJRu2OLvdMby/g0WNDcJbFR0SlbLH+nUNskqyHAR+2Zh2Wsy9Y3QsFvuABeh+Ni0YdyyzzA0k6UjI0/vFG3FdzAZ9o4Nn+OBVBcpaiLlhxAqscY8EylVAOprA1K3LvjtiXwROegeZB9WqvloART0t5JNuKpkgdGS8I0ndAYiVojrN5dl/9EDFrJR9i/+nQopIaN8EYzH+o8bSeyaOKpzxDw14/yOYPEZbU62RRQ5BGYcRvv7E8mhUXBs3gctx2N2cIInI9QRejX9DgifDaTeTlI9VbFo8xX2LcWX9dgKtIbO0R/C3wS9nO0HWaIyCkwfkF39FYHhm2gelDe+T6z92lkNIx7+JCEtf7aHySOA8d76sCsA1QvQbV6WLpX260JHAr2AVVZMqQTm0cmtc5bewrdFBNmPcGoby2GK3TmSFE+c9saufuV4q/bjudCeQ4nMUVEzv4ngLXYLyEGEpj95i7pey7n4Z6R7rd2BDMTo\u003d"
     }
   },
   "targets": {
@@ -33,8 +30,8 @@
       "source": "config.rb.tpl.merge",
       "version": "33f446bd02c3fd24eb27891582eff6a2e789796b",
       "parameters": {
-        "extRelPath": "../../ext",
-        "pkgName": "GeoExt",
+        "extRelPath": "../../../ext",
+        "pkgName": "geoext",
         "pkgType": "code",
         "senchadir": ".sencha",
         "touchRelPath": "${touch.dir}"
@@ -44,74 +41,8 @@
       "source": "custom.js.merge",
       "version": "199e99bbd15c3c0415569425cb21e77c95e9042a",
       "parameters": {
-        "extRelPath": "../../ext",
-        "pkgName": "GeoExt",
-        "pkgType": "code",
-        "senchadir": ".sencha",
-        "touchRelPath": "${touch.dir}"
-      }
-    },
-    "sass/example/theme.html": {
-      "source": "theme.html.tpl.merge",
-      "version": "32f685a8af28baafcc7999862d0bd1f25df0e48b",
-      "parameters": {
-        "extRelPath": "../../ext",
-        "pkgName": "GeoExt",
-        "pkgType": "code",
-        "senchadir": ".sencha",
-        "touchRelPath": "${touch.dir}"
-      }
-    },
-    "sass/etc/all.scss": {
-      "source": "all.scss.merge",
-      "version": "da39a3ee5e6b4b0d3255bfef95601890afd80709",
-      "parameters": {
-        "extRelPath": "../../ext",
-        "pkgName": "GeoExt",
-        "pkgType": "code",
-        "senchadir": ".sencha",
-        "touchRelPath": "${touch.dir}"
-      }
-    },
-    ".sencha/package/sencha.cfg": {
-      "source": "sencha.cfg.tpl.merge",
-      "version": "6d1982cce48163a98dc46012d1d0cdfa209fbda6",
-      "parameters": {
-        "extRelPath": "../../ext",
-        "pkgName": "GeoExt",
-        "pkgType": "code",
-        "senchadir": ".sencha",
-        "touchRelPath": "${touch.dir}"
-      }
-    },
-    ".sencha/package/testing.properties": {
-      "source": "testing.properties.merge",
-      "version": "e65f969c42eb4f355c850fc58fea852582f20db8",
-      "parameters": {
-        "extRelPath": "../../ext",
-        "pkgName": "GeoExt",
-        "pkgType": "code",
-        "senchadir": ".sencha",
-        "touchRelPath": "${touch.dir}"
-      }
-    },
-    ".sencha/package/build.properties": {
-      "source": "build.properties.merge",
-      "version": "8b81315dbe73ce9c08478f4c1d2df84f456efcf5",
-      "parameters": {
-        "extRelPath": "../../ext",
-        "pkgName": "GeoExt",
-        "pkgType": "code",
-        "senchadir": ".sencha",
-        "touchRelPath": "${touch.dir}"
-      }
-    },
-    "package.json": {
-      "source": "package.json.tpl.merge",
-      "version": "9c7e7135be031f8d06045d338200cbf4a4222f88",
-      "parameters": {
-        "extRelPath": "../../ext",
-        "pkgName": "GeoExt",
+        "extRelPath": "../../../ext",
+        "pkgName": "geoext",
         "pkgType": "code",
         "senchadir": ".sencha",
         "touchRelPath": "${touch.dir}"
@@ -121,8 +52,63 @@
       "source": "fashion.html.tpl.merge",
       "version": "e27edf75982e4b8e1e05a4112718424540b46b10",
       "parameters": {
-        "extRelPath": "../../ext",
-        "pkgName": "GeoExt",
+        "extRelPath": "../../../ext",
+        "pkgName": "geoext",
+        "pkgType": "code",
+        "senchadir": ".sencha",
+        "touchRelPath": "${touch.dir}"
+      }
+    },
+    "sass/example/theme.html": {
+      "source": "theme.html.tpl.merge",
+      "version": "32f685a8af28baafcc7999862d0bd1f25df0e48b",
+      "parameters": {
+        "extRelPath": "../../../ext",
+        "pkgName": "geoext",
+        "pkgType": "code",
+        "senchadir": ".sencha",
+        "touchRelPath": "${touch.dir}"
+      }
+    },
+    "sass/etc/all.scss": {
+      "source": "all.scss.merge",
+      "version": "da39a3ee5e6b4b0d3255bfef95601890afd80709",
+      "parameters": {
+        "extRelPath": "../../../ext",
+        "pkgName": "geoext",
+        "pkgType": "code",
+        "senchadir": ".sencha",
+        "touchRelPath": "${touch.dir}"
+      }
+    },
+    ".sencha/package/sencha.cfg": {
+      "source": "sencha.cfg.tpl.merge",
+      "version": "6d1982cce48163a98dc46012d1d0cdfa209fbda6",
+      "parameters": {
+        "extRelPath": "../../../ext",
+        "pkgName": "geoext",
+        "pkgType": "code",
+        "senchadir": ".sencha",
+        "touchRelPath": "${touch.dir}"
+      }
+    },
+    ".sencha/package/testing.properties": {
+      "source": "testing.properties.merge",
+      "version": "e65f969c42eb4f355c850fc58fea852582f20db8",
+      "parameters": {
+        "extRelPath": "../../../ext",
+        "pkgName": "geoext",
+        "pkgType": "code",
+        "senchadir": ".sencha",
+        "touchRelPath": "${touch.dir}"
+      }
+    },
+    ".sencha/package/build.properties": {
+      "source": "build.properties.merge",
+      "version": "8b81315dbe73ce9c08478f4c1d2df84f456efcf5",
+      "parameters": {
+        "extRelPath": "../../../ext",
+        "pkgName": "geoext",
         "pkgType": "code",
         "senchadir": ".sencha",
         "touchRelPath": "${touch.dir}"
