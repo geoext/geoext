@@ -7,18 +7,56 @@ Ext.define('GeoExt.data.LayerModel', {
     extend: 'Ext.data.Model',
 
     fields: [
-        { name: 'opacity', type: 'int', convert: function(v, record){
-            return record.data.leaf ? record.data.getOpacity() : false;
-        } },
-        { name: 'visible', type: 'boolean', convert: function(v, record){
-            return record.data.leaf ? record.data.getVisible() : true;
-        } },
-        { name: 'minResolution', type: 'auto', convert: function(v, record){
-            return record.data.leaf ? record.data.getMinResolution() : false;
-        } },
-        { name: 'maxResolution', type: 'auto', convert: function(v, record){
-            return record.data.leaf ? record.data.getMaxResolution() : false;
-        } }
+        {
+            name: 'opacity',
+            type: 'number',
+            convert: function(v, record){
+                var layer = record.getLayer();
+                if (layer instanceof ol.layer.Base) {
+                    return layer.get('opacity');
+                } else {
+                    return undefined;
+                }
+            }
+        },
+        {
+            name: 'visible',
+            type: 'boolean',
+            convert: function(v, record){
+                var layer = record.getLayer();
+                if (layer instanceof ol.layer.Group) {
+                    return true;
+                } else if (layer instanceof ol.layer.Base) {
+                    return layer.get('visible');
+                } else {
+                    return undefined;
+                }
+            }
+        },
+        {
+            name: 'minResolution',
+            type: 'number',
+            convert: function(v, record){
+                var layer = record.getLayer();
+                if (layer instanceof ol.layer.Base) {
+                    return layer.get('minResolution');
+                } else {
+                    return undefined;
+                }
+            }
+        },
+        {
+            name: 'maxResolution',
+            type: 'number',
+            convert: function(v, record){
+                var layer = record.getLayer();
+                if (layer instanceof ol.layer.Base) {
+                    return layer.get('maxResolution');
+                } else {
+                    return undefined;
+                }
+            }
+        }
     ],
 
     proxy: {
