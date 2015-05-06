@@ -6,19 +6,10 @@
  */
 Ext.define('GeoExt.data.TreeStore', {
     extend: 'Ext.data.TreeStore',
-    requires: [
-       'GeoExt.data.LayerModel'
-    ],
-
-    /**
-     * @property
-     * @private
-     * @inheritdoc
-     */
-    model: 'GeoExt.data.LayerModel',
 
     config: {
-        layerStore: null
+        layerStore: null,
+        textProperty: 'name'
     },
 
     /**
@@ -83,7 +74,7 @@ Ext.define('GeoExt.data.TreeStore', {
                 }
             );
         } else {
-            layer.text = layer.getSource().getLayer();
+            layer.text = layer.get(me.getTextProperty());
             layer.leaf = true;
             var layerNode = node.appendChild(layer);
             layer.treeNode = layerNode;
