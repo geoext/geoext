@@ -12,17 +12,17 @@ describe('GeoExt.panel.Map', function() {
 
                 var mapPanel = Ext.create('GeoExt.panel.Map');
                 expect(mapPanel).to.be.an(GeoExt.panel.Map);
-            })
+            });
         });
     });
 
     describe('public functions',function(){
         var div,
-        mapPanel,
-        source,
-        layer,
-        map,
-        zoomslider;
+            mapPanel,
+            source,
+            layer,
+            olMap,
+            zoomslider;
 
         beforeEach(function(){
             div = document.createElement('div');
@@ -48,7 +48,7 @@ describe('GeoExt.panel.Map', function() {
                 height: 600,
                 map: olMap,
                 renderTo: 'mapDiv'
-            })
+            });
         });
 
         afterEach(function(){
@@ -77,7 +77,7 @@ describe('GeoExt.panel.Map', function() {
                 expect(layers).to.be.an(ol.Collection);
                 layers.forEach(function(layer){
                     expect(layer).to.be.an(ol.layer.Base);
-                })
+                });
             });
 
             it('mapPanel.getView() returns an ol.View instance', function(){
