@@ -5,6 +5,16 @@
     <title>GeoExt.panel.Map Example</title>
     <link rel="stylesheet" type="text/css" href="http://openlayers.org/en/v3.4.0/css/ol.css">
     <link rel="stylesheet" type="text/css" href="http://cdn.sencha.com/ext/gpl/5.1.0/packages/ext-theme-crisp/build/resources/ext-theme-crisp-all.css"/>
+    <style>
+.x-grid-rowbody {
+    padding: 0;
+}
+.legend {
+    margin: 3px 0 0 0;
+    border: 1px solid transparent;
+    border-radius: 6px;
+}
+    </style>
 </head>
 
 <body>
@@ -12,11 +22,13 @@
     <div id='description'>
         <p>
             This example shows how to use the <code>GeoExt.tree.Panel</code>
-            and <code>GeoExt.tree.Store</code> classes.
-        </p>
+            class and shows two methods how to include legends for every
+            treenode.
+        </p> 
         <p>
-            Have a look at <a href="panel.js">panel.js</a> to see how this is
-            done.
+            Have a look at 
+            <a href="tree-legend-simple.js">tree-legend-simple.js</a> to see how
+            this is done.
         </p>
     </div>
 
@@ -30,6 +42,7 @@
                 }
             });
     </script>
-    <script src="panel.js"></script>
+
+    <script src="tree-legend-simple.js"></script>
 </body>
 </html>
