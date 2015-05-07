@@ -130,40 +130,68 @@ Ext.define("GeoExt.component.OverviewMap", {
     /**
      * @private
      */
-    boxFeature: new ol.Feature(),
+    boxFeature: null,
 
     /**
      * @private
      */
-    anchorFeature: new ol.Feature(),
+    anchorFeature: null,
 
     /**
      * The ol.layer.Vector displaying the extent geometry of the parentMap.
      *
      * @private
      */
-    extentLayer: new ol.layer.Vector({
-        source: new ol.source.Vector()
-    }),
+    extentLayer: null,
+
+    /**
+     * Whether we already rendered an ol.Map in this component. Will be
+     * updated in #onResize, after the first rendering happened.
+     *
+     * @property {Boolean} mapRendered
+     * @private
+     */
+    mapRendered: false,
+
+    listeners: {
+        /*
+         * Logic in ViewController
+         */
+        resize: 'onResize'
+    },
+
+    constructor: function(){
+        this.initOverviewFeatures();
+        this.callParent(arguments);
+    },
 
     /**
      * TODO
      */
     initComponent: function() {
-        if (!this.getParentMap()){
+        var me = this;
+
+        if (!me.getParentMap()){
             Ext.Error.raise('No parentMap defined for overviewMap');
-        } else {
-            if (!(this.getParentMap() instanceof ol.Map)){
-                Ext.Error.raise('parentMap is not an instance of ol.Map');
-            } else {
-                this.initOverviewMap();
-            }
+        } else if (!(me.getParentMap() instanceof ol.Map)){
+            Ext.Error.raise('parentMap is not an instance of ol.Map');
         }
 
-        this.extentLayer.getSource().addFeatures([this.boxFeature,
-                                                  this.anchorFeature]);
+        me.initOverviewMap();
 
-        this.callParent();
+        me.callParent();
+    },
+
+    /**
+     * TODO
+     */
+    initOverviewFeatures: function(){
+        var me = this;
+        me.boxFeature = new ol.Feature();
+        me.anchorFeature = new ol.Feature();
+        me.extentLayer = new ol.layer.Vector({
+            source: new ol.source.Vector()
+        });
     },
 
     /**
@@ -187,7 +215,6 @@ Ext.define("GeoExt.component.OverviewMap", {
 
         if(!me.getMap()){
             var olMap = new ol.Map({
-                target: 'overviewDiv',
                 controls: new ol.Collection(),
                 interactions: new ol.Collection(),
                 view: new ol.View({
@@ -210,7 +237,7 @@ Ext.define("GeoExt.component.OverviewMap", {
             if (evt.key === 'center' || evt.key === 'resolution'){
                 this.setOverviewMapProperty(evt.key);
             }
-        }, this);
+        }, me);
 
         /*
          * Update the box after rendering a new frame of the parentMap.
@@ -222,11 +249,16 @@ Ext.define("GeoExt.component.OverviewMap", {
         /*
          * Initially set the center and resolution of the overviewMap.
          */
-        this.setOverviewMapProperty('center');
-        this.setOverviewMapProperty('resolution');
+        me.setOverviewMapProperty('center');
+        me.setOverviewMapProperty('resolution');
+
+        me.extentLayer.getSource().addFeatures([
+            me.boxFeature,
+            me.anchorFeature
+        ]);
     },
 
-    // TODO: This should be moved to the controller?!
+    // TODO: Should this be moved to the controller?!
     /**
      * Updates the Geometry of the extentLayer.
      */
@@ -245,14 +277,14 @@ Ext.define("GeoExt.component.OverviewMap", {
         me.anchorFeature.setGeometry(anchor);
     },
 
-    // TODO: This should be moved to the controller?!
+    // TODO: Should this be moved to the controller?!
     /**
      * Set an OverviewMap property (center or resolution).
      */
     setOverviewMapProperty: function(key){
         var me = this,
-        parentView = me.getParentMap().getView(),
-        overviewView = me.getMap().getView();
+            parentView = me.getParentMap().getView(),
+            overviewView = me.getMap().getView();
 
         if(key === 'center'){
             overviewView.set('center', parentView.getCenter());
