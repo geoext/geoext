@@ -1,10 +1,8 @@
 language: node_js
 node_js: "0.12"
-# installs dependencies for testing
 install: npm install
-# command to run tests
 script:
-  - ./node_modules/eslint/bin/eslint.js src/
+  - npm run lint-js
   - npm test
 after_success: npm run ci-coverage
 branches:

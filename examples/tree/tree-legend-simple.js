@@ -6,7 +6,7 @@ Ext.require([
 
 /**
  * A plugin for Ext.grid.column.Column s that overwrites the internal cellTpl to
- * support legends. 
+ * support legends.
  */
 Ext.define('BasicTreeColumnLegends', {
     extend: 'Ext.AbstractPlugin',
@@ -104,7 +104,7 @@ Ext.application({
             source: source3,
             name: 'MapQuest Hybrid'
         });
-        
+
         layer4 = new ol.layer.Vector({
             source: new ol.source.Vector(),
             name: 'Vector '
@@ -163,7 +163,7 @@ Ext.application({
 
         treePanel2 = Ext.create('GeoExt.tree.Panel', {
             title: 'treePanel',
-            store: treeStore,
+            store: treeStore2,
             rootVisible: false,
             border: false,
             flex: 1,
@@ -177,7 +177,7 @@ Ext.application({
                         isChecked = rec.get('checked'),
                         layer = rec.data,
                         hasLegend = isChecked && !(layer instanceof ol.layer.Group),
-                        legendUrl = hasLegend && layer.get('legendUrl');
+                        legendUrl = hasLegend && layer.get('legendUrl'),
                         legHtml = "";
 
                     if (!legendUrl) {
@@ -205,7 +205,7 @@ Ext.application({
 
         Ext.create('Ext.Viewport', {
             layout: "border",
-            items:[
+            items: [
                 mapPanel,
                 {
                     xtype: 'panel',
