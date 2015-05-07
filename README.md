@@ -84,3 +84,29 @@ that you can do:
 sencha package repo add GeoExt http://geoext.github.io/geoext3/repo
 ```
 
+## Examples
+
+* [Basic map panel](http://rawgit.com/KaiVolland/geoext3/master/examples/panel/map.html)
+* [Overview component](http://rawgit.com/KaiVolland/geoext3/master/examples/component/overviewMap.html)
+* [Basic TreePanel](http://rawgit.com/KaiVolland/geoext3/master/examples/tree/panel.html)
+* [Legends in Treepanels](http://rawgit.com/KaiVolland/geoext3/master/examples/tree/tree-legend-simple.html)
+
+## Tests
+
+In a clone of `geoext3` install dependencies (only once) …
+
+```shell
+$ npm install
+```
+
+… then …
+
+```shell
+$ npm test
+```
+
+In a browser (where `http://localhost/geoext3` points to the root of this
+repository) you can visit
+
+http://localhost/geoext3/test/
+
