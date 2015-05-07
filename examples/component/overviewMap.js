@@ -96,7 +96,7 @@ Ext.application({
 
         Ext.create('Ext.Viewport', {
             layout: "border",
-            items:[
+            items: [
                 mapPanel,
                 {
                     xtype: 'panel',
