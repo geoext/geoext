@@ -9,18 +9,26 @@
 
 <body>
 
-    <div id='mapDiv' style="float:left;"></div>
-    <div id='gridDiv' style="float:right;"></div>
+    <div id='description'>
+        <p>
+            This example shows how to use the <code>GeoExt.panel.Map</code>
+            class.
+        </p>
+        <p>
+            Have a look at <a href="map.js">panel.js</a> to see how this is
+            done.
+        </p>
+    </div>
 
     <script src="http://openlayers.org/en/master/build/ol-debug.js"></script>
     <script src="http://cdn.sencha.com/ext/gpl/5.1.0/build/ext-all-debug.js"></script>
     <script>
-            Ext.Loader.setConfig({
-                enabled: true,
-                paths: {
-                    'GeoExt': '../../src/'
-                }
-            });
+        Ext.Loader.setConfig({
+            enabled: true,
+            paths: {
+                'GeoExt': '../../src/'
+            }
+        });
     </script>
 
     <script src="map.js"></script>

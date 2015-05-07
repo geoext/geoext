@@ -2,49 +2,55 @@ Ext.require([
     'GeoExt.panel.Map'
 ]);
 
-Ext.onReady(function(){
-    var source,
-        layer,
-        map,
-        zoomslider;
+var olMap,
+    mapPanel;
 
-    source = new ol.source.MapQuest({layer: 'sat'});
-    layer = new ol.layer.Tile({
-      source: source
-    });
+Ext.application({
+    name: 'MapPanel',
+    launch: function(){
+        var description;
 
-    source2 = new ol.source.MapQuest({layer: 'osm'});
-    layer2 = new ol.layer.Tile({
-      source: source2
-    });
+        olMap = new ol.Map({
+            layers: [
+                new ol.layer.Tile({
+                    source: new ol.source.Stamen({
+                        layer: 'watercolor'
+                    })
+                }),
+                new ol.layer.Tile({
+                    source: new ol.source.Stamen({
+                        layer: 'terrain-labels'
+                    })
+                })
+            ],
+            view: new ol.View({
+                center: ol.proj.fromLonLat( [-122.416667, 37.783333] ),
+                zoom: 12
+            })
+        });
 
-    olMap = new ol.Map({
-        layers: [layer],
-        view: new ol.View({
-          center: [0, 0],
-          zoom: 2
-        })
-    });
+        mapPanel = Ext.create('GeoExt.panel.Map', {
+            title: 'GeoExt.panel.Map Example',
+            map: olMap,
+            region: 'center'
+        });
 
-    mapPanel = Ext.create('GeoExt.panel.Map', {
-        title: 'GeoExt.panel.Map Example',
-        width: 800,
-        height: 600,
-        map: olMap,
-        renderTo: 'mapDiv'
-    });
+        description = Ext.create('Ext.panel.Panel', {
+            contentEl: 'description',
+            title: 'Description',
+            region: 'east',
+            width: 300,
+            border: false,
+            bodyPadding: 5
+        });
 
-    gridPanel = Ext.create('Ext.grid.Panel', {
-        title: 'gridPanel',
-        columns:[
-            {text: 'Opacity', dataIndex:'opacity', flex: 1},
-            {text: 'Visible', dataIndex: 'visible', flex: 1},
-            {text: 'minResolution', dataIndex: 'minResolution', flex: 1},
-            {text: 'maxResolution', dataIndex: 'maxResolution', flex: 1}
-        ],
-        width: 800,
-        height: 600,
-        store: mapPanel.getStore(),
-        renderTo: 'gridDiv'
-    });
+        Ext.create('Ext.Viewport', {
+            layout: "border",
+            items:[
+                mapPanel,
+                description
+            ]
+        });
+
+    }
 });
