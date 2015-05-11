@@ -63,7 +63,7 @@ Ext.define("GeoExt.component.OverviewMap", {
          * An ol.Collection of ol.layers.Base. If not defined on construction, the
          * layers of the parentMap will be used.
          */
-        layers: [], //new ol.Collection(),
+        layers: [],
 
         /**
          * The magnification is the relationship in which the resolution of the
