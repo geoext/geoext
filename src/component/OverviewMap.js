@@ -214,13 +214,15 @@ Ext.define("GeoExt.component.OverviewMap", {
         me.getLayers().push(me.extentLayer);
 
         if(!me.getMap()){
+            var parentView = parentMap.getView();
             var olMap = new ol.Map({
                 controls: new ol.Collection(),
                 interactions: new ol.Collection(),
                 view: new ol.View({
-                    center: parentMap.getView().getCenter(),
-                    zoom: parentMap.getView().getZoom()
-                  })
+                    center: parentView.getCenter(),
+                    zoom: parentView.getZoom(),
+                    projection: parentView.getProjection()
+                })
             });
             me.setMap(olMap);
         }
