@@ -1,0 +1,11 @@
+language: node_js
+node_js: "0.12"
+install: npm install
+script:
+  - npm run lint-js
+  - npm test
+after_success: npm run ci-coverage
+branches:
+  only:
+    - master
+
