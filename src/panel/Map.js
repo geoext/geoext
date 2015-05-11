@@ -26,13 +26,9 @@ Ext.define("GeoExt.panel.Map", {
     requires: [
         'GeoExt.data.LayerStore',
         'GeoExt.panel.MapController'
-//        'GeoExt.panel.MapModel'
     ],
 
     controller: "panel-map",
-//    viewModel: {
-//        type: "panel-map"
-//    },
 
     /**
      * @cfg
