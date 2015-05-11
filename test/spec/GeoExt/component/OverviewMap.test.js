@@ -24,7 +24,7 @@ describe('GeoExt.component.OverviewMap', function() {
                 expect(function(){
                     Ext.create('GeoExt.component.OverviewMap');
                 }).to.throwException();
-            })
+            });
 
             it('cannot be constructed when the parentMap is not an ol.Map', function(){
                 expect(function(){
@@ -43,52 +43,207 @@ describe('GeoExt.component.OverviewMap', function() {
                     target: div
                 });
 
-                var overviewmapPanel = Ext.create('GeoExt.component.OverviewMap',{
+                var overviewMap = Ext.create('GeoExt.component.OverviewMap',{
                     parentMap: olMap
                 });
-                expect(overviewmapPanel).to.be.an(GeoExt.component.OverviewMap);
+                expect(overviewMap).to.be.an(GeoExt.component.OverviewMap);
             });
         });
     });
-    
+
     describe('layers of the overview', function(){
         it('takes the layers of the parentMap if no dedictated layers given', function(){
-//            var layer1 = new ol.layer.Tile({title:'moehri'});
-//            var layer2 = new ol.layer.Tile({title:'zwiebli'});
-//            
-//            olMap = new ol.Map({
-//                view: new ol.View({
-//                    center: [0, 0],
-//                    zoom: 2
-//                }),
-//                layers: [layer1, layer2],
-//                target: div
-//            });
-//
-//            var overviewmapPanel = Ext.create('GeoExt.component.OverviewMap',{
-//                parentMap: olMap
-//            });
-//            
-//            ovLayers = overviewmapPanel.getLayers().getArray();
-//            expect(ovLayers).to.have.length(olMap.getLayers().getLength());
-//            
-//            debugger;
-//            
-//            expect(ovLayers[0]).to.be(layer1);
-//            expect(ovLayers[1]).to.be(layer2);
+            var layer1 = new ol.layer.Tile({title:'moehri'});
+            var layer2 = new ol.layer.Tile({title:'zwiebli'});
+
+            var olMap = new ol.Map({
+                view: new ol.View({
+                    center: [0, 0],
+                    zoom: 2
+                }),
+                layers: [layer1, layer2],
+                target: div
+            });
+
+            var overviewMap = Ext.create('GeoExt.component.OverviewMap',{
+                parentMap: olMap
+            });
+
+            var ovLayers = overviewMap.getLayers();
+            expect(ovLayers).to.have.length(3); // two layers plus extentlayer
+            expect(ovLayers[0]).to.be(layer1);
+            expect(ovLayers[1]).to.be(layer2);
         });
-        
-        
+
+
         it('can be configured with dedicated layers', function(){
-            
+            var layer1 = new ol.layer.Tile({title:'moehri'});
+            var layer2 = new ol.layer.Tile({title:'zwiebli'});
+
+            var olMap = new ol.Map({
+                view: new ol.View({
+                    center: [0, 0],
+                    zoom: 2
+                }),
+                layers: [layer1],
+                target: div
+            });
+
+            var overviewMap = Ext.create('GeoExt.component.OverviewMap',{
+                parentMap: olMap,
+                layers: [layer2]
+            });
+
+            var ovLayers = overviewMap.getLayers();
+            expect(ovLayers).to.have.length(2); // one layers plus extentlayer
+            expect(ovLayers[0]).to.be(layer2);
         });
         it('does not throw if no layers can be found', function(){
-            
+            var olMap = new ol.Map({
+                view: new ol.View({
+                    center: [0, 0],
+                    zoom: 2
+                }),
+                target: div
+            });
+
+            var overviewMap;
+            expect(function(){
+                overviewMap = Ext.create('GeoExt.component.OverviewMap',{
+                    parentMap: olMap
+                });
+            }).to.not.throwException();
+
+            var ovLayers = overviewMap.getLayers();
+            expect(ovLayers).to.have.length(1); // only extentlayer
+        });
+    });
+
+    describe('view properties in sync', function() {
+        var olMap;
+        var overviewMap;
+
+        beforeEach(function() {
+            olMap = new ol.Map({
+                view: new ol.View({
+                    center: [0, 0],
+                    zoom: 2
+                }),
+                layers: [new ol.layer.Tile({title:'moehri'})],
+                target: div
+            });
+            overviewMap = Ext.create('GeoExt.component.OverviewMap',{
+                parentMap: olMap
+            });
+        });
+
+        afterEach(function() {
+            overviewMap.destroy();
+            olMap = null;
+            overviewMap = null;
+        });
+
+        it('syncs the center of the map and overview', function() {
+            // in sync at before anything
+            var mapCenter = olMap.getView().getCenter();
+            var ovCenter = overviewMap.getMap().getView().getCenter();
+            expect(mapCenter).to.eql(ovCenter);
+
+            // change the mapCenter
+            olMap.getView().setCenter([0.8, 15]);
+
+            // still in sync?
+            mapCenter = olMap.getView().getCenter();
+            ovCenter = overviewMap.getMap().getView().getCenter();
+            expect(mapCenter).to.eql(ovCenter);
+        });
+
+        it('syncs the resolution of the map and overview', function() {
+
+            // in sync at before anything
+            var mapResolution = olMap.getView().getResolution();
+            var ovResolution = overviewMap.getMap().getView().getResolution();
+
+            expect(mapResolution).to.eql(ovResolution / overviewMap.getMagnification());
+
+            // change the map resolution
+            olMap.getView().setResolution(0.815);
+
+            // still in sync?
+            mapCenter = olMap.getView().getCenter();
+            ovCenter = overviewMap.getMap().getView().getCenter();
+            expect(mapResolution).to.eql(ovResolution / overviewMap.getMagnification());
+        });
+    });
+
+    describe('extent layer features can be styled', function() {
+        var olMap;
+        var overviewMap;
+
+        beforeEach(function() {
+            olMap = new ol.Map({
+                view: new ol.View({
+                    center: [0, 0],
+                    zoom: 2
+                }),
+                layers: [new ol.layer.Tile({title:'moehri'})],
+                target: div
+            });
+            overviewMap = Ext.create('GeoExt.component.OverviewMap',{
+                parentMap: olMap
+            });
+        });
+
+        afterEach(function() {
+            overviewMap.destroy();
+            olMap = null;
+            overviewMap = null;
+        });
+
+        it('has no default style', function(){
+            var anchorFeature = overviewMap.anchorFeature;
+            var boxFeature = overviewMap.boxFeature;
+
+            expect(anchorFeature.getStyle()).to.be(null);
+            expect(boxFeature.getStyle()).to.be(null);
+
+        });
+
+        it('can be configured with styles for box and anchor', function(){
+            var style1 = new ol.style.Style();
+            var style2 = new ol.style.Style();
+
+            // rebuild the overviewMap:
+            overviewMap = Ext.create('GeoExt.component.OverviewMap',{
+                parentMap: olMap,
+                anchorStyle: style1,
+                boxStyle: style2
+            });
+
+            var anchorFeature = overviewMap.anchorFeature;
+            var boxFeature = overviewMap.boxFeature;
+
+            expect(anchorFeature.getStyle()).to.be(style1);
+            expect(boxFeature.getStyle()).to.be(style2);
+        });
+
+        it('changes the style via setters', function(){
+            var style1 = new ol.style.Style();
+            var style2 = new ol.style.Style();
+
+            var anchorFeature = overviewMap.anchorFeature;
+            var boxFeature = overviewMap.boxFeature;
+
+            overviewMap.setAnchorStyle(style1);
+            overviewMap.setBoxStyle(style2);
+
+            expect(anchorFeature.getStyle()).to.be(style1);
+            expect(boxFeature.getStyle()).to.be(style2);
+
         });
     });
 
     describe('static functions',function(){
-
 
         describe('#rotateCoordsAroundCoords', function(){
             var center;
