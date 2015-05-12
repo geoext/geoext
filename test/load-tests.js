@@ -6,7 +6,8 @@
             'GeoExt/panel/Map.test.js',
             'GeoExt/component/OverviewMap.test.js',
             'GeoExt/data/LayerModel.test.js',
-            'GeoExt/data/LayerStore.test.js'
+            'GeoExt/data/LayerStore.test.js',
+            'GeoExt/data/MapfishPrintProvider.test.js'
         ],
         getScriptTag = global.TestUtil.getExternalScriptTag,
         dependencyCnt = dependencies.length,
