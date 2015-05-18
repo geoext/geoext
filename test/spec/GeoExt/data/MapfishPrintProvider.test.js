@@ -157,5 +157,21 @@ describe('GeoExt.data.MapfishPrintProvider', function() {
                 expect(formats[0]).to.be('bmp');
             });
         });
+
+        describe('attributes', function() {
+            it('creates a store for attributes', function() {
+                var layoutStore = provider.getLayouts();
+                var firstLayout = layoutStore.getAt(0);
+                var attributesStore = firstLayout.attributes();
+                var firstAttributes = attributesStore.getAt(0);
+                expect(attributesStore).to.be.an(Ext.data.Store);
+                expect(attributesStore.getCount()).to.be(1);
+                expect(firstAttributes).to.be.a(
+                    GeoExt.data.model.PrintLayoutAttributes
+                );
+                expect(firstAttributes.get('name')).to.be('map');
+                expect(firstAttributes.get('type')).to.be('MapAttributeValues');
+            });
+        });
     });
 });

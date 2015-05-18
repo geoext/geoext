@@ -9,7 +9,7 @@ Ext.define('GeoExt.data.MapfishPrintProvider', {
     config: {
         capabilities: null
     },
-    
+
     capabilityRec: null,
 
     constructor: function(cfg){
@@ -26,7 +26,7 @@ Ext.define('GeoExt.data.MapfishPrintProvider', {
             model: GeoExt.data.model.PrintCapability
         });
         store.loadRawData(this.getCapabilities());
-        
+
         this.capabilityRec = store.getAt(0);
     },
 
