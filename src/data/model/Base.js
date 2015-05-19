@@ -3,4 +3,4 @@ Ext.define('GeoExt.data.model.Base', {
     schema: {
         namespace: 'GeoExt.data.model'
     }
-})
+});
