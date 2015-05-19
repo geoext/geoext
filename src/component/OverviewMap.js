@@ -84,7 +84,25 @@ Ext.define("GeoExt.component.OverviewMap", {
          * This should be the map the overviewMap is bind to.
          * @cfg {ol.Map} map
          */
-        parentMap: null
+        parentMap: null,
+
+        /**
+         * Shall a click on the overview map recenter the parent map?
+         *
+         * @cfg {boolean} recenterOnClick Whether we shall recenter the parent
+         *     map on a click on the overview map or not.
+         */
+        recenterOnClick: true,
+
+        /**
+         * Duration time in milliseconds of the panning animation when we
+         * recenter the map after a click on the overview. Only has effect
+         * if #recenterOnClick is true.
+         *
+         * @cfg {number} recenterDuration Amount of milliseconds for panning
+         *     the parent map to the clicked location.
+         */
+        recenterDuration: 500
     },
 
     statics: {
@@ -179,6 +197,8 @@ Ext.define("GeoExt.component.OverviewMap", {
 
         me.initOverviewMap();
 
+        me.on('beforedestroy', me.onBeforeDestroy, me);
+
         me.callParent();
     },
 
@@ -235,18 +255,12 @@ Ext.define("GeoExt.component.OverviewMap", {
          * Set the OverviewMaps center or resolution, on property changed
          * in parentMap.
          */
-        parentMap.getView().on('propertychange', function(evt){
-            if (evt.key === 'center' || evt.key === 'resolution'){
-                this.setOverviewMapProperty(evt.key);
-            }
-        }, me);
+        parentMap.getView().on('propertychange', me.onParentViewPropChange, me);
 
         /*
          * Update the box after rendering a new frame of the parentMap.
          */
-        parentMap.on('postrender', function(){
-            me.updateBox();
-        });
+        parentMap.on('postrender', me.updateBox, me);
 
         /*
          * Initially set the center and resolution of the overviewMap.
@@ -258,6 +272,36 @@ Ext.define("GeoExt.component.OverviewMap", {
             me.boxFeature,
             me.anchorFeature
         ]);
+    },
+
+    /**
+     * Called when a property of the parent maps view changes.
+     *
+     * @private
+     */
+    onParentViewPropChange: function(evt){
+        if (evt.key === 'center' || evt.key === 'resolution'){
+            this.setOverviewMapProperty(evt.key);
+        }
+    },
+
+    /**
+     * Handler for the click event of the overview map. Recenters the parent
+     * map to the clicked location.
+     *
+     * @private
+     */
+    overviewMapClicked: function(evt){
+        var me = this;
+        var parentMap = me.getParentMap();
+        var parentView = parentMap.getView();
+        var currentMapCenter = parentView.getCenter();
+        var panAnimation = ol.animation.pan({
+            duration: me.getRecenterDuration(),
+            source: currentMapCenter
+        });
+        parentMap.beforeRender(panAnimation);
+        parentView.setCenter(evt.coordinate);
     },
 
     // TODO: Should this be moved to the controller?!
@@ -294,6 +338,48 @@ Ext.define("GeoExt.component.OverviewMap", {
         if(key === 'resolution'){
             overviewView.set('resolution',
                    me.getMagnification() * parentView.getResolution());
+        }
+    },
+
+    /**
+     * The applier for recenterOnClick method. Takes care of initially
+     * registering an appropriate eventhandler and also unregistering if the
+     * property changes.
+     */
+    applyRecenterOnClick: function(shallRecenter){
+        var me = this,
+            map = me.getMap();
+        if (!map) {
+            // TODO or shall we have our own event, once we have a map?
+            me.addListener('afterrender', function() {
+                // set the property again, and re-trigger the 'apply…'-sequence
+                me.setRecenterOnClick(shallRecenter);
+            }, me, {single: true});
+            return;
+        }
+        if (shallRecenter) {
+            map.on('click', me.overviewMapClicked, me);
+        } else {
+            map.un('click', me.overviewMapClicked, me);
+        }
+    },
+
+    /**
+     * Cleanup any listeners we may have bound.
+     */
+    onBeforeDestroy: function(){
+        var me = this,
+            map = me.getMap(),
+            parentMap = me.getParentMap(),
+            parentView = parentMap && parentMap.getView();
+        if (map) {
+            // unbind recenter listener, if any
+            map.un('click', me.overviewMapClicked, me);
+        }
+        if (parentMap) {
+            // unbind parent listeners
+            parentMap.un('postrender', me.updateBox, me);
+            parentView.un('propertychange', me.onParentViewPropChange, me);
         }
     },
 

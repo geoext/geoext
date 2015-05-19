@@ -305,7 +305,7 @@ describe('GeoExt.component.OverviewMap', function() {
 
                 center = [-7, 8];
                 rotation = Math.PI/6;
-            })
+            });
 
             it('only rotates points and polygons, other types returned unchanged', function(){
 
@@ -349,6 +349,6 @@ describe('GeoExt.component.OverviewMap', function() {
                 expect(polygon.getCoordinates()).to.eql(expectedPoly);
             });
         });
-    })
+    });
 
 });
