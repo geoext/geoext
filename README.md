@@ -90,6 +90,7 @@ sencha package repo add GeoExt http://geoext.github.io/geoext3/repo
 * [Overview component](http://rawgit.com/KaiVolland/geoext3/master/examples/component/overviewMap.html)
 * [Basic TreePanel](http://rawgit.com/KaiVolland/geoext3/master/examples/tree/panel.html)
 * [Legends in Treepanels](http://rawgit.com/KaiVolland/geoext3/master/examples/tree/tree-legend-simple.html)
+* [Basic print with Mapfish v3](http://rawgit.com/KaiVolland/geoext3/master/examples/print/basic-mapfish.html)
 
 ## Tests
 
