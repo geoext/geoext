@@ -41,7 +41,7 @@ Ext.define('GeoExt.data.MapfishPrintProvider', {
         },
 
         /**
-         * Re-renders the extent of the printout. Will ensure that the extent is
+         * Renders the extent of the printout. Will ensure that the extent is
          * always visible and that the ratio matches the ratio that clientInfo
          * contains
          */
@@ -56,8 +56,8 @@ Ext.define('GeoExt.data.MapfishPrintProvider', {
             ]);
             var geom = ol.geom.Polygon.fromExtent(geomExtent);
             var feat = new ol.Feature(geom);
-            vectorSource.clear();
             vectorSource.addFeature(feat);
+            return feat;
         }
     },
 
