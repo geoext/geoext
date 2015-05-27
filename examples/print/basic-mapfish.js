@@ -63,9 +63,11 @@ Ext.application({
             var layout = capabilities.layouts().getAt(0);
             var attr = layout.attributes().getAt(0);
             var clientInfo = attr.get('clientInfo');
-            GeoExt.data.MapfishPrintProvider.renderPrintExtent(mapPanel, extentLayer, clientInfo);
+            var render = GeoExt.data.MapfishPrintProvider.renderPrintExtent;
+            render(mapPanel, extentLayer, clientInfo);
             mapPanel.getView().on('propertychange', function(){
-                GeoExt.data.MapfishPrintProvider.renderPrintExtent(extentLayer, clientInfo);
+                extentLayer.getSource().clear();
+                render(mapPanel, extentLayer, clientInfo);
             });
             description.add({
                 xtype: 'button',
