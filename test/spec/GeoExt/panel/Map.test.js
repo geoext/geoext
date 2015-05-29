@@ -26,7 +26,6 @@ describe('GeoExt.panel.Map', function() {
 
         beforeEach(function(){
             div = document.createElement('div');
-            div.setAttribute("id", "mapDiv");
             document.body.appendChild(div);
 
             source = new ol.source.MapQuest({layer: 'sat'});
@@ -47,7 +46,7 @@ describe('GeoExt.panel.Map', function() {
                 width: 800,
                 height: 600,
                 map: olMap,
-                renderTo: 'mapDiv'
+                renderTo: div
             });
         });
 
