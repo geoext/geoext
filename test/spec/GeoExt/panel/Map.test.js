@@ -9,7 +9,6 @@ describe('GeoExt.panel.Map', function() {
 
         describe('constructor', function(){
             it('can be constructed without arguments via Ext.create()', function(){
-
                 var mapPanel = Ext.create('GeoExt.panel.Map');
                 expect(mapPanel).to.be.an(GeoExt.panel.Map);
             });
@@ -26,6 +25,11 @@ describe('GeoExt.panel.Map', function() {
 
         beforeEach(function(){
             div = document.createElement('div');
+            div.style.position = "absolute";
+            div.style.top = "0";
+            div.style.left = "-1000px";
+            div.style.width = "512px";
+            div.style.height = "256px";
             document.body.appendChild(div);
 
             source = new ol.source.MapQuest({layer: 'sat'});
