@@ -53,6 +53,7 @@ describe('GeoExt.panel.Map', function() {
 
         afterEach(function(){
             mapPanel.destroy();
+            document.body.removeChild(div);
         });
         describe('getters and setters', function(){
 
