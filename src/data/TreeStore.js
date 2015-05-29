@@ -7,6 +7,10 @@
 Ext.define('GeoExt.data.TreeStore', {
     extend: 'Ext.data.TreeStore',
 
+    requires: [
+        'GeoExt.data.LayerStore'
+    ],
+
     config: {
         layerStore: null,
         textProperty: 'name'
@@ -30,7 +34,7 @@ Ext.define('GeoExt.data.TreeStore', {
             me.setLayerStore(config.layerStore);
         }
 
-        me.callParent(config);
+        me.callParent([config]);
     },
 
     listeners: {
@@ -67,12 +71,10 @@ Ext.define('GeoExt.data.TreeStore', {
             var folderNode = node.appendChild(layer);
             layer.text = 'ol.layer.Group';
             layer.treeNode = folderNode;
-            Ext.each(layer.getLayersArray(),
-                function(childLayer){
-                    childLayer.visible = layer.visible;
-                    me.addLayerNode(folderNode, childLayer);
-                }
-            );
+            layer.getLayers().forEach(function(childLayer){
+                childLayer.visible = layer.visible;
+                me.addLayerNode(folderNode, childLayer);
+            });
         } else {
             layer.text = layer.get(me.getTextProperty());
             layer.leaf = true;
