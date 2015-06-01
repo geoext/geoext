@@ -15,13 +15,12 @@ describe('GeoExt.panel.Map', function() {
         });
     });
 
-    describe('public functions',function(){
+    describe('public functions', function() {
         var div,
             mapPanel,
             source,
             layer,
-            olMap,
-            zoomslider;
+            olMap;
 
         beforeEach(function(){
             div = document.createElement('div');
@@ -79,8 +78,8 @@ describe('GeoExt.panel.Map', function() {
             it('mapPanel.getLayers() returns an ol.Collection containing instances of ol.layers.Base', function(){
                 var layers = mapPanel.getLayers();
                 expect(layers).to.be.an(ol.Collection);
-                layers.forEach(function(layer){
-                    expect(layer).to.be.an(ol.layer.Base);
+                layers.forEach(function(l){
+                    expect(l).to.be.an(ol.layer.Base);
                 });
             });
 
@@ -104,7 +103,7 @@ describe('GeoExt.panel.Map', function() {
 
             it('mapPanel.setView() sets the correct ol.View to the ol.Map', function(){
                 var view = new ol.View({
-                    center: [08, 15],
+                    center: [0.8, 15],
                     zoom: 4
                 });
                 mapPanel.setView(view);

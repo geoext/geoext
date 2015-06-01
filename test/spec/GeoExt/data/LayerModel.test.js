@@ -120,7 +120,7 @@ describe('GeoExt.data.LayerModel', function() {
                 opacity: 0.123,
                 visible: false,
                 minResolution: 12,
-                maxResolution: 99,
+                maxResolution: 99
             });
             instance = Ext.create('GeoExt.data.LayerModel', layer);
         });

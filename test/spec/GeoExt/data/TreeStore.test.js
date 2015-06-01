@@ -29,8 +29,8 @@ describe('GeoExt.data.TreeStore', function() {
                 })
             });
         });
-        
-        afterEach(function(){    
+
+        afterEach(function(){
             document.body.removeChild(div);
         });
 
@@ -42,6 +42,7 @@ describe('GeoExt.data.TreeStore', function() {
                 layerStore: layerStore
             });
             expect(treeStore).to.be.a(GeoExt.data.TreeStore);
-        })
+        });
+
     });
 });

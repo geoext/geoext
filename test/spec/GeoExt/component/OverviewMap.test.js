@@ -35,7 +35,7 @@ describe('GeoExt.component.OverviewMap', function() {
             });
 
             it('can be constructed with a parentMap', function(){
-                olMap = new ol.Map({
+                var olMap = new ol.Map({
                     view: new ol.View({
                         center: [0, 0],
                         zoom: 2
@@ -43,7 +43,7 @@ describe('GeoExt.component.OverviewMap', function() {
                     target: div
                 });
 
-                var overviewMap = Ext.create('GeoExt.component.OverviewMap',{
+                var overviewMap = Ext.create('GeoExt.component.OverviewMap', {
                     parentMap: olMap
                 });
                 expect(overviewMap).to.be.an(GeoExt.component.OverviewMap);
@@ -53,8 +53,8 @@ describe('GeoExt.component.OverviewMap', function() {
 
     describe('layers of the overview', function(){
         it('takes the layers of the parentMap if no dedictated layers given', function(){
-            var layer1 = new ol.layer.Tile({title:'moehri'});
-            var layer2 = new ol.layer.Tile({title:'zwiebli'});
+            var layer1 = new ol.layer.Tile({ title: 'moehri' });
+            var layer2 = new ol.layer.Tile({ title: 'zwiebli' });
 
             var olMap = new ol.Map({
                 view: new ol.View({
@@ -65,7 +65,7 @@ describe('GeoExt.component.OverviewMap', function() {
                 target: div
             });
 
-            var overviewMap = Ext.create('GeoExt.component.OverviewMap',{
+            var overviewMap = Ext.create('GeoExt.component.OverviewMap', {
                 parentMap: olMap
             });
 
@@ -77,8 +77,8 @@ describe('GeoExt.component.OverviewMap', function() {
 
 
         it('can be configured with dedicated layers', function(){
-            var layer1 = new ol.layer.Tile({title:'moehri'});
-            var layer2 = new ol.layer.Tile({title:'zwiebli'});
+            var layer1 = new ol.layer.Tile({ title: 'moehri' });
+            var layer2 = new ol.layer.Tile({ title: 'zwiebli' });
 
             var olMap = new ol.Map({
                 view: new ol.View({
@@ -89,7 +89,7 @@ describe('GeoExt.component.OverviewMap', function() {
                 target: div
             });
 
-            var overviewMap = Ext.create('GeoExt.component.OverviewMap',{
+            var overviewMap = Ext.create('GeoExt.component.OverviewMap', {
                 parentMap: olMap,
                 layers: [layer2]
             });
@@ -109,7 +109,7 @@ describe('GeoExt.component.OverviewMap', function() {
 
             var overviewMap;
             expect(function(){
-                overviewMap = Ext.create('GeoExt.component.OverviewMap',{
+                overviewMap = Ext.create('GeoExt.component.OverviewMap', {
                     parentMap: olMap
                 });
             }).to.not.throwException();
@@ -129,10 +129,10 @@ describe('GeoExt.component.OverviewMap', function() {
                     center: [0, 0],
                     zoom: 2
                 }),
-                layers: [new ol.layer.Tile({title:'moehri'})],
+                layers: [new ol.layer.Tile({ title: 'moehri' })],
                 target: div
             });
-            overviewMap = Ext.create('GeoExt.component.OverviewMap',{
+            overviewMap = Ext.create('GeoExt.component.OverviewMap', {
                 parentMap: olMap
             });
         });
@@ -170,8 +170,6 @@ describe('GeoExt.component.OverviewMap', function() {
             olMap.getView().setResolution(0.815);
 
             // still in sync?
-            mapCenter = olMap.getView().getCenter();
-            ovCenter = overviewMap.getMap().getView().getCenter();
             expect(mapResolution).to.eql(ovResolution / overviewMap.getMagnification());
         });
     });
@@ -186,10 +184,10 @@ describe('GeoExt.component.OverviewMap', function() {
                     center: [0, 0],
                     zoom: 2
                 }),
-                layers: [new ol.layer.Tile({title:'moehri'})],
+                layers: [new ol.layer.Tile({ title: 'moehri' })],
                 target: div
             });
-            overviewMap = Ext.create('GeoExt.component.OverviewMap',{
+            overviewMap = Ext.create('GeoExt.component.OverviewMap', {
                 parentMap: olMap
             });
         });
@@ -214,7 +212,7 @@ describe('GeoExt.component.OverviewMap', function() {
             var style2 = new ol.style.Style();
 
             // rebuild the overviewMap:
-            overviewMap = Ext.create('GeoExt.component.OverviewMap',{
+            overviewMap = Ext.create('GeoExt.component.OverviewMap', {
                 parentMap: olMap,
                 anchorStyle: style1,
                 boxStyle: style2
@@ -243,9 +241,9 @@ describe('GeoExt.component.OverviewMap', function() {
         });
     });
 
-    describe('static functions',function(){
+    describe('static functions', function() {
 
-        describe('#rotateCoordsAroundCoords', function(){
+        describe('#rotateCoordsAroundCoords', function() {
             var center;
             var coords;
             var expected;
@@ -261,7 +259,7 @@ describe('GeoExt.component.OverviewMap', function() {
                 center2 = [-1104754.8263107014, 2093211.9255832366];
                 coords2 = [-16719922.460632788, 13090360.059028113];
                 expected2 = [-18436148.29621563, -5931345.863369805];
-                rotation = Math.PI/3;
+                rotation = Math.PI / 3;
             });
 
             it('gives the same result as ol.coordinate.rotate for center == [0, 0]',
@@ -298,13 +296,13 @@ describe('GeoExt.component.OverviewMap', function() {
             beforeEach(function(){
                 point = new ol.geom.Point([0.8, 15]);
                 point2 = point.clone();
-                line = new ol.geom.LineString([[0,0], [69,69]]);
+                line = new ol.geom.LineString([ [0, 0], [69, 69] ]);
                 line2 = line.clone();
                 polygon = new ol.geom.Polygon([ [ [0, 0], [0, 10], [10, 10], [10, 0], [0, 0] ] ]);
                 polygon2 = polygon.clone();
 
                 center = [-7, 8];
-                rotation = Math.PI/6;
+                rotation = Math.PI / 6;
             });
 
             it('only rotates points and polygons, other types returned unchanged', function(){
