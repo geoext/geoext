@@ -128,111 +128,134 @@ describe('GeoExt.data.MapfishPrintProvider', function() {
         });
     });
 
-    describe('creates stores from capabilities', function() {
-        var provider = null;
-        beforeEach(function() {
-            provider = Ext.create('GeoExt.data.MapfishPrintProvider', {
+    describe('creates stores from capabilities (directly available)', function() {
+        it('directly uses passed capabilities data', function(){
+            var provider = Ext.create('GeoExt.data.MapfishPrintProvider', {
                 capabilities: printCapabilities
             });
+            var layoutStore = provider.capabilityRec.layouts();
+            expect(layoutStore).to.be.an(Ext.data.Store);
         });
-        afterEach(function() {
-            provider = null;
-        });
+    });
+
+    describe('creates stores from capabilities (async)', function() {
 
         describe('layouts', function() {
             it('creates a store for layouts', function(done) {
-                provider.on('ready', function(){
-                    var layoutStore = provider.capabilityRec.layouts();
-                    expect(layoutStore).to.be.an(Ext.data.Store);
-                    expect(layoutStore.getCount()).to.be(1);
-                    expect(layoutStore.getAt(0).get('name')).to.be('A4 portrait');
-                    done();
+                Ext.create('GeoExt.data.MapfishPrintProvider', {
+                    capabilities: printCapabilities,
+                    listeners: {
+                        'ready': function(){
+                            var layoutStore = this.capabilityRec.layouts();
+                            expect(layoutStore).to.be.an(Ext.data.Store);
+                            expect(layoutStore.getCount()).to.be(1);
+                            expect(layoutStore.getAt(0).get('name')).to.be('A4 portrait');
+                            done();
+                        }
+                    }
                 });
             });
         });
 
         describe('formats', function() {
             it('creates a store for formats', function(done) {
-                provider.on('ready', function(){
-                    var formats = provider.capabilityRec.get('formats');
-                    expect(formats).to.be.an(Array);
-                    expect(formats.length).to.be(6);
-                    expect(formats[0]).to.be('bmp');
-                    done();
+                Ext.create('GeoExt.data.MapfishPrintProvider', {
+                    capabilities: printCapabilities,
+                    listeners: {
+                        'ready': function(){
+                            var formats = this.capabilityRec.get('formats');
+                            expect(formats).to.be.an(Array);
+                            expect(formats.length).to.be(6);
+                            expect(formats[0]).to.be('bmp');
+                            done();
+                        }
+                    }
                 });
             });
         });
 
         describe('attributes', function() {
             it('creates a store for attributes', function(done) {
-                provider.on('ready', function(){
-                    var layoutStore = provider.capabilityRec.layouts();
-                    var firstLayout = layoutStore.getAt(0);
-                    var attributesStore = firstLayout.attributes();
-                    var firstAttributes = attributesStore.getAt(0);
-                    expect(attributesStore).to.be.an(Ext.data.Store);
-                    expect(attributesStore.getCount()).to.be(1);
-                    expect(firstAttributes).to.be.a(
-                        GeoExt.data.model.PrintLayoutAttributes
-                    );
-                    expect(firstAttributes.get('name')).to.be('map');
-                    expect(firstAttributes.get('type')).to.be('MapAttributeValues');
-                    done();
+                Ext.create('GeoExt.data.MapfishPrintProvider', {
+                    capabilities: printCapabilities,
+                    listeners: {
+                        'ready': function(){
+                            var layoutStore = this.capabilityRec.layouts();
+                            var firstLayout = layoutStore.getAt(0);
+                            var attributesStore = firstLayout.attributes();
+                            var firstAttributes = attributesStore.getAt(0);
+                            expect(attributesStore).to.be.an(Ext.data.Store);
+                            expect(attributesStore.getCount()).to.be(1);
+                            expect(firstAttributes).to.be.a(
+                                GeoExt.data.model.PrintLayoutAttributes
+                            );
+                            expect(firstAttributes.get('name')).to.be('map');
+                            expect(firstAttributes.get('type')).to.be('MapAttributeValues');
+                            done();
+                        }
+                    }
                 });
             });
         });
     });
 
-    describe('creates stores from url', function() {
-        var provider = null;
-        beforeEach(function() {
-            provider = Ext.create('GeoExt.data.MapfishPrintProvider', {
-                url: "http://webmapcenter.de/print-servlet-3.1.2/print/geoext/capabilities.json"
-            });
-        });
-        afterEach(function() {
-            provider = null;
-        });
+    describe('creates stores from url (async)', function() {
 
         describe('layouts', function() {
             it('creates a store for layouts', function(done) {
-                provider.on('ready', function(){
-                    var layoutStore = provider.capabilityRec.layouts();
-                    expect(layoutStore).to.be.an(Ext.data.Store);
-                    expect(layoutStore.getCount()).to.be(1);
-                    expect(layoutStore.getAt(0).get('name')).to.be('A4 portrait');
-                    done();
+                var provider = Ext.create('GeoExt.data.MapfishPrintProvider', {
+                    url: "http://webmapcenter.de/print-servlet-3.1.2/print/geoext/capabilities.json",
+                    listeners: {
+                        ready: function(){
+                            var layoutStore = provider.capabilityRec.layouts();
+                            expect(layoutStore).to.be.an(Ext.data.Store);
+                            expect(layoutStore.getCount()).to.be(1);
+                            expect(layoutStore.getAt(0).get('name')).to.be('A4 portrait');
+                            done();
+                        }
+                    }
                 });
             });
         });
 
         describe('formats', function() {
             it('creates a store for formats', function(done) {
-                provider.on('ready', function(){
-                    var formats = provider.capabilityRec.get('formats');
-                    expect(formats).to.be.an(Array);
-                    expect(formats.length).to.be(6);
-                    expect(formats[0]).to.be('bmp');
-                    done();
+                Ext.create('GeoExt.data.MapfishPrintProvider', {
+                    url: "http://webmapcenter.de/print-servlet-3.1.2/print/geoext/capabilities.json",
+                    listeners: {
+                        'ready': function(){
+                            var formats = this.capabilityRec.get('formats');
+                            expect(formats).to.be.an(Array);
+                            expect(formats.length).to.be(6);
+                            expect(formats[0]).to.be('bmp');
+                            done();
+                        }
+                    }
                 });
             });
+
         });
 
         describe('attributes', function() {
             it('creates a store for attributes', function(done) {
-                provider.on('ready', function(){
-                    var layoutStore = provider.capabilityRec.layouts();
-                    var firstLayout = layoutStore.getAt(0);
-                    var attributesStore = firstLayout.attributes();
-                    var firstAttributes = attributesStore.getAt(0);
-                    expect(attributesStore).to.be.an(Ext.data.Store);
-                    expect(attributesStore.getCount()).to.be(1);
-                    expect(firstAttributes).to.be.a(
-                        GeoExt.data.model.PrintLayoutAttributes
-                    );
-                    expect(firstAttributes.get('name')).to.be('map');
-                    expect(firstAttributes.get('type')).to.be('MapAttributeValues');
-                    done();
+                Ext.create('GeoExt.data.MapfishPrintProvider', {
+                    url: "http://webmapcenter.de/print-servlet-3.1.2/print/geoext/capabilities.json",
+                    listeners: {
+                        'ready': function(){
+                            var layoutStore = this.capabilityRec.layouts();
+                            var firstLayout = layoutStore.getAt(0);
+                            var attributesStore = firstLayout.attributes();
+                            var firstAttributes = attributesStore.getAt(0);
+                            expect(attributesStore).to.be.an(Ext.data.Store);
+                            expect(attributesStore.getCount()).to.be(1);
+                            expect(firstAttributes).to.be.a(
+                                GeoExt.data.model.PrintLayoutAttributes
+                            );
+                            expect(firstAttributes.get('name')).to.be('map');
+                            expect(firstAttributes.get('type')).to.be('MapAttributeValues');
+                            done();
+                        }
+                    }
                 });
             });
         });
