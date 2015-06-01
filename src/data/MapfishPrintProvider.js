@@ -14,6 +14,10 @@ Ext.define('GeoExt.data.MapfishPrintProvider', {
      * The GeoExt.data.MapfishPrintProvider itself
      */
     // End Events
+    config: {
+        capabilities: null,
+        url: ''
+    },
 
     statics: {
         getSerializedLayers: function(layerStore){
@@ -73,46 +77,44 @@ Ext.define('GeoExt.data.MapfishPrintProvider', {
         this.mixins.observable.constructor.call(this, cfg);
         if (!cfg.capabilities && !cfg.url) {
             Ext.Error.raise('Print capabilities or Url required');
-        } else {
-            this.fillCapabilityRec(cfg);
         }
         this.initConfig(cfg);
+        this.fillCapabilityRec();
     },
 
     /**
      * @private
      * Creates the store from object or url.
-     * @param {object} cfg The cfg-object received from the constructor.
      */
-    fillCapabilityRec: function(cfg){
+    fillCapabilityRec: function(){
         // enhance checks
         var store;
-        if (cfg.capabilities) { //if capability object is passed
+        var capabilities = this.getCapabilities();
+        var url = this.getUrl();
+        var fillRecordAndFireEvent = function(){
+            this.capabilityRec = store.getAt(0);
+            this.fireEvent('ready', this);
+        };
+        if (capabilities) { // if capability object is passed
             store = Ext.create('Ext.data.JsonStore', {
                 model: 'GeoExt.data.model.PrintCapability',
                 listeners: {
-                    datachanged: function(){
-                        this.capabilityRec = store.getAt(0);
-                        this.fireEvent('ready', this);
-                    },
+                    datachanged: fillRecordAndFireEvent,
                     scope: this
                 }
             });
-            store.loadRawData(cfg.capabilities);
-        } else if (cfg.url){ //if servlet url is passed
+            store.loadRawData(capabilities);
+        } else if (url){ // if servlet url is passed
             store = Ext.create('Ext.data.Store', {
                 autoLoad: true,
                 model: 'GeoExt.data.model.PrintCapability',
                 proxy: {
                     type: 'jsonp',
-                    url: cfg.url,
+                    url: url,
                     callbackKey: 'jsonp'
                 },
                 listeners: {
-                    load: function(){
-                        this.capabilityRec = store.getAt(0);
-                        this.fireEvent('ready', this);
-                    },
+                    load: fillRecordAndFireEvent,
                     scope: this
                 }
             });
