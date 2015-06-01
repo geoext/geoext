@@ -27,7 +27,7 @@
   },
   "scripts": {
     "test": "./node_modules/phantomjs/bin/phantomjs --ssl-protocol=any --ignore-ssl-errors=true ./node_modules/mocha-phantomjs/lib/mocha-phantomjs.coffee test/index.html",
-    "lint-js": "./node_modules/eslint/bin/eslint.js src/ examples/",
+    "lint-js": "./node_modules/eslint/bin/eslint.js src/ examples/ && ./node_modules/eslint/bin/eslint.js -c .test.eslintrc test/spec/",
     "save-coverage": "./node_modules/phantomjs/bin/phantomjs --ssl-protocol=any --ignore-ssl-errors=true ./node_modules/mocha-phantomjs/lib/mocha-phantomjs.coffee test/index.html spec '{\"hooks\": \"../../../test/phantom_hooks.js\"}'",
     "clean-coverage": "rm -rf src_instrumented src_old coverage",
     "ci-coverage": "npm run clean-coverage && istanbul instrument src -o src_instrumented && mv src src_old && mv src_instrumented src && istanbul cover npm run save-coverage && mv src src_instrumented && mv src_old src && istanbul report --root ./coverage lcovonly && cat ./coverage/lcov.info | coveralls",
