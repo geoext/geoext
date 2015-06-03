@@ -50,17 +50,30 @@ Ext.define('GeoExt.data.MapfishPrintProvider', {
          * contains
          */
         renderPrintExtent: function(mapPanel, extentLayer, clientInfo){
-            var vectorSource = extentLayer.getSource();
-            var ratio = clientInfo.width / clientInfo.height;
-            var targetWidth = mapPanel.getWidth() * 0.6;
-            var targetHeight = targetWidth / ratio;
-            var geomExtent = mapPanel.getView().calculateExtent([
+            var mapPanelWidth = mapPanel.getWidth();
+            var mapPanelHeight = mapPanel.getHeight();
+            var currentMapRatio = mapPanelWidth / mapPanelHeight;
+            var scaleFactor = 0.6;
+            var desiredPrintRatio = clientInfo.width / clientInfo.height;
+            var targetWidth;
+            var targetHeight;
+            var geomExtent;
+            var feat;
+
+            if (desiredPrintRatio >= currentMapRatio){
+                targetWidth = mapPanelWidth * scaleFactor;
+                targetHeight = targetWidth / desiredPrintRatio;
+            } else {
+                targetHeight = mapPanelHeight * scaleFactor;
+                targetWidth = targetHeight * desiredPrintRatio;
+            }
+
+            geomExtent = mapPanel.getView().calculateExtent([
                 targetWidth,
                 targetHeight
             ]);
-            var geom = ol.geom.Polygon.fromExtent(geomExtent);
-            var feat = new ol.Feature(geom);
-            vectorSource.addFeature(feat);
+            feat = new ol.Feature(ol.geom.Polygon.fromExtent(geomExtent));
+            extentLayer.getSource().addFeature(feat);
             return feat;
         }
     },
