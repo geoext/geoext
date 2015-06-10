@@ -10,6 +10,8 @@
 
 <body>
   <div id="mocha"></div>
+  <!-- Automatically reload on source changes, just append #reload to URL -->
+  <script src="../util/live-reload.js"></script>
 
   <script src="../node_modules/expect.js/index.js"></script>
   <script src="../node_modules/sinon/pkg/sinon.js"></script>
@@ -31,7 +33,7 @@
       bail: false
     });
   </script>
-  
+
   <script src="./test-helper-functions.js"></script>
   <script src="./load-tests.js"></script>
 
