@@ -187,7 +187,7 @@ describe('GeoExt.data.MapfishPrintProvider', function() {
                             expect(attributesStore).to.be.an(Ext.data.Store);
                             expect(attributesStore.getCount()).to.be(1);
                             expect(firstAttributes).to.be.a(
-                                GeoExt.data.model.PrintLayoutAttributes
+                                GeoExt.data.model.print.LayoutAttributes
                             );
                             expect(firstAttributes.get('name')).to.be('map');
                             expect(firstAttributes.get('type')).to.be('MapAttributeValues');
@@ -249,7 +249,7 @@ describe('GeoExt.data.MapfishPrintProvider', function() {
                             expect(attributesStore).to.be.an(Ext.data.Store);
                             expect(attributesStore.getCount()).to.be(1);
                             expect(firstAttributes).to.be.a(
-                                GeoExt.data.model.PrintLayoutAttributes
+                                GeoExt.data.model.print.LayoutAttributes
                             );
                             expect(firstAttributes.get('name')).to.be('map');
                             expect(firstAttributes.get('type')).to.be('MapAttributeValues');

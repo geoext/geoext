@@ -1,13 +1,13 @@
 /**
  * A store that synchronizes a layers array of an OpenLayers.Map with a
- * layer store holding {@link GeoExt.data.LayerModel} instances.
+ * layer store holding {@link GeoExt.data.mode.layer.Base} instances.
  *
  * @class GeoExt.data.LayerStore
  */
 Ext.define('GeoExt.data.LayerStore', {
     extend: 'Ext.data.Store',
-    requires: ['GeoExt.data.LayerModel'],
-    model: 'GeoExt.data.LayerModel',
+    requires: ['GeoExt.data.model.layer.Base'],
+    model: 'GeoExt.data.model.layer.Base',
 
     config: {
         /**

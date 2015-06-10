@@ -1,13 +1,13 @@
 Ext.Loader.syncRequire([
     'Ext.data.field.Field',
-    'GeoExt.data.LayerModel'
+    'GeoExt.data.model.layer.Base'
 ]);
 
-describe('GeoExt.data.LayerModel', function() {
+describe('GeoExt.data.model.layer.Base', function() {
 
     describe('basics', function(){
         it('is defined', function(){
-            expect(GeoExt.data.LayerModel).not.to.be(undefined);
+            expect(GeoExt.data.model.layer.Base).not.to.be(undefined);
         });
     });
 
@@ -16,7 +16,7 @@ describe('GeoExt.data.LayerModel', function() {
         var fields;
 
         beforeEach(function() {
-            instance = Ext.create('GeoExt.data.LayerModel');
+            instance = Ext.create('GeoExt.data.model.layer.Base');
             fields = instance.getFields();
         });
         afterEach(function() {
@@ -25,7 +25,7 @@ describe('GeoExt.data.LayerModel', function() {
         });
 
         it('can be constructed', function(){
-            expect(instance).to.be.an(GeoExt.data.LayerModel);
+            expect(instance).to.be.an(GeoExt.data.model.layer.Base);
         });
         it('gives instances five fields', function(){
             expect(fields).to.be.an(Array);
@@ -74,7 +74,7 @@ describe('GeoExt.data.LayerModel', function() {
 
         beforeEach(function() {
             layer = new ol.layer.Tile();
-            instance = Ext.create('GeoExt.data.LayerModel', layer);
+            instance = Ext.create('GeoExt.data.model.layer.Base', layer);
         });
         afterEach(function() {
             layer = null;
@@ -82,7 +82,7 @@ describe('GeoExt.data.LayerModel', function() {
         });
 
         it('can be constructed', function(){
-            expect(instance).to.be.an(GeoExt.data.LayerModel);
+            expect(instance).to.be.an(GeoExt.data.model.layer.Base);
         });
 
         it('references the passed layer', function(){
@@ -96,7 +96,7 @@ describe('GeoExt.data.LayerModel', function() {
 
         beforeEach(function() {
             layer = new ol.layer.Tile();
-            instance = Ext.create('GeoExt.data.LayerModel', layer);
+            instance = Ext.create('GeoExt.data.model.layer.Base', layer);
         });
         afterEach(function() {
             layer = null;
@@ -122,7 +122,7 @@ describe('GeoExt.data.LayerModel', function() {
                 minResolution: 12,
                 maxResolution: 99
             });
-            instance = Ext.create('GeoExt.data.LayerModel', layer);
+            instance = Ext.create('GeoExt.data.model.layer.Base', layer);
         });
         afterEach(function() {
             layer = null;
@@ -147,7 +147,7 @@ describe('GeoExt.data.LayerModel', function() {
         var instance;
 
         beforeEach(function() {
-            instance = Ext.create('GeoExt.data.LayerModel');
+            instance = Ext.create('GeoExt.data.model.layer.Base');
         });
         afterEach(function() {
             instance = null;

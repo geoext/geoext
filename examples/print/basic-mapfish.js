@@ -34,7 +34,7 @@ Ext.application({
         });
 
         mapPanel = Ext.create('GeoExt.panel.Map', {
-            title: 'GeoExt.data.model.PrintCapability Example',
+            title: 'GeoExt.data.model.print.Capability Example',
             map: olMap,
             region: 'center'
         });

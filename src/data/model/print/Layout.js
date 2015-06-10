@@ -1,13 +1,13 @@
-Ext.define('GeoExt.data.model.PrintLayout', {
+Ext.define('GeoExt.data.model.print.Layout', {
     extend: 'GeoExt.data.model.Base',
     requires: [
-        'GeoExt.data.model.PrintLayoutAttributes'
+        'GeoExt.data.model.print.LayoutAttributes'
     ],
     hasMany: [
         {
             name: 'attributes',
             associationKey: 'attributes',
-            model: 'PrintLayoutAttributes'
+            model: 'print.LayoutAttributes'
         }
     ],
     fields: [

@@ -1,4 +1,4 @@
-Ext.define('GeoExt.data.model.PrintLayoutAttributes', {
+Ext.define('GeoExt.data.model.print.LayoutAttributes', {
     extend: 'GeoExt.data.model.Base',
     fields: [
         {

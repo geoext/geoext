@@ -3,8 +3,8 @@
  *
  * @class GeoExt.data.LayerModel
  */
-Ext.define('GeoExt.data.LayerModel', {
-    extend: 'Ext.data.Model',
+Ext.define('GeoExt.data.model.layer.Base', {
+    extend: 'GeoExt.data.model.Base',
 
     fields: [
         {

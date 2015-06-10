@@ -2,7 +2,7 @@ Ext.define('GeoExt.data.MapfishPrintProvider', {
     extend: 'Ext.Base',
     mixins: ['Ext.mixin.Observable'],
     requires: [
-        'GeoExt.data.model.PrintCapability',
+        'GeoExt.data.model.print.Capability',
         'Ext.data.JsonStore'
     ],
 
@@ -80,7 +80,7 @@ Ext.define('GeoExt.data.MapfishPrintProvider', {
 
     /**
      * @property
-     * The capabiltyRec is an instance of 'GeoExt.data.model.PrintCapability'
+     * The capabiltyRec is an instance of 'GeoExt.data.model.print.Capability'
      * and contains the PrintCapabilities of the Printprovider.
      * @readonly
      */
@@ -110,7 +110,7 @@ Ext.define('GeoExt.data.MapfishPrintProvider', {
         };
         if (capabilities) { // if capability object is passed
             store = Ext.create('Ext.data.JsonStore', {
-                model: 'GeoExt.data.model.PrintCapability',
+                model: 'GeoExt.data.model.print.Capability',
                 listeners: {
                     datachanged: fillRecordAndFireEvent,
                     scope: this
@@ -120,7 +120,7 @@ Ext.define('GeoExt.data.MapfishPrintProvider', {
         } else if (url){ // if servlet url is passed
             store = Ext.create('Ext.data.Store', {
                 autoLoad: true,
-                model: 'GeoExt.data.model.PrintCapability',
+                model: 'GeoExt.data.model.print.Capability',
                 proxy: {
                     type: 'jsonp',
                     url: url,

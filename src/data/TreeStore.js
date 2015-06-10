@@ -55,10 +55,10 @@ Ext.define('GeoExt.data.TreeStore', {
 
     /**
      * Adds a layer as a child to a node. It can be either an
-     * GeoExt.data.LayerModel or an ol.layer.Base.
+     * GeoExt.data.model.layer.Base or an ol.layer.Base.
      *
      * @param {Ext.data.NodeInterface} node
-     * @rec {GeoExt.data.LayerModel/ol.layer.Base} rec
+     * @rec {GeoExt.data.model.layer.Base/ol.layer.Base} rec
      */
     addLayerNode: function(node, rec){
         var me = this,
