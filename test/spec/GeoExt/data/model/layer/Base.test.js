@@ -90,7 +90,7 @@ describe('GeoExt.data.model.layer.Base', function() {
         });
     });
 
-    describe('#getLayer', function(){
+    describe('#getOlLayer', function(){
         var layer;
         var instance;
 
@@ -104,10 +104,10 @@ describe('GeoExt.data.model.layer.Base', function() {
         });
 
         it('provides a getter for the layer', function(){
-            expect(instance.getLayer).to.be.a(Function);
+            expect(instance.getOlLayer).to.be.a(Function);
         });
         it('returns the passed layer', function(){
-            expect(instance.getLayer()).to.be(layer);
+            expect(instance.getOlLayer()).to.be(layer);
         });
     });
 

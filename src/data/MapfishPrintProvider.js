@@ -23,7 +23,7 @@ Ext.define('GeoExt.data.MapfishPrintProvider', {
         getSerializedLayers: function(layerStore){
             var serializedLayers = [];
             layerStore.each(function(layerRec) {
-                var layer = layerRec.getLayer();
+                var layer = layerRec.getOlLayer();
                 var source = layer.getSource();
                 if (source instanceof ol.source.TileWMS) {
                     var serialized = {

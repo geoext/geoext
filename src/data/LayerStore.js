@@ -43,7 +43,7 @@ Ext.define('GeoExt.data.LayerStore', {
         if(map instanceof ol.Map){
             var mapLayers = map.getLayers();
             mapLayers.forEach(function(layer){
-                me.add(layer);
+                me.loadRawData(layer, true);
             });
 
             mapLayers.forEach(function(layer) {
@@ -100,7 +100,7 @@ Ext.define('GeoExt.data.LayerStore', {
     onChangeLayer: function(evt) {
         var layer = evt.target;
         var recordIndex = this.findBy(function(rec) {
-            return rec.getLayer() === layer;
+            return rec.getOlLayer() === layer;
         });
         if(recordIndex > -1) {
             var record = this.getAt(recordIndex);
@@ -177,7 +177,7 @@ Ext.define('GeoExt.data.LayerStore', {
             if (len > 0) {
                 var layers = new Array(len);
                 for (var i = 0; i < len; i++) {
-                    layers[i] = records[i].getLayer();
+                    layers[i] = records[i].getOlLayer();
                     layers[i].on('propertychange', me.onChangeLayer, me);
                 }
                 me._adding = true;
@@ -217,7 +217,7 @@ Ext.define('GeoExt.data.LayerStore', {
             me._adding = true;
             var layer;
             for (var i = 0, ii = records.length; i < ii; ++i) {
-                layer = records[i].getLayer();
+                layer = records[i].getOlLayer();
                 layer.on('propertychange', me.onChangeLayer, me);
                 if (index === 0) {
                     me.map.getLayers().push(layer);
@@ -239,7 +239,7 @@ Ext.define('GeoExt.data.LayerStore', {
     onRemove: function(store, record){
         var me = this;
         if(!me._removing) {
-            var layer = record.getLayer();
+            var layer = record.getOlLayer();
             layer.un('propertychange', me.onChangeLayer, me);
             var found = false;
             me.map.getLayers().forEach(function(el) {
@@ -265,7 +265,7 @@ Ext.define('GeoExt.data.LayerStore', {
     onStoreUpdate: function(store, record, operation) {
         if(operation === Ext.data.Record.EDIT) {
             if (record.modified && record.modified.title) {
-                var layer = record.getLayer();
+                var layer = record.getOlLayer();
                 var title = record.get("title");
                 if(title !== layer.get('title')) {
                     layer.set('title', title);
@@ -281,7 +281,7 @@ Ext.define('GeoExt.data.LayerStore', {
      * @private
      */
     removeMapLayer: function(record){
-        this.map.getLayers().remove(record.getLayer());
+        this.map.getLayers().remove(record.getOlLayer());
     },
 
     /**
@@ -304,7 +304,7 @@ Ext.define('GeoExt.data.LayerStore', {
      */
     getByLayer: function(layer) {
         var index = this.findBy(function(r) {
-            return r.getLayer() === layer;
+            return r.getOlLayer() === layer;
         });
         if(index > -1) {
             return this.getAt(index);
