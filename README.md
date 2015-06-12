@@ -111,3 +111,9 @@ repository) you can visit
 
 http://localhost/geoext3/test/
 
+
+## Want to contribute? Yes, please 😀
+
+Read the [hints for developers](development.md) to get started. We look forward
+to your contributions!
+
