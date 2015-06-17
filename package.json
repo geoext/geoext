@@ -33,7 +33,8 @@
     "save-coverage": "phantomjs --ssl-protocol=any --ignore-ssl-errors=true ./node_modules/mocha-phantomjs/lib/mocha-phantomjs.coffee test/index.html spec '{\"hooks\": \"../../../test/phantom_hooks.js\"}'",
     "clean-coverage": "rm -rf src_instrumented src_old coverage",
     "ci-coverage": "npm run clean-coverage && istanbul instrument src -o src_instrumented && mv src src_old && mv src_instrumented src && istanbul cover npm run save-coverage && mv src src_instrumented && mv src_old src && istanbul report --root ./coverage lcovonly && cat ./coverage/lcov.info | coveralls",
-    "html-coverage": "npm run clean-coverage && istanbul instrument src -o src_instrumented && mv src src_old && mv src_instrumented src && istanbul cover npm run save-coverage && mv src src_instrumented && mv src_old src && istanbul report --root ./coverage html"
+    "html-coverage": "npm run clean-coverage && istanbul instrument src -o src_instrumented && mv src src_old && mv src_instrumented src && istanbul cover npm run save-coverage && mv src src_instrumented && mv src_old src && istanbul report --root ./coverage html",
+    "generate-example": "node examples/example-generator/index.js"
   },
   "dependencies": {},
   "devDependencies": {
