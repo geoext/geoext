@@ -49,10 +49,10 @@ Ext.define('GeoExt.data.MapfishPrintProvider', {
          * always visible and that the ratio matches the ratio that clientInfo
          * contains
          */
-        renderPrintExtent: function(mapPanel, extentLayer, clientInfo){
-            var mapPanelWidth = mapPanel.getWidth();
-            var mapPanelHeight = mapPanel.getHeight();
-            var currentMapRatio = mapPanelWidth / mapPanelHeight;
+        renderPrintExtent: function(mapComponent, extentLayer, clientInfo){
+            var mapComponentWidth = mapComponent.getWidth();
+            var mapComponentHeight = mapComponent.getHeight();
+            var currentMapRatio = mapComponentWidth / mapComponentHeight;
             var scaleFactor = 0.6;
             var desiredPrintRatio = clientInfo.width / clientInfo.height;
             var targetWidth;
@@ -61,14 +61,14 @@ Ext.define('GeoExt.data.MapfishPrintProvider', {
             var feat;
 
             if (desiredPrintRatio >= currentMapRatio){
-                targetWidth = mapPanelWidth * scaleFactor;
+                targetWidth = mapComponentWidth * scaleFactor;
                 targetHeight = targetWidth / desiredPrintRatio;
             } else {
-                targetHeight = mapPanelHeight * scaleFactor;
+                targetHeight = mapComponentHeight * scaleFactor;
                 targetWidth = targetHeight * desiredPrintRatio;
             }
 
-            geomExtent = mapPanel.getView().calculateExtent([
+            geomExtent = mapComponent.getView().calculateExtent([
                 targetWidth,
                 targetHeight
             ]);

@@ -3,7 +3,7 @@
 ;(function(doc, global){
     var specPath = './spec/',
         dependencies = [
-            'GeoExt/panel/Map.test.js',
+            'GeoExt/component/Map.test.js',
             'GeoExt/component/OverviewMap.test.js',
             'GeoExt/data/model/layer/Base.test.js',
             'GeoExt/data/model/layer/Layer.test.js',

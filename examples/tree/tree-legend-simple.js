@@ -1,5 +1,5 @@
 Ext.require([
-    'GeoExt.panel.Map',
+    'GeoExt.component.Map',
     'GeoExt.tree.Panel',
     'GeoExt.data.TreeStore'
 ]);
@@ -72,7 +72,7 @@ Ext.define('BasicTreeColumnLegends', {
     }
 });
 
-var mapPanel,
+var mapComponent, mapPanel,
     treePanel, treePanel2;
 
 Ext.application({
@@ -122,14 +122,19 @@ Ext.application({
             })
         });
 
-        mapPanel = Ext.create('GeoExt.panel.Map', {
+        mapComponent = Ext.create('GeoExt.component.Map', {
+            map: olMap
+        });
+
+        mapPanel = Ext.create('Ext.panel.Panel', {
             region: 'center',
-            map: olMap,
-            border: false
+            layout: 'fit',
+            border: false,
+            items: [mapComponent]
         });
 
         treeStore = Ext.create('GeoExt.data.TreeStore', {
-            layerStore: mapPanel.getStore()
+            layerStore: mapComponent.getStore()
         });
 
         treePanel = Ext.create('GeoExt.tree.Panel', {
@@ -158,7 +163,7 @@ Ext.application({
         });
 
         treeStore2 = Ext.create('GeoExt.data.TreeStore', {
-            layerStore: mapPanel.getStore()
+            layerStore: mapComponent.getStore()
         });
 
         treePanel2 = Ext.create('GeoExt.tree.Panel', {
