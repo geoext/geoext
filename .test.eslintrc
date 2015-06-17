@@ -1,0 +1,20 @@
+{
+    "globals": {
+        "afterEach": false,
+        "beforeEach": false,
+        "describe": false,
+        "document": false,
+        "expect": false,
+        "it": false,
+        
+        "Ext": false,
+        "GeoExt": false,
+        "ol": false
+    },
+    "rules": {
+        "no-underscore-dangle": false,
+        "quotes": "single",
+        "strict": "never"
+    }
+}
+

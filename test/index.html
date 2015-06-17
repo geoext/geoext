@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>GeoExt 3 Spec Runner</title>
+  <meta charset="utf-8">
+  <link rel="stylesheet" type="text/css" href="../node_modules/mocha/mocha.css">
+  <link rel="stylesheet" type="text/css" href="http://openlayers.org/en/v3.4.0/css/ol.css">
+  <link rel="stylesheet" type="text/css" href="http://cdn.sencha.com/ext/gpl/5.1.0/packages/ext-theme-crisp/build/resources/ext-theme-crisp-all.css"/>
+</head>
+
+<body>
+  <div id="mocha"></div>
+  <!-- Automatically reload on source changes, just append #reload to URL -->
+  <script src="../util/live-reload.js"></script>
+
+  <script src="../node_modules/expect.js/index.js"></script>
+  <script src="../node_modules/sinon/pkg/sinon.js"></script>
+  <script src="../node_modules/mocha/mocha.js"></script>
+
+  <script src="http://openlayers.org/en/master/build/ol.js"></script>
+  <script src="http://cdn.sencha.com/ext/gpl/5.1.0/build/ext-all-debug.js"></script>
+  <script>
+    Ext.Loader.setConfig({
+        enabled: true,
+        paths: {
+            'GeoExt': '../src'
+        }
+    });
+  </script>
+  <script>
+    mocha.setup({
+      ui: 'bdd',
+      bail: false
+    });
+  </script>
+
+  <script src="./test-helper-functions.js"></script>
+  <script src="./load-tests.js"></script>
+
+  <script>
+
+    if (window.mochaPhantomJS) {
+      mochaPhantomJS.run();
+    } else {
+      var runner = mocha.run();
+      if (window.console && console.log) {
+        // write stacks to the console for failed tests
+        runner.on('fail', function(test, err) {
+          if (test.duration > test._timeout) {
+            var titles = [];
+            for (var p = test; p; p = p.parent) {
+              if (p.title) {
+                titles.unshift(p.title);
+              }
+            }
+            console.log('Test timed out:', titles.join(' > '));
+          }
+          console.error(test.err.stack);
+        });
+      }
+    }
+  </script>
+  <!--
+    Tests should not depend on any specific markup and should instead create
+    whatever elements are needed (cleaning up when done).
+  -->
+</body>
+</html>
