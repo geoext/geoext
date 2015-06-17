@@ -23,7 +23,7 @@
   "toolkit": "classic",
   "repository": {
     "type": "git",
-    "url": "https://github.com/KaiVolland/geoext3.git"
+    "url": "https://github.com/geoext/geoext3.git"
   },
   "scripts": {
     "test": "phantomjs --ssl-protocol=any --ignore-ssl-errors=true ./node_modules/mocha-phantomjs/lib/mocha-phantomjs.coffee test/index.html",
