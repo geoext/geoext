@@ -1,6 +1,6 @@
 # GeoExt 3
 
-[![Build Status](https://travis-ci.org/KaiVolland/geoext3.svg?branch=master)](https://travis-ci.org/KaiVolland/geoext3) [![Coverage Status](https://coveralls.io/repos/KaiVolland/geoext3/badge.svg)](https://coveralls.io/r/KaiVolland/geoext3)
+[![Build Status](https://travis-ci.org/geoext/geoext3.svg?branch=master)](https://travis-ci.org/geoext/geoext3) [![Coverage Status](https://coveralls.io/repos/geoext/geoext3/badge.svg)](https://coveralls.io/r/geoext/geoext3)
 
 This is the first approach for an new geoext structure.
 
@@ -27,7 +27,7 @@ Inside of the workspace clone the `geoext3` repository into the `packages` subfo
 
 ```
 $ cd /path/to/workspace/packages
-$ git clone https://github.com/KaiVolland/geoext3.git GeoExt3
+$ git clone https://github.com/geoext/geoext3.git GeoExt3
 $ cd GeoExt3
 ```
 
@@ -86,11 +86,11 @@ sencha package repo add GeoExt http://geoext.github.io/geoext3/repo
 
 ## Examples
 
-* [Basic map panel](http://rawgit.com/KaiVolland/geoext3/master/examples/panel/map.html)
-* [Overview component](http://rawgit.com/KaiVolland/geoext3/master/examples/component/overviewMap.html)
-* [Basic TreePanel](http://rawgit.com/KaiVolland/geoext3/master/examples/tree/panel.html)
-* [Legends in Treepanels](http://rawgit.com/KaiVolland/geoext3/master/examples/tree/tree-legend-simple.html)
-* [Basic print with Mapfish v3](http://rawgit.com/KaiVolland/geoext3/master/examples/print/basic-mapfish.html)
+* [Basic map panel](http://rawgit.com/geoext/geoext3/master/examples/panel/map.html)
+* [Overview component](http://rawgit.com/geoext/geoext3/master/examples/component/overviewMap.html)
+* [Basic TreePanel](http://rawgit.com/geoext/geoext3/master/examples/tree/panel.html)
+* [Legends in Treepanels](http://rawgit.com/geoext/geoext3/master/examples/tree/tree-legend-simple.html)
+* [Basic print with Mapfish v3](http://rawgit.com/geoext/geoext3/master/examples/print/basic-mapfish.html)
 
 ## Tests
 
