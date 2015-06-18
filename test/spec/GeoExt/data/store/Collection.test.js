@@ -1,0 +1,115 @@
+Ext.Loader.syncRequire(['GeoExt.data.store.Collection']);
+
+describe('GeoExt.data.store.Collection', function() {
+
+    var props = {
+            key1: 'value1',
+            key2: 'value2'
+        }, coll, obj;
+
+    beforeEach(function() {
+        obj = new ol.Object(props);
+        coll = new ol.Collection();
+
+        coll.push(obj);
+    });
+
+    describe('basics', function(){
+        it('is defined', function(){
+            expect(GeoExt.data.store.Collection).not.to.be(undefined);
+        });
+
+        it('can be instantiated', function() {
+            expect(function() {
+                Ext.create('GeoExt.data.store.Collection');
+            }).to.not.throwException(Error);
+        });
+    });
+
+    describe('initialization', function() {
+        var store;
+
+        beforeEach(function() {
+            store = Ext.create('GeoExt.data.store.Collection', {
+                data: coll
+            });
+        });
+
+        it('will have the passed collection as a property', function() {
+            expect(store.olCollection).to.equal(coll);
+        });
+
+        it('will have model representations of the collections items', function() {
+            expect(store.getCount()).to.equal(coll.getLength());
+            expect(store.getAt(0).olObject).equal(obj);
+        });
+    });
+
+    describe('adding and removing items', function() {
+        var store, collection;
+
+        beforeEach(function() {
+            collection = new ol.Collection();
+            store = Ext.create('GeoExt.data.store.Collection', {
+                data: collection
+            });
+        });
+
+        describe('adding and removing items from the collection', function() {
+
+            it('will have records of collection items added', function() {
+                var olObj = new ol.Object();
+
+                expect(store.getCount()).to.be(0);
+
+                collection.push(new ol.Object());
+                expect(store.getCount()).to.be(1);
+
+                collection.push([new ol.Object(), new ol.Object()]);
+                expect(store.getCount()).to.be(3);
+
+                collection.insertAt(0, olObj);
+                expect(collection.item(0)).to.be(olObj);
+                expect(store.getAt(0).olObject).to.be(olObj);
+            });
+
+            it('will not have records of collection items that are removed', function() {
+                collection.push(new ol.Object());
+                expect(store.getCount()).to.be(1);
+
+                collection.removeAt(0);
+                expect(store.getCount()).to.be(0);
+            });
+        });
+
+        describe('adding and removing records from the store', function() {
+
+            it('the collection will have items of the added records', function() {
+                expect(collection.getLength()).to.be(0);
+                expect(store.getCount()).to.be(0);
+
+                store.add({});
+                expect(collection.getLength()).to.be(1);
+                expect(store.getCount()).to.be(1);
+                expect(store.getAt(0).olObject).to.be(collection.item(0));
+            });
+
+            it('the collection will not have items of remove store records', function() {
+                store.add({});
+                expect(store.getCount()).to.be(1);
+                expect(collection.getLength()).to.be(1);
+
+                store.add([{}, {}, {}]);
+                expect(store.getCount()).to.be(4);
+
+                store.removeAt(0);
+                expect(store.getCount()).to.be(3);
+                expect(collection.getLength()).to.be(3);
+
+                store.removeAt(0, 3);
+                expect(store.getCount()).to.be(0);
+                expect(collection.getLength()).to.be(0);
+            });
+        });
+    });
+});

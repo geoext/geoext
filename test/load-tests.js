@@ -5,9 +5,11 @@
         dependencies = [
             'GeoExt/component/Map.test.js',
             'GeoExt/component/OverviewMap.test.js',
+            'GeoExt/data/model/Object.test.js',
             'GeoExt/data/model/layer/Base.test.js',
             'GeoExt/data/model/layer/Layer.test.js',
             'GeoExt/data/model/layer/Group.test.js',
+            'GeoExt/data/store/Collection.test.js',
             'GeoExt/data/LayerStore.test.js',
             'GeoExt/data/MapfishPrintProvider.test.js',
             'GeoExt/data/TreeStore.test.js'
