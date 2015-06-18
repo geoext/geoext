@@ -128,6 +128,84 @@ describe('GeoExt.data.MapfishPrintProvider', function() {
         });
     });
 
+    describe('statics', function() {
+        var div,
+            extentLayer,
+            mapComponent,
+            mapPanel,
+            layer,
+            olMap;
+
+        beforeEach(function(){
+            div = document.createElement('div');
+            div.style.position = "absolute";
+            div.style.top = "0";
+            div.style.left = "-1000px";
+            div.style.width = "512px";
+            div.style.height = "256px";
+            document.body.appendChild(div);
+
+            extentLayer = new ol.layer.Vector({
+                source: new ol.source.Vector()
+            });
+
+            layer = new ol.layer.Tile({
+                source: new ol.source.TileWMS({
+                    url: 'http://ows.terrestris.de/osm-gray/service',
+                    params: {
+                        LAYERS: "OSM-WMS"
+                    }
+                })
+            });
+
+            olMap = new ol.Map({
+                layers: [layer, extentLayer],
+                view: new ol.View({
+                    center: [0, 0],
+                    zoom: 2
+                })
+            });
+
+            mapComponent = Ext.create('GeoExt.component.Map', {
+                map: olMap
+            });
+
+            mapPanel = Ext.create('Ext.panel.Panel', {
+                title: 'GeoExt.component.Map Example',
+                items: [mapComponent],
+                layout: 'fit',
+                renderTo: div
+            });
+        });
+
+        afterEach(function(){
+            mapPanel.destroy();
+            document.body.removeChild(div);
+        });
+
+        it('getSerializedLayers returns the serialized Layers', function(){
+            expect(GeoExt.data.MapfishPrintProvider.getSerializedLayers).to.be.a('function');
+            var serializedLayers = GeoExt.data.MapfishPrintProvider.getSerializedLayers(mapComponent.getStore());
+            var serializedLayer = serializedLayers[0];
+
+            expect(serializedLayers).to.be.an('array');
+            expect(serializedLayer.baseURL).to.be(layer.getSource().getUrls()[0]);
+            expect(serializedLayer.customParams).to.be(layer.getSource().getParams());
+            expect(serializedLayer.layers).to.be.an('array');
+            expect(serializedLayer.layers[0]).to.be(layer.getSource().getParams().LAYERS);
+            expect(serializedLayer.opacity).to.be(layer.getOpacity());
+        });
+
+        // Could be improved
+        it('renderPrintExtent returns a printExtent Feature', function(){
+            expect(GeoExt.data.MapfishPrintProvider.renderPrintExtent).to.be.a('function');
+            var clientInfo = printCapabilities.layouts[0].attributes[0].clientInfo;
+            var feat = GeoExt.data.MapfishPrintProvider.renderPrintExtent(mapComponent, extentLayer, clientInfo);
+            expect(feat).to.be.an(ol.Feature);
+        });
+
+    });
+
     describe('creates stores from capabilities (directly available)', function() {
         it('directly uses passed capabilities data', function(){
             var provider = Ext.create('GeoExt.data.MapfishPrintProvider', {
