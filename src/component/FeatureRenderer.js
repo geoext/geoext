@@ -6,7 +6,22 @@
 Ext.define('GeoExt.component.FeatureRenderer', {
     extend: 'Ext.Component',
     alias: 'widget.gx_renderer',
+    /**
+     * Fires when the feature is clicked on.
+     *
+     * Listener arguments:
+     *
+     *  * renderer - GeoExt.component.FeatureRenderer This feature renderer.
+     *
+     * @event click
+     */
     config: {
+        /**
+         * Optional class to set on the feature renderer div.
+         *
+         * @cfg {String}
+         */
+        imgCls: "",
         /**
          * The minimum width.
          *
@@ -88,7 +103,7 @@ Ext.define('GeoExt.component.FeatureRenderer', {
         var id = this.getId();
         this.autoEl = {
             tag: "div",
-            "class": (this.imgCls ? this.imgCls : ""),
+            "class": this.getImgCls(),
             id: id
         };
         if (!this.getLineFeature()) {
@@ -145,6 +160,63 @@ Ext.define('GeoExt.component.FeatureRenderer', {
     onRender: function(ct, position) {
         this.callParent(arguments);
         this.drawFeature();
+    },
+    /**
+     * After rendering we setup our own custom events using #initCustomEvents.
+     *
+     * @private
+     */
+    afterRender: function() {
+        this.callParent(arguments);
+        this.initCustomEvents();
+    },
+    /**
+     * (Re-)Initializes our custom event listeners, mainly #onClick.
+     *
+     * @private
+     */
+    initCustomEvents: function() {
+        this.clearCustomEvents();
+        this.el.on("click", this.onClick, this);
+    },
+    /**
+     * Unbinds previously bound listeners on #el.
+     *
+     * @private
+     */
+    clearCustomEvents: function() {
+        if (this.el && this.el.clearListeners) {
+            this.el.clearListeners();
+        }
+    },
+    /**
+     * Bound to the click event on the #el, this fires the click event.
+     *
+     * @private
+     */
+    onClick: function() {
+        this.fireEvent("click", this);
+    },
+    /**
+     * Private method called during the destroy sequence.
+     *
+     * @private
+     */
+    beforeDestroy: function() {
+        this.clearCustomEvents();
+        if (this.map) {
+            this.map.setTarget(null);
+        }
+    },
+    /**
+     * When resizing has happened, we might need to re-set the renderer's
+     * dimensions via #setRendererDimensions.
+     *
+     * @private
+     */
+    onResize: function(w, h) {
+        this.setRendererDimensions();
+        this.callParent(arguments);
     },
     /**
      * Draw the feature in the map.
