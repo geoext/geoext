@@ -3,17 +3,21 @@
  *
  * Example:
  *
- *     var mapPanel = Ext.create('GeoExt.panel.Map', {
- *         title: 'GeoExt.panel.Map Example',
- *         width: 800,
- *         height: 600,
+ *     var mapComponent = Ext.create('GeoExt.component.Map', {
  *         map: new ol.Map({
  *             layers: [layer],
  *             view: new ol.View({
  *                 center: [0, 0],
  *                 zoom: 2
  *             })
- *         }),
+ *         })
+ *     });
+ *
+ *     var mapPanel = Ext.create('Ext.panel.Panel', {
+ *         title: 'GeoExt.component.Map Example',
+ *         width: 800,
+ *         height: 600,
+ *         items: [mapComponent],
  *         renderTo: 'mapDiv' // ID of the target <div>. Optional.
  *     });
  *

@@ -1,12 +1,15 @@
 Ext.require([
-    'GeoExt.panel.Map'
+    'GeoExt.component.Map',
+    'Ext.panel.Panel',
+    'Ext.Viewport'
 ]);
 
 var olMap,
+    mapComponent,
     mapPanel;
 
 Ext.application({
-    name: 'MapPanel',
+    name: 'MapComponent',
     launch: function(){
         var description;
 
@@ -29,10 +32,15 @@ Ext.application({
             })
         });
 
-        mapPanel = Ext.create('GeoExt.panel.Map', {
-            title: 'GeoExt.panel.Map Example',
-            map: olMap,
-            region: 'center'
+        mapComponent = Ext.create('GeoExt.component.Map', {
+            map: olMap
+        });
+
+        mapPanel = Ext.create('Ext.panel.Panel', {
+            title: 'GeoExt.component.Map Example',
+            region: 'center',
+            layout: 'fit',
+            items: [mapComponent]
         });
 
         description = Ext.create('Ext.panel.Panel', {

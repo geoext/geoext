@@ -1,9 +1,10 @@
 Ext.require([
-    'GeoExt.panel.Map',
+    'GeoExt.component.Map',
     'GeoExt.component.OverviewMap'
 ]);
 
-var mapPanel,
+var mapComponent,
+    mapPanel,
     overviewMap1,
     overviewMap2;
 
@@ -37,11 +38,16 @@ Ext.application({
             })
         });
 
-        mapPanel = Ext.create('GeoExt.panel.Map', {
+        mapComponent = Ext.create('GeoExt.component.Map', {
+            map: olMap
+        });
+
+        mapPanel = Ext.create('Ext.panel.Panel', {
             title: 'GeoExt.component.OverviewMap Example',
-            map: olMap,
             region: 'center',
-            border: false
+            layout: 'fit',
+            border: false,
+            items: [mapComponent]
         });
 
         overviewMap1 = Ext.create('GeoExt.component.OverviewMap', {

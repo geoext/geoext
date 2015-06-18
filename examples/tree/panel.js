@@ -1,10 +1,11 @@
 Ext.require([
-    'GeoExt.panel.Map',
+    'GeoExt.component.Map',
     'GeoExt.tree.Panel',
     'GeoExt.data.TreeStore'
 ]);
 
-var mapPanel,
+var mapComponent,
+    mapPanel,
     treePanel;
 
 Ext.application({
@@ -46,14 +47,19 @@ Ext.application({
             })
         });
 
-        mapPanel = Ext.create('GeoExt.panel.Map', {
-            map: olMap,
+        mapComponent = Ext.create('GeoExt.component.Map', {
+            map: olMap
+        });
+
+        mapPanel = Ext.create('Ext.panel.Panel', {
             region: 'center',
-            border: false
+            border: false,
+            layout: 'fit',
+            items: [mapComponent]
         });
 
         treeStore = Ext.create('GeoExt.data.TreeStore', {
-            layerStore: mapPanel.getStore()
+            layerStore: mapComponent.getStore()
         });
 
         treePanel = Ext.create('GeoExt.tree.Panel', {

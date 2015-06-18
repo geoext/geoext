@@ -1,10 +1,9 @@
 /**
- * Create a panel container for a map.
+ * Create a component container for a map.
  *
  * Example:
  *
- *     var mapPanel = Ext.create('GeoExt.panel.Map', {
- *         title: 'GeoExt.panel.Map Example',
+ *     var mapComponent = Ext.create('GeoExt.component.Map', {
  *         width: 800,
  *         height: 600,
  *         map: new ol.Map({
@@ -17,27 +16,21 @@
  *         renderTo: 'mapDiv' // ID of the target <div>. Optional.
  *     });
  *
- * @class GeoExt.panel.Map
+ * @class GeoExt.component.Map
  */
-Ext.define("GeoExt.panel.Map", {
-    extend: "Ext.panel.Panel",
-    xtype: "gx_mappanel",
+Ext.define("GeoExt.component.Map", {
+    extend: "Ext.Component",
+    alias: "widget.mapcomponent",
 
     requires: [
         'GeoExt.data.LayerStore',
-        'GeoExt.panel.MapController'
+        'GeoExt.component.MapController'
     ],
 
-    controller: "panel-map",
+    controller: "component-map",
 
     /**
-     * @cfg
-     * @inheritdoc
-     */
-    layout: 'fit',
-
-    /**
-     * Whether we already rendered an ol.Map in this panel. Will be
+     * Whether we already rendered an ol.Map in this component. Will be
      * updated in #onResize, after the first rendering happened.
      *
      * @property {Boolean} mapRendered
@@ -79,6 +72,9 @@ Ext.define("GeoExt.panel.Map", {
         this.callParent();
     },
 
+    /**
+     *
+     */
     listeners: {
         /*
          * Logic in ViewController

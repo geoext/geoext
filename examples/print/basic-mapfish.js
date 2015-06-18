@@ -1,10 +1,11 @@
 Ext.require([
     'GeoExt.data.MapfishPrintProvider',
-    'GeoExt.panel.Map'
+    'GeoExt.component.Map'
 ]);
 
-var olMap;
-var mapPanel;
+var olMap,
+    mapComponent,
+    mapPanel;
 
 Ext.application({
     name: 'MapPanel',
@@ -33,10 +34,15 @@ Ext.application({
             })
         });
 
-        mapPanel = Ext.create('GeoExt.panel.Map', {
+        mapComponent = Ext.create('GeoExt.component.Map', {
+            map: olMap
+        });
+
+        mapPanel = Ext.create('Ext.panel.Panel', {
             title: 'GeoExt.data.model.print.Capability Example',
-            map: olMap,
-            region: 'center'
+            region: 'center',
+            layout: 'fit',
+            items: [mapComponent]
         });
 
         description = Ext.create('Ext.panel.Panel', {
@@ -64,10 +70,10 @@ Ext.application({
             var attr = layout.attributes().getAt(0);
             var clientInfo = attr.get('clientInfo');
             var render = GeoExt.data.MapfishPrintProvider.renderPrintExtent;
-            render(mapPanel, extentLayer, clientInfo);
-            mapPanel.getView().on('propertychange', function(){
+            render(mapComponent, extentLayer, clientInfo);
+            mapComponent.getView().on('propertychange', function(){
                 extentLayer.getSource().clear();
-                render(mapPanel, extentLayer, clientInfo);
+                render(mapComponent, extentLayer, clientInfo);
             });
             description.add({
                 xtype: 'button',
@@ -78,13 +84,13 @@ Ext.application({
                         attributes: {}
                     };
                     var bbox = extentLayer.getSource().getFeatures()[0].getGeometry().getExtent();
-                    var serializedLayers = GeoExt.data.MapfishPrintProvider.getSerializedLayers(mapPanel.getStore());
+                    var serializedLayers = GeoExt.data.MapfishPrintProvider.getSerializedLayers(mapComponent.getStore());
                     spec.attributes[attr.get('name')] = {
                         bbox: bbox,
                         dpi: clientInfo.dpiSuggestions[0],
                         layers: serializedLayers,
-                        projection: mapPanel.getView().getProjection().getCode(),
-                        rotation: mapPanel.getView().getRotation()
+                        projection: mapComponent.getView().getProjection().getCode(),
+                        rotation: mapComponent.getView().getRotation()
                     };
                     Ext.create('Ext.form.Panel', {
                         standardSubmit: true,
