@@ -53,9 +53,6 @@ Ext.define('GeoExt.component.FeatureRenderer', {
         if (!this.getFeature()) {
             this.setFeature(this['get' + this.getSymbolType() + 'Feature']());
         }
-        if (this.getSymbolizers()) {
-            this.getFeature().setStyle(this.getSymbolizers());
-        }
         this.map = new ol.Map({
           controls: [],
           interactions: [],
@@ -113,6 +110,20 @@ Ext.define('GeoExt.component.FeatureRenderer', {
         this.map.updateSize();
         this.map.getView().fitExtent(bounds, this.map.getSize());
     },
+    applySymbolizers: function(symbolizers) {
+        var feature = this.getFeature();
+        if (feature && symbolizers) {
+            feature.setStyle(symbolizers);
+        }
+        return symbolizers;
+    },
+    applyFeature: function(feature) {
+      var symbolizers = this.getSymbolizers();
+      if (feature && symbolizers) {
+          feature.setStyle(symbolizers);
+      }
+      return feature;
+    },
     update: function(options) {
         if (options.feature) {
             this.setFeature(options.feature);
@@ -121,7 +132,6 @@ Ext.define('GeoExt.component.FeatureRenderer', {
         }
         if (options.symbolizers) {
             this.setSymbolizers(options.symbolizers);
-            this.getFeature().setStyle(this.getSymbolizers());
         }
     }
 });
