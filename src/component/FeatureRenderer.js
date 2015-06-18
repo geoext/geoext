@@ -1,18 +1,88 @@
+/**
+ * The feature renderer
+ *
+ * @class GeoExt.component.FeatureRenderer
+ */
 Ext.define('GeoExt.component.FeatureRenderer', {
     extend: 'Ext.Component',
     alias: 'widget.gx_renderer',
     config: {
+        /**
+         * The minimum width.
+         *
+         * @cfg {Number}
+         */
         minWidth: 20,
+
+        /**
+         * The minimum height.
+         *
+         * @cfg {Number}
+         */
         minHeight: 20,
+
+        /**
+         * The resolution for the renderer.
+         *
+         * @cfg {Number}
+         */
         resolution: 1,
+
+        /**
+         * Optional vector to be drawn. 
+         *
+         * @cfg {ol.Feature}
+         */
         feature: undefined,
+
+        /**
+         * Feature to use for point swatches. Optional.
+         *
+         * @cfg {ol.Feature}
+         */
         pointFeature: undefined,
+
+        /**
+         * Feature to use for line swatches. Optional.
+         *
+         * @cfg {ol.Feature}
+         */
         lineFeature: undefined,
+
+        /**
+         * Feature to use for polygon swatches. Optional.
+         *
+         * @cfg {ol.Feature}
+         */
         polygonFeature: undefined,
+
+        /**
+         * Feature to use for text label swatches. Optional.
+         *
+         * @cfg {ol.Feature}
+         */
         textFeature: undefined,
+
+        /**
+         * An `ol.style.Style` instance or an array of `ol.style.Style`
+         * instances for rendering a  feature.  If no symbolizers are
+         * provided, the default style from OpenLayers will be used.
+         *
+         * @cfg {ol.style.Style[]|ol.style.Style}
+         */
         symbolizers: undefined,
+
+        /**
+         * One of `"Point"`, `"Line"`, `"Polygon"` or `"Text"`.  Only relevant if
+         * `feature` is not provided.
+         *
+         * @cfg {String}
+         */
         symbolType: "Polygon"
     },
+    /**
+     *
+     */
     initComponent: function(){
         var me = this;
         var id = this.getId();
@@ -67,14 +137,29 @@ Ext.define('GeoExt.component.FeatureRenderer', {
         }
         me.callParent(arguments);
     },
+    /**
+     * Draw the feature when we are rendered.
+     *
+     * @private
+     */
     onRender: function(ct, position) {
         this.callParent(arguments);
         this.drawFeature();
     },
+    /**
+     * Draw the feature in the map.
+     *  
+     * @private
+     */
     drawFeature: function() {
       this.map.setTarget(this.el.id);
       this.setRendererDimensions();
     },
+    /**
+     * Set the dimension of our renderer, i.e. map and view.
+     *  
+     * @private
+     */
     setRendererDimensions: function() {
         var gb = this.feature.getGeometry().getExtent();
         var gw = ol.extent.getWidth(gb);
@@ -111,6 +196,12 @@ Ext.define('GeoExt.component.FeatureRenderer', {
         this.map.updateSize();
         this.map.getView().fitExtent(bounds, this.map.getSize());
     },
+    /**
+     * We're setting the symbolizers on the feature.
+     *
+     * @param {ol.style.Style[]|ol.style.Style} symbolizers
+     * @private
+     */
     applySymbolizers: function(symbolizers) {
         var feature = this.getFeature();
         if (feature && symbolizers) {
@@ -118,6 +209,12 @@ Ext.define('GeoExt.component.FeatureRenderer', {
         }
         return symbolizers;
     },
+    /**
+     * We're setting the feature and add it to the source.
+     *
+     * @param {ol.Feature} feature
+     * @private
+     */
     applyFeature: function(feature) {
       var symbolizers = this.getSymbolizers();
       if (feature && symbolizers) {
@@ -130,6 +227,17 @@ Ext.define('GeoExt.component.FeatureRenderer', {
       }
       return feature;
     },
+    /**
+     * Update the `feature` or `symbolizers` and redraw the feature.
+     *
+     * Valid options:
+     *
+     * @param options {Object} Object with properties to be updated.
+     * @param options.feature {ol.Feature} The new or updated
+     *     feature.
+     * @param options.symbolizers {ol.style.Style[]|ol.style.Style}
+     *     Symbolizers.
+     */
     update: function(options) {
         if (options.feature) {
             this.setFeature(options.feature);
