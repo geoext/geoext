@@ -41,7 +41,14 @@ in your app.json:
     ],
 ```
 
-Thats it, you can then use GeoExt components in your app.
+That's it, you can then use GeoExt components in your app. We strive to update
+this package regularily, while we are developing. If you want to get a newer
+version of the GeoExt package, you have to do the following
+
+* In your application: Remove the `packages/remote/GeoExt` folder
+* In your local package cache (`path/to/Sencha/Cmd/repo/pkgs`): Remove the
+  `GeoExt` folder
+* In your application issue `sencha app refresh`
 
 ## Examples
 
