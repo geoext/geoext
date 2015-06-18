@@ -112,5 +112,16 @@ Ext.define('GeoExt.component.FeatureRenderer', {
         this.el.setSize(Math.round(width), Math.round(height));
         this.map.updateSize();
         this.map.getView().fitExtent(bounds, this.map.getSize());
+    },
+    update: function(options) {
+        if (options.feature) {
+            this.setFeature(options.feature);
+            this.map.getLayers().item(0).getSource().clear();
+            this.map.getLayers().item(0).getSource().addFeature(this.getFeature());
+        }
+        if (options.symbolizers) {
+            this.setSymbolizers(options.symbolizers);
+            this.getFeature().setStyle(this.getSymbolizers());
+        }
     }
 });
