@@ -52,7 +52,7 @@ version of the GeoExt package, you have to do the following
 
 ## Examples
 
-* [Basic map panel](http://rawgit.com/geoext/geoext3/master/examples/panel/map.html)
+* [Basic map component](http://rawgit.com/geoext/geoext3/master/examples/component/map.html)
 * [Overview component](http://rawgit.com/geoext/geoext3/master/examples/component/overviewMap.html)
 * [Basic TreePanel](http://rawgit.com/geoext/geoext3/master/examples/tree/panel.html)
 * [Legends in Treepanels](http://rawgit.com/geoext/geoext3/master/examples/tree/tree-legend-simple.html)
