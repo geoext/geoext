@@ -56,13 +56,6 @@ Ext.define('GeoExt.component.FeatureRenderer', {
         if (this.getSymbolizers()) {
             this.getFeature().setStyle(this.getSymbolizers());
         }
-        // TODO why does this need to be 200?
-        var imgWidth = 150;
-        var imgHeight = 150;
-        var proj = new ol.proj.Projection({
-          units: 'pixels',
-          extent: [-imgWidth/2, -imgHeight/2, imgWidth/2, imgHeight/2]
-        });
         this.map = new ol.Map({
           controls: [],
           interactions: [],
@@ -72,12 +65,7 @@ Ext.define('GeoExt.component.FeatureRenderer', {
                 features: [this.feature]
               })
             })
-          ],
-          view: new ol.View({
-            projection: proj,
-            center: [0, 0],
-            zoom: 0
-          })
+          ]
         });
         me.callParent(arguments);
     },
@@ -103,7 +91,13 @@ Ext.define('GeoExt.component.FeatureRenderer', {
         if(!resolution) {
             resolution = Math.max(gw / this.width || 0, gh / this.height || 0) || 1;
         }
-        this.resolution = resolution;
+        this.map.setView(new ol.View({
+            minResolution: resolution,
+            maxResolution: resolution,
+            projection: new ol.proj.Projection({
+                units: 'pixels'
+            })
+        }));
         // determine height and width of element
         var width = Math.max(this.width || this.getMinWidth(), gw / resolution);
         var height = Math.max(this.height || this.getMinHeight(), gh / resolution);
@@ -117,5 +111,6 @@ Ext.define('GeoExt.component.FeatureRenderer', {
             ];
         this.el.setSize(Math.round(width), Math.round(height));
         this.map.updateSize();
+        this.map.getView().fitExtent(bounds, this.map.getSize());
     }
 });
