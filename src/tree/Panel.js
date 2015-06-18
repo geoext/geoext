@@ -38,7 +38,10 @@
  */
 Ext.define('GeoExt.tree.Panel', {
     extend: 'Ext.tree.Panel',
-    xtype: "gx_treepanel",
+    alias: [
+        "widget.gx_treepanel",
+        "widget.gx_tree_panel"
+    ],
 
     initComponent: function() {
         var me = this;

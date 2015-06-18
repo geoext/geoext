@@ -20,7 +20,10 @@
  */
 Ext.define("GeoExt.component.Map", {
     extend: "Ext.Component",
-    alias: "widget.mapcomponent",
+    alias: [
+        "widget.gx_map",
+        "widget.gx_component_map"
+    ],
 
     requires: [
         'GeoExt.data.LayerStore'
