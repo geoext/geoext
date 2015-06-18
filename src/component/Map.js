@@ -23,11 +23,8 @@ Ext.define("GeoExt.component.Map", {
     alias: "widget.mapcomponent",
 
     requires: [
-        'GeoExt.data.LayerStore',
-        'GeoExt.component.MapController'
+        'GeoExt.data.LayerStore'
     ],
-
-    controller: "component-map",
 
     /**
      * Whether we already rendered an ol.Map in this component. Will be
@@ -69,17 +66,19 @@ Ext.define("GeoExt.component.Map", {
             map: me.getMap()
         });
 
-        this.callParent();
+        me.on('resize', me.onResize, me);
+        me.callParent();
     },
 
-    /**
-     *
-     */
-    listeners: {
-        /*
-         * Logic in ViewController
-         */
-        resize: 'onResize'
+    onResize: function(){
+        // Get the corresponding view of the controller (the mapComponent).
+        var me = this;
+        if(!me.mapRendered){
+            me.getMap().setTarget(me.getTargetEl().dom);
+            me.mapRendered = true;
+        } else {
+            me.getMap().updateSize();
+        }
     },
 
     /**

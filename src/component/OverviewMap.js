@@ -44,12 +44,6 @@ Ext.define("GeoExt.component.OverviewMap", {
     extend: 'Ext.Component',
     xtype: 'gx_overviewmap',
 
-    requires: [
-        'GeoExt.component.OverviewMapController'
-    ],
-
-    controller: "component-overviewmap",
-
     config: {
         /**
          * TODO
@@ -175,13 +169,6 @@ Ext.define("GeoExt.component.OverviewMap", {
      */
     mapRendered: false,
 
-    listeners: {
-        /*
-         * Logic in ViewController
-         */
-        resize: 'onResize'
-    },
-
     constructor: function(){
         this.initOverviewFeatures();
         this.callParent(arguments);
@@ -202,6 +189,7 @@ Ext.define("GeoExt.component.OverviewMap", {
         me.initOverviewMap();
 
         me.on('beforedestroy', me.onBeforeDestroy, me);
+        me.on('resize', me.onResize, me);
 
         me.callParent();
     },
@@ -308,7 +296,6 @@ Ext.define("GeoExt.component.OverviewMap", {
         parentView.setCenter(evt.coordinate);
     },
 
-    // TODO: Should this be moved to the controller?!
     /**
      * Updates the Geometry of the extentLayer.
      */
@@ -327,7 +314,6 @@ Ext.define("GeoExt.component.OverviewMap", {
         me.anchorFeature.setGeometry(anchor);
     },
 
-    // TODO: Should this be moved to the controller?!
     /**
      * Set an OverviewMap property (center or resolution).
      */
@@ -384,6 +370,22 @@ Ext.define("GeoExt.component.OverviewMap", {
             // unbind parent listeners
             parentMap.un('postrender', me.updateBox, me);
             parentView.un('propertychange', me.onParentViewPropChange, me);
+        }
+    },
+
+    /**
+     * Update the size of the ol.Map onResize.
+     */
+    onResize: function(){
+        // Get the corresponding view of the controller (the mapPanel).
+        var me = this,
+            div = me.getEl().dom,
+            map = me.getMap();
+        if(!me.mapRendered){
+            map.setTarget(div);
+            me.mapRendered = true;
+        } else {
+            me.getMap().updateSize();
         }
     },
 
