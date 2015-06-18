@@ -79,6 +79,27 @@ var stacked = {
     })]
 };
 
+var graphicText = {
+    text: new ol.style.Style({
+        text: new ol.style.Text({
+            text: 'Ab',
+            fill: new ol.style.Fill({color: "#FF0000"}),
+            textAlgin: "center",
+            textBaseline: "middle"
+        })
+    }),
+    graphic: new ol.style.Style({
+        image: new ol.style.RegularShape({
+            stroke: new ol.style.Stroke({color: "black"}),
+            fill: new ol.style.Fill({color: "yellow"}),
+            points: 4,
+            scale: 0.5,
+            radius: 10,
+            angle: Math.PI / 4
+        })
+    })
+};
+
 Ext.require([
     'GeoExt.component.FeatureRenderer'
 ]);
@@ -101,5 +122,55 @@ Ext.application({
        Ext.create("GeoExt.component.FeatureRenderer", {renderTo: 'point_stacked', symbolizers: stacked.point, symbolType: "Point"});
        Ext.create("GeoExt.component.FeatureRenderer", {renderTo: 'poly_stacked', symbolizers: stacked.poly, symbolType: "Polygon"});
        Ext.create("GeoExt.component.FeatureRenderer", {renderTo: 'text_stacked', symbolizers: stacked.text, symbolType: "Text"});
+       Ext.create("GeoExt.component.FeatureRenderer", {renderTo: 'text-only', symbolizers: graphicText.text, symbolType: "Text"});
+       Ext.create("GeoExt.component.FeatureRenderer", {renderTo: 'graphic-only', symbolizers: graphicText.graphic, symbolType: "Text"});
+       Ext.create("GeoExt.component.FeatureRenderer", {renderTo: 'text-graphic', symbolizers: [graphicText.text, graphicText.graphic], symbolType: "Text"});
+       document.getElementById("render").onclick = render;
     }
 });
+
+var format = new ol.format.WKT();
+var renderer, win;
+function render() {
+    var wkt = document.getElementById("wkt").value;
+    var feature;
+    try {
+        feature = format.readFeature(wkt);
+    } catch(err) {
+        document.getElementById("wkt").value = "Bad WKT: " + err;
+    }
+    var symbolizers;
+    try {
+        var value = document.getElementById("symbolizers").value;
+        symbolizers = eval("(" + value + ")");
+        if (!symbolizers) {
+            throw "Invalid symbolizers";
+        }
+    } catch(err) {
+        document.getElementById("symbolizers").value = "Bad symbolizers: " +
+            err + "\n\n" + value;
+        symbolizers = null;
+    }
+    if(feature && symbolizers) {
+        if(!win) {
+            renderer = Ext.create("GeoExt.component.FeatureRenderer", {
+                feature: feature,
+                symbolizers: symbolizers,
+                width: 150,
+                style: {margin: 4}
+            });
+            win = Ext.create("Ext.Window", {
+                closeAction: "hide",
+                layout: "fit",
+                width: 175,
+                items: [renderer]
+            });
+        } else {
+            renderer.update({
+                feature: feature,
+                symbolizers: symbolizers
+            });
+        }
+        win.show();
+    }
+}

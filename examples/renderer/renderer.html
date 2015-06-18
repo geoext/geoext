@@ -78,6 +78,33 @@
             </tbody>
         </table>
 
+        <h2>Text-graphic</h2>
+        Text and graphic combined<div id="text-graphic" style="width:30px;height:30px"></div>
+        Text only<div id="text-only" style="width:30px;height:30px"></div>
+        Graphic only<div id="graphic-only" style="width:30px;height:30px"></div>
+
+        <h2>Custom Feature Rendering</h2>
+        <p>You can render any OpenLayers.Feature.Vector object with a FeatureRenderer.
+        Use the inputs below to modify the well-known text and symbolizer.  These
+        will be used to render a feature in a new window.</p><br>
+        <label for="wkt">Geometry Well-Known Text</label><br>
+        <textarea id="wkt">
+    POLYGON((1 30, -33 10, -39 -21, 1 -41, 23 -22, 27 15, 1 30), (0 10, -14 0, -4 -24, 12 -8, 0 10))
+        </textarea><br><br>
+        <label for="symbolizers">Feature Symbolizers</label><br>
+        <textarea id="symbolizers">
+    new ol.style.Style({
+        fill: new ol.style.Fill({color: "yellow"}),
+        stroke: new ol.style.Stroke({color: "blue", width: 1}),
+        image: new ol.style.Circle({
+            fill: new ol.style.Fill({color: "yellow"}),
+            stroke: new ol.style.Stroke({color: "blue", width: 1}),
+            radius: 5
+        })
+    })
+        </textarea><br>
+        <button id="render">render</button>
+
     <script src="http://openlayers.org/en/master/build/ol-debug.js"></script>
     <script src="http://cdn.sencha.com/ext/gpl/5.1.0/build/ext-all-debug.js"></script>
     <script>

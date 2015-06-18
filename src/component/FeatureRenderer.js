@@ -57,9 +57,9 @@ Ext.define('GeoExt.component.FeatureRenderer', {
             this.getFeature().setStyle(this.getSymbolizers());
         }
         // TODO why does this need to be 200?
-        var imgWidth = 200;
-        var imgHeight = 200;
-        proj = new ol.proj.Projection({
+        var imgWidth = 150;
+        var imgHeight = 150;
+        var proj = new ol.proj.Projection({
           units: 'pixels',
           extent: [-imgWidth/2, -imgHeight/2, imgWidth/2, imgHeight/2]
         });
