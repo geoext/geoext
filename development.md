@@ -3,7 +3,7 @@
 > We really want that people participate in the development of GeoExt 3.
 >
 > Please follow these instructions to ensure that development makes fun and your
-> contributions can easily be merged into the `master`-branch. 
+> contributions can easily be merged into the `master`-branch.
 
 
 ## Development setup
@@ -35,7 +35,7 @@ You can have many paragraphs here, lists are done
 * like
 * this
 
-The nice thing with github is, if you only have one commit with a message 
+The nice thing with github is, if you only have one commit with a message
 formatted like described here, and then open a PR, the title and body of the PR
 will contain this information already.
 ```
@@ -62,7 +62,7 @@ $ npm run lint-js
 ```
 
 … and fix any warnings or errors produced, before you open a PR.
-    
+
 
 ## Testing you code
 
@@ -147,6 +147,96 @@ coverage), run:
 ```shell
 $ npm run clean-coverage
 ```
+
+## sencha command
+
+### How to package GeoExt using sencha command
+
+To generate a package you usually first create a sencha `workspace` by issuing
+
+```
+$ sencha -sdk /path/to/ext-n.n.n generate workspace /path/to/workspace
+```
+
+Inside of the workspace clone the `geoext3` repository into the `packages` subfolder:
+
+```
+$ cd /path/to/workspace/packages
+$ git clone https://github.com/KaiVolland/geoext3.git GeoExt3
+$ cd GeoExt3
+```
+
+Then you can issue
+
+```
+$ sencha package build
+```
+
+Alternatively, if your source isn't living inside of a sencha workspace, you can configure the path to a workspace and then build:
+
+```
+$ sencha config --prop workspace.config.dir=/path/to/workspace/.sencha/workspace then package build
+```
+
+### Adding GeoExt to a local sencha repository
+
+Initalize the local "GeoExt Contributors" repository:
+
+```
+$ sencha package repo init -name "GeoExt Contributors" -email "dev@geoext.org"
+```
+
+Add the package to this repository:
+
+```
+$ sencha package add /path/to/workspace/build/GeoExt/GeoExt.pkg
+```
+
+To use this package in a sencha app just add "GeoExt" to the "requires"-array
+in your app.json:
+
+```javascript
+    /**
+     * The list of required packages (with optional versions; default is "latest").
+     *
+     * For example,
+     *
+     *      "requires": [
+     *          "charts"
+     *      ]
+     */
+    "requires": [
+        "GeoExt"
+    ],
+```
+
+
+In the future we will most probably host the package on a remote resource so
+that you can do:
+
+```
+sencha package repo add GeoExt http://geoext.github.io/geoext3/cmd/pkgs
+```
+
+### Update the geoext package on geoext.github.io
+
+*Untested*: First add GeoExt to your local repository, then find the repo on
+your machine, it is usually located near the `sencha` executable, e.g.
+
+```
+cd path/to/Sencha/Cmd/repo/pkgs
+```
+
+You should see a `GeoExt` folder there.
+
+Next, checkout the `gh-pages` -branch
+
+```
+git checkout gh-pages
+```
+
+Update the `cmd/pkgs/GeoExt` folder with the contents of the
+`path/to/Sencha/Cmd/repo/pkgs/GeoExt` folder, then commit and push to upstream.
 
 
 ## Contributor Agreement
