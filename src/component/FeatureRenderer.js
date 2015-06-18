@@ -45,6 +45,11 @@ Ext.define('GeoExt.component.FeatureRenderer', {
                 ]])
             }));
         }
+        if (!this.getTextFeature()) {
+            this.setTextFeature(new ol.Feature({
+                geometry: new ol.geom.Point([0, 0])
+            }));
+        }
         if (!this.getFeature()) {
             this.setFeature(this['get' + this.getSymbolType() + 'Feature']());
         }
