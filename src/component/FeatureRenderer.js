@@ -50,20 +50,21 @@ Ext.define('GeoExt.component.FeatureRenderer', {
                 geometry: new ol.geom.Point([0, 0])
             }));
         }
-        if (!this.getFeature()) {
-            this.setFeature(this['get' + this.getSymbolType() + 'Feature']());
-        }
         this.map = new ol.Map({
           controls: [],
           interactions: [],
           layers: [
             new ol.layer.Vector({
-              source: new ol.source.Vector({
-                features: [this.feature]
-              })
+              source: new ol.source.Vector()
             })
           ]
         });
+        var feature = this.getFeature();
+        if (!feature) {
+            this.setFeature(this['get' + this.getSymbolType() + 'Feature']());
+        } else {
+            this.applyFeature(feature);
+        }
         me.callParent(arguments);
     },
     onRender: function(ct, position) {
@@ -122,13 +123,16 @@ Ext.define('GeoExt.component.FeatureRenderer', {
       if (feature && symbolizers) {
           feature.setStyle(symbolizers);
       }
+      if (this.map) {
+          var source = this.map.getLayers().item(0).getSource();
+          source.clear();
+          source.addFeature(feature);
+      }
       return feature;
     },
     update: function(options) {
         if (options.feature) {
             this.setFeature(options.feature);
-            this.map.getLayers().item(0).getSource().clear();
-            this.map.getLayers().item(0).getSource().addFeature(this.getFeature());
         }
         if (options.symbolizers) {
             this.setSymbolizers(options.symbolizers);
