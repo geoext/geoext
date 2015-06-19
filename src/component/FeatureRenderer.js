@@ -44,7 +44,7 @@ Ext.define('GeoExt.component.FeatureRenderer', {
         resolution: 1,
 
         /**
-         * Optional vector to be drawn. 
+         * Optional vector to be drawn.
          *
          * @cfg {ol.Feature}
          */
@@ -157,7 +157,7 @@ Ext.define('GeoExt.component.FeatureRenderer', {
      *
      * @private
      */
-    onRender: function(ct, position) {
+    onRender: function() {
         this.callParent(arguments);
         this.drawFeature();
     },
@@ -214,13 +214,13 @@ Ext.define('GeoExt.component.FeatureRenderer', {
      *
      * @private
      */
-    onResize: function(w, h) {
+    onResize: function() {
         this.setRendererDimensions();
         this.callParent(arguments);
     },
     /**
      * Draw the feature in the map.
-     *  
+     *
      * @private
      */
     drawFeature: function() {
@@ -229,7 +229,7 @@ Ext.define('GeoExt.component.FeatureRenderer', {
     },
     /**
      * Set the dimension of our renderer, i.e. map and view.
-     *  
+     *
      * @private
      */
     setRendererDimensions: function() {

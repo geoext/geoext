@@ -1,3 +1,4 @@
+/* global document */
 var redStroke = new ol.style.Stroke({color: 'red', width: 2});
 var redFill = new ol.style.Fill({color: [255, 0, 0, 0.25]});
 var red = new ol.style.Style({
@@ -26,7 +27,7 @@ var custom = {
     }),
     poly: new ol.style.Style({
         fill: new ol.style.Fill({color: [128, 128, 0, 0.25]}),
-        stroke: new ol.style.Stroke({color: "#666666", width: 2, lineDash: [1.5,7.5]})
+        stroke: new ol.style.Stroke({color: "#666666", width: 2, lineDash: [1.5, 7.5]})
     }),
     text: new ol.style.Style({
         text: new ol.style.Text({
@@ -62,7 +63,7 @@ var stacked = {
         stroke: new ol.style.Stroke({color: "#669900", width: 3}),
         fill: new ol.style.Fill({color: "white"})
     }), new ol.style.Style({
-        stroke: new ol.style.Stroke({color: "red", width: 2, lineDash: [1.5,7.5]})
+        stroke: new ol.style.Stroke({color: "red", width: 2, lineDash: [1.5, 7.5]})
     })],
     text: [new ol.style.Style({
         text: new ol.style.Text({
@@ -104,31 +105,6 @@ Ext.require([
     'GeoExt.component.FeatureRenderer'
 ]);
 
-
-Ext.application({
-    name: 'FeatureRenderer GeoExt2',
-    launch: function() {
-       Ext.create("GeoExt.component.FeatureRenderer", {renderTo: 'line_default', symbolType: "Line"}); 
-       Ext.create("GeoExt.component.FeatureRenderer", {renderTo: 'line_red', symbolizers: red, symbolType: "Line"});
-       Ext.create("GeoExt.component.FeatureRenderer", {renderTo: 'point_default', symbolType: "Point"});
-       Ext.create("GeoExt.component.FeatureRenderer", {renderTo: 'point_red', symbolizers: red, symbolType: "Point"});
-       Ext.create("GeoExt.component.FeatureRenderer", {renderTo: 'poly_default', symbolType: "Polygon"});
-       Ext.create("GeoExt.component.FeatureRenderer", {renderTo: 'poly_red', symbolizers: red, symbolType: "Polygon"});
-       Ext.create("GeoExt.component.FeatureRenderer", {renderTo: 'line_custom', symbolizers: custom.line, symbolType: "Line"});
-       Ext.create("GeoExt.component.FeatureRenderer", {renderTo: 'point_custom', symbolizers: custom.point, symbolType: "Point"});
-       Ext.create("GeoExt.component.FeatureRenderer", {renderTo: 'poly_custom', symbolizers: custom.poly, symbolType: "Polygon"});
-       Ext.create("GeoExt.component.FeatureRenderer", {renderTo: 'text_custom', symbolizers: custom.text, symbolType: "Text"});
-       Ext.create("GeoExt.component.FeatureRenderer", {renderTo: 'line_stacked', symbolizers: stacked.line, symbolType: "Line"});
-       Ext.create("GeoExt.component.FeatureRenderer", {renderTo: 'point_stacked', symbolizers: stacked.point, symbolType: "Point"});
-       Ext.create("GeoExt.component.FeatureRenderer", {renderTo: 'poly_stacked', symbolizers: stacked.poly, symbolType: "Polygon"});
-       Ext.create("GeoExt.component.FeatureRenderer", {renderTo: 'text_stacked', symbolizers: stacked.text, symbolType: "Text"});
-       Ext.create("GeoExt.component.FeatureRenderer", {renderTo: 'text-only', symbolizers: graphicText.text, symbolType: "Text"});
-       Ext.create("GeoExt.component.FeatureRenderer", {renderTo: 'graphic-only', symbolizers: graphicText.graphic, symbolType: "Text"});
-       Ext.create("GeoExt.component.FeatureRenderer", {renderTo: 'text-graphic', symbolizers: [graphicText.text, graphicText.graphic], symbolType: "Text"});
-       document.getElementById("render").onclick = render;
-    }
-});
-
 var format = new ol.format.WKT();
 var renderer, win;
 function render() {
@@ -142,7 +118,7 @@ function render() {
     var symbolizers;
     try {
         var value = document.getElementById("symbolizers").value;
-        symbolizers = eval("(" + value + ")");
+        symbolizers = Ext.JSON.decode(value);
         if (!symbolizers) {
             throw "Invalid symbolizers";
         }
@@ -174,3 +150,27 @@ function render() {
         win.show();
     }
 }
+
+Ext.application({
+    name: 'FeatureRenderer GeoExt2',
+    launch: function() {
+       Ext.create("GeoExt.component.FeatureRenderer", {renderTo: 'line_default', symbolType: "Line"});
+       Ext.create("GeoExt.component.FeatureRenderer", {renderTo: 'line_red', symbolizers: red, symbolType: "Line"});
+       Ext.create("GeoExt.component.FeatureRenderer", {renderTo: 'point_default', symbolType: "Point"});
+       Ext.create("GeoExt.component.FeatureRenderer", {renderTo: 'point_red', symbolizers: red, symbolType: "Point"});
+       Ext.create("GeoExt.component.FeatureRenderer", {renderTo: 'poly_default', symbolType: "Polygon"});
+       Ext.create("GeoExt.component.FeatureRenderer", {renderTo: 'poly_red', symbolizers: red, symbolType: "Polygon"});
+       Ext.create("GeoExt.component.FeatureRenderer", {renderTo: 'line_custom', symbolizers: custom.line, symbolType: "Line"});
+       Ext.create("GeoExt.component.FeatureRenderer", {renderTo: 'point_custom', symbolizers: custom.point, symbolType: "Point"});
+       Ext.create("GeoExt.component.FeatureRenderer", {renderTo: 'poly_custom', symbolizers: custom.poly, symbolType: "Polygon"});
+       Ext.create("GeoExt.component.FeatureRenderer", {renderTo: 'text_custom', symbolizers: custom.text, symbolType: "Text"});
+       Ext.create("GeoExt.component.FeatureRenderer", {renderTo: 'line_stacked', symbolizers: stacked.line, symbolType: "Line"});
+       Ext.create("GeoExt.component.FeatureRenderer", {renderTo: 'point_stacked', symbolizers: stacked.point, symbolType: "Point"});
+       Ext.create("GeoExt.component.FeatureRenderer", {renderTo: 'poly_stacked', symbolizers: stacked.poly, symbolType: "Polygon"});
+       Ext.create("GeoExt.component.FeatureRenderer", {renderTo: 'text_stacked', symbolizers: stacked.text, symbolType: "Text"});
+       Ext.create("GeoExt.component.FeatureRenderer", {renderTo: 'text-only', symbolizers: graphicText.text, symbolType: "Text"});
+       Ext.create("GeoExt.component.FeatureRenderer", {renderTo: 'graphic-only', symbolizers: graphicText.graphic, symbolType: "Text"});
+       Ext.create("GeoExt.component.FeatureRenderer", {renderTo: 'text-graphic', symbolizers: [graphicText.text, graphicText.graphic], symbolType: "Text"});
+       Ext.get("render").dom.onclick = render;
+    }
+});
