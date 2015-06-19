@@ -109,18 +109,32 @@ Ext.define('GeoExt.data.model.Object', {
      * Overriden to foward changes to the underlying ol.Object. All changes on
      * the Ext.data.Models properties will be set on the ol.Object as well.
      *
-     * @param {String} key
+     * @param {String|Object} key
      * @param {Object} value
      * @param {Object} options
      *
      * @inheritDoc
      */
     set: function(key, newValue) {
+        var o = {};
+
         this.callParent(arguments);
 
         // forward changes to ol object
         this.__updating = true;
-        this.olObject.set(key, newValue);
+
+        // wrap simple set operations into an object
+        if (Ext.isString(key)) {
+            o[key] = newValue;
+        } else {
+            o = key;
+        }
+
+        // iterate over object setting changes to ol.Object
+        Ext.Object.each(o, function(k, v) {
+            this.olObject.set(k, v);
+        }, this);
+
         this.__updating = false;
     },
 
