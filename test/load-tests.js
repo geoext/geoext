@@ -8,6 +8,7 @@
             'GeoExt/data/model/Object.test.js',
             'GeoExt/data/model/Layer.test.js',
             'GeoExt/data/store/Collection.test.js',
+            'GeoExt/component/FeatureRenderer.test.js',
             'GeoExt/data/LayerStore.test.js',
             'GeoExt/data/MapfishPrintProvider.test.js',
             'GeoExt/data/TreeStore.test.js'
