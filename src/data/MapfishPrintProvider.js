@@ -13,6 +13,10 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
+
+/**
+ * Provides an interface to a Mapfish or GeoServer print module.
+ */
 Ext.define('GeoExt.data.MapfishPrintProvider', {
     extend: 'Ext.Base',
     mixins: ['Ext.mixin.Observable'],
@@ -21,14 +25,13 @@ Ext.define('GeoExt.data.MapfishPrintProvider', {
         'Ext.data.JsonStore'
     ],
 
-    // Events
     /**
      * @event ready
      * Fires after the PrintCapability store is loaded.
-     * @param {GeoExt.data.MapfishPrintProvider} GeoExt.data.MapfishPrintProvider
+     * @param {GeoExt.data.MapfishPrintProvider} provider
      * The GeoExt.data.MapfishPrintProvider itself
      */
-    // End Events
+
     config: {
         capabilities: null,
         url: ''

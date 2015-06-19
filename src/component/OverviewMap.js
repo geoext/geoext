@@ -13,8 +13,9 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
+
 /**
- * An GeoExt.OverviewMap displays an overview map of an parent map.
+ * An GeoExt.component.OverviewMap displays an overview map of an parent map.
  * You can use this component as any other Ext.Component, e.g give it as an item
  * to a panel.
  *
@@ -53,7 +54,7 @@
  *         renderTo: 'panelDiv' // ID of the target <div>. Optional.
  *     });
  *
- * @class GeoExt.OverviewMap
+ * @class GeoExt.component.OverviewMap
  */
 Ext.define("GeoExt.component.OverviewMap", {
     extend: 'Ext.Component',
@@ -66,13 +67,13 @@ Ext.define("GeoExt.component.OverviewMap", {
     config: {
         /**
          * TODO
-         * @cfg {ol.Style} olStyle
+         * @cfg {ol.Style} anchorStyle
          */
         anchorStyle: null,
 
         /**
          * TODO
-         * @cfg {ol.Style} olStyle
+         * @cfg {ol.Style} boxStyle
          */
         boxStyle: null,
 
@@ -99,7 +100,7 @@ Ext.define("GeoExt.component.OverviewMap", {
         /**
          * A configured map or a configuration object for the map constructor.
          * This should be the map the overviewMap is bind to.
-         * @cfg {ol.Map} map
+         * @cfg {ol.Map} parentMap
          */
         parentMap: null,
 
