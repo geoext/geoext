@@ -22,12 +22,19 @@
 Ext.define('GeoExt.data.TreeStore', {
     extend: 'Ext.data.TreeStore',
 
-    requires: [
-        'GeoExt.data.LayerStore'
-    ],
+    model: 'GeoExt.data.model.LayerTreeNode',
 
     config: {
-        layerStore: null,
+        /**
+         * The ol.layer.Group that the tree is derived from.
+         * @cfg {ol.layerGroup}
+         */
+        layerGroup: null,
+
+        /**
+         * The layer property that will be used to label tree nodes.
+         * @cfg {String}
+         */
         textProperty: 'name'
     },
 
@@ -42,59 +49,41 @@ Ext.define('GeoExt.data.TreeStore', {
         }
     },
 
-    constructor: function(config){
-        var me = this;
-
-        if(!me.getLayerStore()){
-            me.setLayerStore(config.layerStore);
-        }
-
-        me.callParent([config]);
-    },
-
     listeners: {
+        /**
+         * Inits the tree store by cascading down the provided ol.layer.Group
+         * appending each sublayer.
+         * TODO: Make provided ol.layer.Group the root node.
+         *
+         * @inheritDoc
+         */
         nodebeforeExpand: function(node){
             var me = this;
             if(node.isRoot()){
-                Ext.each(me.getLayerStore().getRange(), function(rec){
-                    me.addLayerNode(node, rec);
-                });
-            }
-        },
-        update: function(store, record){
-            if(record.data instanceof ol.layer.Base){
-                record.data.setVisible(record.data.checked);
+                me.addLayerNode(node, me.layerGroup);
             }
         }
     },
 
     /**
      * Adds a layer as a child to a node. It can be either an
-     * GeoExt.data.model.layer.Base or an ol.layer.Base.
+     * GeoExt.data.model.Layer or an ol.layer.Base.
      *
      * @param {Ext.data.NodeInterface} node
-     * @rec {GeoExt.data.model.layer.Base/ol.layer.Base} rec
+     * @rec {GeoExt.data.model.Layer/ol.layer.Base} rec
      */
     addLayerNode: function(node, rec){
         var me = this,
             layer = rec instanceof ol.layer.Base ? rec : rec.data;
 
-        layer.checked = layer.visible;
-        layer.on('change:visible', me.onLayerVisibleChange, me);
-
         if(layer instanceof ol.layer.Group){
             var folderNode = node.appendChild(layer);
-            layer.text = 'ol.layer.Group';
-            layer.treeNode = folderNode;
             layer.getLayers().forEach(function(childLayer){
-                childLayer.visible = layer.visible;
                 me.addLayerNode(folderNode, childLayer);
             });
         } else {
             layer.text = layer.get(me.getTextProperty());
-            layer.leaf = true;
-            var layerNode = node.appendChild(layer);
-            layer.treeNode = layerNode;
+            node.appendChild(layer);
         }
     },
 

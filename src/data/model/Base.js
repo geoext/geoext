@@ -15,7 +15,11 @@
  */
 Ext.define('GeoExt.data.model.Base', {
     extend: 'Ext.data.Model',
+    requires: [
+        'Ext.data.identifier.Uuid'
+    ],
     schema: {
         namespace: 'GeoExt.data.model'
-    }
+    },
+    identifier: 'uuid'
 });

@@ -18,10 +18,10 @@
  *
  * @class GeoExt.data.LayerModel
  */
-Ext.define('GeoExt.data.model.layer.Base', {
+Ext.define('GeoExt.data.model.Layer', {
     extend: 'GeoExt.data.model.Base',
 
-    inheritableStatics: {
+    statics: {
         /**
          * Convenience function for creating new layer model instance object
          * using a layer object.
@@ -36,28 +36,36 @@ Ext.define('GeoExt.data.model.layer.Base', {
     },
     fields: [
         {
-            name: 'opacity',
-            type: 'number',
-            convert: function(v, record){
+            name: 'isLayerGroup',
+            type: 'boolean',
+            convert: function(v, record) {
                 var layer = record.getOlLayer();
-                if (layer instanceof ol.layer.Base) {
-                    return layer.get('opacity');
-                } else {
-                    return undefined;
+
+                if (layer) {
+                    return (layer instanceof ol.layer.Group);
                 }
             }
         },
         {
-            name: 'visible',
-            type: 'boolean',
-            convert: function(v, record){
-                var layer = record.getOlLayer();
-                if (layer instanceof ol.layer.Group) {
-                    return true;
-                } else if (layer instanceof ol.layer.Base) {
-                    return layer.get('visible');
+            name: 'text',
+            type: 'string',
+            convert: function(v, record) {
+                if (!v && record.get('isLayerGroup')) {
+                    return 'ol.layer.Group';
                 } else {
-                    return undefined;
+                    return v;
+                }
+            }
+        },
+        {
+            name: 'opacity',
+            type: 'number',
+            convert: function(v, record) {
+                var layer;
+
+                if (record.data instanceof ol.layer.Base) {
+                    layer = record.getOlLayer();
+                    return layer.get('opacity');
                 }
             }
         },
@@ -65,11 +73,11 @@ Ext.define('GeoExt.data.model.layer.Base', {
             name: 'minResolution',
             type: 'number',
             convert: function(v, record){
-                var layer = record.getOlLayer();
-                if (layer instanceof ol.layer.Base) {
+                var layer;
+
+                if (record.data instanceof ol.layer.Base) {
+                    layer = record.getOlLayer();
                     return layer.get('minResolution');
-                } else {
-                    return undefined;
                 }
             }
         },
@@ -77,11 +85,11 @@ Ext.define('GeoExt.data.model.layer.Base', {
             name: 'maxResolution',
             type: 'number',
             convert: function(v, record){
-                var layer = record.getOlLayer();
-                if (layer instanceof ol.layer.Base) {
+                var layer;
+
+                if (record.data instanceof ol.layer.Base) {
+                    layer = record.getOlLayer();
                     return layer.get('maxResolution');
-                } else {
-                    return undefined;
                 }
             }
         }
@@ -100,6 +108,8 @@ Ext.define('GeoExt.data.model.layer.Base', {
      * @return {ol.layer.Base}
      */
     getOlLayer: function() {
-        return this.data;
+        if (this.data instanceof ol.layer.Base) {
+            return this.data;
+        }
     }
 });
