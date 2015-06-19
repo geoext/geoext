@@ -13,11 +13,10 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
+
 /**
  * A store that is synchronized with a GeoExt.data.LayerStore. It will be used
  * by a GeoExt.tree.Panel.
- *
- * @class GeoExt.data.TreeStore
  */
 Ext.define('GeoExt.data.TreeStore', {
     extend: 'Ext.data.TreeStore',
@@ -70,7 +69,7 @@ Ext.define('GeoExt.data.TreeStore', {
      * GeoExt.data.model.Layer or an ol.layer.Base.
      *
      * @param {Ext.data.NodeInterface} node
-     * @rec {GeoExt.data.model.Layer/ol.layer.Base} rec
+     * @param {GeoExt.data.model.Layer/ol.layer.Base} rec
      */
     addLayerNode: function(node, rec){
         var me = this,

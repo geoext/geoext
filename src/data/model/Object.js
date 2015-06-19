@@ -56,7 +56,7 @@ Ext.define('GeoExt.data.model.Object', {
 
     /**
      * the underlying ol.Object
-     * @type {[type]}
+     * @type {ol.Object}
      */
     olObject: null,
 

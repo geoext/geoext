@@ -70,12 +70,12 @@ Ext.define('GeoExt.panel.Popup', {
 
         me.callParent();
 
-        var ovl = new ol.Overlay(/** @type {olx.OverlayOptions} */ ({
+        var ovl = new ol.Overlay({
             autoPan: true,
             autoPanAnimation: {
                 duration: 250
             }
-        }));
+        });
 
         me.getMap().addOverlay(ovl);
         // fix layout of popup when its position changes
