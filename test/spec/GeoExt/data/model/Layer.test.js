@@ -1,13 +1,13 @@
 Ext.Loader.syncRequire([
     'Ext.data.field.Field',
-    'GeoExt.data.model.layer.Base'
+    'GeoExt.data.model.Layer'
 ]);
 
-describe('GeoExt.data.model.layer.Base', function() {
+describe('GeoExt.data.model.Layer', function() {
 
     describe('basics', function(){
         it('is defined', function(){
-            expect(GeoExt.data.model.layer.Base).not.to.be(undefined);
+            expect(GeoExt.data.model.Layer).not.to.be(undefined);
         });
     });
 
@@ -16,7 +16,7 @@ describe('GeoExt.data.model.layer.Base', function() {
         var fields;
 
         beforeEach(function() {
-            instance = Ext.create('GeoExt.data.model.layer.Base');
+            instance = Ext.create('GeoExt.data.model.Layer');
             fields = instance.getFields();
         });
         afterEach(function() {
@@ -25,11 +25,11 @@ describe('GeoExt.data.model.layer.Base', function() {
         });
 
         it('can be constructed', function(){
-            expect(instance).to.be.an(GeoExt.data.model.layer.Base);
+            expect(instance).to.be.an(GeoExt.data.model.Layer);
         });
-        it('gives instances five fields', function(){
+        it('gives instances six fields', function(){
             expect(fields).to.be.an(Array);
-            expect(fields.length).to.be(5);
+            expect(fields.length).to.be(6); // 5 defined in class + id
         });
         it('provides instances with an inherited id field', function(){
             var idField = Ext.Array.findBy(fields, function(field) {
@@ -44,13 +44,6 @@ describe('GeoExt.data.model.layer.Base', function() {
             });
             expect(opacityField).not.to.be(null);
             expect(opacityField).to.be.a(Ext.data.field.Field);
-        });
-        it('provides instances a field for visible', function(){
-            var visibilityField = Ext.Array.findBy(fields, function(field) {
-                return field.name === "visible";
-            });
-            expect(visibilityField).not.to.be(null);
-            expect(visibilityField).to.be.a(Ext.data.field.Field);
         });
         it('provides instances a field for minResolution', function(){
             var minResField = Ext.Array.findBy(fields, function(field) {
@@ -74,7 +67,7 @@ describe('GeoExt.data.model.layer.Base', function() {
 
         beforeEach(function() {
             layer = new ol.layer.Tile();
-            instance = Ext.create('GeoExt.data.model.layer.Base', layer);
+            instance = Ext.create('GeoExt.data.model.Layer', layer);
         });
         afterEach(function() {
             layer = null;
@@ -82,7 +75,7 @@ describe('GeoExt.data.model.layer.Base', function() {
         });
 
         it('can be constructed', function(){
-            expect(instance).to.be.an(GeoExt.data.model.layer.Base);
+            expect(instance).to.be.an(GeoExt.data.model.Layer);
         });
 
         it('references the passed layer', function(){
@@ -96,7 +89,7 @@ describe('GeoExt.data.model.layer.Base', function() {
 
         beforeEach(function() {
             layer = new ol.layer.Tile();
-            instance = Ext.create('GeoExt.data.model.layer.Base', layer);
+            instance = Ext.create('GeoExt.data.model.Layer', layer);
         });
         afterEach(function() {
             layer = null;
@@ -122,7 +115,7 @@ describe('GeoExt.data.model.layer.Base', function() {
                 minResolution: 12,
                 maxResolution: 99
             });
-            instance = Ext.create('GeoExt.data.model.layer.Base', layer);
+            instance = Ext.create('GeoExt.data.model.Layer', layer);
         });
         afterEach(function() {
             layer = null;
@@ -131,9 +124,6 @@ describe('GeoExt.data.model.layer.Base', function() {
 
         it('reads out the layers "opacity"', function(){
             expect(instance.get('opacity')).to.be(0.123);
-        });
-        it('reads out the layers "visible"', function(){
-            expect(instance.get('visible')).to.be(false);
         });
         it('reads out the layers "minResolution"', function(){
             expect(instance.get('minResolution')).to.be(12);
@@ -147,7 +137,7 @@ describe('GeoExt.data.model.layer.Base', function() {
         var instance;
 
         beforeEach(function() {
-            instance = Ext.create('GeoExt.data.model.layer.Base');
+            instance = Ext.create('GeoExt.data.model.Layer');
         });
         afterEach(function() {
             instance = null;
@@ -155,9 +145,6 @@ describe('GeoExt.data.model.layer.Base', function() {
 
         it('returns "undefined" for "opacity" if no layer was passed', function(){
             expect(instance.get('opacity')).to.be(undefined);
-        });
-        it('returns "undefined" for "visible" if no layer was passed', function(){
-            expect(instance.get('visible')).to.be(undefined);
         });
         it('returns "undefined" for "minResolution" if no layer was passed', function(){
             expect(instance.get('minResolution')).to.be(undefined);

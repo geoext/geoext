@@ -32,11 +32,13 @@ Ext.application({
         source3 = new ol.source.MapQuest({layer: 'hyb'});
         layer3 = new ol.layer.Tile({
             source: source3,
-            name: 'MapQuest Hybrid'
+            name: 'MapQuest Hybrid',
+            visible: false
         });
 
         group = new ol.layer.Group({
-            layers: [layer1, layer2]
+            layers: [layer1, layer2],
+            visible: true
         });
 
         olMap = new ol.Map({
@@ -59,7 +61,7 @@ Ext.application({
         });
 
         treeStore = Ext.create('GeoExt.data.TreeStore', {
-            layerStore: mapComponent.getStore()
+            layerGroup: olMap.getLayerGroup()
         });
 
         treePanel = Ext.create('GeoExt.tree.Panel', {

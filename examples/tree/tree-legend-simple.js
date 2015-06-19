@@ -134,7 +134,7 @@ Ext.application({
         });
 
         treeStore = Ext.create('GeoExt.data.TreeStore', {
-            layerStore: mapComponent.getStore()
+            layerGroup: olMap.getLayerGroup()
         });
 
         treePanel = Ext.create('GeoExt.tree.Panel', {
@@ -163,7 +163,7 @@ Ext.application({
         });
 
         treeStore2 = Ext.create('GeoExt.data.TreeStore', {
-            layerStore: mapComponent.getStore()
+            layerGroup: olMap.getLayerGroup()
         });
 
         treePanel2 = Ext.create('GeoExt.tree.Panel', {

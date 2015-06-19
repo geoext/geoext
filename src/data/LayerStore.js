@@ -21,8 +21,8 @@
  */
 Ext.define('GeoExt.data.LayerStore', {
     extend: 'Ext.data.Store',
-    requires: ['GeoExt.data.model.layer.Base'],
-    model: 'GeoExt.data.model.layer.Base',
+    requires: ['GeoExt.data.model.Layer'],
+    model: 'GeoExt.data.model.Layer',
 
     config: {
         /**
