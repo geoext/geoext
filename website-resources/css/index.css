@@ -1,0 +1,64 @@
+body {
+   font-family: 'Quattrocento Sans', sans-serif;
+   font-size: 1.05em
+}
+a.brand img {
+    float: left;
+    height: 28px;
+    margin: 6px 0 4px 0;
+}
+a.brand h1 {
+    width: 150px;
+    height: 28px;
+    float: right;
+    font-size: 26px;
+    margin: 2px 0 8px 4px;
+}
+#tagline {
+    margin: 2.5em 0 0.5em 0;
+    padding: 2em;
+    border-right-width: 0;
+}
+
+@media (max-width: 979px) {
+    #tagline {
+        margin: 0.5em 0;
+        padding: 0;
+    }
+}
+
+#tagline p {
+    font-size: 170%;
+    font-style: italic;
+}
+
+.footer {
+    height: 50px
+}
+
+.well {
+    clear: both;
+}
+
+img.thumb {
+    float: right;
+    margin-left: 10px
+}
+
+img.thumb_left {
+    float: left;
+    margin-right: 10px;
+    max-height:25px;
+    max-width:25px;
+}
+a.big-link:hover {
+    text-decoration: none;
+}
+.footer {
+    border-top: 1px solid #ccc;
+    margin-top: 20px;
+    padding: 20px;
+    font-size: smaller;
+    text-align: center; 
+}
+
