@@ -42,7 +42,11 @@
  */
 Ext.define("GeoExt.component.OverviewMap", {
     extend: 'Ext.Component',
-    xtype: 'gx_overviewmap',
+    alias: [
+        'widget.gx_overview',
+        'widget.gx_overviewmap',
+        'widget.gx_component_overviewmap'
+    ],
 
     config: {
         /**
