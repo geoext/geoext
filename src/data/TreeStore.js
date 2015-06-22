@@ -26,7 +26,7 @@ Ext.define('GeoExt.data.TreeStore', {
     config: {
         /**
          * The ol.layer.Group that the tree is derived from.
-         * @cfg {ol.layerGroup}
+         * @cfg {ol.layer.Group}
          */
         layerGroup: null,
 
@@ -36,6 +36,12 @@ Ext.define('GeoExt.data.TreeStore', {
          */
         textProperty: 'name'
     },
+
+    /**
+     * Defines if the given ol.layer.Group while be shown as node or not.
+     * @property {boolean}
+     */
+    showLayerGroupNode: false,
 
     /**
      * @cfg
@@ -52,15 +58,37 @@ Ext.define('GeoExt.data.TreeStore', {
         /**
          * Inits the tree store by cascading down the provided ol.layer.Group
          * appending each sublayer.
-         * TODO: Make provided ol.layer.Group the root node.
          *
          * @inheritDoc
          */
         nodebeforeExpand: function(node){
             var me = this;
             if(node.isRoot()){
-                me.addLayerNode(node, me.layerGroup);
+                if(me.showLayerGroupNode) {
+                    me.addLayerNode(node, me.layerGroup);
+                } else {
+                    var collection = me.layerGroup.getLayers();
+                    collection.once('remove', me.onLayerCollectionChanged, me);
+                    collection.once('add', me.onLayerCollectionChanged, me);
+                    collection.forEach(function(layer){
+                        me.addLayerNode(node, layer);
+                    });
+                }
             }
+        },
+        noderemove: function(parentNode, removedNode){
+            var me = this;
+            if(removedNode.isRoot()){
+                return;
+            }
+            var layer = removedNode.getOlLayer();
+            this.__updating = true;
+            if(layer instanceof ol.layer.Group){
+                var collection = layer.getLayers();
+                collection.un('add', me.onLayerCollectionChanged, me);
+                collection.un('remove', me.onLayerCollectionChanged, me);
+            }
+            this.__updating = false;
         }
     },
 
@@ -76,6 +104,8 @@ Ext.define('GeoExt.data.TreeStore', {
             layer = rec instanceof ol.layer.Base ? rec : rec.data;
 
         if(layer instanceof ol.layer.Group){
+            layer.getLayers().once('add', this.onLayerCollectionChanged, this);
+            layer.getLayers().once('remove', this.onLayerCollectionChanged, this);
             var folderNode = node.appendChild(layer);
             layer.getLayers().forEach(function(childLayer){
                 me.addLayerNode(folderNode, childLayer);
@@ -87,19 +117,12 @@ Ext.define('GeoExt.data.TreeStore', {
     },
 
     /**
-     * Checks/Unchecks the checkbox of a treenode if the layers visibility
-     * changed from mapside.
+     *  load() the treeStore when a layer is added to a collection
+     *  (ol.layer.Group);
      *
-     * @private
-     * @param {ol.ObjectEvent} evt
+     *  @private
      */
-    onLayerVisibleChange: function(evt){
-        var me = this,
-            layer = evt.target,
-            layerNode = me.getNodeById(layer.id);
-
-        if(layerNode && layer){
-            layerNode.set('checked', layer.getVisible());
-        }
+    onLayerCollectionChanged: function(){
+        this.load();
     }
 });
