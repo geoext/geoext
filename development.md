@@ -162,7 +162,7 @@ Inside of the workspace clone the `geoext3` repository into the `packages` subfo
 
 ```
 $ cd /path/to/workspace/packages
-$ git clone https://github.com/KaiVolland/geoext3.git GeoExt3
+$ git clone https://github.com/geoext/geoext3.git GeoExt3
 $ cd GeoExt3
 ```
 
