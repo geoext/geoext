@@ -14,11 +14,20 @@
 
     <div id='description'>
         <p>
-            This example shows a simple popup showing the position you clicked.
+            This example shows a simple popup showing the position that was
+            hovered.
         </p>
         <p>
-            Have a look at <a href="gx-popup.js">simple-ol-popup.js</a> to see how this is
-            done.
+            To achieve this effect, the <code>GeoExt.component.Map</code> is
+            instantiated with <code>pointerRest: true</code>, so that the
+            events <code>pointerrest</code> and <code>pointerout</code> become
+            available. Whenever <code>pointerrest</code> is fired, an instance
+            of <code>GeoExt.panel.Popup</code> is positioned and its HTML
+            updated.
+        </p>
+        <p>
+            Have a look at <a href="gx-popup.js">gx-popup.js</a> to see how this
+            is done.
         </p>
     </div>
 

@@ -46,6 +46,74 @@ Ext.define("GeoExt.component.Map", {
     ],
 
     /**
+     * @event pointerrest
+     *
+     * Fires if the user has left the pointer for an amount
+     * of #pointerRestInterval milliseconds at the *same location*. Use the
+     * configuration #pointerRestPixelTolerance to configure how long a pixel is
+     * considered to be on the *same location*.
+     *
+     * Please note that this event will only fire if the map has #pointerRest
+     * configured with `true`.
+     *
+     * @param {ol.MapBrowserEvent} olEvt The original and most recent
+     *     MapBrowserEvent event.
+     *  @param {ol.Pixel} lastPixel The originally captured pixel, which defined
+     *     the center of the tolerance bounds (itself configurable with the the
+     *     configuration #pointerRestPixelTolerance). If this is null, a
+     *     completely *new* pointerrest event just happened.
+     *
+     */
+
+    /**
+     * @event pointerrestout
+     *
+     * Fires if the user first was resting his pointer on the map element, but
+     * then moved the pointer out of the map completely.
+     *
+     * Please note that this event will only fire if the map has #pointerRest
+     * configured with `true`.
+     *
+     * @param {ol.MapBrowserEvent} olEvt The MapBrowserEvent event.
+     */
+
+    config: {
+        /**
+         * A configured map or a configuration object for the map constructor.
+         *
+         * @cfg {ol.Map} map
+         */
+        map: null,
+
+        /**
+         * A boolean flag to control whether the map component will fire the
+         * events #pointerrest and #pointerrestout. If this is set to `false`
+         * (the default), no such events will be fired.
+         *
+         * @cfg {boolean} pointerRest Whether the component shall provide the
+         *     `pointerrest` and `pointerrestout` events.
+         */
+        pointerRest: false,
+
+        /**
+         * The amount of milliseconds after which we will consider a rested
+         * pointer as `pointerrest`. Only relevant if #pointerRest is `true`.
+         *
+         * @cfg {Number} pointerRestInterval The interval in milliseconds.
+         */
+        pointerRestInterval: 1000,
+
+        /**
+         * The amount of pixels that a pointer may move in both vertical and
+         * horizontal direction, and still be considered to be a #pointerrest.
+         * Only relevant if #pointerRest is `true`.
+         *
+         * @cfg {Number} pointerRestPixelTolerance The tolerance in pixels.
+         */
+        pointerRestPixelTolerance: 3
+    },
+
+    /**
      * Whether we already rendered an ol.Map in this component. Will be
      * updated in #onResize, after the first rendering happened.
      *
@@ -60,14 +128,27 @@ Ext.define("GeoExt.component.Map", {
      */
     layerStore: null,
 
-    config: {
-        /**
-         * A configured map or a configuration object for the map constructor.
-         * @cfg {ol.Map} map
-         */
-        map: null
-    },
+    /**
+     * The location of the last mousemove which we track to be able to fire
+     * the #pointerrest event. Only usable if #pointerRest is `true`.
+     *
+     * @property {ol.Pixel} lastPointerPixel
+     * @private
+     */
+    lastPointerPixel: null,
 
+    /**
+     * Whether the pointer is currently over the map component. Only usable if
+     * the configuration #pointerRest is `true`.
+     *
+     * @property {boolean} isMouseOverMapEl
+     * @private
+     */
+    isMouseOverMapEl: null,
+
+    /**
+     * @inheritdoc
+     */
     initComponent: function() {
         var me = this;
         if(!(me.getMap() instanceof ol.Map)){
@@ -89,6 +170,9 @@ Ext.define("GeoExt.component.Map", {
         me.callParent();
     },
 
+    /**
+     * (Re-)render the map when size changes.
+     */
     onResize: function(){
         // Get the corresponding view of the controller (the mapComponent).
         var me = this;
@@ -98,6 +182,162 @@ Ext.define("GeoExt.component.Map", {
         } else {
             me.getMap().updateSize();
         }
+    },
+
+    /**
+     * Will contain a buffered version of #unbufferedPointerMove, but only if
+     * the configuration #pointerRest is true.
+     *
+     * @private
+     */
+    bufferedPointerMove: Ext.emptyFn,
+
+    /**
+     * Bound as a eventlistener for pointermove on the OpenLayers map, but only
+     * if the configuration #pointerRest is true. Will eventually fire the
+     * special events #pointerrest or #pointerrestout.
+     *
+     * @param {ol.MapBrowserEvent} olEvt The MapBrowserEvent event.
+     * @private
+     */
+    unbufferedPointerMove: function(olEvt){
+        var me = this;
+        var tolerance = me.getPointerRestPixelTolerance();
+        var pixel = olEvt.pixel;
+
+        if (!me.isMouseOverMapEl) {
+            me.fireEvent('pointerrestout', olEvt);
+            return;
+        }
+
+        if (me.lastPointerPixel) {
+            var deltaX = Math.abs(me.lastPointerPixel[0] - pixel[0]);
+            var deltaY = Math.abs(me.lastPointerPixel[1] - pixel[1]);
+            if (deltaX > tolerance || deltaY > tolerance) {
+                me.lastPointerPixel = pixel;
+            } else {
+                // fire pointerrest, and include the original pointer pixel
+                me.fireEvent('pointerrest', olEvt, me.lastPointerPixel);
+                return;
+            }
+        } else {
+            me.lastPointerPixel = pixel;
+        }
+        // a new pointerrest event, the second argument (the 'original' pointer
+        // pixel) must be null, as we start from a totally new position
+        me.fireEvent('pointerrest', olEvt, null);
+    },
+
+    /**
+     * Creates #bufferedPointerMove from #unbufferedPointerMove and binds it
+     * to `pointermove` on the OpenLayers map.
+     *
+     * @private
+     */
+    registerPointerRestEvents: function(){
+        var me = this;
+        var map = me.getMap();
+
+        if (me.bufferedPointerMove === Ext.emptyFn) {
+            me.bufferedPointerMove = Ext.Function.createBuffered(
+                me.unbufferedPointerMove,
+                me.getPointerRestInterval(),
+                me
+            );
+        }
+
+        // Check if we have to fire any pointer* events
+        map.on('pointermove', me.bufferedPointerMove);
+
+        if (!me.rendered) {
+            // make sure we do not fire any if the pointer left the component
+            me.on('afterrender', me.bindEnterLeaveListeners, me);
+        } else {
+            me.bindEnterLeaveListeners();
+        }
+
+    },
+
+    /**
+     * Registers listeners that'll take care of setting #isMouseOverMapEl to
+     * correct values.
+     *
+     * @private
+     */
+    bindEnterLeaveListeners: function() {
+        var me = this;
+        var mapEl = me.getEl();
+        if (mapEl) {
+            mapEl.on({
+                mouseenter: me.onMouseEnter,
+                mouseleave: me.onMouseLeave,
+                scope: me
+            });
+        }
+    },
+
+    /**
+     * Unregisters listeners that'll take care of setting #isMouseOverMapEl to
+     * correct values.
+     *
+     * @private
+     */
+    unbindEnterLeaveListeners: function() {
+        var me = this;
+        var mapEl = me.getEl();
+        if (mapEl) {
+            mapEl.un({
+                mouseenter: me.onMouseEnter,
+                mouseleave: me.onMouseLeave,
+                scope: me
+            });
+        }
+    },
+
+    /**
+     * Sets isMouseOverMapEl to true, see #pointerRest.
+     *
+     * @private
+     */
+    onMouseEnter: function() {
+        this.isMouseOverMapEl = true;
+    },
+
+    /**
+     * Sets isMouseOverMapEl to false, see #pointerRest.
+     *
+     * @private
+     */
+    onMouseLeave: function() {
+        this.isMouseOverMapEl = false;
+    },
+
+    /**
+     * Unregisters the #bufferedPointerMove event listener and unbinds the
+     * enter- and leave-listeners.
+     */
+    unregisterPointerRestEvents: function(){
+        var map = this.getMap();
+        this.unbindEnterLeaveListeners();
+        if (map) {
+            map.un('pointermove', this.bufferedPointerMove);
+        }
+    },
+
+    /**
+     * Whenever the value of #pointerRest is changed, this method will take
+     * care of registering or unregistering internal event listeners.
+     *
+     * @param {boolean} val The new value that someone set for `pointerRest`.
+     * @return {boolean} The passed new value for  `pointerRest` unchanged.
+     */
+    applyPointerRest: function(val) {
+        if (val) {
+            this.registerPointerRestEvents();
+        } else {
+            this.unregisterPointerRestEvents();
+        }
+        return val;
     },
 
     /**

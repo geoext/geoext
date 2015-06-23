@@ -3,7 +3,7 @@ Ext.require([
 ]);
 
 var olMap,
-    mapPanel,
+    mapComp,
     popup;
 
 Ext.application({
@@ -38,24 +38,31 @@ Ext.application({
             bodyPadding: 5
         });
 
-        /**
-         * Add a click handler to the map to render the popup.
-         */
-        olMap.on('singleclick', function(evt) {
-            var coordinate = evt.coordinate,
-                hdms = ol.coordinate.toStringHDMS(ol.proj.transform(
-                coordinate, 'EPSG:3857', 'EPSG:4326'));
-
-            // set content and position popup
-            popup.setHtml('You clicked here:<br><code>' + hdms + '</code>');
-            popup.position(coordinate);
-        });
-
-        mapPanel = Ext.create('GeoExt.component.Map', {
+        mapComp = Ext.create('GeoExt.component.Map', {
             title: 'GeoExt.panel.Map Example',
             map: olMap,
-            region: 'center'
+            region: 'center',
+            pointerRest: true,
+            pointerRestInterval: 750,
+            pointerRestPixelTolerance: 5
         });
+
+        // Add a pointerrest handler to the map component to render the popup.
+        mapComp.on('pointerrest', function(evt) {
+            var coordinate = evt.coordinate,
+            hdms = ol.coordinate.toStringHDMS(ol.proj.transform(
+                    coordinate, 'EPSG:3857', 'EPSG:4326'));
+            // Insert a linebreak after either N or S in hdms
+            hdms = hdms.replace(/([NS])/, '$1<br>');
+
+            // set content and position popup
+            popup.setHtml('Pointer rested on: <br /><code>' + hdms + '</code>');
+            popup.position(coordinate);
+            popup.show();
+        });
+
+        // hide the popup once it isn't on the map any longer
+        mapComp.on('pointerrestout', popup.hide, popup);
 
         description = Ext.create('Ext.panel.Panel', {
             contentEl: 'description',
@@ -69,7 +76,7 @@ Ext.application({
         Ext.create('Ext.Viewport', {
             layout: "border",
             items: [
-                mapPanel,
+                mapComp,
                 description
             ]
         });
