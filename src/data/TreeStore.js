@@ -130,12 +130,12 @@ Ext.define('GeoExt.data.TreeStore', {
     },
 
     /**
-     *  load() the treeStore when a layer is added to a collection
-     *  (ol.layer.Group);
+     *  Remove children from rootNode and readd the layerGroup-collection.
      *
      *  @private
      */
     onLayerCollectionChanged: function(){
-        this.load();
+        this.getRootNode().removeAll();
+        this.addLayerNode(this.getRootNode(), this.getLayerGroup());
     }
 });
