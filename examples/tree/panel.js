@@ -61,7 +61,8 @@ Ext.application({
         });
 
         treeStore = Ext.create('GeoExt.data.TreeStore', {
-            layerGroup: olMap.getLayerGroup()
+            layerGroup: olMap.getLayerGroup(),
+            showLayerGroupNode: true
         });
 
         treePanel = Ext.create('GeoExt.tree.Panel', {

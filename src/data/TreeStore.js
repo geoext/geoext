@@ -26,7 +26,7 @@ Ext.define('GeoExt.data.TreeStore', {
     config: {
         /**
          * The ol.layer.Group that the tree is derived from.
-         * @cfg {ol.layerGroup}
+         * @cfg {ol.layer.Group}
          */
         layerGroup: null,
 
@@ -36,6 +36,12 @@ Ext.define('GeoExt.data.TreeStore', {
          */
         textProperty: 'name'
     },
+
+    /**
+     * Defines if the given ol.layer.Group while be shown as node or not.
+     * @property {boolean}
+     */
+    showLayerGroupNode: false,
 
     /**
      * @cfg
@@ -48,20 +54,11 @@ Ext.define('GeoExt.data.TreeStore', {
         }
     },
 
-    listeners: {
-        /**
-         * Inits the tree store by cascading down the provided ol.layer.Group
-         * appending each sublayer.
-         * TODO: Make provided ol.layer.Group the root node.
-         *
-         * @inheritDoc
-         */
-        nodebeforeExpand: function(node){
-            var me = this;
-            if(node.isRoot()){
-                me.addLayerNode(node, me.layerGroup);
-            }
-        }
+    constructor: function(){
+        var me = this;
+        me.callParent(arguments);
+        me.on('nodebeforeexpand', me.handleNodeBeforeExpand, me);
+        me.on('noderemove', me.handleNodeRemove, me);
     },
 
     /**
@@ -76,6 +73,8 @@ Ext.define('GeoExt.data.TreeStore', {
             layer = rec instanceof ol.layer.Base ? rec : rec.data;
 
         if(layer instanceof ol.layer.Group){
+            layer.getLayers().once('add', this.onLayerCollectionChanged, this);
+            layer.getLayers().once('remove', this.onLayerCollectionChanged, this);
             var folderNode = node.appendChild(layer);
             layer.getLayers().forEach(function(childLayer){
                 me.addLayerNode(folderNode, childLayer);
@@ -87,19 +86,56 @@ Ext.define('GeoExt.data.TreeStore', {
     },
 
     /**
-     * Checks/Unchecks the checkbox of a treenode if the layers visibility
-     * changed from mapside.
+     * Listens to the nodebeforeexpand event. Adds nodes corresponding to the
+     * data type.
      *
+     * @param {GeoExt.data.model.LayerTreeNode} node
      * @private
-     * @param {ol.ObjectEvent} evt
      */
-    onLayerVisibleChange: function(evt){
-        var me = this,
-            layer = evt.target,
-            layerNode = me.getNodeById(layer.id);
-
-        if(layerNode && layer){
-            layerNode.set('checked', layer.getVisible());
+    handleNodeBeforeExpand: function(node){
+        var me = this;
+        if(node.isRoot()){
+            if(me.showLayerGroupNode) {
+                me.addLayerNode(node, me.layerGroup);
+            } else {
+                var collection = me.layerGroup.getLayers();
+                collection.once('remove', me.onLayerCollectionChanged, me);
+                collection.once('add', me.onLayerCollectionChanged, me);
+                collection.forEach(function(layer){
+                    me.addLayerNode(node, layer);
+                });
+            }
         }
+    },
+
+    /**
+     * Listens to the noderemove event. Updates the tree with the current
+     * map state.
+     *
+     * @param {GeoExt.data.model.LayerTreeNode} parentNode
+     * @param {GeoExt.data.model.LayerTreeNode} removedNode
+     * @private
+     */
+    handleNodeRemove: function(parentNode, removedNode){
+        var me = this;
+        if(removedNode.isRoot()){
+            return;
+        }
+        var layer = removedNode.getOlLayer();
+        if(layer instanceof ol.layer.Group){
+            var collection = layer.getLayers();
+            collection.un('add', me.onLayerCollectionChanged, me);
+            collection.un('remove', me.onLayerCollectionChanged, me);
+        }
+    },
+
+    /**
+     *  load() the treeStore when a layer is added to a collection
+     *  (ol.layer.Group);
+     *
+     *  @private
+     */
+    onLayerCollectionChanged: function(){
+        this.load();
     }
 });
