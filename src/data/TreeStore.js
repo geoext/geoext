@@ -135,7 +135,17 @@ Ext.define('GeoExt.data.TreeStore', {
      *  @private
      */
     onLayerCollectionChanged: function(){
-        this.getRootNode().removeAll();
-        this.addLayerNode(this.getRootNode(), this.getLayerGroup());
+        var me = this;
+        me.getRootNode().removeAll();
+        if(me.showLayerGroupNode) {
+            me.addLayerNode(me.getRootNode(), me.getLayerGroup());
+        } else {
+            var collection = me.getLayerGroup().getLayers();
+            collection.once('remove', me.onLayerCollectionChanged, me);
+            collection.once('add', me.onLayerCollectionChanged, me);
+            collection.forEach(function(layer){
+                me.addLayerNode(me.getRootNode(), layer);
+            });
+        }
     }
 });

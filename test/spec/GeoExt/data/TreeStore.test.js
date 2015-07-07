@@ -127,7 +127,51 @@ describe('GeoExt.data.TreeStore', function() {
             document.body.removeChild(div);
         });
 
-        it('sets add/remove eventlisteners for ol.Collections', function() {
+        it('sets add/remove eventlisteners for ol.Collections (hidden LayerGroupNode)', function() {
+            treeStore = Ext.create('GeoExt.data.TreeStore', {
+                layerGroup: olMap.getLayerGroup()
+            });
+
+            Ext.create('GeoExt.tree.Panel', {
+                title: 'GeoExt.tree.Panel Example',
+                store: treeStore,
+                rootVisible: false,
+                flex: 1,
+                border: false
+            });
+
+
+            var layer2 = new ol.layer.Tile({
+                source: new ol.source.MapQuest({
+                    layer: 'hyb'
+                }),
+                name: 'LAYERZWO'
+            });
+            mapComponent.addLayer(layer2);
+
+            var treeNode = treeStore.getRootNode().getChildAt(1);
+            expect(treeNode.get('text')).to.be(layer2.get('name'));
+
+            mapComponent.removeLayer(layer);
+            treeNode = treeStore.getRootNode().getChildAt(0);
+            expect(treeNode.get('text')).to.be(layer2.get('name'));
+        });
+
+        it('sets add/remove eventlisteners for ol.Collections (visible LayerGroupNode)', function() {
+            treeStore = Ext.create('GeoExt.data.TreeStore', {
+                layerGroup: olMap.getLayerGroup(),
+                showLayerGroupNode: true
+            });
+
+            Ext.create('GeoExt.tree.Panel', {
+                title: 'GeoExt.tree.Panel Example',
+                store: treeStore,
+                rootVisible: false,
+                flex: 1,
+                border: false
+            });
+
+
             var layer2 = new ol.layer.Tile({
                     source: new ol.source.MapQuest({
                         layer: 'hyb'
@@ -143,5 +187,7 @@ describe('GeoExt.data.TreeStore', function() {
             treeNode = treeStore.getRootNode().getChildAt(0).getChildAt(0);
             expect(treeNode.get('text')).to.be(layer2.get('name'));
         });
+
+
     });
 });
