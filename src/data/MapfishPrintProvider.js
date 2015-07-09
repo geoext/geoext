@@ -38,20 +38,54 @@ Ext.define('GeoExt.data.MapfishPrintProvider', {
     },
 
     statics: {
-        getSerializedLayers: function(layerStore){
+        /**
+         * Will return an array of serialized layers for mapfish print servlet
+         * v3.0.
+         *
+         * @param {GeoExt.data.LayerStore, {ol.Collection.<ol.layer.Base>},
+         * Array<ol.layer.Base>}
+         *
+         * @static
+         */
+        getSerializedLayers: function(layers){
             var serializedLayers = [];
-            layerStore.each(function(layerRec) {
-                var layer = layerRec.getOlLayer();
+            var inputLayers = [];
+
+            if(layers instanceof GeoExt.data.LayerStore){
+                layers.each(function(layerRec) {
+                    var layer = layerRec.getOlLayer();
+                    inputLayers.push(layer);
+                });
+            } else if (layers instanceof ol.Collection){
+                inputLayers = layers.getArray();
+            } else {
+                inputLayers = layers;
+            }
+
+            Ext.each(inputLayers, function(layer){
                 var source = layer.getSource();
+                var serialized = {};
                 if (source instanceof ol.source.TileWMS) {
-                    var serialized = {
+                    serialized = {
                         "baseURL": source.getUrls()[0],
                         "customParams": source.getParams(),
                         "layers": [
                             source.getParams().LAYERS
                         ],
                         "opacity": layer.getOpacity(),
-                        "styles": [""],
+                        "styles": [ "" ],
+                        "type": "WMS"
+                    };
+                    serializedLayers.push(serialized);
+                } else if (source instanceof ol.source.ImageWMS){
+                    serialized = {
+                        "baseURL": source.getUrl(),
+                        "customParams": source.getParams(),
+                        "layers": [
+                            source.getParams().LAYERS
+                        ],
+                        "opacity": layer.getOpacity(),
+                        "styles": [ "" ],
                         "type": "WMS"
                     };
                     serializedLayers.push(serialized);
@@ -59,6 +93,7 @@ Ext.define('GeoExt.data.MapfishPrintProvider', {
                     // TODO implement serialization of other ol.source classes.
                 }
             });
+
             return serializedLayers;
         },
 
