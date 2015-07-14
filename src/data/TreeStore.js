@@ -75,6 +75,7 @@ Ext.define('GeoExt.data.TreeStore', {
         if(layer instanceof ol.layer.Group){
             layer.getLayers().once('add', this.onLayerCollectionChanged, this);
             layer.getLayers().once('remove', this.onLayerCollectionChanged, this);
+            layer.text = layer.get(me.getTextProperty());
             var folderNode = node.appendChild(layer);
             layer.getLayers().forEach(function(childLayer){
                 me.addLayerNode(folderNode, childLayer);
