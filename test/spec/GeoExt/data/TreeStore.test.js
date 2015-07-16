@@ -149,7 +149,7 @@ describe('GeoExt.data.store.Tree', function() {
             });
             mapComponent.addLayer(layer2);
 
-            var treeNode = treeStore.getRootNode().getChildAt(1);
+            var treeNode = treeStore.getRootNode().getChildAt(0);
             expect(treeNode.get('text')).to.be(layer2.get('name'));
 
             mapComponent.removeLayer(layer);
@@ -180,7 +180,7 @@ describe('GeoExt.data.store.Tree', function() {
                 });
             mapComponent.addLayer(layer2);
 
-            var treeNode = treeStore.getRootNode().getChildAt(0).getChildAt(1);
+            var treeNode = treeStore.getRootNode().getChildAt(0).getChildAt(0);
             expect(treeNode.get('text')).to.be(layer2.get('name'));
 
             mapComponent.removeLayer(layer);

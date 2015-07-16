@@ -79,9 +79,9 @@ Ext.define('GeoExt.data.store.Tree', {
             layer.getLayers().once('remove', this.onLayerCollectionChanged, this);
             layer.text = layer.get(me.getTextProperty());
             var folderNode = node.appendChild(layer);
-            layer.getLayers().forEach(function(childLayer){
+            Ext.each(layer.getLayers().getArray(), function(childLayer) {
                 me.addLayerNode(folderNode, childLayer);
-            });
+            }, me, true);
         } else {
             layer.text = layer.get(me.getTextProperty());
             node.appendChild(layer);
@@ -104,9 +104,9 @@ Ext.define('GeoExt.data.store.Tree', {
                 var collection = me.layerGroup.getLayers();
                 collection.once('remove', me.onLayerCollectionChanged, me);
                 collection.once('add', me.onLayerCollectionChanged, me);
-                collection.forEach(function(layer){
+                Ext.each(collection.getArray(), function(layer) {
                     me.addLayerNode(node, layer);
-                });
+                }, me, true);
             }
         }
     },
@@ -146,9 +146,9 @@ Ext.define('GeoExt.data.store.Tree', {
             var collection = me.getLayerGroup().getLayers();
             collection.once('remove', me.onLayerCollectionChanged, me);
             collection.once('add', me.onLayerCollectionChanged, me);
-            collection.forEach(function(layer){
+            Ext.each(collection.getArray(), function(layer) {
                 me.addLayerNode(me.getRootNode(), layer);
-            });
+            }, me, true);
         }
     }
 });
