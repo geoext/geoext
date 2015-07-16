@@ -266,7 +266,7 @@ Ext.define('GeoExt.component.FeatureRenderer', {
             ];
         this.el.setSize(Math.round(width), Math.round(height));
         this.map.updateSize();
-        this.map.getView().fitExtent(bounds, this.map.getSize());
+        this.map.getView().fit(bounds, this.map.getSize());
     },
     /**
      * We're setting the symbolizers on the feature.
