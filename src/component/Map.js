@@ -369,7 +369,7 @@ Ext.define("GeoExt.component.Map", {
      * @param {ol.Extent} extent
      */
     setExtent: function(extent){
-        this.getView().fitExtent(extent, this.getMap().getSize());
+        this.getView().fit(extent, this.getMap().getSize());
     },
 
     /**
