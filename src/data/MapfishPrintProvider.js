@@ -42,7 +42,7 @@ Ext.define('GeoExt.data.MapfishPrintProvider', {
          * Will return an array of serialized layers for mapfish print servlet
          * v3.0.
          *
-         * @param {GeoExt.data.LayerStore, {ol.Collection.<ol.layer.Base>},
+         * @param {GeoExt.data.store.Layer, {ol.Collection.<ol.layer.Base>},
          * Array<ol.layer.Base>}
          *
          * @static
@@ -51,7 +51,7 @@ Ext.define('GeoExt.data.MapfishPrintProvider', {
             var serializedLayers = [];
             var inputLayers = [];
 
-            if(layers instanceof GeoExt.data.LayerStore){
+            if(layers instanceof GeoExt.data.store.Layer){
                 layers.each(function(layerRec) {
                     var layer = layerRec.getOlLayer();
                     inputLayers.push(layer);

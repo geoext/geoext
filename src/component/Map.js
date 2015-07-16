@@ -42,7 +42,7 @@ Ext.define("GeoExt.component.Map", {
     ],
 
     requires: [
-        'GeoExt.data.LayerStore'
+        'GeoExt.data.store.Layer'
     ],
 
     /**
@@ -123,7 +123,7 @@ Ext.define("GeoExt.component.Map", {
     mapRendered: false,
 
     /**
-     * @property {GeoExt.data.LayerStore} layerStore
+     * @property {GeoExt.data.store.Layer} layerStore
      * @private
      */
     layerStore: null,
@@ -161,7 +161,7 @@ Ext.define("GeoExt.component.Map", {
             me.setMap(olMap);
         }
 
-        me.layerStore = Ext.create('GeoExt.data.LayerStore', {
+        me.layerStore = Ext.create('GeoExt.data.store.Layer', {
             storeId: me.getId() + "-store",
             map: me.getMap()
         });
@@ -409,8 +409,8 @@ Ext.define("GeoExt.component.Map", {
     },
 
     /**
-     * Returns the GeoExt.data.LayerStore
-     * @return GeoExt.data.LayerStore
+     * Returns the GeoExt.data.store.Layer
+     * @return GeoExt.data.store.Layer
      */
     getStore: function(){
         return this.layerStore;
