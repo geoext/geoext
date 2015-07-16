@@ -18,8 +18,10 @@
  * A store that is synchronized with a GeoExt.data.LayerStore. It will be used
  * by a GeoExt.tree.Panel.
  */
-Ext.define('GeoExt.data.TreeStore', {
+Ext.define('GeoExt.data.store.Tree', {
     extend: 'Ext.data.TreeStore',
+
+    alternateClassName: ['GeoExt.data.TreeStore'],
 
     model: 'GeoExt.data.model.LayerTreeNode',
 

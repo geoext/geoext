@@ -1,9 +1,9 @@
-Ext.Loader.syncRequire(['GeoExt.data.TreeStore', 'GeoExt.tree.Panel']);
+Ext.Loader.syncRequire(['GeoExt.data.store.Tree', 'GeoExt.tree.Panel']);
 
-describe('GeoExt.data.TreeStore', function() {
+describe('GeoExt.data.store.Tree', function() {
     describe('basics', function(){
         it('is defined', function(){
-            expect(GeoExt.data.TreeStore).not.to.be(undefined);
+            expect(GeoExt.data.store.Tree).not.to.be(undefined);
         });
     });
 
@@ -36,7 +36,7 @@ describe('GeoExt.data.TreeStore', function() {
                 map: olMap
             });
 
-            treeStore = Ext.create('GeoExt.data.TreeStore', {
+            treeStore = Ext.create('GeoExt.data.store.Tree', {
                 layerGroup: olMap.getLayerGroup()
             });
 
@@ -54,14 +54,14 @@ describe('GeoExt.data.TreeStore', function() {
         });
 
         it('can be created with ol.Map.getLayerGroup()', function() {
-            treeStore = Ext.create('GeoExt.data.TreeStore', {
+            treeStore = Ext.create('GeoExt.data.store.Tree', {
                 layerStore: olMap.getLayerGroup()
             });
-            expect(treeStore).to.be.a(GeoExt.data.TreeStore);
+            expect(treeStore).to.be.a(GeoExt.data.store.Tree);
         });
 
         it('will react to the showLayerGroupNode property', function() {
-            treeStore = Ext.create('GeoExt.data.TreeStore', {
+            treeStore = Ext.create('GeoExt.data.store.Tree', {
                 layerGroup: olMap.getLayerGroup(),
                 showLayerGroupNode: true
             });
@@ -110,7 +110,7 @@ describe('GeoExt.data.TreeStore', function() {
                 map: olMap
             });
 
-            treeStore = Ext.create('GeoExt.data.TreeStore', {
+            treeStore = Ext.create('GeoExt.data.store.Tree', {
                 layerGroup: olMap.getLayerGroup()
             });
 
@@ -128,7 +128,7 @@ describe('GeoExt.data.TreeStore', function() {
         });
 
         it('sets add/remove eventlisteners for ol.Collections (hidden LayerGroupNode)', function() {
-            treeStore = Ext.create('GeoExt.data.TreeStore', {
+            treeStore = Ext.create('GeoExt.data.store.Tree', {
                 layerGroup: olMap.getLayerGroup()
             });
 
@@ -158,7 +158,7 @@ describe('GeoExt.data.TreeStore', function() {
         });
 
         it('sets add/remove eventlisteners for ol.Collections (visible LayerGroupNode)', function() {
-            treeStore = Ext.create('GeoExt.data.TreeStore', {
+            treeStore = Ext.create('GeoExt.data.store.Tree', {
                 layerGroup: olMap.getLayerGroup(),
                 showLayerGroupNode: true
             });
