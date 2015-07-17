@@ -46,6 +46,14 @@ Ext.define('GeoExt.data.store.Tree', {
     showLayerGroupNode: false,
 
     /**
+     * Defines if the order of the layers added to the store will be
+     * reversed. The default behaviour and what most users expect is
+     * that mapLayers on top are also on top in the tree.
+     * @property {boolean}
+     */
+    inverseLayerOrder: true,
+
+    /**
      * @cfg
      * @inheritdoc Ext.data.TreeStore
      */
@@ -81,7 +89,7 @@ Ext.define('GeoExt.data.store.Tree', {
             var folderNode = node.appendChild(layer);
             Ext.each(layer.getLayers().getArray(), function(childLayer) {
                 me.addLayerNode(folderNode, childLayer);
-            }, me, true);
+            }, me, me.inverseLayerOrder);
         } else {
             layer.text = layer.get(me.getTextProperty());
             node.appendChild(layer);
@@ -106,7 +114,7 @@ Ext.define('GeoExt.data.store.Tree', {
                 collection.once('add', me.onLayerCollectionChanged, me);
                 Ext.each(collection.getArray(), function(layer) {
                     me.addLayerNode(node, layer);
-                }, me, true);
+                }, me, me.inverseLayerOrder);
             }
         }
     },
@@ -148,7 +156,7 @@ Ext.define('GeoExt.data.store.Tree', {
             collection.once('add', me.onLayerCollectionChanged, me);
             Ext.each(collection.getArray(), function(layer) {
                 me.addLayerNode(me.getRootNode(), layer);
-            }, me, true);
+            }, me, me.inverseLayerOrder);
         }
     }
 });
