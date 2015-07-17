@@ -133,7 +133,7 @@ Ext.define('GeoExt.data.store.Tree', {
     },
 
     /**
-     *  Remove children from rootNode and readd the layerGroup-collection.
+     *  Remove children from rootNode and read the layerGroup-collection.
      *
      *  @private
      */
