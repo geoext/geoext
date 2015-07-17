@@ -1,10 +1,10 @@
-Ext.Loader.syncRequire(['GeoExt.data.LayerStore']);
+Ext.Loader.syncRequire(['GeoExt.data.store.Layer']);
 
-describe('GeoExt.data.LayerStore', function() {
+describe('GeoExt.data.store.Layer', function() {
 
     describe('basics', function(){
         it('is defined', function(){
-            expect(GeoExt.data.LayerStore).not.to.be(undefined);
+            expect(GeoExt.data.store.Layer).not.to.be(undefined);
         });
     });
 });
