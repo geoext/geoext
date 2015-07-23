@@ -39,6 +39,57 @@ Ext.define('GeoExt.data.MapfishPrintProvider', {
 
     statics: {
         /**
+         * Will return an array of ol-layers by the given collection.
+         * Layers contained in ol.layerGroups get extracted and groups
+         * get removed from returning array
+         *
+         * @param {GeoExt.data.store.Layer, {ol.Collection.<ol.layer.Base>},
+         * Array<ol.layer.Base>}
+         * @returns {Array} inputLayers - the flat layers array
+         */
+        getLayerArray: function(layers) {
+            var inputLayers = [];
+            var extractingLayerGroups = true;
+
+            if(layers instanceof GeoExt.data.store.Layer){
+                layers.each(function(layerRec) {
+                    var layer = layerRec.getOlLayer();
+                    inputLayers.push(layer);
+                });
+            } else if (layers instanceof ol.Collection){
+                inputLayers = layers.getArray();
+            } else {
+                inputLayers = Ext.clone(layers);
+            }
+
+            while (extractingLayerGroups) {
+                var groups = [];
+                var groupLayers = [];
+                for (var i = 0; i < inputLayers.length; i++) {
+                    if (inputLayers[i] instanceof ol.layer.Group) {
+                        groups.push(inputLayers[i]);
+                        for (var j = 0;
+                             j < inputLayers[i].getLayers().getArray().length;
+                             j++) {
+                             groupLayers.push(
+                                 inputLayers[i].getLayers().getArray()[j]
+                             );
+                        }
+                    }
+                }
+                if (groups.length > 0) {
+                    for (var k = 0; k < groups.length; k++) {
+                        inputLayers = Ext.Array.remove(inputLayers, groups[k]);
+                    }
+                    inputLayers = Ext.Array.merge(inputLayers, groupLayers);
+                } else {
+                    extractingLayerGroups = false;
+                }
+            }
+            return inputLayers;
+        },
+
+        /**
          * Will return an array of serialized layers for mapfish print servlet
          * v3.0.
          *
@@ -49,18 +100,7 @@ Ext.define('GeoExt.data.MapfishPrintProvider', {
          */
         getSerializedLayers: function(layers){
             var serializedLayers = [];
-            var inputLayers = [];
-
-            if(layers instanceof GeoExt.data.store.Layer){
-                layers.each(function(layerRec) {
-                    var layer = layerRec.getOlLayer();
-                    inputLayers.push(layer);
-                });
-            } else if (layers instanceof ol.Collection){
-                inputLayers = layers.getArray();
-            } else {
-                inputLayers = layers;
-            }
+            var inputLayers = this.getLayerArray(layers);
 
             Ext.each(inputLayers, function(layer){
                 var source = layer.getSource();

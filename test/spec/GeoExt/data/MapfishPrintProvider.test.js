@@ -134,6 +134,9 @@ describe('GeoExt.data.MapfishPrintProvider', function() {
             mapComponent,
             mapPanel,
             layer,
+            group,
+            firstgrouplayer,
+            secondgrouplayer,
             olMap;
 
         beforeEach(function(){
@@ -158,8 +161,24 @@ describe('GeoExt.data.MapfishPrintProvider', function() {
                 })
             });
 
+            firstgrouplayer = new ol.layer.Tile({
+                source: new ol.source.Stamen({
+                    layer: 'watercolor'
+                })
+            });
+
+            secondgrouplayer = new ol.layer.Tile({
+                source: new ol.source.Stamen({
+                    layer: 'terrain-labels'
+                })
+            });
+
+            group = new ol.layer.Group({
+                layers: [firstgrouplayer, secondgrouplayer]
+            });
+
             olMap = new ol.Map({
-                layers: [layer, extentLayer],
+                layers: [layer, extentLayer, group],
                 view: new ol.View({
                     center: [0, 0],
                     zoom: 2
@@ -181,6 +200,24 @@ describe('GeoExt.data.MapfishPrintProvider', function() {
         afterEach(function(){
             mapPanel.destroy();
             document.body.removeChild(div);
+        });
+
+        it('getLayerArray returns a flat Array of Layers by given collection', function(){
+            expect(GeoExt.data.MapfishPrintProvider.getLayerArray).to.be.a('function');
+
+            var layerArray = GeoExt.data.MapfishPrintProvider.getLayerArray(
+                mapComponent.getLayers().getArray()
+            );
+            var groupSize = 0;
+            Ext.each(layerArray, function(l) {
+                if (l instanceof ol.layer.Group) {
+                    groupSize++;
+                }
+            });
+
+            expect(layerArray.length).to.eql(4);
+            expect(groupSize).to.eql(0);
+            expect(mapComponent.getLayers().getArray().length).to.eql(3);
         });
 
         it('getSerializedLayers returns the serialized Layers', function(){
