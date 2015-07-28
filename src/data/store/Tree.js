@@ -147,6 +147,15 @@ Ext.define('GeoExt.data.store.Tree', {
      */
     onLayerCollectionChanged: function(){
         var me = this;
+        // remove all filters as long as we take care of the changed collection
+        // but keep a reference so we can add them in later
+        var currentFilters = me.getFilters();
+        var restoreFilters = [];
+        currentFilters.each(function(currentFilter) {
+            restoreFilters.push(currentFilter);
+            me.removeFilter(currentFilter);
+        });
+
         me.getRootNode().removeAll();
         if(me.showLayerGroupNode) {
             me.addLayerNode(me.getRootNode(), me.getLayerGroup());
@@ -158,5 +167,8 @@ Ext.define('GeoExt.data.store.Tree', {
                 me.addLayerNode(me.getRootNode(), layer);
             }, me, me.inverseLayerOrder);
         }
+
+        // now restore any filters we previously had
+        me.addFilter(restoreFilters);
     }
 });
