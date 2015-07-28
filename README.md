@@ -2,7 +2,7 @@
 
 JavaScript Toolkit for Rich Web Mapping Applications.
 
-[![Build Status](https://travis-ci.org/geoext/geoext3.svg?branch=master)](https://travis-ci.org/geoext/geoext3) [![Coverage Status](https://coveralls.io/repos/geoext/geoext3/badge.svg)](https://coveralls.io/r/geoext/geoext3)
+[![Build Status](https://travis-ci.org/geoext/geoext3.svg?branch=master)](https://travis-ci.org/geoext/geoext3) [![Coverage Status](https://coveralls.io/repos/geoext/geoext3/badge.svg?branch=master&service=github)](https://coveralls.io/github/geoext/geoext3?branch=master)
 
 GeoExt is Open Source and enables building desktop-like GIS applications through the web. It is a JavaScript framework that combines the GIS functionality of OpenLayers with the user interface savvy of the ExtJS library provided by Sencha.
 
