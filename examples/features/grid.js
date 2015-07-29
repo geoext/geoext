@@ -3,7 +3,8 @@ Ext.require([
     'Ext.panel.Panel',
     'Ext.grid.Panel',
     'GeoExt.component.Map',
-    'GeoExt.data.store.Features'
+    'GeoExt.data.store.Features',
+    'GeoExt.grid.column.Symbolizer'
 ]);
 
 var olMap, gridWest, gridEast, featStore1, featStore2;
@@ -239,6 +240,7 @@ Ext.application({
             region: 'west',
             store: featStore1,
             columns: [
+                {xtype: 'gx_symbolizercolumn', width: 40},
                 {text: 'Name', dataIndex: 'city', flex: 1},
                 {
                     text: 'Population',
@@ -258,7 +260,8 @@ Ext.application({
             region: 'east',
             store: featStore2,
             columns: [
-                { text: 'Name', dataIndex: 'city', flex: 2}
+                {xtype: 'gx_symbolizercolumn', width: 40},
+                {text: 'Name', dataIndex: 'city', flex: 2}
             ],
             width: 250,
             listeners: {
