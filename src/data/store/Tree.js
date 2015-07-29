@@ -80,18 +80,22 @@ Ext.define('GeoExt.data.store.Tree', {
      */
     addLayerNode: function(node, rec){
         var me = this,
-            layer = rec instanceof ol.layer.Base ? rec : rec.data;
+            layer = rec instanceof ol.layer.Base ? rec : rec.data,
+            textProperty = me.getTextProperty(),
+            folderNode,
+            subLayers;
 
         if(layer instanceof ol.layer.Group){
-            layer.getLayers().once('add', this.onLayerCollectionChanged, this);
-            layer.getLayers().once('remove', this.onLayerCollectionChanged, this);
-            layer.text = layer.get(me.getTextProperty());
-            var folderNode = node.appendChild(layer);
-            Ext.each(layer.getLayers().getArray(), function(childLayer) {
+            subLayers = layer.getLayers();
+            subLayers.once('add', me.onLayerCollectionChanged, me);
+            subLayers.once('remove', me.onLayerCollectionChanged, me);
+            layer.text = layer.get(textProperty);
+            folderNode = node.appendChild(layer);
+            Ext.each(subLayers.getArray(), function(childLayer) {
                 me.addLayerNode(folderNode, childLayer);
             }, me, me.inverseLayerOrder);
         } else {
-            layer.text = layer.get(me.getTextProperty());
+            layer.text = layer.get(textProperty);
             node.appendChild(layer);
         }
     },
