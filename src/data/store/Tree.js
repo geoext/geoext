@@ -54,6 +54,15 @@ Ext.define('GeoExt.data.store.Tree', {
     inverseLayerOrder: true,
 
     /**
+     * Whether the treestore currently shall handle openlayers collection
+     * change events. See #suspendCollectionEvents and #resumeCollectionEvents.
+     *
+     * @property
+     * @private
+     */
+    collectionEventsSuspended: false,
+
+    /**
      * @cfg
      * @inheritdoc Ext.data.TreeStore
      */
@@ -151,6 +160,10 @@ Ext.define('GeoExt.data.store.Tree', {
      */
     onLayerCollectionChanged: function(){
         var me = this;
+        if (me.collectionEventsSuspended) {
+            return;
+        }
+
         // remove all filters as long as we take care of the changed collection
         // but keep a reference so we can add them in later
         var currentFilters = me.getFilters();
@@ -159,7 +172,6 @@ Ext.define('GeoExt.data.store.Tree', {
             restoreFilters.push(currentFilter);
             me.removeFilter(currentFilter);
         });
-
         me.getRootNode().removeAll();
         if(me.showLayerGroupNode) {
             me.addLayerNode(me.getRootNode(), me.getLayerGroup());
@@ -174,5 +186,27 @@ Ext.define('GeoExt.data.store.Tree', {
 
         // now restore any filters we previously had
         me.addFilter(restoreFilters);
+    },
+
+    /**
+     * Allows for temporarily unlistening to change events on the underlying
+     * OpenLayers collections. Use #resumeCollectionEvents to start listening
+     * again.
+     *
+     * @public
+     */
+    suspendCollectionEvents: function(){
+        this.collectionEventsSuspended = true;
+    },
+
+    /**
+     * Undoes the effect of #suspendCollectionEvents; so that the store is now
+     * listening to change events on the underlying OpenLayers collections.
+     * again.
+     *
+     * @public
+     */
+    resumeCollectionEvents: function(){
+        this.collectionEventsSuspended = false;
     }
 });
