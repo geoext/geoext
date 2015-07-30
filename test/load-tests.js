@@ -14,7 +14,8 @@
             'GeoExt/data/store/Tree.test.js',
             'GeoExt/data/LayerStore.test.js',
             'GeoExt/data/MapfishPrintProvider.test.js',
-            'GeoExt/panel/Popup.test.js'
+            'GeoExt/panel/Popup.test.js',
+            'GeoExt/tree/Panel.test.js'
         ],
         getScriptTag = global.TestUtil.getExternalScriptTag,
         dependencyCnt = dependencies.length,

@@ -6,6 +6,7 @@
         "document": false,
         "expect": false,
         "it": false,
+        "sinon": false,
         
         "Ext": false,
         "GeoExt": false,

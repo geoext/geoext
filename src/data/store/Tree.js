@@ -54,6 +54,15 @@ Ext.define('GeoExt.data.store.Tree', {
     inverseLayerOrder: true,
 
     /**
+     * Whether the treestore currently shall handle openlayers collection
+     * change events. See #suspendCollectionEvents and #resumeCollectionEvents.
+     *
+     * @property
+     * @private
+     */
+    collectionEventsSuspended: false,
+
+    /**
      * @cfg
      * @inheritdoc Ext.data.TreeStore
      */
@@ -80,18 +89,22 @@ Ext.define('GeoExt.data.store.Tree', {
      */
     addLayerNode: function(node, rec){
         var me = this,
-            layer = rec instanceof ol.layer.Base ? rec : rec.data;
+            layer = rec instanceof ol.layer.Base ? rec : rec.data,
+            textProperty = me.getTextProperty(),
+            folderNode,
+            subLayers;
 
         if(layer instanceof ol.layer.Group){
-            layer.getLayers().once('add', this.onLayerCollectionChanged, this);
-            layer.getLayers().once('remove', this.onLayerCollectionChanged, this);
-            layer.text = layer.get(me.getTextProperty());
-            var folderNode = node.appendChild(layer);
-            Ext.each(layer.getLayers().getArray(), function(childLayer) {
+            subLayers = layer.getLayers();
+            subLayers.once('add', me.onLayerCollectionChanged, me);
+            subLayers.once('remove', me.onLayerCollectionChanged, me);
+            layer.text = layer.get(textProperty);
+            folderNode = node.appendChild(layer);
+            Ext.each(subLayers.getArray(), function(childLayer) {
                 me.addLayerNode(folderNode, childLayer);
             }, me, me.inverseLayerOrder);
         } else {
-            layer.text = layer.get(me.getTextProperty());
+            layer.text = layer.get(textProperty);
             node.appendChild(layer);
         }
     },
@@ -147,6 +160,10 @@ Ext.define('GeoExt.data.store.Tree', {
      */
     onLayerCollectionChanged: function(){
         var me = this;
+        if (me.collectionEventsSuspended) {
+            return;
+        }
+
         // remove all filters as long as we take care of the changed collection
         // but keep a reference so we can add them in later
         var currentFilters = me.getFilters();
@@ -155,7 +172,6 @@ Ext.define('GeoExt.data.store.Tree', {
             restoreFilters.push(currentFilter);
             me.removeFilter(currentFilter);
         });
-
         me.getRootNode().removeAll();
         if(me.showLayerGroupNode) {
             me.addLayerNode(me.getRootNode(), me.getLayerGroup());
@@ -170,5 +186,27 @@ Ext.define('GeoExt.data.store.Tree', {
 
         // now restore any filters we previously had
         me.addFilter(restoreFilters);
+    },
+
+    /**
+     * Allows for temporarily unlistening to change events on the underlying
+     * OpenLayers collections. Use #resumeCollectionEvents to start listening
+     * again.
+     *
+     * @public
+     */
+    suspendCollectionEvents: function(){
+        this.collectionEventsSuspended = true;
+    },
+
+    /**
+     * Undoes the effect of #suspendCollectionEvents; so that the store is now
+     * listening to change events on the underlying OpenLayers collections.
+     * again.
+     *
+     * @public
+     */
+    resumeCollectionEvents: function(){
+        this.collectionEventsSuspended = false;
     }
 });
