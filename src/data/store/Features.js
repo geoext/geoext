@@ -111,6 +111,8 @@ Ext.define('GeoExt.data.store.Features', {
         if (me.createLayer === true && !me.layer) {
             me.drawFeaturesOnMap();
         }
+
+        me.bindLayerEvents();
     },
 
     /**
@@ -173,6 +175,49 @@ Ext.define('GeoExt.data.store.Features', {
         }
 
         me.layerCreated = true;
+    },
+
+    /**
+     * Bind the 'addfeature' and 'removefeature' events to sync the features
+     * in #layer with this store.
+     *
+     *  @private
+     */
+    bindLayerEvents: function () {
+        var me = this;
+        if(me.layer && me.layer.getSource() instanceof ol.source.Vector) {
+            // bind feature add / remove events of the layer
+            me.layer.getSource().on('addfeature', me.onFeaturesAdded, me);
+            me.layer.getSource().on('removefeature', me.onFeaturesRemoved, me);
+        }
+    },
+
+    /**
+     * Handler for #layer 'addfeature' event
+     *
+     * @param  {Object} evt the event object of OpenLayers
+     * @private
+     */
+    onFeaturesAdded: function (evt) {
+        this.add(evt.feature);
+    },
+
+    /**
+     * Handler for #layer 'removefeature' event
+     *
+     * @param  {Object} evt the event object of OpenLayers
+     * @private
+     */
+    onFeaturesRemoved: function (evt) {
+        var me = this;
+        if (!me._removing) {
+            var record = me.getByFeature(evt.feature);
+            if (record) {
+                me._removing = true;
+                me.remove(record);
+                delete me._removing;
+            }
+        }
     }
 
 });

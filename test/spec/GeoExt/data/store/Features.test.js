@@ -211,4 +211,35 @@ describe('GeoExt.data.store.Features', function() {
         });
     });
 
+    describe('Event binding on vector layer', function() {
+        var layer,
+            store,
+            feature;
+        beforeEach(function() {
+            feature = new ol.Feature({id: 'foo'});
+            layer = new ol.layer.Vector({
+                source: new ol.source.Vector({
+                    features: [feature]
+                })
+            });
+            store = Ext.create('GeoExt.data.store.Features', {
+                layer: layer
+            });
+        });
+        afterEach(function() {
+            store = null;
+            layer = null;
+            feature = null;
+        });
+
+        it('is done correctly for "addfeature"', function() {
+            layer.getSource().addFeatures([new ol.Feature()]);
+            expect(store.getCount()).to.be(layer.getSource().getFeatures().length);
+        });
+        it('is done correctly for "removefeature"', function() {
+            layer.getSource().removeFeature(layer.getSource().getFeatures()[0]);
+            expect(store.getCount()).to.be(layer.getSource().getFeatures().length);
+        });
+    });
+
 });
