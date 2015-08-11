@@ -19,10 +19,10 @@ describe('GeoExt.data.store.Features', function() {
         });
 
 
-        it('constucts an instance of GeoExt.data.store.Features', function() {
+        it('constructs an instance of GeoExt.data.store.Features', function() {
             expect(store).to.be.an(GeoExt.data.store.Features);
         });
-        it('constucts an empty store', function() {
+        it('constructs an empty store', function() {
             expect(store.count()).to.be(0);
         });
     });
@@ -40,13 +40,13 @@ describe('GeoExt.data.store.Features', function() {
             coll = null;
         });
 
-        it('constucts an instance of GeoExt.data.store.Features', function() {
+        it('constructs an instance of GeoExt.data.store.Features', function() {
             expect(store).to.be.an(GeoExt.data.store.Features);
         });
-        it('constucts the store with the right amount of records', function() {
+        it('constructs the store with the right amount of records', function() {
             expect(store.count()).to.be(1);
         });
-        it('constucts the store with the correct FC reference', function() {
+        it('constructs the store with the correct FC reference', function() {
             expect(store.getFeatures()).to.be(coll);
         });
 
@@ -68,13 +68,13 @@ describe('GeoExt.data.store.Features', function() {
             layer = null;
         });
 
-        it('constucts an instance of GeoExt.data.store.Features', function() {
+        it('constructs an instance of GeoExt.data.store.Features', function() {
             expect(store).to.be.an(GeoExt.data.store.Features);
         });
-        it('constucts the store with the right amount of records', function() {
+        it('constructs the store with the right amount of records', function() {
             expect(store.count()).to.be(1);
         });
-        it('constucts the store with the correct layer reference', function() {
+        it('constructs the store with the correct layer reference', function() {
             expect(store.getLayer()).to.be(layer);
         });
 
