@@ -101,6 +101,30 @@ describe('GeoExt.data.store.Features', function() {
         });
     });
 
+    describe('#getByFeature', function() {
+        var coll,
+            store,
+            feature;
+        beforeEach(function() {
+            feature = new ol.Feature();
+            coll = new ol.Collection();
+            coll.push(feature);
+            store = Ext.create('GeoExt.data.store.Features', {features: coll});
+        });
+        afterEach(function() {
+            store = null;
+            coll = null;
+            feature = null;
+        });
+
+        it('is defined', function() {
+            expect(store.getByFeature).not.to.be(undefined);
+        });
+        it('returns the right feature record', function() {
+            expect(store.getByFeature(feature).getFeature()).to.be.equal(feature);
+        });
+    });
+
     describe('config option "createLayer" without a map', function() {
         var coll,
             store,
@@ -186,4 +210,5 @@ describe('GeoExt.data.store.Features', function() {
             expect(store.getLayer()).to.be(map.getLayers().item(1));
         });
     });
+
 });

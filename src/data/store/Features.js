@@ -124,6 +124,18 @@ Ext.define('GeoExt.data.store.Features', {
     },
 
     /**
+     * Returns the record corresponding to a feature.
+     *
+     * @param  {ol.Feature} feature An ol.Feature object to get the record for
+     * @return {Ext.data.Model} The model instance corresponding to the feature
+     */
+    getByFeature: function(feature) {
+        return this.getAt(this.findBy(function(record) {
+            return record.getFeature() === feature;
+        }));
+    },
+
+    /**
      * @protected
      *
      * Overwrites the destroy function to ensure the #layer is removed from
