@@ -123,6 +123,9 @@ describe('GeoExt.data.store.Features', function() {
         it('returns the right feature record', function() {
             expect(store.getByFeature(feature).getFeature()).to.be.equal(feature);
         });
+        it('returns null in case of passing a non-managed feature', function() {
+            expect(store.getByFeature(new ol.Feature())).to.be(null);
+        });
     });
 
     describe('config option "createLayer" without a map', function() {
