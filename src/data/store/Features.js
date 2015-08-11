@@ -111,6 +111,8 @@ Ext.define('GeoExt.data.store.Features', {
         if (me.createLayer === true && !me.layer) {
             me.drawFeaturesOnMap();
         }
+
+        me.bindLayerEvents();
     },
 
     /**
@@ -124,6 +126,18 @@ Ext.define('GeoExt.data.store.Features', {
     },
 
     /**
+     * Returns the record corresponding to a feature.
+     *
+     * @param  {ol.Feature} feature An ol.Feature object to get the record for
+     * @return {Ext.data.Model} The model instance corresponding to the feature
+     */
+    getByFeature: function(feature) {
+        return this.getAt(this.findBy(function(record) {
+            return record.getFeature() === feature;
+        }));
+    },
+
+    /**
      * @protected
      *
      * Overwrites the destroy function to ensure the #layer is removed from
@@ -132,6 +146,9 @@ Ext.define('GeoExt.data.store.Features', {
      */
     destroy: function() {
         var me = this;
+
+        me.unbindLayerEvents();
+
         if (me.map && me.layerCreated === true) {
             me.map.removeLayer(me.layer);
         }
@@ -161,6 +178,63 @@ Ext.define('GeoExt.data.store.Features', {
         }
 
         me.layerCreated = true;
+    },
+
+    /**
+     * Bind the 'addfeature' and 'removefeature' events to sync the features
+     * in #layer with this store.
+     *
+     *  @private
+     */
+    bindLayerEvents: function () {
+        var me = this;
+        if(me.layer && me.layer.getSource() instanceof ol.source.Vector) {
+            // bind feature add / remove events of the layer
+            me.layer.getSource().on('addfeature', me.onFeaturesAdded, me);
+            me.layer.getSource().on('removefeature', me.onFeaturesRemoved, me);
+        }
+    },
+
+    /**
+     * Unbind the 'addfeature' and 'removefeature' events of the #layer.
+     *
+     *  @private
+     */
+    unbindLayerEvents: function () {
+        var me = this;
+        if(me.layer && me.layer.getSource() instanceof ol.source.Vector) {
+            // unbind feature add / remove events of the layer
+            me.layer.getSource().un('addfeature', me.onFeaturesAdded, me);
+            me.layer.getSource().un('removefeature', me.onFeaturesRemoved, me);
+        }
+    },
+
+    /**
+     * Handler for #layer 'addfeature' event
+     *
+     * @param  {Object} evt the event object of OpenLayers
+     * @private
+     */
+    onFeaturesAdded: function (evt) {
+        this.add(evt.feature);
+    },
+
+    /**
+     * Handler for #layer 'removefeature' event
+     *
+     * @param  {Object} evt the event object of OpenLayers
+     * @private
+     */
+    onFeaturesRemoved: function (evt) {
+        var me = this;
+        if (!me._removing) {
+            var record = me.getByFeature(evt.feature);
+            if (record) {
+                me._removing = true;
+                me.remove(record);
+                delete me._removing;
+            }
+        }
     }
 
 });
