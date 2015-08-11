@@ -59,14 +59,22 @@ describe('GeoExt.data.store.Features', function() {
     });
 
     describe('constructor (with layer)', function() {
-        var layer,
+        var div,
+            map,
+            layer,
             store;
         beforeEach(function() {
+            div = document.createElement('div');
+            document.body.appendChild(div);
+            map = new ol.Map({
+                target: div
+            });
             layer = new ol.layer.Vector({
                 source: new ol.source.Vector({
                     features: [new ol.Feature()]
                 })
             });
+            map.addLayer(layer);
             store = Ext.create('GeoExt.data.store.Features', {layer: layer});
         });
         afterEach(function() {
@@ -75,6 +83,9 @@ describe('GeoExt.data.store.Features', function() {
             }
             store = null;
             layer = null;
+            map = null;
+            document.body.removeChild(div);
+            div = null;
         });
 
         it('constructs an instance of GeoExt.data.store.Features', function() {
@@ -86,6 +97,15 @@ describe('GeoExt.data.store.Features', function() {
         it('constructs the store with the correct layer reference', function() {
             expect(store.getLayer()).to.be(layer);
         });
+        it('doesn\'t remove a passed layer once the store is destroyed',
+            function() {
+                // before
+                expect(map.getLayers().getLength()).to.be(1);
+                store.destroy();
+                // after
+                expect(map.getLayers().getLength()).to.be(1);
+            }
+        );
 
     });
 
@@ -234,6 +254,13 @@ describe('GeoExt.data.store.Features', function() {
         });
         it('creates the layer which is retrievable via #getLayer', function() {
             expect(store.getLayer()).to.be(map.getLayers().item(1));
+        });
+        it('removes the autocreated layer once the store is destroyed', function() {
+            // before
+            expect(map.getLayers().getLength()).to.be(2);
+            store.destroy();
+            // after
+            expect(map.getLayers().getLength()).to.be(1);
         });
     });
 
