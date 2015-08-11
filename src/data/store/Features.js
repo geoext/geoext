@@ -100,9 +100,11 @@ Ext.define('GeoExt.data.store.Features', {
         } else if(cfg.layer && cfg.layer instanceof ol.layer.Vector) {
             if(cfg.layer.getSource()) {
                 cfg.data = cfg.layer.getSource().getFeatures();
-            } else {
-                cfg.data = [];
             }
+        }
+
+        if(!cfg.data) {
+            cfg.data = new ol.Collection();
         }
 
         me.callParent([cfg]);
