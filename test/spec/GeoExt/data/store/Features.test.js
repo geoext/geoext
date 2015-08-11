@@ -15,6 +15,9 @@ describe('GeoExt.data.store.Features', function() {
             store = Ext.create('GeoExt.data.store.Features');
         });
         afterEach(function() {
+            if (store.destroy) {
+                store.destroy();
+            }
             store = null;
         });
 
@@ -36,6 +39,9 @@ describe('GeoExt.data.store.Features', function() {
             store = Ext.create('GeoExt.data.store.Features', {features: coll});
         });
         afterEach(function() {
+            if (store.destroy) {
+                store.destroy();
+            }
             store = null;
             coll = null;
         });
@@ -64,6 +70,9 @@ describe('GeoExt.data.store.Features', function() {
             store = Ext.create('GeoExt.data.store.Features', {layer: layer});
         });
         afterEach(function() {
+            if (store.destroy) {
+                store.destroy();
+            }
             store = null;
             layer = null;
         });
@@ -89,6 +98,9 @@ describe('GeoExt.data.store.Features', function() {
             store = Ext.create('GeoExt.data.store.Features', {features: coll});
         });
         afterEach(function() {
+            if (store.destroy) {
+                store.destroy();
+            }
             store = null;
             coll = null;
         });
@@ -112,6 +124,9 @@ describe('GeoExt.data.store.Features', function() {
             store = Ext.create('GeoExt.data.store.Features', {features: coll});
         });
         afterEach(function() {
+            if (store.destroy) {
+                store.destroy();
+            }
             store = null;
             coll = null;
             feature = null;
@@ -157,10 +172,14 @@ describe('GeoExt.data.store.Features', function() {
             });
         });
         afterEach(function() {
+            if (store.destroy) {
+                store.destroy();
+            }
             store = null;
             coll = null;
             map = null;
             document.body.removeChild(div);
+            div = null;
         });
 
         it('creates a new vector layer object', function() {
@@ -200,10 +219,14 @@ describe('GeoExt.data.store.Features', function() {
             });
         });
         afterEach(function() {
+            if (store.destroy) {
+                store.destroy();
+            }
             store = null;
             coll = null;
             map = null;
             document.body.removeChild(div);
+            div = null;
         });
 
         it('creates a new layer on the given map', function() {
@@ -230,6 +253,9 @@ describe('GeoExt.data.store.Features', function() {
             });
         });
         afterEach(function() {
+            if (store.destroy) {
+                store.destroy();
+            }
             store = null;
             layer = null;
             feature = null;
@@ -259,6 +285,9 @@ describe('GeoExt.data.store.Features', function() {
             });
         });
         afterEach(function() {
+            if (store.destroy) {
+                store.destroy();
+            }
             store = null;
             layer = null;
         });
