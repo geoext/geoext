@@ -245,4 +245,40 @@ describe('GeoExt.data.store.Features', function() {
         });
     });
 
+    describe('Unbinding events on vector layer', function() {
+        var layer,
+            store;
+        beforeEach(function() {
+            layer = new ol.layer.Vector({
+                source: new ol.source.Vector({
+                    features: [new ol.Feature()]
+                })
+            });
+            store = Ext.create('GeoExt.data.store.Features', {
+                layer: layer
+            });
+        });
+        afterEach(function() {
+            store = null;
+            layer = null;
+        });
+
+        it('is done correctly by function "unbindLayerEvents"', function() {
+            store.unbindLayerEvents();
+            layer.getSource().addFeatures([new ol.Feature()]);
+            expect(store.getCount()).to.be(1);
+            layer.getSource().removeFeature(layer.getSource().getFeatures()[0]);
+            expect(store.getCount()).to.be(1);
+        });
+        it('function "unbindLayerEvents" is called before store is destroyed', function() {
+            var i = 0;
+            // overwrite to see if the function is called on store destruction
+            store.unbindLayerEvents = function () {
+                i++;
+            };
+            store.destroy();
+            expect(i).to.be.equal(1);
+        });
+    });
+
 });

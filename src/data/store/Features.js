@@ -146,6 +146,9 @@ Ext.define('GeoExt.data.store.Features', {
      */
     destroy: function() {
         var me = this;
+
+        me.unbindLayerEvents();
+
         if (me.map && me.layerCreated === true) {
             me.map.removeLayer(me.layer);
         }
@@ -189,6 +192,20 @@ Ext.define('GeoExt.data.store.Features', {
             // bind feature add / remove events of the layer
             me.layer.getSource().on('addfeature', me.onFeaturesAdded, me);
             me.layer.getSource().on('removefeature', me.onFeaturesRemoved, me);
+        }
+    },
+
+    /**
+     * Unbind the 'addfeature' and 'removefeature' events of the #layer.
+     *
+     *  @private
+     */
+    unbindLayerEvents: function () {
+        var me = this;
+        if(me.layer && me.layer.getSource() instanceof ol.source.Vector) {
+            // unbind feature add / remove events of the layer
+            me.layer.getSource().un('addfeature', me.onFeaturesAdded, me);
+            me.layer.getSource().un('removefeature', me.onFeaturesRemoved, me);
         }
     },
 
