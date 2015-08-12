@@ -15,14 +15,17 @@ describe('GeoExt.data.store.Features', function() {
             store = Ext.create('GeoExt.data.store.Features');
         });
         afterEach(function() {
+            if (store.destroy) {
+                store.destroy();
+            }
             store = null;
         });
 
 
-        it('constucts an instance of GeoExt.data.store.Features', function() {
+        it('constructs an instance of GeoExt.data.store.Features', function() {
             expect(store).to.be.an(GeoExt.data.store.Features);
         });
-        it('constucts an empty store', function() {
+        it('constructs an empty store', function() {
             expect(store.count()).to.be(0);
         });
     });
@@ -36,47 +39,73 @@ describe('GeoExt.data.store.Features', function() {
             store = Ext.create('GeoExt.data.store.Features', {features: coll});
         });
         afterEach(function() {
+            if (store.destroy) {
+                store.destroy();
+            }
             store = null;
             coll = null;
         });
 
-        it('constucts an instance of GeoExt.data.store.Features', function() {
+        it('constructs an instance of GeoExt.data.store.Features', function() {
             expect(store).to.be.an(GeoExt.data.store.Features);
         });
-        it('constucts the store with the right amount of records', function() {
+        it('constructs the store with the right amount of records', function() {
             expect(store.count()).to.be(1);
         });
-        it('constucts the store with the correct FC reference', function() {
+        it('constructs the store with the correct FC reference', function() {
             expect(store.getFeatures()).to.be(coll);
         });
 
     });
 
     describe('constructor (with layer)', function() {
-        var layer,
+        var div,
+            map,
+            layer,
             store;
         beforeEach(function() {
+            div = document.createElement('div');
+            document.body.appendChild(div);
+            map = new ol.Map({
+                target: div
+            });
             layer = new ol.layer.Vector({
                 source: new ol.source.Vector({
                     features: [new ol.Feature()]
                 })
             });
+            map.addLayer(layer);
             store = Ext.create('GeoExt.data.store.Features', {layer: layer});
         });
         afterEach(function() {
+            if (store.destroy) {
+                store.destroy();
+            }
             store = null;
             layer = null;
+            map = null;
+            document.body.removeChild(div);
+            div = null;
         });
 
-        it('constucts an instance of GeoExt.data.store.Features', function() {
+        it('constructs an instance of GeoExt.data.store.Features', function() {
             expect(store).to.be.an(GeoExt.data.store.Features);
         });
-        it('constucts the store with the right amount of records', function() {
+        it('constructs the store with the right amount of records', function() {
             expect(store.count()).to.be(1);
         });
-        it('constucts the store with the correct layer reference', function() {
+        it('constructs the store with the correct layer reference', function() {
             expect(store.getLayer()).to.be(layer);
         });
+        it('doesn\'t remove a passed layer once the store is destroyed',
+            function() {
+                // before
+                expect(map.getLayers().getLength()).to.be(1);
+                store.destroy();
+                // after
+                expect(map.getLayers().getLength()).to.be(1);
+            }
+        );
 
     });
 
@@ -89,6 +118,9 @@ describe('GeoExt.data.store.Features', function() {
             store = Ext.create('GeoExt.data.store.Features', {features: coll});
         });
         afterEach(function() {
+            if (store.destroy) {
+                store.destroy();
+            }
             store = null;
             coll = null;
         });
@@ -112,6 +144,9 @@ describe('GeoExt.data.store.Features', function() {
             store = Ext.create('GeoExt.data.store.Features', {features: coll});
         });
         afterEach(function() {
+            if (store.destroy) {
+                store.destroy();
+            }
             store = null;
             coll = null;
             feature = null;
@@ -157,10 +192,14 @@ describe('GeoExt.data.store.Features', function() {
             });
         });
         afterEach(function() {
+            if (store.destroy) {
+                store.destroy();
+            }
             store = null;
             coll = null;
             map = null;
             document.body.removeChild(div);
+            div = null;
         });
 
         it('creates a new vector layer object', function() {
@@ -200,10 +239,14 @@ describe('GeoExt.data.store.Features', function() {
             });
         });
         afterEach(function() {
+            if (store.destroy) {
+                store.destroy();
+            }
             store = null;
             coll = null;
             map = null;
             document.body.removeChild(div);
+            div = null;
         });
 
         it('creates a new layer on the given map', function() {
@@ -211,6 +254,13 @@ describe('GeoExt.data.store.Features', function() {
         });
         it('creates the layer which is retrievable via #getLayer', function() {
             expect(store.getLayer()).to.be(map.getLayers().item(1));
+        });
+        it('removes the autocreated layer once the store is destroyed', function() {
+            // before
+            expect(map.getLayers().getLength()).to.be(2);
+            store.destroy();
+            // after
+            expect(map.getLayers().getLength()).to.be(1);
         });
     });
 
@@ -230,6 +280,9 @@ describe('GeoExt.data.store.Features', function() {
             });
         });
         afterEach(function() {
+            if (store.destroy) {
+                store.destroy();
+            }
             store = null;
             layer = null;
             feature = null;
@@ -259,6 +312,9 @@ describe('GeoExt.data.store.Features', function() {
             });
         });
         afterEach(function() {
+            if (store.destroy) {
+                store.destroy();
+            }
             store = null;
             layer = null;
         });
