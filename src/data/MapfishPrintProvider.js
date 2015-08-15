@@ -39,6 +39,84 @@ Ext.define('GeoExt.data.MapfishPrintProvider', {
 
     statics: {
         /**
+         * An array of objects specifying a serializer and a connected
+         * OpenLayers class. This should not be manipulated by hand, but rather
+         * with the method #registerSerializer.
+         *
+         * @private
+         */
+        _serializers: [],
+
+        /**
+         * Registers the passed serializer class as an appropriate serializer
+         * for the passed OpenLayers source class.
+         *
+         * @param {ol.source.Source} olSourceCls The OpenLayers source class
+         *    that the passed serializer can serialize.
+         * @param {GeoExt.data.serializer.Base} serializerCls The serializer
+         *    that can serialize the passed source.
+         */
+        registerSerializer: function(olSourceCls, serializerCls) {
+            var staticMe = GeoExt.data.MapfishPrintProvider;
+            staticMe._serializers.push({
+                olSourceCls: olSourceCls,
+                serializerCls: serializerCls
+            });
+        },
+
+        /**
+         * Unregisters the passed serializer class from the array of available
+         * serializers. This may be useful if you want to register a new
+         * serializer that is different from a serializer that we provide.
+         *
+         * @param {GeoExt.data.serializer.Base} serializerCls The serializer
+         *    that can serialize the passed source.
+         * @return {Boolean} Whether we could unregister the serializer.
+         */
+        unregisterSerializer: function(serializerCls) {
+            var available = GeoExt.data.MapfishPrintProvider._serializers;
+            var index;
+            Ext.each(available, function(candidate, idx) {
+                if (candidate.serializerCls === serializerCls) {
+                    index = idx;
+                    return false;  // break early
+                }
+            });
+            if (Ext.isDefined(index)) {
+                Ext.Array.removeAt(available, index);
+                return true;
+            }
+            return false;
+        },
+
+        /**
+         * Returns a GeoExt.data.serializer.Base capable of serializing the
+         * passed source instance or undefined, if no such serializer was
+         * previously registered.
+         *
+         * @param {ol.source.Source} source The source instance to find a
+         *    serializer for.
+         * @return {GeoExt.data.serializer.Base} A serializer for the passed
+         *    source or `undefined`.
+         */
+        findSerializerBySource: function(source) {
+            var available = GeoExt.data.MapfishPrintProvider._serializers;
+            var serializer;
+
+            Ext.each(available, function(candidate) {
+                if (source instanceof candidate.olSourceCls) {
+                    serializer = candidate.serializerCls;
+                    return false; // break early
+                }
+            });
+            if (!serializer) {
+                Ext.log.warn("Couldn't find a suitable serializer for source." +
+                    " Did you require() an appropriate serializer class?");
+            }
+            return serializer;
+        },
+
+        /**
          * Will return an array of ol-layers by the given collection.
          * Layers contained in ol.layerGroups get extracted and groups
          * get removed from returning array
@@ -105,34 +183,13 @@ Ext.define('GeoExt.data.MapfishPrintProvider', {
             Ext.each(inputLayers, function(layer){
                 var source = layer.getSource();
                 var serialized = {};
-                if (source instanceof ol.source.TileWMS) {
-                    serialized = {
-                        "baseURL": source.getUrls()[0],
-                        "customParams": source.getParams(),
-                        "layers": [
-                            source.getParams().LAYERS
-                        ],
-                        "opacity": layer.getOpacity(),
-                        "styles": [ "" ],
-                        "type": "WMS"
-                    };
+
+                var serializer = this.findSerializerBySource(source);
+                if (serializer) {
+                    serialized = serializer.serialize(layer, source);
                     serializedLayers.push(serialized);
-                } else if (source instanceof ol.source.ImageWMS){
-                    serialized = {
-                        "baseURL": source.getUrl(),
-                        "customParams": source.getParams(),
-                        "layers": [
-                            source.getParams().LAYERS
-                        ],
-                        "opacity": layer.getOpacity(),
-                        "styles": [ "" ],
-                        "type": "WMS"
-                    };
-                    serializedLayers.push(serialized);
-                } else {
-                    // TODO implement serialization of other ol.source classes.
                 }
-            });
+            }, this);
 
             return serializedLayers;
         },

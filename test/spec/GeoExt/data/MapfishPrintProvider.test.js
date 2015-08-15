@@ -1,4 +1,8 @@
-Ext.Loader.syncRequire([ 'GeoExt.data.MapfishPrintProvider' ]);
+Ext.Loader.syncRequire([
+    'GeoExt.data.MapfishPrintProvider',
+    'GeoExt.data.serializer.TileWMS',
+    'GeoExt.data.serializer.ImageWMS'
+]);
 
 describe('GeoExt.data.MapfishPrintProvider', function() {
 
@@ -129,7 +133,8 @@ describe('GeoExt.data.MapfishPrintProvider', function() {
     });
 
     describe('statics', function() {
-        var div,
+        var savedSerializers,
+            div,
             extentLayer,
             mapComponent,
             mapPanel,
@@ -140,6 +145,10 @@ describe('GeoExt.data.MapfishPrintProvider', function() {
             olMap;
 
         beforeEach(function(){
+            savedSerializers = Ext.Array.clone(
+                GeoExt.data.MapfishPrintProvider._serializers
+            );
+
             div = document.createElement('div');
             div.style.position = "absolute";
             div.style.top = "0";
@@ -198,8 +207,53 @@ describe('GeoExt.data.MapfishPrintProvider', function() {
         });
 
         afterEach(function(){
+            GeoExt.data.MapfishPrintProvider._serializers = savedSerializers;
             mapPanel.destroy();
             document.body.removeChild(div);
+        });
+
+        it('registerSerializer registers a new serializer', function(){
+            var ProviderCls = GeoExt.data.MapfishPrintProvider;
+            var available = ProviderCls._serializers;
+            var MockupSerializer = function(){};
+
+            var cntBefore = available.length;
+            ProviderCls.registerSerializer(null, MockupSerializer);
+            var cntAfter = available.length;
+
+            expect(cntBefore + 1 === cntAfter).to.be(true);
+        });
+
+        it('unregisterSerializer unregisters a serializer', function(){
+            var ProviderCls = GeoExt.data.MapfishPrintProvider;
+            var available = ProviderCls._serializers;
+            var MockupSerializer = function(){};
+            // so that it is removable, let's register first.
+            ProviderCls.registerSerializer(null, MockupSerializer);
+
+            var cntBefore = available.length;
+            ProviderCls.unregisterSerializer(MockupSerializer);
+            var cntAfter = available.length;
+
+            expect(cntBefore - 1 === cntAfter).to.be(true);
+        });
+
+        it('findSerializerBySource can be used to find serializers', function(){
+            var ProviderCls = GeoExt.data.MapfishPrintProvider;
+            var MockupSource = function(){};
+            var MockupSourceUnregistered = function(){};
+            var MockupSerializer = function(){};
+
+            ProviderCls.registerSerializer(MockupSource, MockupSerializer);
+            var foundSerializer = ProviderCls.findSerializerBySource(
+                new MockupSource()
+            );
+            expect(foundSerializer).to.be(MockupSerializer);
+
+            var notFoundSerializer = ProviderCls.findSerializerBySource(
+                new MockupSourceUnregistered()
+            );
+            expect(notFoundSerializer).to.be(undefined);
         });
 
         it('getLayerArray returns a flat Array of Layers by given collection', function(){
