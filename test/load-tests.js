@@ -1,6 +1,6 @@
 /*global document*/
 /*jshint camelcase:true, curly:true, eqeqeq:true, latedef:true, newcap:true, noarg:true, undef:true, trailing:true, maxlen:80 */
-;(function(doc, global){
+(function(doc, global){
     var specPath = './spec/',
         dependencies = [
             'GeoExt/component/FeatureRenderer.test.js',

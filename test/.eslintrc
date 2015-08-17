@@ -7,7 +7,7 @@
         "expect": false,
         "it": false,
         "sinon": false,
-        
+
         "Ext": false,
         "GeoExt": false,
         "ol": false
@@ -18,4 +18,3 @@
         "strict": "never"
     }
 }
-
