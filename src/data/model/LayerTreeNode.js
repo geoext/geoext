@@ -50,6 +50,9 @@ Ext.define('GeoExt.data.model.LayerTreeNode', {
         }
     },
 
+    /**
+     * TODO
+     */
     constructor: function() {
         var layer;
 
@@ -62,6 +65,9 @@ Ext.define('GeoExt.data.model.LayerTreeNode', {
         }
     },
 
+    /**
+     * TODO
+     */
     onLayerVisibleChange: function(evt) {
         var target = evt.target;
 
@@ -78,7 +84,7 @@ Ext.define('GeoExt.data.model.LayerTreeNode', {
      * @param {Object} value
      * @param {Object} options
      *
-     * @inheritDoc
+     * @inheritdoc
      */
     set: function(key, newValue) {
         this.callParent(arguments);
@@ -92,14 +98,14 @@ Ext.define('GeoExt.data.model.LayerTreeNode', {
     },
 
     /**
-     * @inheritDoc
+     * @inheritdoc
      */
     getRefItems: function() {
         return this.childNodes;
     },
 
     /**
-     * @inheritDoc
+     * @inheritdoc
      */
     getRefOwner: function() {
         return this.parentNode;

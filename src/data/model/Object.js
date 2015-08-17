@@ -23,8 +23,8 @@ Ext.define('GeoExt.data.model.Object', {
         /**
          * Gets a reference to an ol contructor function.
          *
-         * @param  {String} str Description of the form "ol.layer.Base"
-         * @return {Function}   the ol constructor
+         * @param {String} str Description of the form "ol.layer.Base"
+         * @return {Function} the ol constructor
          */
         getOlCLassRef: function(str) {
             var ref = ol,
@@ -48,15 +48,15 @@ Ext.define('GeoExt.data.model.Object', {
 
     /**
      * String description of the reference path to the wrapped ol class.
-     * @type {String}
      *
-     * @property
+     * @property {String}
      */
     olClass: 'ol.Object',
 
     /**
-     * the underlying ol.Object
-     * @type {ol.Object}
+     * The underlying ol.Object
+     *
+     * @property {ol.Object}
      */
     olObject: null,
 
@@ -66,7 +66,7 @@ Ext.define('GeoExt.data.model.Object', {
     },
 
     /**
-     * @inheritDoc
+     * @inheritdoc
      */
     constructor: function(data) {
         var me = this,
@@ -113,7 +113,7 @@ Ext.define('GeoExt.data.model.Object', {
      * @param {Object} value
      * @param {Object} options
      *
-     * @inheritDoc
+     * @inheritdoc
      */
     set: function(key, newValue) {
         var o = {};
@@ -141,7 +141,7 @@ Ext.define('GeoExt.data.model.Object', {
     /**
      * Overriden to un all added event listeners on the ol.Object.
      *
-     * @inheritDoc
+     * @inheritdoc
      */
     destroy: function() {
         this.olObject.un('propertychange', this.onPropertychange, this);

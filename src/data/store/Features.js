@@ -27,8 +27,9 @@ Ext.define('GeoExt.data.store.Features', {
     config: {
 
         /**
-         * @cfg {ol.Layer}
          * Initial layer holding features which will be added to the store
+         *
+         * @cfg {ol.Layer} layer
          */
         /**
          * @property {ol.Layer}
@@ -39,42 +40,47 @@ Ext.define('GeoExt.data.store.Features', {
     },
 
     /**
+     * A map object to which a possible #layer will be added
+     *
      * @cfg {ol.Map}
-     * a map object to which a possible #layer will be added
      */
     map: null,
 
     /**
-     * @cfg
      * Set this flag to true will create a vector #layer with the given
      * #features and ads it to the given #map (if available)
+     *
+     * @cfg {Boolean}
      */
     createLayer: false,
 
     /**
-     * @private
-     * @property
      * Shows if the #layer has been created by constructor
+     *
+     * @private
+     * @property {Boolean}
      */
     layerCreated: false,
 
     /**
-     * @cfg {ol.Style}
      * An OpenLayers 3 style object to style the vector #layer representing
-     * the features of this store
+     * the features of this store.
+     *
+     * @cfg {ol.Style}
      */
     style: null,
 
     /**
-     * @cfg {ol.Collection<ol.Feature>}
      * Initial set of features. Has to be an ol.Collection object with
      * ol.Feature objects in it.
+     *
+     * @cfg {ol.Collection<ol.Feature>}
      */
     features: null,
 
 
     /**
-     * @private
+     * TODO
      */
     constructor: function(config) {
         var me = this,
@@ -120,8 +126,8 @@ Ext.define('GeoExt.data.store.Features', {
     /**
      * Returns the FeatureCollection which is in sync with this store.
      *
-     * @returns {ol.Collection<ol.Featrues>}
-     *   The underlying OpenLayers FeatureCollection
+     * @return {ol.Collection<ol.Featrues>} The underlying OpenLayers
+     *     FeatureCollection
      */
     getFeatures: function() {
         return this.olCollection;
@@ -140,11 +146,11 @@ Ext.define('GeoExt.data.store.Features', {
     },
 
     /**
-     * @protected
-     *
      * Overwrites the destroy function to ensure the #layer is removed from
      * the #map when it has been created automatically while construction in
      * case of destruction of this store.
+     *
+     * @protected
      */
     destroy: function() {
         var me = this;
@@ -159,9 +165,9 @@ Ext.define('GeoExt.data.store.Features', {
     },
 
     /**
-     * @private
+     * Draws the given #features on the #map.
      *
-     * Draws the given #features on the #map
+     * @private
      */
     drawFeaturesOnMap: function() {
         var me = this;
@@ -186,7 +192,7 @@ Ext.define('GeoExt.data.store.Features', {
      * Bind the 'addfeature' and 'removefeature' events to sync the features
      * in #layer with this store.
      *
-     *  @private
+     * @private
      */
     bindLayerEvents: function () {
         var me = this;
@@ -200,7 +206,7 @@ Ext.define('GeoExt.data.store.Features', {
     /**
      * Unbind the 'addfeature' and 'removefeature' events of the #layer.
      *
-     *  @private
+     * @private
      */
     unbindLayerEvents: function () {
         var me = this;
@@ -212,9 +218,9 @@ Ext.define('GeoExt.data.store.Features', {
     },
 
     /**
-     * Handler for #layer 'addfeature' event
+     * Handler for #layer 'addfeature' event.
      *
-     * @param  {Object} evt the event object of OpenLayers
+     * @param {Object} evt the event object of OpenLayers
      * @private
      */
     onFeaturesAdded: function (evt) {
@@ -222,9 +228,9 @@ Ext.define('GeoExt.data.store.Features', {
     },
 
     /**
-     * Handler for #layer 'removefeature' event
+     * Handler for #layer 'removefeature' event.
      *
-     * @param  {Object} evt the event object of OpenLayers
+     * @param {Object} evt the event object of OpenLayers
      * @private
      */
     onFeaturesRemoved: function (evt) {

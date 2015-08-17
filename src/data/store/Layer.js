@@ -28,11 +28,15 @@ Ext.define('GeoExt.data.store.Layer', {
     config: {
         /**
          * A configured map or a configuration object for the map constructor.
-         * @cfg {ol.Map} map
+         *
+         * @cfg {ol.Map/Object} map
          */
         map: null
     },
 
+    /**
+     * TODO
+     */
     constructor: function(config) {
         var me = this;
 
@@ -47,7 +51,7 @@ Ext.define('GeoExt.data.store.Layer', {
      * Bind this store to a map instance, once bound the store
      * is synchronized with the map and vice-versa.
      *
-     * @param {ol.Map} map map The map instance.
+     * @param {ol.Map} map The map instance.
      */
     bindMap: function(map){
         var me = this;
@@ -316,7 +320,7 @@ Ext.define('GeoExt.data.store.Layer', {
      * Get the record for the specified layer.
      *
      * @param {OpenLayers.Layer} layer
-     * @returns {Ext.data.Model} or undefined if not found
+     * @return {Ext.data.Model} or undefined if not found
      */
     getByLayer: function(layer) {
         var index = this.findBy(function(r) {

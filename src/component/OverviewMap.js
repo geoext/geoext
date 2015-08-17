@@ -80,12 +80,15 @@ Ext.define("GeoExt.component.OverviewMap", {
         /**
          * An ol.Collection of ol.layers.Base. If not defined on construction, the
          * layers of the parentMap will be used.
+         *
+         * @cfg {ol.Collection}
          */
         layers: [],
 
         /**
          * The magnification is the relationship in which the resolution of the
          * overviewmaps view is bigger then resolution of the parentMaps view.
+         *
          * @cfg {Number} magnification
          */
         magnification: 5,
@@ -93,13 +96,15 @@ Ext.define("GeoExt.component.OverviewMap", {
         /**
          * A configured map or a configuration object for the map constructor.
          * This is the overviewMap itself.
-         * @cfg {ol.Map} map
+         *
+         * @cfg {ol.Map/Object} map
          */
         map: null,
 
         /**
          * A configured map or a configuration object for the map constructor.
          * This should be the map the overviewMap is bind to.
+         *
          * @cfg {ol.Map} parentMap
          */
         parentMap: null,
@@ -107,7 +112,7 @@ Ext.define("GeoExt.component.OverviewMap", {
         /**
          * Shall a click on the overview map recenter the parent map?
          *
-         * @cfg {boolean} recenterOnClick Whether we shall recenter the parent
+         * @cfg {Boolean} recenterOnClick Whether we shall recenter the parent
          *     map on a click on the overview map or not.
          */
         recenterOnClick: true,
@@ -125,7 +130,7 @@ Ext.define("GeoExt.component.OverviewMap", {
 
     statics: {
         /**
-         *
+         * TODO
          */
         rotateCoordsAroundCoords: function(coords, center, rotation){
             var cosTheta = Math.cos(rotation);
@@ -141,7 +146,7 @@ Ext.define("GeoExt.component.OverviewMap", {
         },
 
         /**
-         *
+         * TODO
          */
         rotateGeomAroundCoords: function(geom, centerCoords, rotation){
             var me = this;
@@ -410,7 +415,7 @@ Ext.define("GeoExt.component.OverviewMap", {
     },
 
     /**
-     *
+     * TODO
      */
     applyAnchorStyle: function(style){
         this.anchorFeature.setStyle(style);
@@ -418,7 +423,7 @@ Ext.define("GeoExt.component.OverviewMap", {
     },
 
     /**
-     *
+     * TODO
      */
     applyBoxStyle: function(style){
         this.boxFeature.setStyle(style);

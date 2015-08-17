@@ -28,8 +28,9 @@ Ext.define('GeoExt.data.MapfishPrintProvider', {
     /**
      * @event ready
      * Fires after the PrintCapability store is loaded.
-     * @param {GeoExt.data.MapfishPrintProvider} provider
-     * The GeoExt.data.MapfishPrintProvider itself
+     *
+     * @param {GeoExt.data.MapfishPrintProvider} provider The
+     *     GeoExt.data.MapfishPrintProvider itself
      */
 
     config: {
@@ -122,8 +123,8 @@ Ext.define('GeoExt.data.MapfishPrintProvider', {
          * get removed from returning array
          *
          * @param {GeoExt.data.store.Layer, {ol.Collection.<ol.layer.Base>},
-         * Array<ol.layer.Base>}
-         * @returns {Array} inputLayers - the flat layers array
+         *     Array<ol.layer.Base>}
+         * @return {Array} inputLayers - the flat layers array
          */
         getLayerArray: function(layers) {
             var inputLayers = [];
@@ -172,7 +173,7 @@ Ext.define('GeoExt.data.MapfishPrintProvider', {
          * v3.0.
          *
          * @param {GeoExt.data.store.Layer, {ol.Collection.<ol.layer.Base>},
-         * Array<ol.layer.Base>}
+         *     Array<ol.layer.Base>}
          *
          * @static
          */
@@ -229,9 +230,10 @@ Ext.define('GeoExt.data.MapfishPrintProvider', {
     },
 
     /**
-     * @property
      * The capabiltyRec is an instance of 'GeoExt.data.model.print.Capability'
-     * and contains the PrintCapabilities of the Printprovider.
+     * and contans the PrintCapabilities of the Printprovider.
+     *
+     * @property
      * @readonly
      */
     capabilityRec: null,
@@ -246,8 +248,9 @@ Ext.define('GeoExt.data.MapfishPrintProvider', {
     },
 
     /**
-     * @private
      * Creates the store from object or url.
+     *
+     * @private
      */
     fillCapabilityRec: function(){
         // enhance checks

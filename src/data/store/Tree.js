@@ -28,12 +28,14 @@ Ext.define('GeoExt.data.store.Tree', {
     config: {
         /**
          * The ol.layer.Group that the tree is derived from.
+         *
          * @cfg {ol.layer.Group}
          */
         layerGroup: null,
 
         /**
          * The layer property that will be used to label tree nodes.
+         *
          * @cfg {String}
          */
         textProperty: 'name'
@@ -41,7 +43,8 @@ Ext.define('GeoExt.data.store.Tree', {
 
     /**
      * Defines if the given ol.layer.Group while be shown as node or not.
-     * @property {boolean}
+     *
+     * @property {Boolean}
      */
     showLayerGroupNode: false,
 
@@ -49,7 +52,8 @@ Ext.define('GeoExt.data.store.Tree', {
      * Defines if the order of the layers added to the store will be
      * reversed. The default behaviour and what most users expect is
      * that mapLayers on top are also on top in the tree.
-     * @property {boolean}
+     *
+     * @property {Boolean}
      */
     inverseLayerOrder: true,
 
@@ -192,8 +196,6 @@ Ext.define('GeoExt.data.store.Tree', {
      * Allows for temporarily unlistening to change events on the underlying
      * OpenLayers collections. Use #resumeCollectionEvents to start listening
      * again.
-     *
-     * @public
      */
     suspendCollectionEvents: function(){
         this.collectionEventsSuspended = true;
@@ -203,8 +205,6 @@ Ext.define('GeoExt.data.store.Tree', {
      * Undoes the effect of #suspendCollectionEvents; so that the store is now
      * listening to change events on the underlying OpenLayers collections.
      * again.
-     *
-     * @public
      */
     resumeCollectionEvents: function(){
         this.collectionEventsSuspended = false;

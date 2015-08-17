@@ -24,9 +24,8 @@ Ext.define('GeoExt.data.store.Collection', {
 
     /**
      * The ol collection this store syncs with.
-     * @type {ol.Collection}
      *
-     * @property
+     * @property {ol.Collection}
      */
     olCollection: null,
 
@@ -41,7 +40,7 @@ Ext.define('GeoExt.data.store.Collection', {
         /**
          * Forwards changes on the Ext.data.Store to the ol.Collection.
          *
-         * @inheritDoc
+         * @inheritdoc
          */
         add: function(store, records, index) {
             var coll = store.olCollection,
@@ -58,7 +57,7 @@ Ext.define('GeoExt.data.store.Collection', {
         /**
          * Forwards changes on the Ext.data.Store to the ol.Collection.
          *
-         * @inheritDoc
+         * @inheritdoc
          */
         remove: function(store, records, index) {
             var coll = store.olCollection,
@@ -73,6 +72,9 @@ Ext.define('GeoExt.data.store.Collection', {
         }
     },
 
+    /**
+     * TODO
+     */
     constructor: function(config) {
         config = config || {};
 
@@ -95,7 +97,8 @@ Ext.define('GeoExt.data.store.Collection', {
 
     /**
      * Forwards changes to the ol.Collection to the Ext.data.Store.
-     * @param  {ol.CollectionEvent} evt
+     *
+     * @param {ol.CollectionEvent} evt
      */
     onOlCollectionAdd: function(evt) {
         var target = evt.target,
@@ -109,7 +112,8 @@ Ext.define('GeoExt.data.store.Collection', {
 
     /**
      * Forwards changes to the ol.Collection to the Ext.data.Store.
-     * @param  {ol.CollectionEvent} evt
+     *
+     * @param {ol.CollectionEvent} evt
      */
     onOlCollectionRemove: function(evt) {
         var element = evt.element,
@@ -125,7 +129,7 @@ Ext.define('GeoExt.data.store.Collection', {
     },
 
     /**
-     * @inheritDoc
+     * @inheritdoc
      */
     destroy: function() {
         this.olCollection.un('add', this.onCollectionAdd, this);
