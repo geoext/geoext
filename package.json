@@ -29,7 +29,7 @@
   "scripts": {
     "test": "phantomjs --ssl-protocol=any --ignore-ssl-errors=true ./node_modules/mocha-phantomjs/lib/mocha-phantomjs.coffee test/index.html",
     "test:watch": "watch 'npm test' src/ test/",
-    "lint-js": "eslint src/ examples/ && eslint -c .test.eslintrc test/spec/",
+    "lint-js": "eslint src/ examples/ && eslint -c test/.eslintrc test/spec/",
     "livereload": "live-reload --port 9091 src/ examples/ test/",
     "save-coverage": "phantomjs --ssl-protocol=any --ignore-ssl-errors=true ./node_modules/mocha-phantomjs/lib/mocha-phantomjs.coffee test/index.html spec '{\"hooks\": \"../../../test/phantom_hooks.js\"}'",
     "clean-coverage": "rm -rf src_instrumented src_old coverage",
