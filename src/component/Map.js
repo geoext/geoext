@@ -58,7 +58,7 @@ Ext.define("GeoExt.component.Map", {
      *
      * @param {ol.MapBrowserEvent} olEvt The original and most recent
      *     MapBrowserEvent event.
-     *  @param {ol.Pixel} lastPixel The originally captured pixel, which defined
+     * @param {ol.Pixel} lastPixel The originally captured pixel, which defined
      *     the center of the tolerance bounds (itself configurable with the the
      *     configuration #pointerRestPixelTolerance). If this is null, a
      *     completely *new* pointerrest event just happened.
@@ -90,7 +90,7 @@ Ext.define("GeoExt.component.Map", {
          * events #pointerrest and #pointerrestout. If this is set to `false`
          * (the default), no such events will be fired.
          *
-         * @cfg {boolean} pointerRest Whether the component shall provide the
+         * @cfg {Boolean} pointerRest Whether the component shall provide the
          *     `pointerrest` and `pointerrestout` events.
          */
         pointerRest: false,
@@ -141,7 +141,7 @@ Ext.define("GeoExt.component.Map", {
      * Whether the pointer is currently over the map component. Only usable if
      * the configuration #pointerRest is `true`.
      *
-     * @property {boolean} isMouseOverMapEl
+     * @property {Boolean} isMouseOverMapEl
      * @private
      */
     isMouseOverMapEl: null,
@@ -328,8 +328,8 @@ Ext.define("GeoExt.component.Map", {
      * Whenever the value of #pointerRest is changed, this method will take
      * care of registering or unregistering internal event listeners.
      *
-     * @param {boolean} val The new value that someone set for `pointerRest`.
-     * @return {boolean} The passed new value for  `pointerRest` unchanged.
+     * @param {Boolean} val The new value that someone set for `pointerRest`.
+     * @return {Boolean} The passed new value for  `pointerRest` unchanged.
      */
     applyPointerRest: function(val) {
         if (val) {
@@ -342,7 +342,8 @@ Ext.define("GeoExt.component.Map", {
 
     /**
      * Returns the center coordinate of the view.
-     * @return ol.Coordinate
+     *
+     * @return {ol.Coordinate}
      */
     getCenter: function(){
         return this.getMap().getView().getCenter();
@@ -350,6 +351,7 @@ Ext.define("GeoExt.component.Map", {
 
     /**
      * Set the center of the view.
+     *
      * @param {ol.Coordinate} center
      */
     setCenter: function(center){
@@ -358,7 +360,8 @@ Ext.define("GeoExt.component.Map", {
 
     /**
      * Returns the extent of the current view.
-     * @return ol.Extent
+     *
+     * @return {ol.Extent}
      */
     getExtent: function(){
         return this.getView().calculateExtent(this.getMap().getSize());
@@ -366,6 +369,7 @@ Ext.define("GeoExt.component.Map", {
 
     /**
      * Set the extent of the view.
+     *
      * @param {ol.Extent} extent
      */
     setExtent: function(extent){
@@ -374,7 +378,8 @@ Ext.define("GeoExt.component.Map", {
 
     /**
      * Returns the layers of the map.
-     * @return ol.Collection
+     *
+     * @return {ol.Collection} The layer collection.
      */
     getLayers: function(){
         return this.getMap().getLayers();
@@ -382,6 +387,7 @@ Ext.define("GeoExt.component.Map", {
 
     /**
      * Add a layer to the map.
+     *
      * @param {ol.layer.Base} layer
      */
     addLayer: function(layer){
@@ -395,6 +401,7 @@ Ext.define("GeoExt.component.Map", {
 
     /**
      * Add a layer to the map.
+     *
      * @param {ol.layer.Base} layer
      */
     removeLayer: function(layer){
@@ -410,7 +417,8 @@ Ext.define("GeoExt.component.Map", {
 
     /**
      * Returns the GeoExt.data.store.Layer
-     * @return GeoExt.data.store.Layer
+     *
+     * @return {GeoExt.data.store.Layer}
      */
     getStore: function(){
         return this.layerStore;
@@ -418,7 +426,8 @@ Ext.define("GeoExt.component.Map", {
 
     /**
      * Returns the view of the map.
-     * @return ol.View
+     *
+     * @return {ol.View}
      */
     getView: function(){
         return this.getMap().getView();
@@ -426,6 +435,7 @@ Ext.define("GeoExt.component.Map", {
 
     /**
      * Set the view of the map.
+     *
      * @param {ol.View} view
      */
     setView: function(view){
