@@ -3,11 +3,15 @@
  * during an upgrade.
  */
 
+// This flag is checked by many Components to avoid compatibility warnings when
+// the code is running under the slicer
+Ext.slicer = true;
+
 Ext.require([
     'Ext.layout.Context'
 ]);
 
-Ext.theme = {
+Ext.theme = Ext.apply(Ext.theme || {}, {
     /**
      * The array of all component manifests. These objects have the following set of
      * properties recognized by the slicer:
@@ -440,7 +444,7 @@ Ext.theme = {
 
         xhr.send(null);
     }
-};
+});
 
 console.log("registering ready listener...");
 Ext.onReady(Ext.theme.run, Ext.theme);

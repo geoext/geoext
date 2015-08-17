@@ -129,9 +129,14 @@
         See if there is an ./examples subfolder full of example applications.
         -->
         <if>
-            <not>
-                <available file="${package.examples.dir}" type="dir"/>
-            </not>
+            <and>
+                <not>
+                    <available file="${package.examples.dir}" type="dir"/>
+                </not>
+                <not>
+                    <isset property="package.example.path"/>
+                </not>
+            </and>
             <then>
                 <property name="skip.examples" value="1"/>
             </then>
@@ -208,6 +213,7 @@
 
         <property name="package.sass.fashion" value="false"/>
         <property name="package.sass.rhino" value="false"/>
+        <property name="package.sass.dynamic" value="false"/>
 
         <!--
         this property is set indicating we've reached the end of the
