@@ -107,7 +107,7 @@ Ext.define('GeoExt.panel.Popup', {
 
         me.getMap().addOverlay(overlay);
         // fix layout of popup when its position changes
-        overlay.on('change:position', me.doLayout, me);
+        overlay.on('change:position', me.updateLayout, me);
 
         // make accessible as member
         me.setOverlay(overlay);
