@@ -11,6 +11,7 @@ var Ext = Ext || {};
 Ext.Boot = Ext.Boot || (function (emptyFn) {
 
     var doc = document,
+        _emptyArray = [],
         _config = {
             /*
              * @cfg {Boolean} [disableCaching=true]
@@ -286,17 +287,26 @@ Ext.Boot = Ext.Boot || (function (emptyFn) {
                 return platforms;
             },
 
-            filterPlatform: function (platform) {
-                platform = [].concat(platform);
-                var len, p, tag;
+            filterPlatform: function (platform, excludes) {
+                platform = _emptyArray.concat(platform || _emptyArray);
+                excludes = _emptyArray.concat(excludes || _emptyArray);
 
-                for (len = platform.length, p = 0; p < len; p++) {
-                    tag = platform[p];
-                    if (_tags.hasOwnProperty(tag)) {
-                        return !!_tags[tag];
-                    }
+                var plen = platform.length,
+                    elen = excludes.length,
+                    include = (!plen && elen), // default true if only excludes specified
+                    i, tag;
+
+                for (i = 0; i < plen && !include; i++) {
+                    tag = platform[i];
+                    include = !!_tags[tag];
                 }
-                return false;
+
+                for (i = 0; i < elen && include; i++) {
+                    tag = excludes[i];
+                    include = !_tags[tag];
+                }
+
+                return include;
             },
 
             init: function () {
@@ -356,14 +366,6 @@ Ext.Boot = Ext.Boot || (function (emptyFn) {
 
                 Boot.detectPlatformTags();
                 Ext.filterPlatform = Boot.filterPlatform;
-
-                // temporary workaround for https://sencha.jira.com/browse/EXTJS-16101
-                if (_tags.ios) {
-                    var meta = document.createElement('meta');
-                    meta.setAttribute('name', 'viewport');
-                    meta.setAttribute('content', 'width=device-width, height=device-height, initial-scale=1, maximum-scale=1, user-scalable=no');
-                    document.head.appendChild(meta);
-                }
             },
 
             /*
@@ -993,20 +995,22 @@ Ext.Boot = Ext.Boot || (function (emptyFn) {
             cache = (cfg.cache !== undefined) ? cfg.cache : (loader && loader.cache),
             buster, busterParam;
 
-        if(cache === undefined) {
-            cache = !Boot.config.disableCaching;
-        }
+        if (Boot.config.disableCaching) {
+            if (cache === undefined) {
+                cache = !Boot.config.disableCaching;
+            }
 
-        if(cache === false) {
-            buster = +new Date();
-        } else if(cache !== true) {
-            buster = cache;
-        }
+            if (cache === false) {
+                buster = +new Date();
+            } else if (cache !== true) {
+                buster = cache;
+            }
 
-        if(buster) {
-            busterParam = (loader && loader.cacheParam) || Boot.config.disableCachingParam;
-            buster = busterParam + "=" + buster;
-        };
+            if (buster) {
+                busterParam = (loader && loader.cacheParam) || Boot.config.disableCachingParam;
+                buster = busterParam + "=" + buster;
+            }
+        }
 
         _apply(cfg, {
             charset: charset,

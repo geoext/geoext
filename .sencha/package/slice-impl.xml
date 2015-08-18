@@ -46,8 +46,9 @@
                     +vars
                     +rules
                     -variable=$image-search-path:'${image.search.path}'
-                    -variable=$theme-name: '${app.theme}' !default
+                    -variable=$theme-name: '${theme.name}' !default
                     -output=${package.example.scss.tmp}
+                    -forward=${pacakge.sass.dynamic}
                 and
                 restore
                     package-${package.name}-all
