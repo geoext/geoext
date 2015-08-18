@@ -1,6 +1,7 @@
 Ext.require([
+    'GeoExt.component.Map',
     'GeoExt.data.MapfishPrintProvider',
-    'GeoExt.component.Map'
+    'GeoExt.data.serializer.TileWMS'
 ]);
 
 var olMap,
