@@ -1,7 +1,8 @@
 Ext.require([
     'GeoExt.component.Map',
     'GeoExt.data.MapfishPrintProvider',
-    'GeoExt.data.serializer.TileWMS'
+    'GeoExt.data.serializer.TileWMS',
+    'GeoExt.data.serializer.Vector'
 ]);
 
 var olMap,
@@ -17,16 +18,34 @@ Ext.application({
             source: new ol.source.Vector()
         });
 
+        var vectorLayer = new ol.layer.Vector({
+            source: new ol.source.Vector({
+                url: '../data/SanFranciscoPublicSchools-Points.kml',
+                format: new ol.format.KML(),
+                attributions: [new ol.Attribution({
+                    html: '<a href="https://data.sfgov.org/Geographic' +
+                        '-Locations-and-Boundaries/San-Francisco-Public' +
+                        '-Schools-Points/dpub-rukj">' +
+                        '© 2015 City and County of San Francisco' +
+                        '</a>' +
+                        ', (via data.sfgov.org)'
+                })]
+            })
+        });
+
+        var bgLayer = new ol.layer.Tile({
+            source: new ol.source.TileWMS({
+                url: 'http://ows.terrestris.de/osm-gray/service',
+                params: {
+                    LAYERS: "OSM-WMS"
+                }
+            })
+        });
+
         olMap = new ol.Map({
             layers: [
-                new ol.layer.Tile({
-                    source: new ol.source.TileWMS({
-                        url: 'http://ows.terrestris.de/osm-gray/service',
-                        params: {
-                            LAYERS: "OSM-WMS"
-                        }
-                    })
-                }),
+                bgLayer,
+                vectorLayer,
                 extentLayer
             ],
             view: new ol.View({
@@ -85,7 +104,15 @@ Ext.application({
                         attributes: {}
                     };
                     var bbox = extentLayer.getSource().getFeatures()[0].getGeometry().getExtent();
-                    var serializedLayers = GeoExt.data.MapfishPrintProvider.getSerializedLayers(mapComponent.getStore());
+                    var serializedLayers = GeoExt.data.MapfishPrintProvider.getSerializedLayers(
+                        mapComponent,
+                        function(layer) {
+                            // do not print the extent layer
+                            var isExtentLayer = (extentLayer === layer);
+                            return !isExtentLayer;
+                        }
+                    );
+                    serializedLayers.reverse();
                     spec.attributes[attr.get('name')] = {
                         bbox: bbox,
                         dpi: clientInfo.dpiSuggestions[0],
