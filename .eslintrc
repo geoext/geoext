@@ -5,8 +5,7 @@
         "ol": false
     },
     "rules": {
-        "no-underscore-dangle": false,
-        "quotes": "single",
-        "strict": "never"
+        "no-underscore-dangle": 0,
+        "strict": [2, "never"]
     }
 }
