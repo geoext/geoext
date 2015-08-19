@@ -148,5 +148,21 @@ describe('GeoExt.component.Map', function() {
             });
         });
 
+        describe('listening to size changes', function() {
+
+            it('ensure the map is updated when the size changes', function() {
+                var spy = sinon.spy(olMap, 'updateSize');
+
+                mapComponent.setSize(100, 100);
+
+                expect(spy.called).to.be(true);
+                expect(spy.callCount).to.be(1);
+
+                // restore old method
+                olMap.updateSize.restore();
+            });
+
+        });
+
     });
 });
