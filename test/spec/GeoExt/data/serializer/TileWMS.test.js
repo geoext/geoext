@@ -13,6 +13,7 @@ describe('GeoExt.data.serializer.TileWMS', function() {
     describe('serializing behaviour', function() {
         var source = null;
         var layer = null;
+        var viewResolution = 38.21851414258813;
 
         beforeEach(function(){
             source = new ol.source.TileWMS({
@@ -32,7 +33,9 @@ describe('GeoExt.data.serializer.TileWMS', function() {
 
         it('doesn\'t throw on expected source', function(){
             expect(function(){
-                GeoExt.data.serializer.TileWMS.serialize(layer, source);
+                GeoExt.data.serializer.TileWMS.serialize(
+                    layer, source, viewResolution
+                );
             }).to.not.throwException();
         });
 
@@ -44,13 +47,15 @@ describe('GeoExt.data.serializer.TileWMS', function() {
                 crossOrigin: ''
             });
             expect(function(){
-                GeoExt.data.serializer.TileWMS.serialize(layer, wrongSource);
+                GeoExt.data.serializer.TileWMS.serialize(
+                    layer, wrongSource, viewResolution
+                );
             }).to.throwException();
         });
 
         it('serializes as expected', function(){
             var serialized = GeoExt.data.serializer.TileWMS.serialize(
-                layer, source
+                layer, source, viewResolution
             );
             var expected = {
                 baseURL: 'http://demo.boundlessgeo.com/geoserver/wms',

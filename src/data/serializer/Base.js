@@ -35,6 +35,7 @@
          * @param {ol.layer.Layer} layer The layer to serialize.
          * @param {ol.source.Source} source The source of the layer to
          *    serialize.
+         * @param {Number} viewRes The resolution of the mapview.
          * @return {Object} a serialized representation of source and layer.
          */
         serialize: function() {
