@@ -177,9 +177,17 @@ Ext.define('GeoExt.data.MapfishPrintProvider', {
          *
          * @static
          */
-        getSerializedLayers: function(layers){
+        getSerializedLayers: function(mapComponent, filterFn, filterScope){
+            var layers = mapComponent.getLayers();
+            var viewRes = mapComponent.getView().getResolution();
             var serializedLayers = [];
             var inputLayers = this.getLayerArray(layers);
+
+            if (Ext.isDefined(filterFn)) {
+                inputLayers = Ext.Array.filter(
+                    inputLayers, filterFn, filterScope
+                );
+            }
 
             Ext.each(inputLayers, function(layer){
                 var source = layer.getSource();
@@ -187,7 +195,7 @@ Ext.define('GeoExt.data.MapfishPrintProvider', {
 
                 var serializer = this.findSerializerBySource(source);
                 if (serializer) {
-                    serialized = serializer.serialize(layer, source);
+                    serialized = serializer.serialize(layer, source, viewRes);
                     serializedLayers.push(serialized);
                 }
             }, this);

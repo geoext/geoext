@@ -276,7 +276,7 @@ describe('GeoExt.data.MapfishPrintProvider', function() {
 
         it('getSerializedLayers returns the serialized Layers', function(){
             expect(GeoExt.data.MapfishPrintProvider.getSerializedLayers).to.be.a('function');
-            var serializedLayers = GeoExt.data.MapfishPrintProvider.getSerializedLayers(mapComponent.getStore());
+            var serializedLayers = GeoExt.data.MapfishPrintProvider.getSerializedLayers(mapComponent);
             var serializedLayer = serializedLayers[0];
 
             expect(serializedLayers).to.be.an('array');
