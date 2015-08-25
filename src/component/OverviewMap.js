@@ -63,6 +63,49 @@ Ext.define("GeoExt.component.OverviewMap", {
         'widget.gx_overviewmap',
         'widget.gx_component_overviewmap'
     ],
+    requires: [
+        'GeoExt.util.Symbol'
+    ],
+
+    // <debug>
+    symbols: [
+        'ol.animation.pan',
+        'ol.Collection',
+        'ol.Feature',
+        'ol.Feature#setGeometry',
+        'ol.Feature#setStyle',
+        'ol.geom.Point',
+        'ol.geom.Point#getCoordinates',
+        'ol.geom.Point#setCoordinates',
+        'ol.geom.Polygon',
+        'ol.geom.Polygon.fromExtent',
+        'ol.geom.Polygon#getCoordinates',
+        'ol.geom.Polygon#setCoordinates',
+        'ol.layer.Image', // we should get rid of this requirement
+        'ol.layer.Tile', // we should get rid of this requirement
+        'ol.layer.Vector',
+        'ol.layer.Vector#getSource',
+        'ol.Map',
+        'ol.Map#addLayer',
+        'ol.Map#beforeRender',
+        'ol.Map#getView',
+        'ol.Map#on',
+        'ol.Map#updateSize',
+        'ol.Map#un',
+        'ol.source.Vector',
+        'ol.source.Vector#addFeatures',
+        'ol.View',
+        'ol.View#calculateExtent',
+        'ol.View#getCenter',
+        'ol.View#getProjection',
+        'ol.View#getRotation',
+        'ol.View#getZoom',
+        'ol.View#on',
+        'ol.View#set',
+        'ol.View#setCenter',
+        'ol.View#un'
+    ],
+    // </debug>
 
     config: {
         /**
@@ -443,4 +486,8 @@ Ext.define("GeoExt.component.OverviewMap", {
         this.boxFeature.setStyle(style);
         return style;
     }
+}, function(cls) {
+    // <debug>
+    GeoExt.util.Symbol.check(cls);
+    // </debug>
 });
