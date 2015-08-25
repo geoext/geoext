@@ -18,6 +18,20 @@
  */
 Ext.define('GeoExt.data.serializer.TileWMS', {
     extend: 'GeoExt.data.serializer.Base',
+
+    requires: [
+        'GeoExt.util.Symbol'
+    ],
+
+    // <debug>
+    symbols: [
+        'ol.layer.Layer#getOpacity',
+        'ol.source.TileWMS',
+        'ol.source.TileWMS#getUrls',
+        'ol.source.TileWMS#getParams'
+    ],
+    // </debug>
+
     inheritableStatics: {
         /**
          * @inheritdoc
@@ -45,4 +59,7 @@ Ext.define('GeoExt.data.serializer.TileWMS', {
 }, function(cls) {
     // Register this serializer via the inherited method `register`.
     cls.register(cls);
+    // <debug>
+    GeoExt.util.Symbol.check(cls);
+    // </debug>
 });
