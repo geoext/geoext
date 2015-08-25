@@ -22,6 +22,32 @@
  */
 Ext.define('GeoExt.data.serializer.WMTS', {
     extend: 'GeoExt.data.serializer.Base',
+
+    requires: [
+        'GeoExt.util.Symbol'
+    ],
+
+    // <debug>
+    symbols: [
+        'ol.proj.Projection#getMetersPerUnit',
+        'ol.size.toSize',
+        'ol.source.WMTS',
+        'ol.source.WMTS#getDimensions',
+        'ol.source.WMTS#getFormat',
+        'ol.source.WMTS#getLayer',
+        'ol.source.WMTS#getMatrixSet',
+        'ol.source.WMTS#getProjection',
+        'ol.source.WMTS#getRequestEncoding',
+        'ol.source.WMTS#getStyle',
+        'ol.source.WMTS#getTileGrid',
+        'ol.source.WMTS#getUrls',
+        'ol.source.WMTS#getVersion',
+        'ol.tilegrid.WMTS#getMatrixIds',
+        'ol.tilegrid.WMTS#getOrigin',
+        'ol.tilegrid.WMTS#getResolution'
+    ],
+    // </debug>
+
     inheritableStatics: {
         /**
          * @inheritdoc
@@ -75,4 +101,7 @@ Ext.define('GeoExt.data.serializer.WMTS', {
 }, function(cls) {
     // Register this serializer via the inherited method `register`.
     cls.register(cls);
+    // <debug>
+    GeoExt.util.Symbol.check(cls);
+    // </debug>
 });
