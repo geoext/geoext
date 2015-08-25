@@ -42,8 +42,28 @@ Ext.define("GeoExt.component.Map", {
     ],
 
     requires: [
-        'GeoExt.data.store.Layer'
+        'GeoExt.data.store.Layer',
+        'GeoExt.util.Symbol'
     ],
+    // <debug>
+    symbols: [
+        'ol.layer.Base',
+        'ol.Map',
+        'ol.Map#addLayer',
+        'ol.Map#getLayers',
+        'ol.Map#getSize',
+        'ol.Map#getView',
+        'ol.Map#removeLayer',
+        'ol.Map#setTarget',
+        'ol.Map#setView',
+        'ol.Map#updateSize',
+        'ol.View',
+        'ol.View#calculateExtent',
+        'ol.View#fit',
+        'ol.View#getCenter',
+        'ol.View#setCenter'
+    ],
+    // </debug>
 
     /**
      * @event pointerrest
@@ -444,4 +464,8 @@ Ext.define("GeoExt.component.Map", {
     setView: function(view){
         this.getMap().setView(view);
     }
+}, function(cls) {
+    // <debug>
+    GeoExt.util.Symbol.check(cls);
+    // </debug>
 });
