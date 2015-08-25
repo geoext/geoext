@@ -23,6 +23,24 @@ Ext.define('GeoExt.data.store.Tree', {
 
     alternateClassName: ['GeoExt.data.TreeStore'],
 
+    requires: [
+        'GeoExt.util.Symbol'
+    ],
+
+    // <debug>
+    symbols: [
+        'ol.Collection',
+        'ol.Collection#getArray',
+        'ol.Collection#once',
+        'ol.Collection#un',
+        'ol.layer.Base',
+        'ol.layer.Base#get',
+        'ol.layer.Group',
+        'ol.layer.Group#get',
+        'ol.layer.Group#getLayers'
+    ],
+    // </debug>
+
     model: 'GeoExt.data.model.LayerTreeNode',
 
     config: {
@@ -251,4 +269,8 @@ Ext.define('GeoExt.data.store.Tree', {
     resumeCollectionEvents: function(){
         this.collectionEventsSuspended = false;
     }
+}, function(cls) {
+    // <debug>
+    GeoExt.util.Symbol.check(cls);
+    // </debug>
 });
