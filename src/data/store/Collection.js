@@ -19,8 +19,18 @@
 Ext.define('GeoExt.data.store.Collection', {
     extend: 'Ext.data.Store',
     requires: [
-        'GeoExt.data.model.Object'
+        'GeoExt.data.model.Object',
+        'GeoExt.util.Symbol'
     ],
+
+    // <debug>
+    symbols: [
+        'ol.Collection',
+        'ol.Collection#getArray',
+        'ol.Collection#insertAt',
+        'ol.Collection#removeAt'
+    ],
+    // </debug>
 
     /**
      * The ol collection this store syncs with.
@@ -139,4 +149,8 @@ Ext.define('GeoExt.data.store.Collection', {
 
         this.callParent(arguments);
     }
+}, function(cls) {
+    // <debug>
+    GeoExt.util.Symbol.check(cls);
+    // </debug>
 });
