@@ -21,8 +21,16 @@
 Ext.define('GeoExt.data.model.LayerTreeNode', {
     extend: 'GeoExt.data.model.Layer',
     requires: [
-        'Ext.data.NodeInterface'
+        'Ext.data.NodeInterface',
+        'GeoExt.util.Symbol'
     ],
+    // <debug>
+    symbols: [
+        'ol.layer.Base',
+        'ol.Object#get',
+        'ol.Object#set'
+    ],
+    // </debug>
 
     mixins: [
         'Ext.mixin.Queryable'
@@ -177,7 +185,10 @@ Ext.define('GeoExt.data.model.LayerTreeNode', {
         return this.parentNode;
     }
 
-}, function () {
+}, function (cls) {
     // make this an Ext.data.TreeModel
     Ext.data.NodeInterface.decorate(this);
+    // <debug>
+    GeoExt.util.Symbol.check(cls);
+    // </debug>
 });
