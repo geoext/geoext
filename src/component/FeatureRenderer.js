@@ -21,6 +21,35 @@
 Ext.define('GeoExt.component.FeatureRenderer', {
     extend: 'Ext.Component',
     alias: 'widget.gx_renderer',
+    requires: [
+        'GeoExt.util.Symbol'
+    ],
+    // <debug>
+    symbols: [
+        'ol.extent.getCenter',
+        'ol.extent.getWidth',
+        'ol.extent.getHeight',
+        'ol.Feature',
+        'ol.Feature#getGeometry',
+        'ol.Feature#setStyle',
+        'ol.geom.Geometry#getExtent',
+        'ol.geom.Point',
+        'ol.geom.LineString',
+        'ol.geom.Polygon',
+        'ol.layer.Vector',
+        'ol.layer.Vector#getSource',
+        'ol.Map#getSize',
+        'ol.Map#getView',
+        'ol.Map#setView',
+        'ol.Map#updateSize',
+        'ol.proj.Projection',
+        'ol.source.Vector',
+        'ol.source.Vector#addFeature',
+        'ol.View',
+        'ol.View#fit'
+    ],
+    // </debug>
+
     /**
      * Fires when the feature is clicked on.
      *
@@ -347,4 +376,8 @@ Ext.define('GeoExt.component.FeatureRenderer', {
             this.setSymbolizers(options.symbolizers);
         }
     }
+}, function(cls) {
+    // <debug>
+    GeoExt.util.Symbol.check(cls);
+    // </debug>
 });
