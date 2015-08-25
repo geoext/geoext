@@ -20,6 +20,17 @@
  */
 Ext.define('GeoExt.data.model.Layer', {
     extend: 'GeoExt.data.model.Base',
+    requires: [
+        'GeoExt.util.Symbol'
+    ],
+
+    // <debug>
+    symbols: [
+        'ol.layer.Group',
+        'ol.layer.Base',
+        'ol.layer.Base#get'
+    ],
+    // </debug>
 
     statics: {
         /**
@@ -112,4 +123,8 @@ Ext.define('GeoExt.data.model.Layer', {
             return this.data;
         }
     }
+}, function(cls) {
+    // <debug>
+    GeoExt.util.Symbol.check(cls);
+    // </debug>
 });
