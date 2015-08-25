@@ -18,7 +18,18 @@
  */
 Ext.define('GeoExt.data.serializer.Base', {
     extend: 'Ext.Base',
-    requires: 'GeoExt.data.MapfishPrintProvider',
+    requires: [
+        'GeoExt.data.MapfishPrintProvider',
+        'GeoExt.util.Symbol'
+    ],
+
+    // <debug>
+    symbols: [
+        'ol.layer.Layer',
+        'ol.source.Source'
+    ],
+    // </debug>
+
     inheritableStatics: {
         /**
          * The ol.source.Source class that this serializer will serialize.
@@ -71,4 +82,8 @@ Ext.define('GeoExt.data.serializer.Base', {
             }
         }
     }
+}, function(cls) {
+    // <debug>
+    GeoExt.util.Symbol.check(cls);
+    // </debug>
 });
