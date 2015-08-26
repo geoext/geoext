@@ -38,7 +38,25 @@ Ext.define('GeoExt.data.store.Tree', {
          *
          * @cfg {String}
          */
-        textProperty: 'name'
+        textProperty: 'name',
+
+        /**
+         * Configures the behaviour of the checkbox of an ol.layer.Group
+         * (folder). Possible values are 'classic' or 'ol3'.
+         * 'classic' forwards the checkstate to the children of the folder.
+         * 'ol3' emulates the behaviour of ol.layer.Group. So an layerGroup can
+         * be invisible but can have visible children.
+         * 'classic':
+         *   - Check a leaf --> all parent nodes are checked
+         *   - Uncheck all leafs in a folder --> parent node is unchecked
+         *   - Check a folder Node --> all children are checked
+         *   - Uncheck a folder Node --> all children are unchecked
+         * 'ol3':
+         *   - Emulates the behaviour of an ol.layer.Group, so a parentfolder
+         *     can be unchecked but still contain checked leafs and vice versa.
+         * @cfg
+         */
+        folderToggleMode: 'classic'
     },
 
     /**
@@ -85,6 +103,29 @@ Ext.define('GeoExt.data.store.Tree', {
     },
 
     /**
+     * Apllies the folderToggleMode to the treenodes.
+     * @private
+     */
+    applyFolderToggleMode: function(folderToggleMode){
+
+        if(folderToggleMode === 'classic' || folderToggleMode === 'ol3'){
+            var rootNode = this.getRootNode();
+            if(rootNode){
+                rootNode.cascadeBy({
+                    before: function(child){
+                        child.set('__toggleMode', folderToggleMode);
+                    }
+                })
+            }
+        } else {
+            Ext.raise("Invalid folderToggleMode "
+                + "set in 'GeoExt.data.store.Tree': "
+                + folderToggleMode + ". 'classic' or 'ol3' are valid.");
+        }
+        return folderToggleMode;
+    },
+
+    /**
      * Adds a layer as a child to a node. It can be either an
      * GeoExt.data.model.Layer or an ol.layer.Base.
      *
@@ -99,6 +140,7 @@ Ext.define('GeoExt.data.store.Tree', {
             subLayers;
 
         if(layer instanceof ol.layer.Group){
+            node.set('__toggleMode', me.getFolderToggleMode());
             subLayers = layer.getLayers();
             subLayers.once('add', me.onLayerCollectionChanged, me);
             subLayers.once('remove', me.onLayerCollectionChanged, me);

@@ -40,6 +40,13 @@ Ext.define('GeoExt.data.model.LayerTreeNode', {
                     return true;
                 }
             }
+        }, {
+            /**
+             * This should be set via tree panel.
+             */
+            name: '__toggleMode',
+            type: 'string',
+            defaultValue: 'classic'
         }
     ],
 
@@ -87,13 +94,72 @@ Ext.define('GeoExt.data.model.LayerTreeNode', {
      * @inheritdoc
      */
     set: function(key, newValue) {
-        this.callParent(arguments);
+        var me = this;
+        me.callParent(arguments);
 
         // forward changes to ol object
         if (key === 'checked') {
-            this.__updating = true;
-            this.getOlLayer().set('visible', newValue);
-            this.__updating = false;
+            me.__updating = true;
+            if(me.get('isLayerGroup') && me.get('__toggleMode') === 'classic'){
+                me.getOlLayer().set('visible', newValue);
+                if(me.childNodes){
+                    me.eachChild(function(child){
+                        child.getOlLayer().set('visible', newValue);
+                    });
+                }
+            } else {
+                me.getOlLayer().set('visible', newValue);
+            }
+            me.__updating = false;
+
+            if(me.get('__toggleMode') === 'classic'){
+                me.toggleParentNodes(newValue);
+            }
+        }
+    },
+
+    /**
+     * Handles Parentbehaviour of checked Nodes:
+     * Checks parent Nodes if node is checked or unchecks parent Nodes if the
+     * node is unchecked and no sibling is checked.
+     * @private
+     * @param {Boolean} newValue
+     */
+    toggleParentNodes: function(newValue){
+        var me = this;
+        // Checks parent Nodes if node is checked.
+        if(newValue === true){
+            me.__updating = true;
+            me.bubble(function(parent){
+                if(!parent.isRoot()){
+                    parent.set('__toggleMode', 'ol3'); // prevents recursion
+                    parent.set('checked', true);
+                    parent.set('__toggleMode', 'classic');
+                }
+            });
+            me.__updating = false;
+        }
+
+        // Unchecks parent Nodes if the node is unchecked and no sibling is
+        // checked.
+        if(newValue === false){
+            me.__updating = true;
+            me.bubble(function(parent){
+                if(!parent.isRoot()){
+                    var allUnchecked = true;
+                    parent.eachChild(function(child){
+                        if(child.get('checked')){
+                            allUnchecked = false;
+                        }
+                    });
+                    if (allUnchecked){
+                        parent.set('__toggleMode', 'ol3'); // prevents recursion
+                        parent.set('checked', false);
+                        parent.set('__toggleMode', 'classic');
+                    }
+                }
+            })
+            me.__updating = false;
         }
     },
 
