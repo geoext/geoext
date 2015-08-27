@@ -19,6 +19,14 @@ describe('GeoExt.data.store.Tree', function() {
         div.style.height = "256px";
         document.body.appendChild(div);
 
+        treeDiv = document.createElement('div');
+        treeDiv.style.position = "absolute";
+        treeDiv.style.top = "0";
+        treeDiv.style.left = "-1000px";
+        treeDiv.style.width = "512px";
+        treeDiv.style.height = "256px";
+        document.body.appendChild(treeDiv);
+
         source = new ol.source.MapQuest({layer: 'sat'});
         layer = new ol.layer.Tile({
             source: source
@@ -41,9 +49,10 @@ describe('GeoExt.data.store.Tree', function() {
             layerGroup: olMap.getLayerGroup()
         });
 
-        Ext.create('GeoExt.tree.Panel', {
+        treePanel = Ext.create('GeoExt.tree.Panel', {
             title: 'GeoExt.tree.Panel Example',
             store: treeStore,
+            renderTo: treeDiv,
             rootVisible: false,
             flex: 1,
             border: false
@@ -100,14 +109,13 @@ describe('GeoExt.data.store.Tree', function() {
                 layerGroup: olMap.getLayerGroup()
             });
 
-            Ext.create('GeoExt.tree.Panel', {
+            treePanel = Ext.create('GeoExt.tree.Panel', {
                 title: 'GeoExt.tree.Panel Example',
                 store: treeStore,
                 rootVisible: false,
                 flex: 1,
                 border: false
             });
-
 
             var layer2 = new ol.layer.Tile({
                 source: new ol.source.MapQuest({
@@ -131,14 +139,13 @@ describe('GeoExt.data.store.Tree', function() {
                 showLayerGroupNode: true
             });
 
-            Ext.create('GeoExt.tree.Panel', {
+            treePanel = Ext.create('GeoExt.tree.Panel', {
                 title: 'GeoExt.tree.Panel Example',
                 store: treeStore,
                 rootVisible: false,
                 flex: 1,
                 border: false
             });
-
 
             var layer2 = new ol.layer.Tile({
                     source: new ol.source.MapQuest({
@@ -179,7 +186,6 @@ describe('GeoExt.data.store.Tree', function() {
             afterEach(function(){
                 noVectorTreeStore.destroy();
                 noVectorTreePanel.destroy();
-
             });
 
             it('works when the root is collapsed', function(){
@@ -248,6 +254,145 @@ describe('GeoExt.data.store.Tree', function() {
                 expect(olMap.getLayers().getLength()).to.be(2);
             });
 
+        });
+
+        describe('folderToggleMode', function() {
+
+            var layerGroup;
+
+            beforeEach(function(){
+                layerGroup = new ol.layer.Group({
+                    visible: false,
+                    name: 'LAYERGRUBBE',
+                    layers: [
+                        new ol.layer.Tile({
+                            visible: false,
+                            name: 'LAYERFOOD',
+                            source: new ol.source.TileJSON({
+                                url: 'http://api.tiles.mapbox.com/v3/'+
+                                'mapbox.20110804-hoa-foodinsecurity-'+
+                                '3month.jsonp',
+                                crossOrigin: 'anonymous'
+                            })
+                        }),
+                        new ol.layer.Tile({
+                            visible: false,
+                            name: 'LAYERLIGHT',
+                            source: new ol.source.TileJSON({
+                                url: 'http://api.tiles.mapbox.com/v3/'+
+                                'mapbox.world-borders-light.jsonp',
+                                crossOrigin: 'anonymous'
+                            })
+                        })
+                    ]
+                });
+
+                mapComponent.addLayer(layerGroup);
+            });
+
+            describe('basics', function(){
+                it('sets the "classic" folderToggleMode as default',function(){
+                    expect(treeStore.getFolderToggleMode()).to.be('classic');
+                });
+
+                it("can't set values else then 'ol3' or 'classic'",function(){
+                    expect(function(){
+                        treeStore.setFolderToggleMode('ol3')
+                    }).to.not.throwException();
+
+                    expect(function(){
+                        treeStore.setFolderToggleMode('classic')
+                    }).to.not.throwException();
+
+                    expect(function(){
+                        treeStore.setFolderToggleMode('peter')
+                    }).to.throwException();
+
+                    expect(treeStore.getFolderToggleMode()).to.be('classic');
+                });
+
+                it('sets the toggleMode on all nodes',function(){
+                    treeStore.each(function(child){
+                        expect(child.get('__toggleMode')).to.be('classic');
+                    });
+                });
+            });
+
+            describe('classic', function(){
+
+                it('checks all children if a folder is checked',function(){
+                    var layerGroupNode = treePanel.getRootNode().getChildAt(0);
+                        layerGroupNode.set('checked', true);
+
+                    layerGroupNode.eachChild(function(child){
+                        expect(child.get('checked')).to.be(true);
+                    })
+                });
+
+                it('unchecks all children if a folder is unchecked',function(){
+                    var layerGroupNode = treePanel.getRootNode().getChildAt(0);
+                        layerGroupNode.set('checked', false);
+
+                        layerGroupNode.eachChild(function(child){
+                            expect(child.get('checked')).to.be(false);
+                        })
+                });
+
+                it('checks all parent nodes if a leaf is checked',function(){
+                    var layerGroupNode = treePanel.getRootNode().getChildAt(0);
+                    var childNode = layerGroupNode.getChildAt(0);
+
+                    childNode.set('checked', true);
+                    expect(layerGroupNode.get('checked')).to.be(true);
+                });
+
+                it('unchecks all parent nodes if a leaf and all his siblings' +
+                    'are unchecked',function(){
+                    var layerGroupNode = treePanel.getRootNode().getChildAt(0);
+
+                    layerGroupNode.eachChild(function(child){
+                        child.set('checked', true);
+                    })
+                    expect(layerGroupNode.get('checked')).to.be(true);
+
+                    layerGroupNode.eachChild(function(child){
+                        child.set('checked', false);
+                    })
+                    expect(layerGroupNode.get('checked')).to.be(false);
+                });
+
+            });
+
+            describe('ol3', function(){
+                beforeEach(function(){
+                    treeStore.setFolderToggleMode('ol3');
+                });
+
+                it('sets the toggleMode on all nodes',function(){
+                    treeStore.each(function(child){
+                        expect(child.get('__toggleMode')).to.be('ol3');
+                    });
+                });
+
+                it('folderNode does not react to leafchanges',function(){
+                    var layerGroupNode = treePanel.getRootNode().getChildAt(0);
+                    var childNode = layerGroupNode.getChildAt(0);
+
+                    layerGroupNode.set('checked', false);
+                    childNode.set('checked', true);
+                    expect(layerGroupNode.get('checked')).to.be(false);
+                });
+
+                it("leafNodes don't not react to folderchanges",function(){
+                    var layerGroupNode = treePanel.getRootNode().getChildAt(0);
+                    var childNode = layerGroupNode.getChildAt(0);
+
+                    childNode.set('checked', false);
+                    layerGroupNode.set('checked', true);
+                    expect(childNode.get('checked')).to.be(false);
+                });
+
+            });
         });
 
     });
