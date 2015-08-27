@@ -2,6 +2,7 @@ build/
 node_modules/
 sencha-error-*.log
 bootstrap.json
+sass/example/bootstrap.js
 sass/example/bootstrap.json
 docs/
 coverage/
