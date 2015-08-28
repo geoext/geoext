@@ -13,9 +13,9 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
- /**
-  * A serializer for layer that hava a `ol.source.TileWMS` source.
-  */
+/**
+ * A serializer for layer that hava a `ol.source.TileWMS` source.
+ */
 Ext.define('GeoExt.data.serializer.TileWMS', {
     extend: 'GeoExt.data.serializer.Base',
     inheritableStatics: {
