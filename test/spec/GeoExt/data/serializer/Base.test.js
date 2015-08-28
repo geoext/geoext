@@ -18,10 +18,12 @@ describe('GeoExt.data.serializer.Base', function() {
                 expect(cls.serialize).to.be.a('function');
             });
 
-            it('throws; serialize() must be implemented by subclasses', function(){
-                var serialize = GeoExt.data.serializer.Base.serialize;
-                expect(serialize).to.throwException();
-            });
+            it('throws; serialize() must be implemented by subclasses',
+                function(){
+                    var serialize = GeoExt.data.serializer.Base.serialize;
+                    expect(serialize).to.throwException();
+                }
+            );
 
         });
 
@@ -63,7 +65,8 @@ describe('GeoExt.data.serializer.Base', function() {
         beforeEach(function() {
             serializerBefore = PrintProvider.findSerializerBySource(
                 new ol.source.BingMaps({
-                    key: 'Ak-dzM4wZjSqTlzveKz5u0d4IQ4bRzVI309GxmkgSVr1ewS6iPSrOvOKhA-CJlm3',
+                    key: 'Ak-dzM4wZjSqTlzveKz5u0d4IQ4bRzVI' +
+                        '309GxmkgSVr1ewS6iPSrOvOKhA-CJlm3',
                     imagerySet: 'AerialWithLabels'
                 })
             );
@@ -97,7 +100,8 @@ describe('GeoExt.data.serializer.Base', function() {
             expect(serializerBefore).to.be(undefined);
             var serializerAfter = PrintProvider.findSerializerBySource(
                 new ol.source.BingMaps({
-                    key: 'Ak-dzM4wZjSqTlzveKz5u0d4IQ4bRzVI309GxmkgSVr1ewS6iPSrOvOKhA-CJlm3',
+                    key: 'Ak-dzM4wZjSqTlzveKz5u0d4IQ4bRzVI' +
+                        '309GxmkgSVr1ewS6iPSrOvOKhA-CJlm3',
                     imagerySet: 'AerialWithLabels'
                 })
             );
@@ -110,7 +114,8 @@ describe('GeoExt.data.serializer.Base', function() {
 
         it('correctly validates sources', function(){
             var goodSource = new ol.source.BingMaps({
-                key: 'Ak-dzM4wZjSqTlzveKz5u0d4IQ4bRzVI309GxmkgSVr1ewS6iPSrOvOKhA-CJlm3',
+                key: 'Ak-dzM4wZjSqTlzveKz5u0d4IQ4bRzVI' +
+                    '309GxmkgSVr1ewS6iPSrOvOKhA-CJlm3',
                 imagerySet: 'AerialWithLabels'
             });
             var badSource = new ol.source.OSM();
