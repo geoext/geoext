@@ -78,8 +78,8 @@ Ext.define("GeoExt.component.OverviewMap", {
         boxStyle: null,
 
         /**
-         * An ol.Collection of ol.layers.Base. If not defined on construction, the
-         * layers of the parentMap will be used.
+         * An ol.Collection of ol.layers.Base. If not defined on construction,
+         * the layers of the parentMap will be used.
          *
          * @cfg {ol.Collection}
          */
@@ -154,13 +154,20 @@ Ext.define("GeoExt.component.OverviewMap", {
             var coords;
 
             if(geom instanceof ol.geom.Point){
-                ar.push(me.rotateCoordsAroundCoords(geom.getCoordinates(), centerCoords,
-                        rotation));
+                ar.push(
+                    me.rotateCoordsAroundCoords(
+                        geom.getCoordinates(), centerCoords, rotation
+                    )
+                );
                 geom.setCoordinates(ar[0]);
             } else if (geom instanceof ol.geom.Polygon){
                 coords = geom.getCoordinates()[0];
                 coords.forEach(function(coord){
-                    ar.push(me.rotateCoordsAroundCoords(coord, centerCoords, rotation));
+                    ar.push(
+                        me.rotateCoordsAroundCoords(
+                            coord, centerCoords, rotation
+                        )
+                    );
                 });
                 geom.setCoordinates([ar]);
             }
@@ -326,16 +333,23 @@ Ext.define("GeoExt.component.OverviewMap", {
      */
     updateBox: function(){
         var me = this,
-            parentExtent = me.getParentMap().getView().calculateExtent(me.getParentMap().getSize()),
-            parentRotation = me.getParentMap().getView().getRotation(),
-            parentCenter = me.getParentMap().getView().getCenter(),
+            parentMapView = me.getParentMap().getView(),
+            parentExtent = parentMapView.calculateExtent(
+                me.getParentMap().getSize()
+            ),
+            parentRotation = parentMapView.getRotation(),
+            parentCenter = parentMapView.getCenter(),
             geom = ol.geom.Polygon.fromExtent(parentExtent);
 
-        geom = me.self.rotateGeomAroundCoords(geom, parentCenter, parentRotation);
+        geom = me.self.rotateGeomAroundCoords(
+            geom, parentCenter, parentRotation
+        );
         me.boxFeature.setGeometry(geom);
 
         var anchor = new ol.geom.Point(ol.extent.getTopLeft(parentExtent));
-        anchor = me.self.rotateGeomAroundCoords(anchor, parentCenter, parentRotation);
+        anchor = me.self.rotateGeomAroundCoords(
+            anchor, parentCenter, parentRotation
+        );
         me.anchorFeature.setGeometry(anchor);
     },
 
