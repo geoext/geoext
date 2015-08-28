@@ -149,8 +149,11 @@ Ext.define("GeoExt.component.Map", {
     /**
      * @inheritdoc
      */
-    initComponent: function() {
+    constructor: function(config) {
         var me = this;
+
+        me.callParent([config]);
+
         if(!(me.getMap() instanceof ol.Map)){
             var olMap = new ol.Map({
                 view: new ol.View({
@@ -167,7 +170,6 @@ Ext.define("GeoExt.component.Map", {
         });
 
         me.on('resize', me.onResize, me);
-        me.callParent();
     },
 
     /**
@@ -177,7 +179,8 @@ Ext.define("GeoExt.component.Map", {
         // Get the corresponding view of the controller (the mapComponent).
         var me = this;
         if(!me.mapRendered){
-            me.getMap().setTarget(me.getTargetEl().dom);
+            var el = me.getTargetEl ? me.getTargetEl() : me.element;
+            me.getMap().setTarget(el.dom);
             me.mapRendered = true;
         } else {
             me.getMap().updateSize();
@@ -284,7 +287,7 @@ Ext.define("GeoExt.component.Map", {
      */
     unbindEnterLeaveListeners: function() {
         var me = this;
-        var mapEl = me.getEl();
+        var mapEl = me.getTargetEl ? me.getTargetEl() : me.element;
         if (mapEl) {
             mapEl.un({
                 mouseenter: me.onMouseEnter,
