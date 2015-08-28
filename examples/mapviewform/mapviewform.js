@@ -144,10 +144,11 @@ Ext.application({
                 items: [
                     viewForm,
                     layerForm,
-                {
-                    title: 'Description',
-                    contentEl: 'description'
-                }]
+                    {
+                        title: 'Description',
+                        contentEl: 'description'
+                    }
+                ]
             }]
         });
     }
