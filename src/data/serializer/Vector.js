@@ -17,10 +17,10 @@
  * A serializer for layers that have a `ol.source.Vector` source.
  *
  * This class is heavily inspired by the excellent `ngeo` Print service class:
- * [camptocamp/ngeo](https://github.com/camptocamp/ngeo/blob/master/src/services/print.js).
+ * [camptocamp/ngeo](https://github.com/camptocamp/ngeo).
  *
  * Additionally some utility methods were borrowed from the color class of the
- * [google/closure-library](https://github.com/google/closure-library/blob/master/closure/goog/color/color.js).
+ * [google/closure-library](https://github.com/google/closure-library).
  */
 Ext.define('GeoExt.data.serializer.Vector', {
     extend: 'GeoExt.data.serializer.Base',
@@ -56,17 +56,17 @@ Ext.define('GeoExt.data.serializer.Vector', {
             },
             opacity: 1,
             style: {
-                 version: "2",
-                 "*": {
-                     symbolizers: [{
-                         type: "point",
-                         strokeColor: "white",
-                         strokeOpacity: 1,
-                         strokeWidth: 4,
-                         strokeDashstyle: "solid",
-                         fillColor: "red"
-                     }]
-                 }
+                version: "2",
+                "*": {
+                    symbolizers: [{
+                        type: "point",
+                        strokeColor: "white",
+                        strokeOpacity: 1,
+                        strokeWidth: 4,
+                        strokeDashstyle: "solid",
+                        fillColor: "red"
+                    }]
+                }
             },
             type: "geojson"
         },
@@ -213,55 +213,59 @@ Ext.define('GeoExt.data.serializer.Vector', {
          * @param {String} featureStyleProp Feature style property name.
          * @private
          */
-        encodeVectorStyle: function(object, geometryType, style, styleId, featureStyleProp) {
-            var staticMe = this;
-            var printTypes = staticMe.PRINTSTYLE_TYPES;
-            var printStyleLookup = staticMe.GEOMETRY_TYPE_TO_PRINTSTYLE_TYPE;
-            if (!Ext.isDefined(printStyleLookup[geometryType])) {
-                // unsupported geometry type
-                return;
-            }
-            var styleType = printStyleLookup[geometryType];
-            var key = '[' + featureStyleProp + ' = \'' + styleId + '\']';
-            if (Ext.isDefined(object[key])) {
-                // do nothing if we already have a style object for this CQL
-                // rule
-                return;
-            }
-            var styleObject = {
-                symbolizers: []
-            };
+        encodeVectorStyle:
+            function(object, geometryType, style, styleId, featureStyleProp) {
+                var me = this;
+                var printTypes = me.PRINTSTYLE_TYPES;
+                var printStyleLookup = me.GEOMETRY_TYPE_TO_PRINTSTYLE_TYPE;
+                if (!Ext.isDefined(printStyleLookup[geometryType])) {
+                    // unsupported geometry type
+                    return;
+                }
+                var styleType = printStyleLookup[geometryType];
+                var key = '[' + featureStyleProp + ' = \'' + styleId + '\']';
+                if (Ext.isDefined(object[key])) {
+                    // do nothing if we already have a style object for this CQL
+                    // rule
+                    return;
+                }
+                var styleObject = {
+                    symbolizers: []
+                };
 
-            object[key] = styleObject;
+                object[key] = styleObject;
 
-            var fillStyle = style.getFill();
-            var imageStyle = style.getImage();
-            var strokeStyle = style.getStroke();
-            var textStyle = style.getText();
+                var fillStyle = style.getFill();
+                var imageStyle = style.getImage();
+                var strokeStyle = style.getStroke();
+                var textStyle = style.getText();
 
-            var hasFillStyle = !Ext.isEmpty(fillStyle);
-            var hasImageStyle = !Ext.isEmpty(imageStyle);
-            var hasStrokeStyle = !Ext.isEmpty(strokeStyle);
-            var hasTextStyle = !Ext.isEmpty(textStyle);
+                var hasFillStyle = !Ext.isEmpty(fillStyle);
+                var hasImageStyle = !Ext.isEmpty(imageStyle);
+                var hasStrokeStyle = !Ext.isEmpty(strokeStyle);
+                var hasTextStyle = !Ext.isEmpty(textStyle);
 
-            if (styleType === printTypes.POLYGON && hasFillStyle) {
-                staticMe.encodeVectorStylePolygon(
-                    styleObject.symbolizers, fillStyle, strokeStyle
-                );
-            } else if (styleType === printTypes.LINE_STRING && hasStrokeStyle) {
-                staticMe.encodeVectorStyleLine(
-                    styleObject.symbolizers, strokeStyle
-                );
-            } else if (styleType === printTypes.POINT && hasImageStyle) {
-                staticMe.encodeVectorStylePoint(
-                    styleObject.symbolizers, imageStyle
-                );
-            }
-            // this can be there regardless of type
-            if (hasTextStyle) {
-                staticMe.encodeTextStyle(styleObject.symbolizers, textStyle);
-            }
-        },
+                var POLYTYPE = printTypes.POLYGON;
+                var LINETYPE = printTypes.LINE_STRING;
+                var POINTTYPE = printTypes.POINT;
+                if (styleType === POLYTYPE && hasFillStyle) {
+                    me.encodeVectorStylePolygon(
+                        styleObject.symbolizers, fillStyle, strokeStyle
+                    );
+                } else if (styleType === LINETYPE && hasStrokeStyle) {
+                    me.encodeVectorStyleLine(
+                        styleObject.symbolizers, strokeStyle
+                    );
+                } else if (styleType === POINTTYPE && hasImageStyle) {
+                    me.encodeVectorStylePoint(
+                        styleObject.symbolizers, imageStyle
+                    );
+                }
+                // this can be there regardless of type
+                if (hasTextStyle) {
+                    me.encodeTextStyle(styleObject.symbolizers, textStyle);
+                }
+            },
 
         /**
          * Encodes an ol.style.Fill and an optional ol.style.Stroke and adds it
@@ -311,7 +315,7 @@ Ext.define('GeoExt.data.serializer.Vector', {
             var symbolizer;
             if (imageStyle instanceof ol.style.Circle) {
                 symbolizer = {
-                  type: 'point'
+                    type: 'point'
                 };
                 symbolizer.pointRadius = imageStyle.getRadius();
                 var fillStyle = imageStyle.getFill();
@@ -334,7 +338,7 @@ Ext.define('GeoExt.data.serializer.Vector', {
                         var degreesRotation = rotation * 180 / Math.PI;
                         symbolizer.rotation = degreesRotation;
                     }
-                 }
+                }
             }
             if (Ext.isDefined(symbolizer)) {
                 symbolizers.push(symbolizer);
@@ -451,12 +455,12 @@ Ext.define('GeoExt.data.serializer.Vector', {
 
         /**
          * Takes a hex value and prepends a zero if it's a single digit.
-         * From https://github.com/google/closure-library/blob/master/closure/goog/color/color.js
+         * Taken from https://github.com/google/closure-library color.js-file.
          * It is called `prependZeroIfNecessaryHelper` there.
          *
          * @param {string} hex Hex value to prepend if single digit.
-         * @return {string} hex value prepended with zero if it was single digit,
-         *     otherwise the same value that was passed in.
+         * @return {string} hex value prepended with zero if it was single
+         *     digit, otherwise the same value that was passed in.
          * @private
          */
         padHexValue: function(hex){
@@ -465,7 +469,7 @@ Ext.define('GeoExt.data.serializer.Vector', {
 
         /**
          * Converts a color from RGB to hex representation.
-         * Taken from https://github.com/google/closure-library/blob/master/closure/goog/color/color.js
+         * Taken from https://github.com/google/closure-library color.js-file.
          *
          * @param {number} r Amount of red, int between 0 and 255.
          * @param {number} g Amount of green, int between 0 and 255.
@@ -488,9 +492,10 @@ Ext.define('GeoExt.data.serializer.Vector', {
             var hexB = this.padHexValue(b.toString(16));
             return '#' + hexR + hexG + hexB;
         },
+
         /**
          * Converts a color from RGB to hex representation.
-         * Taken from https://github.com/google/closure-library/blob/master/closure/goog/color/color.js
+         * Taken from https://github.com/google/closure-library color.js-file
          *
          * @param {Number[]} rgbArr An array with three numbers representing
          *    red, green and blue.
@@ -522,7 +527,8 @@ Ext.define('GeoExt.data.serializer.Vector', {
         }
     }
 }, function(cls) {
-    // This is ol.geom.GeometryType, from https://github.com/openlayers/ol3/blob/master/src/ol/geom/geometry.js
+    // This is ol.geom.GeometryType, from
+    // https://github.com/openlayers/ol3/blob/master/src/ol/geom/geometry.js
     var olGeomTypes = {
         POINT: 'Point',
         LINE_STRING: 'LineString',
