@@ -4,11 +4,13 @@ describe('GeoExt.data.store.Tree', function() {
 
 
     var div;
+    var treeDiv;
     var olMap;
     var mapComponent;
     var source;
     var layer;
     var treeStore;
+    var treePanel;
 
     beforeEach(function(){
         div = document.createElement('div');
@@ -104,64 +106,69 @@ describe('GeoExt.data.store.Tree', function() {
 
     describe('Listens to Map/LayerCollection events', function() {
 
-        it('sets add/remove eventlisteners for ol.Collections (hidden LayerGroupNode)', function() {
-            treeStore = Ext.create('GeoExt.data.store.Tree', {
-                layerGroup: olMap.getLayerGroup()
-            });
+        it('adds/removes listeners for ol.Collections (hidden LayerGroupNode)',
+            function() {
+                treeStore = Ext.create('GeoExt.data.store.Tree', {
+                    layerGroup: olMap.getLayerGroup()
+                });
 
-            treePanel = Ext.create('GeoExt.tree.Panel', {
-                title: 'GeoExt.tree.Panel Example',
-                store: treeStore,
-                rootVisible: false,
-                flex: 1,
-                border: false
-            });
+                treePanel = Ext.create('GeoExt.tree.Panel', {
+                    title: 'GeoExt.tree.Panel Example',
+                    store: treeStore,
+                    rootVisible: false,
+                    flex: 1,
+                    border: false
+                });
 
-            var layer2 = new ol.layer.Tile({
-                source: new ol.source.MapQuest({
-                    layer: 'hyb'
-                }),
-                name: 'LAYERZWO'
-            });
-            mapComponent.addLayer(layer2);
-
-            var treeNode = treeStore.getRootNode().getChildAt(0);
-            expect(treeNode.get('text')).to.be(layer2.get('name'));
-
-            mapComponent.removeLayer(layer);
-            treeNode = treeStore.getRootNode().getChildAt(0);
-            expect(treeNode.get('text')).to.be(layer2.get('name'));
-        });
-
-        it('sets add/remove eventlisteners for ol.Collections (visible LayerGroupNode)', function() {
-            treeStore = Ext.create('GeoExt.data.store.Tree', {
-                layerGroup: olMap.getLayerGroup(),
-                showLayerGroupNode: true
-            });
-
-            treePanel = Ext.create('GeoExt.tree.Panel', {
-                title: 'GeoExt.tree.Panel Example',
-                store: treeStore,
-                rootVisible: false,
-                flex: 1,
-                border: false
-            });
-
-            var layer2 = new ol.layer.Tile({
+                var layer2 = new ol.layer.Tile({
                     source: new ol.source.MapQuest({
                         layer: 'hyb'
                     }),
                     name: 'LAYERZWO'
                 });
-            mapComponent.addLayer(layer2);
+                mapComponent.addLayer(layer2);
 
-            var treeNode = treeStore.getRootNode().getChildAt(0).getChildAt(0);
-            expect(treeNode.get('text')).to.be(layer2.get('name'));
+                var treeNode = treeStore.getRootNode().getChildAt(0);
+                expect(treeNode.get('text')).to.be(layer2.get('name'));
 
-            mapComponent.removeLayer(layer);
-            treeNode = treeStore.getRootNode().getChildAt(0).getChildAt(0);
-            expect(treeNode.get('text')).to.be(layer2.get('name'));
-        });
+                mapComponent.removeLayer(layer);
+                treeNode = treeStore.getRootNode().getChildAt(0);
+                expect(treeNode.get('text')).to.be(layer2.get('name'));
+            }
+        );
+
+        it('adds/removes listeners for ol.Collections (visible LayerGroupNode)',
+            function() {
+                treeStore = Ext.create('GeoExt.data.store.Tree', {
+                    layerGroup: olMap.getLayerGroup(),
+                    showLayerGroupNode: true
+                });
+
+                treePanel = Ext.create('GeoExt.tree.Panel', {
+                    title: 'GeoExt.tree.Panel Example',
+                    store: treeStore,
+                    rootVisible: false,
+                    flex: 1,
+                    border: false
+                });
+
+                var layer2 = new ol.layer.Tile({
+                    source: new ol.source.MapQuest({
+                        layer: 'hyb'
+                    }),
+                    name: 'LAYERZWO'
+                });
+                mapComponent.addLayer(layer2);
+
+                var root = treeStore.getRootNode();
+                var treeNode = root.getChildAt(0).getChildAt(0);
+                expect(treeNode.get('text')).to.be(layer2.get('name'));
+
+                mapComponent.removeLayer(layer);
+                treeNode = root.getChildAt(0).getChildAt(0);
+                expect(treeNode.get('text')).to.be(layer2.get('name'));
+            }
+        );
 
         describe('Filterable store', function(){
             var noVectorTreeStore;
@@ -297,15 +304,15 @@ describe('GeoExt.data.store.Tree', function() {
 
                 it("can't set values else then 'ol3' or 'classic'",function(){
                     expect(function(){
-                        treeStore.setFolderToggleMode('ol3')
+                        treeStore.setFolderToggleMode('ol3');
                     }).to.not.throwException();
 
                     expect(function(){
-                        treeStore.setFolderToggleMode('classic')
+                        treeStore.setFolderToggleMode('classic');
                     }).to.not.throwException();
 
                     expect(function(){
-                        treeStore.setFolderToggleMode('peter')
+                        treeStore.setFolderToggleMode('peter');
                     }).to.throwException();
 
                     expect(treeStore.getFolderToggleMode()).to.be('classic');
@@ -322,20 +329,20 @@ describe('GeoExt.data.store.Tree', function() {
 
                 it('checks all children if a folder is checked',function(){
                     var layerGroupNode = treePanel.getRootNode().getChildAt(0);
-                        layerGroupNode.set('checked', true);
+                    layerGroupNode.set('checked', true);
 
                     layerGroupNode.eachChild(function(child){
                         expect(child.get('checked')).to.be(true);
-                    })
+                    });
                 });
 
                 it('unchecks all children if a folder is unchecked',function(){
                     var layerGroupNode = treePanel.getRootNode().getChildAt(0);
-                        layerGroupNode.set('checked', false);
+                    layerGroupNode.set('checked', false);
 
-                        layerGroupNode.eachChild(function(child){
-                            expect(child.get('checked')).to.be(false);
-                        })
+                    layerGroupNode.eachChild(function(child){
+                        expect(child.get('checked')).to.be(false);
+                    });
                 });
 
                 it('checks all parent nodes if a leaf is checked',function(){
@@ -352,12 +359,12 @@ describe('GeoExt.data.store.Tree', function() {
 
                     layerGroupNode.eachChild(function(child){
                         child.set('checked', true);
-                    })
+                    });
                     expect(layerGroupNode.get('checked')).to.be(true);
 
                     layerGroupNode.eachChild(function(child){
                         child.set('checked', false);
-                    })
+                    });
                     expect(layerGroupNode.get('checked')).to.be(false);
                 });
 
