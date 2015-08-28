@@ -156,7 +156,9 @@ describe('GeoExt.data.store.Features', function() {
             expect(store.getByFeature).not.to.be(undefined);
         });
         it('returns the right feature record', function() {
-            expect(store.getByFeature(feature).getFeature()).to.be.equal(feature);
+            expect(store.getByFeature(feature).getFeature()).to.be.equal(
+                feature
+            );
         });
         it('returns null in case of passing a non-managed feature', function() {
             expect(store.getByFeature(new ol.Feature())).to.be(null);
@@ -206,7 +208,9 @@ describe('GeoExt.data.store.Features', function() {
             expect(store.getLayer()).to.be.an(ol.layer.Vector);
         });
         it('creates a layer with correct amount of features', function() {
-            expect(store.getLayer().getSource().getFeatures().length).to.be(store.count());
+            expect(store.getLayer().getSource().getFeatures().length).to.be(
+                store.count()
+            );
         });
     });
 
@@ -255,13 +259,15 @@ describe('GeoExt.data.store.Features', function() {
         it('creates the layer which is retrievable via #getLayer', function() {
             expect(store.getLayer()).to.be(map.getLayers().item(1));
         });
-        it('removes the autocreated layer once the store is destroyed', function() {
-            // before
-            expect(map.getLayers().getLength()).to.be(2);
-            store.destroy();
-            // after
-            expect(map.getLayers().getLength()).to.be(1);
-        });
+        it('removes the autocreated layer once the store is destroyed',
+            function() {
+                // before
+                expect(map.getLayers().getLength()).to.be(2);
+                store.destroy();
+                // after
+                expect(map.getLayers().getLength()).to.be(1);
+            }
+        );
     });
 
     describe('Event binding on vector layer', function() {
@@ -290,11 +296,15 @@ describe('GeoExt.data.store.Features', function() {
 
         it('is done correctly for "addfeature"', function() {
             layer.getSource().addFeatures([new ol.Feature()]);
-            expect(store.getCount()).to.be(layer.getSource().getFeatures().length);
+            expect(store.getCount()).to.be(
+                layer.getSource().getFeatures().length
+            );
         });
         it('is done correctly for "removefeature"', function() {
             layer.getSource().removeFeature(layer.getSource().getFeatures()[0]);
-            expect(store.getCount()).to.be(layer.getSource().getFeatures().length);
+            expect(store.getCount()).to.be(
+                layer.getSource().getFeatures().length
+            );
         });
     });
 
@@ -326,15 +336,18 @@ describe('GeoExt.data.store.Features', function() {
             layer.getSource().removeFeature(layer.getSource().getFeatures()[0]);
             expect(store.getCount()).to.be(1);
         });
-        it('function "unbindLayerEvents" is called before store is destroyed', function() {
-            var i = 0;
-            // overwrite to see if the function is called on store destruction
-            store.unbindLayerEvents = function () {
-                i++;
-            };
-            store.destroy();
-            expect(i).to.be.equal(1);
-        });
+        it('function "unbindLayerEvents" is called before store is destroyed',
+            function() {
+                var i = 0;
+                // overwrite to see if the function is called on store
+                // destruction
+                store.unbindLayerEvents = function () {
+                    i++;
+                };
+                store.destroy();
+                expect(i).to.be.equal(1);
+            }
+        );
     });
 
 });
