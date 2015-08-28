@@ -37,7 +37,8 @@ describe('GeoExt.grid.column.Symbolizer', function() {
             expect(meta.css).equal("gx-grid-symbolizercol");
         });
         it('has the correct amount of symbolizer instances', function() {
-            expect(Ext.ComponentQuery.query('gx_symbolizercolumn').length).to.be(1);
+            var num = Ext.ComponentQuery.query('gx_symbolizercolumn').length;
+            expect(num).to.be(1);
         });
 
     });
@@ -59,22 +60,26 @@ describe('GeoExt.grid.column.Symbolizer', function() {
             detectedStyle = null;
         });
 
-        it('is detected correctly from a feature (by style object)', function() {
-            feat.setStyle(style);
+        it('is detected correctly from a feature (by style object)',
+            function() {
+                feat.setStyle(style);
 
-            detectedStyle = column.determineStyle(rec);
-            expect(detectedStyle).to.be(style);
-        });
+                detectedStyle = column.determineStyle(rec);
+                expect(detectedStyle).to.be(style);
+            }
+        );
 
-        it('is detected correctly from a feature (by style function)', function() {
-            var styleFn = function() {
-                return style;
-            };
-            feat.setStyle(styleFn);
+        it('is detected correctly from a feature (by style function)',
+            function() {
+                var styleFn = function() {
+                    return style;
+                };
+                feat.setStyle(styleFn);
 
-            detectedStyle = column.determineStyle(rec);
-            expect(detectedStyle).to.be(styleFn);
-        });
+                detectedStyle = column.determineStyle(rec);
+                expect(detectedStyle).to.be(styleFn);
+            }
+        );
 
         it('is detected correctly from an underlying layer', function() {
             var vectorLayer = new ol.layer.Vector({
