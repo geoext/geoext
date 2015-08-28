@@ -52,9 +52,11 @@ describe('GeoExt.data.model.Object', function() {
                 expect(records[i].get('key1')).to.be('value1');
             });
 
-            it(t + ': fields don\'t need to be defined for syncing properties', function() {
-                expect(records[i].get('key2')).to.be('value2');
-            });
+            it(t + ': fields don\'t need to be defined for syncing properties',
+                function() {
+                    expect(records[i].get('key2')).to.be('value2');
+                }
+            );
 
             it(t + ': model data equals ol.Object properties', function() {
                 Ext.Object.each(objs[i].getProperties(), function(key, value) {
@@ -62,26 +64,33 @@ describe('GeoExt.data.model.Object', function() {
                 });
             });
 
-            it(t + ': changes on the ol.Object are synced to the Ext.data.Model', function() {
-                objs[i].set('key1', 'value1changed');
-                expect(records[i].get('key1')).to.be('value1changed');
-            });
+            it(t + ': changes on the ol.Object are synced to Ext.data.Model',
+                function() {
+                    objs[i].set('key1', 'value1changed');
+                    expect(records[i].get('key1')).to.be('value1changed');
+                }
+            );
 
-            it(t + ': changes on the Ext.data.Model are synced to the ol.Object', function() {
-                records[i].set('key2', 'value2changed');
-                expect(objs[i].get('key2')).to.be('value2changed');
-            });
+            it(t + ': changes on the Ext.data.Model are synced to ol.Object',
+                function() {
+                    records[i].set('key2', 'value2changed');
+                    expect(objs[i].get('key2')).to.be('value2changed');
+                }
+            );
 
-            it(t + ': setting multiple properties of ol.Object syncs with Ext.data.Model instance', function() {
-                objs[i].setProperties({
-                    key1: 'value1changed',
-                    key3: 'value3'
-                });
+            it(t + ': setting multiple properties of ol.Object syncs with' +
+                'Ext.data.Model instance',
+                function() {
+                    objs[i].setProperties({
+                        key1: 'value1changed',
+                        key3: 'value3'
+                    });
 
-                Ext.Object.each(objs[i].getProperties(), function(key, value) {
-                    expect(records[i].get(key)).to.equal(value);
-                });
-            });
+                    Ext.Object.each(objs[i].getProperties(), function(k, v) {
+                        expect(records[i].get(k)).to.equal(v);
+                    });
+                }
+            );
         });
     });
 });
