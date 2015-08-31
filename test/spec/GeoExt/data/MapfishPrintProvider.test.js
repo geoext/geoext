@@ -256,56 +256,73 @@ describe('GeoExt.data.MapfishPrintProvider', function() {
             expect(notFoundSerializer).to.be(undefined);
         });
 
-        it('getLayerArray returns a flat Array of Layers by given collection', function(){
-            expect(GeoExt.data.MapfishPrintProvider.getLayerArray).to.be.a('function');
+        it('getLayerArray returns a flat Array of Layers by given collection',
+            function(){
+                expect(
+                    GeoExt.data.MapfishPrintProvider.getLayerArray
+                ).to.be.a('function');
 
-            var layerArray = GeoExt.data.MapfishPrintProvider.getLayerArray(
-                mapComponent.getLayers().getArray()
-            );
-            var groupSize = 0;
-            Ext.each(layerArray, function(l) {
-                if (l instanceof ol.layer.Group) {
-                    groupSize++;
-                }
-            });
+                var layerArray = GeoExt.data.MapfishPrintProvider.getLayerArray(
+                    mapComponent.getLayers().getArray()
+                );
+                var groupSize = 0;
+                Ext.each(layerArray, function(l) {
+                    if (l instanceof ol.layer.Group) {
+                        groupSize++;
+                    }
+                });
 
-            expect(layerArray.length).to.eql(4);
-            expect(groupSize).to.eql(0);
-            expect(mapComponent.getLayers().getArray().length).to.eql(3);
-        });
+                expect(layerArray.length).to.eql(4);
+                expect(groupSize).to.eql(0);
+                expect(mapComponent.getLayers().getArray().length).to.eql(3);
+            }
+        );
 
         it('getSerializedLayers returns the serialized Layers', function(){
-            expect(GeoExt.data.MapfishPrintProvider.getSerializedLayers).to.be.a('function');
-            var serializedLayers = GeoExt.data.MapfishPrintProvider.getSerializedLayers(mapComponent);
+            var cls = GeoExt.data.MapfishPrintProvider;
+            expect(cls.getSerializedLayers).to.be.a('function');
+            var serializedLayers = cls.getSerializedLayers(mapComponent);
             var serializedLayer = serializedLayers[0];
 
             expect(serializedLayers).to.be.an('array');
-            expect(serializedLayer.baseURL).to.be(layer.getSource().getUrls()[0]);
-            expect(serializedLayer.customParams).to.be(layer.getSource().getParams());
+            expect(serializedLayer.baseURL).to.be(
+                layer.getSource().getUrls()[0]
+            );
+            expect(serializedLayer.customParams).to.be(
+                layer.getSource().getParams()
+            );
             expect(serializedLayer.layers).to.be.an('array');
-            expect(serializedLayer.layers[0]).to.be(layer.getSource().getParams().LAYERS);
+            expect(serializedLayer.layers[0]).to.be(
+                layer.getSource().getParams().LAYERS
+            );
             expect(serializedLayer.opacity).to.be(layer.getOpacity());
         });
 
         // Could be improved
         it('renderPrintExtent returns a printExtent Feature', function(){
-            expect(GeoExt.data.MapfishPrintProvider.renderPrintExtent).to.be.a('function');
-            var clientInfo = printCapabilities.layouts[0].attributes[0].clientInfo;
-            var feat = GeoExt.data.MapfishPrintProvider.renderPrintExtent(mapComponent, extentLayer, clientInfo);
+            var cls = GeoExt.data.MapfishPrintProvider;
+            expect(cls.renderPrintExtent).to.be.a('function');
+            var attr = printCapabilities.layouts[0].attributes[0];
+            var clientInfo = attr.clientInfo;
+            var feat = cls.renderPrintExtent(
+                mapComponent, extentLayer, clientInfo
+            );
             expect(feat).to.be.an(ol.Feature);
         });
 
     });
 
-    describe('creates stores from capabilities (directly available)', function() {
-        it('directly uses passed capabilities data', function(){
-            var provider = Ext.create('GeoExt.data.MapfishPrintProvider', {
-                capabilities: printCapabilities
+    describe('creates stores from capabilities (directly available)',
+        function() {
+            it('directly uses passed capabilities data', function(){
+                var provider = Ext.create('GeoExt.data.MapfishPrintProvider', {
+                    capabilities: printCapabilities
+                });
+                var layoutStore = provider.capabilityRec.layouts();
+                expect(layoutStore).to.be.an(Ext.data.Store);
             });
-            var layoutStore = provider.capabilityRec.layouts();
-            expect(layoutStore).to.be.an(Ext.data.Store);
-        });
-    });
+        }
+    );
 
     describe('creates stores from capabilities (async)', function() {
 
@@ -318,7 +335,9 @@ describe('GeoExt.data.MapfishPrintProvider', function() {
                             var layoutStore = this.capabilityRec.layouts();
                             expect(layoutStore).to.be.an(Ext.data.Store);
                             expect(layoutStore.getCount()).to.be(1);
-                            expect(layoutStore.getAt(0).get('name')).to.be('A4 portrait');
+                            expect(layoutStore.getAt(0).get('name')).to.be(
+                                'A4 portrait'
+                            );
                             done();
                         }
                     }
@@ -359,7 +378,9 @@ describe('GeoExt.data.MapfishPrintProvider', function() {
                                 GeoExt.data.model.print.LayoutAttributes
                             );
                             expect(firstAttributes.get('name')).to.be('map');
-                            expect(firstAttributes.get('type')).to.be('MapAttributeValues');
+                            expect(firstAttributes.get('type')).to.be(
+                                'MapAttributeValues'
+                            );
                             done();
                         }
                     }
@@ -373,13 +394,16 @@ describe('GeoExt.data.MapfishPrintProvider', function() {
         describe('layouts', function() {
             it('creates a store for layouts', function(done) {
                 var provider = Ext.create('GeoExt.data.MapfishPrintProvider', {
-                    url: "http://webmapcenter.de/print-servlet-3.1.2/print/geoext/capabilities.json",
+                    url: "http://webmapcenter.de/print-servlet-3.1.2/" +
+                        "print/geoext/capabilities.json",
                     listeners: {
                         ready: function(){
                             var layoutStore = provider.capabilityRec.layouts();
                             expect(layoutStore).to.be.an(Ext.data.Store);
                             expect(layoutStore.getCount()).to.be(1);
-                            expect(layoutStore.getAt(0).get('name')).to.be('A4 portrait');
+                            expect(layoutStore.getAt(0).get('name')).to.be(
+                                'A4 portrait'
+                            );
                             done();
                         }
                     }
@@ -390,7 +414,8 @@ describe('GeoExt.data.MapfishPrintProvider', function() {
         describe('formats', function() {
             it('creates a store for formats', function(done) {
                 Ext.create('GeoExt.data.MapfishPrintProvider', {
-                    url: "http://webmapcenter.de/print-servlet-3.1.2/print/geoext/capabilities.json",
+                    url: "http://webmapcenter.de/print-servlet-3.1.2/" +
+                        "print/geoext/capabilities.json",
                     listeners: {
                         'ready': function(){
                             var formats = this.capabilityRec.get('formats');
@@ -408,7 +433,8 @@ describe('GeoExt.data.MapfishPrintProvider', function() {
         describe('attributes', function() {
             it('creates a store for attributes', function(done) {
                 Ext.create('GeoExt.data.MapfishPrintProvider', {
-                    url: "http://webmapcenter.de/print-servlet-3.1.2/print/geoext/capabilities.json",
+                    url: "http://webmapcenter.de/print-servlet-3.1.2/" +
+                        "print/geoext/capabilities.json",
                     listeners: {
                         'ready': function(){
                             var layoutStore = this.capabilityRec.layouts();
@@ -421,7 +447,9 @@ describe('GeoExt.data.MapfishPrintProvider', function() {
                                 GeoExt.data.model.print.LayoutAttributes
                             );
                             expect(firstAttributes.get('name')).to.be('map');
-                            expect(firstAttributes.get('type')).to.be('MapAttributeValues');
+                            expect(firstAttributes.get('type')).to.be(
+                                'MapAttributeValues'
+                            );
                             done();
                         }
                     }

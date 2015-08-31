@@ -39,10 +39,12 @@ describe('GeoExt.data.store.Collection', function() {
             expect(store.olCollection).to.equal(coll);
         });
 
-        it('will have model representations of the collections items', function() {
-            expect(store.getCount()).to.equal(coll.getLength());
-            expect(store.getAt(0).olObject).equal(obj);
-        });
+        it('will have model representations of the collections items',
+            function() {
+                expect(store.getCount()).to.equal(coll.getLength());
+                expect(store.getAt(0).olObject).equal(obj);
+            }
+        );
     });
 
     describe('adding and removing items', function() {
@@ -73,43 +75,49 @@ describe('GeoExt.data.store.Collection', function() {
                 expect(store.getAt(0).olObject).to.be(olObj);
             });
 
-            it('will not have records of collection items that are removed', function() {
-                collection.push(new ol.Object());
-                expect(store.getCount()).to.be(1);
+            it('will not have records of collection items that are removed',
+                function() {
+                    collection.push(new ol.Object());
+                    expect(store.getCount()).to.be(1);
 
-                collection.removeAt(0);
-                expect(store.getCount()).to.be(0);
-            });
+                    collection.removeAt(0);
+                    expect(store.getCount()).to.be(0);
+                }
+            );
         });
 
         describe('adding and removing records from the store', function() {
 
-            it('the collection will have items of the added records', function() {
-                expect(collection.getLength()).to.be(0);
-                expect(store.getCount()).to.be(0);
+            it('the collection will have items of the added records',
+                function() {
+                    expect(collection.getLength()).to.be(0);
+                    expect(store.getCount()).to.be(0);
 
-                store.add({});
-                expect(collection.getLength()).to.be(1);
-                expect(store.getCount()).to.be(1);
-                expect(store.getAt(0).olObject).to.be(collection.item(0));
-            });
+                    store.add({});
+                    expect(collection.getLength()).to.be(1);
+                    expect(store.getCount()).to.be(1);
+                    expect(store.getAt(0).olObject).to.be(collection.item(0));
+                }
+            );
 
-            it('the collection will not have items of remove store records', function() {
-                store.add({});
-                expect(store.getCount()).to.be(1);
-                expect(collection.getLength()).to.be(1);
+            it('the collection will not have items of remove store records',
+                function() {
+                    store.add({});
+                    expect(store.getCount()).to.be(1);
+                    expect(collection.getLength()).to.be(1);
 
-                store.add([{}, {}, {}]);
-                expect(store.getCount()).to.be(4);
+                    store.add([{}, {}, {}]);
+                    expect(store.getCount()).to.be(4);
 
-                store.removeAt(0);
-                expect(store.getCount()).to.be(3);
-                expect(collection.getLength()).to.be(3);
+                    store.removeAt(0);
+                    expect(store.getCount()).to.be(3);
+                    expect(collection.getLength()).to.be(3);
 
-                store.removeAt(0, 3);
-                expect(store.getCount()).to.be(0);
-                expect(collection.getLength()).to.be(0);
-            });
+                    store.removeAt(0, 3);
+                    expect(store.getCount()).to.be(0);
+                    expect(collection.getLength()).to.be(0);
+                }
+            );
         });
     });
 });

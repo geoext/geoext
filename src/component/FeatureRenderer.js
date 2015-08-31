@@ -103,8 +103,8 @@ Ext.define('GeoExt.component.FeatureRenderer', {
         symbolizers: undefined,
 
         /**
-         * One of `"Point"`, `"Line"`, `"Polygon"` or `"Text"`.  Only relevant if
-         * `feature` is not provided.
+         * One of `"Point"`, `"Line"`, `"Polygon"` or `"Text"`.  Only relevant
+         * if `feature` is not provided.
          *
          * @cfg {String}
          */
@@ -123,7 +123,12 @@ Ext.define('GeoExt.component.FeatureRenderer', {
         };
         if (!this.getLineFeature()) {
             this.setLineFeature(new ol.Feature({
-                geometry: new ol.geom.LineString([[-8, -3], [-3, 3], [3, -3], [8, 3]])
+                geometry: new ol.geom.LineString([
+                    [-8, -3],
+                    [-3, 3],
+                    [3, -3],
+                    [8, 3]
+                ])
             }));
         }
         if (!this.getPointFeature()) {
@@ -151,13 +156,13 @@ Ext.define('GeoExt.component.FeatureRenderer', {
             }));
         }
         this.map = new ol.Map({
-          controls: [],
-          interactions: [],
-          layers: [
-            new ol.layer.Vector({
-              source: new ol.source.Vector()
-            })
-          ]
+            controls: [],
+            interactions: [],
+            layers: [
+                new ol.layer.Vector({
+                    source: new ol.source.Vector()
+                })
+            ]
         });
         var feature = this.getFeature();
         if (!feature) {
@@ -239,8 +244,8 @@ Ext.define('GeoExt.component.FeatureRenderer', {
      * @private
      */
     drawFeature: function() {
-      this.map.setTarget(this.el.id);
-      this.setRendererDimensions();
+        this.map.setTarget(this.el.id);
+        this.setRendererDimensions();
     },
     /**
      * Set the dimension of our renderer, i.e. map and view.
@@ -259,7 +264,10 @@ Ext.define('GeoExt.component.FeatureRenderer', {
          */
         var resolution = this.initialConfig.resolution;
         if(!resolution) {
-            resolution = Math.max(gw / this.width || 0, gh / this.height || 0) || 1;
+            resolution = Math.max(
+                gw / this.width || 0,
+                gh / this.height || 0
+            ) || 1;
         }
         this.map.setView(new ol.View({
             minResolution: resolution,
@@ -269,8 +277,14 @@ Ext.define('GeoExt.component.FeatureRenderer', {
             })
         }));
         // determine height and width of element
-        var width = Math.max(this.width || this.getMinWidth(), gw / resolution);
-        var height = Math.max(this.height || this.getMinHeight(), gh / resolution);
+        var width = Math.max(
+            this.width || this.getMinWidth(),
+            gw / resolution
+        );
+        var height = Math.max(
+            this.height || this.getMinHeight(),
+            gh / resolution
+        );
         // determine bounds of renderer
         var center = ol.extent.getCenter(gb);
         var bhalfw = width * resolution / 2;
@@ -278,7 +292,7 @@ Ext.define('GeoExt.component.FeatureRenderer', {
         var bounds = [
             center[0] - bhalfw, center[1] - bhalfh,
             center[0] + bhalfw, center[1] + bhalfh
-            ];
+        ];
         this.el.setSize(Math.round(width), Math.round(height));
         this.map.updateSize();
         this.map.getView().fit(bounds, this.map.getSize());
@@ -303,16 +317,16 @@ Ext.define('GeoExt.component.FeatureRenderer', {
      * @private
      */
     applyFeature: function(feature) {
-      var symbolizers = this.getSymbolizers();
-      if (feature && symbolizers) {
-          feature.setStyle(symbolizers);
-      }
-      if (this.map) {
-          var source = this.map.getLayers().item(0).getSource();
-          source.clear();
-          source.addFeature(feature);
-      }
-      return feature;
+        var symbolizers = this.getSymbolizers();
+        if (feature && symbolizers) {
+            feature.setStyle(symbolizers);
+        }
+        if (this.map) {
+            var source = this.map.getLayers().item(0).getSource();
+            source.clear();
+            source.addFeature(feature);
+        }
+        return feature;
     },
     /**
      * Update the `feature` or `symbolizers` and redraw the feature.

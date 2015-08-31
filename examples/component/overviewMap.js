@@ -19,12 +19,12 @@ Ext.application({
 
         source = new ol.source.MapQuest({layer: 'sat'});
         layer = new ol.layer.Tile({
-          source: source
+            source: source
         });
 
         source2 = new ol.source.MapQuest({layer: 'osm'});
         layer2 = new ol.layer.Tile({
-          source: source2
+            source: source2
         });
 
         olMap = new ol.Map({
@@ -33,8 +33,8 @@ Ext.application({
                 new ol.interaction.DragRotateAndZoom()
             ]),
             view: new ol.View({
-              center: [0, 0],
-              zoom: 4
+                center: [0, 0],
+                zoom: 4
             })
         });
 

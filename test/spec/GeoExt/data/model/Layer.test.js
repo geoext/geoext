@@ -143,14 +143,20 @@ describe('GeoExt.data.model.Layer', function() {
             instance = null;
         });
 
-        it('returns "undefined" for "opacity" if no layer was passed', function(){
-            expect(instance.get('opacity')).to.be(undefined);
-        });
-        it('returns "undefined" for "minResolution" if no layer was passed', function(){
-            expect(instance.get('minResolution')).to.be(undefined);
-        });
-        it('returns "undefined" for "maxResolution" if no layer was passed', function(){
-            expect(instance.get('maxResolution')).to.be(undefined);
-        });
+        it('returns "undefined" for "opacity" if no layer was passed',
+            function(){
+                expect(instance.get('opacity')).to.be(undefined);
+            }
+        );
+        it('returns "undefined" for "minResolution" if no layer was passed',
+            function(){
+                expect(instance.get('minResolution')).to.be(undefined);
+            }
+        );
+        it('returns "undefined" for "maxResolution" if no layer was passed',
+            function(){
+                expect(instance.get('maxResolution')).to.be(undefined);
+            }
+        );
     });
 });

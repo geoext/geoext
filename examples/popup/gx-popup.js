@@ -50,8 +50,8 @@ Ext.application({
         // Add a pointerrest handler to the map component to render the popup.
         mapComp.on('pointerrest', function(evt) {
             var coordinate = evt.coordinate,
-            hdms = ol.coordinate.toStringHDMS(ol.proj.transform(
-                    coordinate, 'EPSG:3857', 'EPSG:4326'));
+                hdms = ol.coordinate.toStringHDMS(ol.proj.transform(
+                        coordinate, 'EPSG:3857', 'EPSG:4326'));
             // Insert a linebreak after either N or S in hdms
             hdms = hdms.replace(/([NS])/, '$1<br>');
 

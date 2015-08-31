@@ -115,7 +115,7 @@ Ext.define('GeoExt.data.store.Tree', {
                     before: function(child){
                         child.set('__toggleMode', folderToggleMode);
                     }
-                })
+                });
             }
         } else {
             Ext.raise("Invalid folderToggleMode "

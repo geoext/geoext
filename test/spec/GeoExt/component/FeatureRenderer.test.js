@@ -15,7 +15,9 @@ describe('GeoExt.component.FeatureRenderer', function() {
         });
         it('should have a feature set', function() {
             expect(renderer.getFeature()).not.to.be(undefined);
-            expect(renderer.getFeature().getGeometry()).to.be.a(ol.geom.Polygon);
+            expect(renderer.getFeature().getGeometry()).to.be.a(
+                ol.geom.Polygon
+            );
         });
     });
 
@@ -33,7 +35,8 @@ describe('GeoExt.component.FeatureRenderer', function() {
             renderer.destroy();
         });
         it('should have the symbolizer set on the feature', function() {
-            expect(renderer.getFeature().getStyle().getFill().getColor()).to.be('red');
+            var color = renderer.getFeature().getStyle().getFill().getColor();
+            expect(color).to.be('red');
         });
         it('should update the symbolizers', function() {
             renderer.update({
@@ -41,17 +44,21 @@ describe('GeoExt.component.FeatureRenderer', function() {
                     fill: new ol.style.Fill({color: 'blue'})
                 })
             });
-            expect(renderer.getFeature().getStyle().getFill().getColor()).to.be('blue');
+            var color = renderer.getFeature().getStyle().getFill().getColor();
+            expect(color).to.be('blue');
         });
         it('should update the feature', function() {
-            expect(renderer.getFeature().getGeometry()).to.be.a(ol.geom.Polygon);
+            expect(renderer.getFeature().getGeometry()).to.be.a(
+                ol.geom.Polygon
+            );
             renderer.update({
                 feature: new ol.Feature({
                     geometry: new ol.geom.Point([0, 0])
                 })
             });
+            var color = renderer.getFeature().getStyle().getFill().getColor();
             expect(renderer.getFeature().getGeometry()).to.be.a(ol.geom.Point);
-            expect(renderer.getFeature().getStyle().getFill().getColor()).to.be('red');
+            expect(color).to.be('red');
         });
     });
 

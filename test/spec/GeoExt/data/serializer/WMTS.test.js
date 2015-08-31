@@ -19,9 +19,9 @@ describe('GeoExt.data.serializer.WMTS', function() {
         var resolutions = new Array(14);
         var matrixIds = new Array(14);
         for (var z = 0; z < 14; ++z) {
-          // generate resolutions and matrixIds arrays for this WMTS
-          resolutions[z] = size / Math.pow(2, z);
-          matrixIds[z] = z;
+            // generate resolutions and matrixIds arrays for this WMTS
+            resolutions[z] = size / Math.pow(2, z);
+            matrixIds[z] = z;
         }
 
         beforeEach(function(){
@@ -33,9 +33,9 @@ describe('GeoExt.data.serializer.WMTS', function() {
                 format: 'image/png',
                 projection: projection,
                 tileGrid: new ol.tilegrid.WMTS({
-                  origin: ol.extent.getTopLeft(projectionExtent),
-                  resolutions: resolutions,
-                  matrixIds: matrixIds
+                    origin: ol.extent.getTopLeft(projectionExtent),
+                    resolutions: resolutions,
+                    matrixIds: matrixIds
                 }),
                 style: 'default',
                 wrapX: true
@@ -73,7 +73,9 @@ describe('GeoExt.data.serializer.WMTS', function() {
             );
             var expected =
                 {
-                    "baseURL": "http://services.arcgisonline.com/arcgis/rest/services/Demographics/USA_Population_Density/MapServer/WMTS/",
+                    "baseURL": "http://services.arcgisonline.com/arcgis/rest/" +
+                        "services/Demographics/USA_Population_Density/" +
+                        "MapServer/WMTS/",
                     "dimensions": [],
                     "dimensionParams": {},
                     "imageFormat": "image/png",

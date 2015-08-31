@@ -78,7 +78,9 @@ describe('GeoExt.tree.Panel', function() {
                         layers: [layer8, layer9, outerGroup4]
                     });
 
-                    var got = GeoExt.tree.Panel.findParentGroup(layer0, outerGroup5);
+                    var got = GeoExt.tree.Panel.findParentGroup(
+                        layer0, outerGroup5
+                    );
                     expect(got).to.be(parentGroup);
                 }
             );
@@ -573,9 +575,8 @@ describe('GeoExt.tree.Panel', function() {
                     expect(gotForAppend).to.be(true);
 
                     done();
-                }
-            );
-        });
+                });
+            });
 
         it('always allows a drag to some other place', function(done){
             tree.expandAll(function() {

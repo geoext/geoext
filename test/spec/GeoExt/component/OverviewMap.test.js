@@ -26,13 +26,15 @@ describe('GeoExt.component.OverviewMap', function() {
                 }).to.throwException();
             });
 
-            it('cannot be constructed when the parentMap is not an ol.Map', function(){
-                expect(function(){
-                    Ext.create('GeoExt.component.OverviewMap', {
-                        parentMap: 123
-                    });
-                }).to.throwException();
-            });
+            it('cannot be constructed when the parentMap is not an ol.Map',
+                function(){
+                    expect(function(){
+                        Ext.create('GeoExt.component.OverviewMap', {
+                            parentMap: 123
+                        });
+                    }).to.throwException();
+                }
+            );
 
             it('can be constructed with a parentMap', function(){
                 var olMap = new ol.Map({
@@ -52,28 +54,31 @@ describe('GeoExt.component.OverviewMap', function() {
     });
 
     describe('layers of the overview', function(){
-        it('takes the layers of the parentMap if no dedictated layers given', function(){
-            var layer1 = new ol.layer.Tile({ title: 'moehri' });
-            var layer2 = new ol.layer.Tile({ title: 'zwiebli' });
+        it('takes the layers of the parentMap if no dedictated layers given',
+            function(){
+                var layer1 = new ol.layer.Tile({ title: 'moehri' });
+                var layer2 = new ol.layer.Tile({ title: 'zwiebli' });
 
-            var olMap = new ol.Map({
-                view: new ol.View({
-                    center: [0, 0],
-                    zoom: 2
-                }),
-                layers: [layer1, layer2],
-                target: div
-            });
+                var olMap = new ol.Map({
+                    view: new ol.View({
+                        center: [0, 0],
+                        zoom: 2
+                    }),
+                    layers: [layer1, layer2],
+                    target: div
+                });
 
-            var overviewMap = Ext.create('GeoExt.component.OverviewMap', {
-                parentMap: olMap
-            });
+                var overviewMap = Ext.create('GeoExt.component.OverviewMap', {
+                    parentMap: olMap
+                });
 
-            var ovLayers = overviewMap.getLayers();
-            expect(ovLayers).to.have.length(3); // two layers plus extentlayer
-            expect(ovLayers[0]).to.be(layer1);
-            expect(ovLayers[1]).to.be(layer2);
-        });
+                var ovLayers = overviewMap.getLayers();
+                 // two layers plus extentlayer:
+                expect(ovLayers).to.have.length(3);
+                expect(ovLayers[0]).to.be(layer1);
+                expect(ovLayers[1]).to.be(layer2);
+            }
+        );
 
 
         it('can be configured with dedicated layers', function(){
@@ -164,13 +169,17 @@ describe('GeoExt.component.OverviewMap', function() {
             var mapResolution = olMap.getView().getResolution();
             var ovResolution = overviewMap.getMap().getView().getResolution();
 
-            expect(mapResolution).to.eql(ovResolution / overviewMap.getMagnification());
+            expect(mapResolution).to.eql(
+                ovResolution / overviewMap.getMagnification()
+            );
 
             // change the map resolution
             olMap.getView().setResolution(0.815);
 
             // still in sync?
-            expect(mapResolution).to.eql(ovResolution / overviewMap.getMagnification());
+            expect(mapResolution).to.eql(
+                ovResolution / overviewMap.getMagnification()
+            );
         });
     });
 
@@ -262,10 +271,12 @@ describe('GeoExt.component.OverviewMap', function() {
                 rotation = Math.PI / 3;
             });
 
-            it('gives the same result as ol.coordinate.rotate for center == [0, 0]',
+            it('gives the same result as ol.coordinate.rotate center == [0, 0]',
                 function(){
-                    var got = GeoExt.component.OverviewMap.rotateCoordsAroundCoords(
-                            coords, center, rotation);
+                    var cls = GeoExt.component.OverviewMap;
+                    var got = cls.rotateCoordsAroundCoords(
+                        coords, center, rotation
+                    );
                     expect(got).to.eql(expected);
                     var gotOl = ol.coordinate.rotate(coords, rotation);
                     expect(gotOl).to.eql(got);
@@ -274,8 +285,10 @@ describe('GeoExt.component.OverviewMap', function() {
 
             it('gives the correct result for center != [0, 0]',
                 function(){
-                    var got = GeoExt.component.OverviewMap.rotateCoordsAroundCoords(
-                            coords2, center2, rotation);
+                    var cls = GeoExt.component.OverviewMap;
+                    var got = cls.rotateCoordsAroundCoords(
+                        coords2, center2, rotation
+                    );
                     expect(got).to.eql(expected2);
                 }
             );
@@ -298,37 +311,63 @@ describe('GeoExt.component.OverviewMap', function() {
                 point2 = point.clone();
                 line = new ol.geom.LineString([ [0, 0], [69, 69] ]);
                 line2 = line.clone();
-                polygon = new ol.geom.Polygon([ [ [0, 0], [0, 10], [10, 10], [10, 0], [0, 0] ] ]);
+                polygon = new ol.geom.Polygon([ [
+                    [0, 0], [0, 10], [10, 10], [10, 0], [0, 0]
+                ] ]);
                 polygon2 = polygon.clone();
 
                 center = [-7, 8];
                 rotation = Math.PI / 6;
             });
 
-            it('only rotates points and polygons, other types returned unchanged', function(){
+            it('only rotates points and polygons, others returned unchanged',
+                function(){
+                    var cls = GeoExt.component.OverviewMap;
+                    var rotatedPoint = cls.rotateGeomAroundCoords(
+                        point, center, rotation
+                    );
+                    expect(rotatedPoint.getCoordinates()).to.not.eql(
+                        point2.getCoordinates()
+                    );
 
-                var rotatedPoint = GeoExt.component.OverviewMap.rotateGeomAroundCoords(point, center, rotation);
-                expect(rotatedPoint.getCoordinates()).to.not.eql(point2.getCoordinates());
+                    var rotatedLine = cls.rotateGeomAroundCoords(
+                        line, center, rotation
+                    );
+                    expect(rotatedLine.getCoordinates()).to.eql(
+                        line2.getCoordinates()
+                    );
 
-                var rotatedLine = GeoExt.component.OverviewMap.rotateGeomAroundCoords(line, center, rotation);
-                expect(rotatedLine.getCoordinates()).to.eql(line2.getCoordinates());
+                    var rotatedPolygon = cls.rotateGeomAroundCoords(
+                        polygon, center, rotation
+                    );
+                    expect(rotatedPolygon.getCoordinates()).to.not.eql(
+                        polygon2.getCoordinates()
+                    );
 
-                var rotatedPolygon = GeoExt.component.OverviewMap.rotateGeomAroundCoords(polygon, center, rotation);
-                expect(rotatedPolygon.getCoordinates()).to.not.eql(polygon2.getCoordinates());
-
-            });
+                }
+            );
 
             it('changes the given points and polygons in place', function(){
-                GeoExt.component.OverviewMap.rotateGeomAroundCoords(point, center, rotation);
-                expect(point.getCoordinates()).to.not.eql(point2.getCoordinates());
+                GeoExt.component.OverviewMap.rotateGeomAroundCoords(
+                    point, center, rotation
+                );
+                expect(point.getCoordinates()).to.not.eql(
+                    point2.getCoordinates()
+                );
 
-                GeoExt.component.OverviewMap.rotateGeomAroundCoords(polygon, center, rotation);
-                expect(polygon.getCoordinates()).to.not.eql(polygon2.getCoordinates());
+                GeoExt.component.OverviewMap.rotateGeomAroundCoords(
+                    polygon, center, rotation
+                );
+                expect(polygon.getCoordinates()).to.not.eql(
+                    polygon2.getCoordinates()
+                );
             });
 
             it('rotates points correctly', function(){
                 var expectedPoint = [ -3.7450018504813776, 17.96217782649107 ];
-                GeoExt.component.OverviewMap.rotateGeomAroundCoords(point, center, rotation);
+                GeoExt.component.OverviewMap.rotateGeomAroundCoords(
+                    point, center, rotation
+                );
                 expect(point.getCoordinates()).to.eql(expectedPoint);
             });
 
@@ -343,7 +382,9 @@ describe('GeoExt.component.OverviewMap', function() {
                     ]
                 ];
 
-                GeoExt.component.OverviewMap.rotateGeomAroundCoords(polygon, center, rotation);
+                GeoExt.component.OverviewMap.rotateGeomAroundCoords(
+                    polygon, center, rotation
+                );
                 expect(polygon.getCoordinates()).to.eql(expectedPoly);
             });
         });

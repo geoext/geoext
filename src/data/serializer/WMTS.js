@@ -13,11 +13,11 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
- /**
+/**
  * A serializer for layer that have a `ol.source.WMTS` source.
  *
  * This class is heavily inspired by the excellent `ngeo` Print service class:
- * [camptocamp/ngeo](https://github.com/camptocamp/ngeo/blob/master/src/services/print.js).
+ * [camptocamp/ngeo](https://github.com/camptocamp/ngeo).
  *
  */
 Ext.define('GeoExt.data.serializer.WMTS', {

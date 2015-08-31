@@ -24,14 +24,16 @@ Ext.define('BasicTreeColumnLegends', {
     valueReplacementTpl: [
         '{value}',
         '<tpl if="this.hasLegend(values.record)"><br />',
-            '<tpl for="lines">',
-                '<img src="{parent.blankUrl}" class="{parent.childCls} {parent.elbowCls}-img ',
-                '{parent.elbowCls}-<tpl if=".">line<tpl else>empty</tpl>" role="presentation"/>',
-            '</tpl>',
-            '<img src="{blankUrl}" class="{childCls} x-tree-elbow-img">',
-            '<img src="{blankUrl}" class="{childCls} x-tree-elbow-img">',
-            '<img src="{blankUrl}" class="{childCls} x-tree-elbow-img">',
-            '{[this.getLegendHtml(values.record)]}',
+        '<tpl for="lines">',
+        '<img src="{parent.blankUrl}"',
+        ' class="{parent.childCls} {parent.elbowCls}-img ',
+        '{parent.elbowCls}-<tpl if=".">line<tpl else>empty</tpl>"',
+        ' role="presentation"/>',
+        '</tpl>',
+        '<img src="{blankUrl}" class="{childCls} x-tree-elbow-img">',
+        '<img src="{blankUrl}" class="{childCls} x-tree-elbow-img">',
+        '<img src="{blankUrl}" class="{childCls} x-tree-elbow-img">',
+        '{[this.getLegendHtml(values.record)]}',
         '</tpl>'
     ],
 
@@ -48,7 +50,8 @@ Ext.define('BasicTreeColumnLegends', {
             var layer = rec.data;
             var legendUrl = layer.get('legendUrl');
             if (!legendUrl) {
-                legendUrl = "http://geoext.github.io/geoext2/website-resources/img/GeoExt-logo.png";
+                legendUrl = "http://geoext.github.io/geoext2/" +
+                    "website-resources/img/GeoExt-logo.png";
             }
             return '<img class="legend" src="' + legendUrl + '" height="32" />';
         }
@@ -63,7 +66,9 @@ Ext.define('BasicTreeColumnLegends', {
         }
         var valuePlaceHolderRegExp = /\{value\}/g;
         var replacementTpl = me.valueReplacementTpl.join('');
-        var newCellTpl = me.originalCellTpl.replace(valuePlaceHolderRegExp, replacementTpl);
+        var newCellTpl = me.originalCellTpl.replace(
+            valuePlaceHolderRegExp, replacementTpl
+        );
 
         column.cellTpl = [
             newCellTpl,
@@ -183,14 +188,17 @@ Ext.application({
                         colspan = headerCt.getColumnCount(),
                         isChecked = rec.get('checked'),
                         layer = rec.data,
-                        hasLegend = isChecked && !(layer instanceof ol.layer.Group),
+                        GrpClass = ol.layer.Group,
+                        hasLegend = isChecked && !(layer instanceof GrpClass),
                         legendUrl = hasLegend && layer.get('legendUrl'),
                         legHtml = "";
 
                     if (!legendUrl) {
-                        legendUrl = "http://geoext.github.io/geoext2/website-resources/img/GeoExt-logo.png";
+                        legendUrl = "http://geoext.github.io/geoext2/" +
+                            "website-resources/img/GeoExt-logo.png";
                     }
-                    legHtml = '<img class="legend" src="' + legendUrl + '" height="32" />';
+                    legHtml = '<img class="legend" src="' + legendUrl +
+                        '" height="32" />';
 
                     // Usually you would style the my-body-class in CSS file
                     Ext.apply(rowValues, {

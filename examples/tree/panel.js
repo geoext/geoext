@@ -44,8 +44,8 @@ Ext.application({
         olMap = new ol.Map({
             layers: [group, layer3],
             view: new ol.View({
-              center: [0, 0],
-              zoom: 2
+                center: [0, 0],
+                zoom: 2
             })
         });
 

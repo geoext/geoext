@@ -83,8 +83,8 @@ Ext.application({
          *     * We'll request the first dpi value of the suggested ones
          */
         var onPrintProviderReady = function(provider) {
-            // this is the assumption: take the first layout and render an appropriate
-            // extent on the map
+            // this is the assumption: take the first layout and render an
+            // appropriate extent on the map
             var capabilities = provider.capabilityRec;
             var layout = capabilities.layouts().getAt(0);
             var attr = layout.attributes().getAt(0);
@@ -103,8 +103,11 @@ Ext.application({
                         layout: layout.get('name'),
                         attributes: {}
                     };
-                    var bbox = extentLayer.getSource().getFeatures()[0].getGeometry().getExtent();
-                    var serializedLayers = GeoExt.data.MapfishPrintProvider.getSerializedLayers(
+                    var firstFeature = extentLayer.getSource().getFeatures()[0];
+                    var bbox = firstFeature.getGeometry().getExtent();
+                    var util = GeoExt.data.MapfishPrintProvider;
+                    var mapView = mapComponent.getView();
+                    var serializedLayers = util.getSerializedLayers(
                         mapComponent,
                         function(layer) {
                             // do not print the extent layer
@@ -112,17 +115,19 @@ Ext.application({
                             return !isExtentLayer;
                         }
                     );
+
                     serializedLayers.reverse();
                     spec.attributes[attr.get('name')] = {
                         bbox: bbox,
                         dpi: clientInfo.dpiSuggestions[0],
                         layers: serializedLayers,
-                        projection: mapComponent.getView().getProjection().getCode(),
-                        rotation: mapComponent.getView().getRotation()
+                        projection: mapView.getProjection().getCode(),
+                        rotation: mapView.getRotation()
                     };
                     Ext.create('Ext.form.Panel', {
                         standardSubmit: true,
-                        url: 'http://webmapcenter.de/print-servlet-3.1.2/print/geoext/buildreport.pdf',
+                        url: 'http://webmapcenter.de/print-servlet-3.1.2/' +
+                            'print/geoext/buildreport.pdf',
                         method: 'POST',
                         items: [
                             {
@@ -137,7 +142,8 @@ Ext.application({
         };
 
         Ext.create('GeoExt.data.MapfishPrintProvider', {
-            url: "http://webmapcenter.de/print-servlet-3.1.2/print/geoext/capabilities.json",
+            url: "http://webmapcenter.de/print-servlet-3.1.2/" +
+                    "print/geoext/capabilities.json",
             listeners: {
                 ready: onPrintProviderReady
             }

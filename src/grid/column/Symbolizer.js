@@ -37,9 +37,8 @@ Ext.define('GeoExt.grid.column.Symbolizer', {
             if (geometry instanceof ol.geom.Point ||
                     geometry instanceof ol.geom.MultiPoint) {
                 symbolType = "Point";
-            }
-            else if (geometry instanceof ol.geom.Polygon ||
-                        geometry instanceof ol.geom.MultiPolygon) {
+            } else if (geometry instanceof ol.geom.Polygon ||
+                       geometry instanceof ol.geom.MultiPolygon) {
                 symbolType = "Polygon";
             }
 
@@ -47,11 +46,11 @@ Ext.define('GeoExt.grid.column.Symbolizer', {
                 var ct = Ext.get(id);
                 // ct for old field may not exist any more during a grid update
                 if (ct) {
-                  Ext.create('GeoExt.component.FeatureRenderer', {
-                      renderTo: ct,
-                      symbolizers: me.determineStyle(record),
-                      symbolType: symbolType
-                  });
+                    Ext.create('GeoExt.component.FeatureRenderer', {
+                        renderTo: ct,
+                        symbolizers: me.determineStyle(record),
+                        symbolType: symbolType
+                    });
                 }
             });
             task.delay(0);
@@ -64,8 +63,10 @@ Ext.define('GeoExt.grid.column.Symbolizer', {
      * Determines the style for the given feature record.
      *
      * @private
-     * @param  {GeoExt.data.model.Feature} record A feature record to get the styler for
-     * @return {ol.style.Style[]|ol.style.Style} the style(s) applied to the given feature record
+     * @param  {GeoExt.data.model.Feature} record A feature record to get the
+     *     styler for.
+     * @return {ol.style.Style[]|ol.style.Style} the style(s) applied to the
+     *     given feature record.
      */
     determineStyle: function(record) {
         var feature = record.olObject;

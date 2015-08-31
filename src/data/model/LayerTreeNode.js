@@ -158,7 +158,7 @@ Ext.define('GeoExt.data.model.LayerTreeNode', {
                         parent.set('__toggleMode', 'classic');
                     }
                 }
-            })
+            });
             me.__updating = false;
         }
     },
