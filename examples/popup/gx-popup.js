@@ -31,15 +31,13 @@ Ext.application({
             })
         });
 
-        popup = Ext.create('GeoExt.panel.Popup', {
+        popup = Ext.create('GeoExt.component.Popup', {
             map: olMap,
-            title: 'Position',
-            width: 240,
-            bodyPadding: 5
+            width: 140
         });
 
         mapComp = Ext.create('GeoExt.component.Map', {
-            title: 'GeoExt.panel.Map Example',
+            title: 'GeoExt.component.Map Example',
             map: olMap,
             region: 'center',
             pointerRest: true,
@@ -56,7 +54,8 @@ Ext.application({
             hdms = hdms.replace(/([NS])/, '$1<br>');
 
             // set content and position popup
-            popup.setHtml('Pointer rested on: <br /><code>' + hdms + '</code>');
+            popup.setHtml('<p><strong>Pointer rested on</strong>' +
+                '<br /><code>' + hdms + '</code></p>');
             popup.position(coordinate);
             popup.show();
         });

@@ -16,12 +16,12 @@
 /**
  * @class
  */
-Ext.define('GeoExt.panel.Popup', {
+Ext.define('GeoExt.component.Popup', {
     requires: [],
-    extend: 'Ext.panel.Panel',
+    extend: 'Ext.Component',
     alias: [
         'widget.gx_popup',
-        'widget.gx_panel_popup'
+        'widget.gx_component_popup'
     ],
 
     config: {
