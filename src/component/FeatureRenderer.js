@@ -273,6 +273,7 @@ Ext.define('GeoExt.component.FeatureRenderer', {
             minResolution: resolution,
             maxResolution: resolution,
             projection: new ol.proj.Projection({
+                code: '',
                 units: 'pixels'
             })
         }));
