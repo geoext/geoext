@@ -1,11 +1,18 @@
 language: node_js
 node_js: "0.12"
+before_install:
+  - ./ci/create-sencha-environment.sh
 install: npm install
 script:
   - npm run lint-js
   - npm test
+  - ./ci/create-sencha-package.sh
 after_success: npm run ci-coverage
 branches:
   only:
     - master
-
+cache:
+  directories:
+    - __download
+    - __install
+    - node_modules
