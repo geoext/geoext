@@ -13,6 +13,7 @@
             'GeoExt/data/serializer/ImageWMS.test.js',
             'GeoExt/data/serializer/TileWMS.test.js',
             'GeoExt/data/serializer/WMTS.test.js',
+            'GeoExt/data/serializer/XYZ.test.js',
             'GeoExt/data/serializer/Vector.test.js',
             'GeoExt/data/store/Collection.test.js',
             'GeoExt/data/store/Features.test.js',
