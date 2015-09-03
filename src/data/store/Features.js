@@ -20,7 +20,27 @@
  */
 Ext.define('GeoExt.data.store.Features', {
     extend: 'GeoExt.data.store.Collection',
-    requires: [],
+    requires: [
+        'GeoExt.util.Symbol'
+    ],
+
+    // <debug>
+    symbols: [
+        'ol.Collection',
+        'ol.layer.Vector',
+        'ol.Map',
+        'ol.Map#addLayer',
+        'ol.Map#removeLayer',
+        'ol.source.Vector',
+        'ol.source.Vector#getFeatures',
+        'ol.source.Vector#on',
+        'ol.source.Vector#un',
+        'ol.style.Circle',
+        'ol.style.Fill',
+        'ol.style.Stroke',
+        'ol.style.Style'
+    ],
+    // </debug>
 
     model: 'GeoExt.data.model.Feature',
 
@@ -245,4 +265,8 @@ Ext.define('GeoExt.data.store.Features', {
         }
     }
 
+}, function(cls) {
+    // <debug>
+    GeoExt.util.Symbol.check(cls);
+    // </debug>
 });

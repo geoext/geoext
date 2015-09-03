@@ -24,6 +24,56 @@
  */
 Ext.define('GeoExt.data.serializer.Vector', {
     extend: 'GeoExt.data.serializer.Base',
+
+    requires: [
+        'GeoExt.util.Symbol'
+    ],
+
+    // <debug>
+    symbols: [
+        'ol.color.asArray',
+        'ol.Feature',
+        'ol.Feature#getGeometry',
+        'ol.Feature#getStyleFunction',
+        'ol.format.GeoJSON',
+        'ol.format.GeoJSON#writeFeatureObject',
+        'ol.geom.Geometry',
+        'ol.geom.LineString#getType',
+        'ol.geom.MultiLineString#getType',
+        'ol.geom.MultiPoint#getType',
+        'ol.geom.MultiPolygon#getType',
+        'ol.geom.Point#getType',
+        'ol.geom.Polygon#getType',
+        'ol.layer.Vector#getOpacity',
+        'ol.layer.Vector#getStyleFunction',
+        'ol.source.Vector',
+        'ol.source.Vector#getFeatures',
+        'ol.style.Circle',
+        'ol.style.Circle#getRadius',
+        'ol.style.Circle#getFill',
+        'ol.style.Fill',
+        'ol.style.Fill#getColor',
+        'ol.style.Icon',
+        'ol.style.Icon#getSrc',
+        'ol.style.Icon#getRotation',
+        'ol.style.Stroke',
+        'ol.style.Stroke#getColor',
+        'ol.style.Stroke#getWidth',
+        'ol.style.Style',
+        'ol.style.Style#getFill',
+        'ol.style.Style#getImage',
+        'ol.style.Style#getStroke',
+        'ol.style.Style#getText',
+        'ol.style.Text',
+        'ol.style.Text#getFont',
+        'ol.style.Text#getOffsetX',
+        'ol.style.Text#getOffsetY',
+        'ol.style.Text#getRotation',
+        'ol.style.Text#getText',
+        'ol.style.Text#getTextAlign'
+    ],
+    // </debug>
+
     inheritableStatics: {
         /**
          * The types of styles that mapfish supports.
@@ -557,4 +607,7 @@ Ext.define('GeoExt.data.serializer.Vector', {
 
     // Register this serializer via the inherited method `register`.
     cls.register(cls);
+    // <debug>
+    GeoExt.util.Symbol.check(cls);
+    // </debug>
 });

@@ -18,6 +18,20 @@
  */
 Ext.define('GeoExt.data.serializer.ImageWMS', {
     extend: 'GeoExt.data.serializer.Base',
+
+    requires: [
+        'GeoExt.util.Symbol'
+    ],
+
+    // <debug>
+    symbols: [
+        'ol.layer.Layer#getOpacity',
+        'ol.source.ImageWMS',
+        'ol.source.ImageWMS#getUrl',
+        'ol.source.ImageWMS#getParams'
+    ],
+    // </debug>
+
     inheritableStatics: {
         /**
          * @inheritdoc
@@ -45,4 +59,7 @@ Ext.define('GeoExt.data.serializer.ImageWMS', {
 }, function(cls) {
     // Register this serializer via the inherited method `register`.
     cls.register(cls);
+    // <debug>
+    GeoExt.util.Symbol.check(cls);
+    // </debug>
 });

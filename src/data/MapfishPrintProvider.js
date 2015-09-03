@@ -22,8 +22,19 @@ Ext.define('GeoExt.data.MapfishPrintProvider', {
     mixins: ['Ext.mixin.Observable'],
     requires: [
         'GeoExt.data.model.print.Capability',
+        'GeoExt.util.Symbol',
         'Ext.data.JsonStore'
     ],
+    // <debug>
+    symbols: [
+        'ol.Collection',
+        'ol.geom.Polygon.fromExtent',
+        'ol.layer.Layer#getSource',
+        'ol.layer.Group',
+        'ol.source.Vector.prototype.addFeature',
+        'ol.View#calculateExtent'
+    ],
+    // </debug>
 
     /**
      * @event ready
@@ -292,4 +303,8 @@ Ext.define('GeoExt.data.MapfishPrintProvider', {
             });
         }
     }
+}, function(cls) {
+    // <debug>
+    GeoExt.util.Symbol.check(cls);
+    // </debug>
 });

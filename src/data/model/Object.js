@@ -18,6 +18,19 @@
  */
 Ext.define('GeoExt.data.model.Object', {
     extend: 'GeoExt.data.model.Base',
+    requires: [
+        'GeoExt.util.Symbol'
+    ],
+
+    // <debug>
+    symbols: [
+        'ol',
+        'ol.Object',
+        'ol.Object#on',
+        'ol.Object#get',
+        'ol.Object#set'
+    ],
+    // </debug>
 
     statics: {
         /**
@@ -148,4 +161,8 @@ Ext.define('GeoExt.data.model.Object', {
 
         this.callParent(arguments);
     }
+}, function(cls) {
+    // <debug>
+    GeoExt.util.Symbol.check(cls);
+    // </debug>
 });

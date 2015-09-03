@@ -21,8 +21,30 @@
  */
 Ext.define('GeoExt.data.store.Layer', {
     extend: 'Ext.data.Store',
-    requires: ['GeoExt.data.model.Layer'],
     alternateClassName: ['GeoExt.data.LayerStore'],
+    requires: [
+        'GeoExt.data.model.Layer',
+        'GeoExt.util.Symbol'
+    ],
+
+    // <debug>
+    symbols: [
+        'ol.Collection#clear',
+        'ol.Collection#forEach',
+        'ol.Collection#getArray',
+        'ol.Collection#insertAt',
+        'ol.Collection#on',
+        'ol.Collection#push',
+        'ol.Collection#remove',
+        'ol.layer.Layer',
+        'ol.layer.Layer#get',
+        'ol.layer.Layer#on',
+        'ol.layer.Layer#set',
+        'ol.Map',
+        'ol.Map#getLayers'
+    ],
+    // </debug>
+
     model: 'GeoExt.data.model.Layer',
 
     config: {
@@ -375,4 +397,8 @@ Ext.define('GeoExt.data.store.Layer', {
         }
     }
 
+}, function(cls) {
+    // <debug>
+    GeoExt.util.Symbol.check(cls);
+    // </debug>
 });
