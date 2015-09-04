@@ -18,6 +18,20 @@
   */
 Ext.define('GeoExt.data.serializer.XYZ', {
     extend: 'GeoExt.data.serializer.Base',
+    mixins: [
+        'GeoExt.mixin.SymbolCheck'
+    ],
+
+    symbols: [
+        'ol.layer.Base#getOpacity',
+        'ol.size.toSize',
+        'ol.source.XYZ',
+        'ol.source.XYZ#getTileGrid',
+        'ol.source.XYZ#getUrls',
+        'ol.tilegrid.TileGrid#getResolutions',
+        'ol.tilegrid.TileGrid#getTileSize'
+    ],
+
     inheritableStatics: {
         /**
          * @inheritdoc
