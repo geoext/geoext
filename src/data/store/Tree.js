@@ -23,8 +23,8 @@ Ext.define('GeoExt.data.store.Tree', {
 
     alternateClassName: ['GeoExt.data.TreeStore'],
 
-    requires: [
-        'GeoExt.util.Symbol'
+    mixins: [
+        'GeoExt.mixin.SymbolCheck'
     ],
 
     // <debug>
@@ -269,8 +269,4 @@ Ext.define('GeoExt.data.store.Tree', {
     resumeCollectionEvents: function(){
         this.collectionEventsSuspended = false;
     }
-}, function(cls) {
-    // <debug>
-    GeoExt.util.Symbol.check(cls);
-    // </debug>
 });

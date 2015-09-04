@@ -23,8 +23,11 @@ Ext.define('GeoExt.data.store.Layer', {
     extend: 'Ext.data.Store',
     alternateClassName: ['GeoExt.data.LayerStore'],
     requires: [
-        'GeoExt.data.model.Layer',
-        'GeoExt.util.Symbol'
+        'GeoExt.data.model.Layer'
+    ],
+
+    mixins: [
+        'GeoExt.mixin.SymbolCheck'
     ],
 
     // <debug>
@@ -397,8 +400,4 @@ Ext.define('GeoExt.data.store.Layer', {
         }
     }
 
-}, function(cls) {
-    // <debug>
-    GeoExt.util.Symbol.check(cls);
-    // </debug>
 });

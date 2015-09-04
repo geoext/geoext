@@ -22,9 +22,8 @@
  */
 Ext.define('GeoExt.data.serializer.WMTS', {
     extend: 'GeoExt.data.serializer.Base',
-
-    requires: [
-        'GeoExt.util.Symbol'
+    mixins: [
+        'GeoExt.mixin.SymbolCheck'
     ],
 
     // <debug>
@@ -101,7 +100,4 @@ Ext.define('GeoExt.data.serializer.WMTS', {
 }, function(cls) {
     // Register this serializer via the inherited method `register`.
     cls.register(cls);
-    // <debug>
-    GeoExt.util.Symbol.check(cls);
-    // </debug>
 });

@@ -20,8 +20,8 @@
  */
 Ext.define('GeoExt.data.store.Features', {
     extend: 'GeoExt.data.store.Collection',
-    requires: [
-        'GeoExt.util.Symbol'
+    mixins: [
+        'GeoExt.mixin.SymbolCheck'
     ],
 
     // <debug>
@@ -265,8 +265,4 @@ Ext.define('GeoExt.data.store.Features', {
         }
     }
 
-}, function(cls) {
-    // <debug>
-    GeoExt.util.Symbol.check(cls);
-    // </debug>
 });
