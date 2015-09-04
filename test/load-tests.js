@@ -1,11 +1,11 @@
 /*global document*/
-/*jshint camelcase:true, curly:true, eqeqeq:true, latedef:true, newcap:true, noarg:true, undef:true, trailing:true, maxlen:80 */
 (function(doc, global){
     var specPath = './spec/',
         dependencies = [
             'GeoExt/component/FeatureRenderer.test.js',
             'GeoExt/component/Map.test.js',
             'GeoExt/component/OverviewMap.test.js',
+            'GeoExt/component/Popup.test.js',
             'GeoExt/data/model/Feature.test.js',
             'GeoExt/data/model/Layer.test.js',
             'GeoExt/data/model/Object.test.js',
@@ -29,7 +29,7 @@
         dependencyCnt = dependencies.length,
         i = 0;
 
-        for(; i < dependencyCnt; i++) {
-            doc.write(getScriptTag(specPath + dependencies[i]));
-        }
-})(document, this);
+    for(; i < dependencyCnt; i++) {
+        doc.write(getScriptTag(specPath + dependencies[i]));
+    }
+}(document, this));
