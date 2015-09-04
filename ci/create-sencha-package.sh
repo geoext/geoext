@@ -41,5 +41,22 @@ $SENCHA_CMD package add $SENCHA_WS/build/$GEOEXT_PACKAGE_NAME/$GEOEXT_PACKAGE_NA
 # TODO It'd be nice if the result of that build process could be made available
 #      on the gh-pages repository, but this is a task for another day
 
+# Output the contents of the build dir (for informational purposes)
+mkdir -p $STATS_DIR
+cp $SENCHA_WS/build/$GEOEXT_PACKAGE_NAME/$GEOEXT_PACKAGE_NAME.pkg $STATS_DIR
+cd $STATS_DIR
+unzip -q $GEOEXT_PACKAGE_NAME.pkg
+
+FILESIZE_PKG=$(du -k "$STATS_DIR/$GEOEXT_PACKAGE_NAME.pkg" | cut -f1)
+FILESIZE_JS_DEBUG=$(du -k "$STATS_DIR/build/$GEOEXT_PACKAGE_NAME-debug.js" | cut -f1)
+FILESIZE_JS=$(du -k "$STATS_DIR/build/$GEOEXT_PACKAGE_NAME.js" | cut -f1)
+
+echo "Size of $GEOEXT_PACKAGE_NAME.pkg = $FILESIZE_PKG kb"
+echo "Size of $GEOEXT_PACKAGE_NAME.js = $FILESIZE_JS kb"
+echo "Size of $GEOEXT_PACKAGE_NAME-debug.js = $FILESIZE_JS_DEBUG kb"
+
+cd $TRAVIS_BUILD_DIR
+rm -Rf $STATS_DIR
+
 # We're done
 exit 0

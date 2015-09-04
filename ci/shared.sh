@@ -28,6 +28,10 @@ SENCHA_WS="/tmp/sencha-workspace"
 # Where will the source of the GeoExt package live in the sencha workspace?
 GEOEXT_IN_SENCHA_WS_FOLDER="$SENCHA_WS/packages/geoext3"
 
+# A temporary directory into which we'll extract a generated package to
+# gather some statistics for the build
+STATS_DIR="/tmp/build-stats"
+
 # This is the executable sencha command once it has been installed
 SENCHA_CMD="$INSTALL_DIR/sencha"
 
