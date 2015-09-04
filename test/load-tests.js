@@ -21,9 +21,9 @@
             'GeoExt/data/LayerStore.test.js',
             'GeoExt/data/MapfishPrintProvider.test.js',
             'GeoExt/grid/column/Symbolizer.test.js',
+            'GeoExt/mixin/SymbolCheck.test.js',
             'GeoExt/panel/Popup.test.js',
-            'GeoExt/tree/Panel.test.js',
-            'GeoExt/util/Symbol.test.js'
+            'GeoExt/tree/Panel.test.js'
         ],
         getScriptTag = global.TestUtil.getExternalScriptTag,
         dependencyCnt = dependencies.length,

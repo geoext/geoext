@@ -17,11 +17,11 @@
  * A utility class providing methods to check for symbols of OpenLayers we
  * depend upon.
  *
- * This class can be used to check if the dependencies to external symbols are
- * fulfilled. An example:
+ * This class can be mixed into classes to check if the dependencies to external
+ * symbols are fulfilled. An example:
  *
  *     Ext.define('MyNewClass.DependingOnOpenLayersClasses', {
- *         requires: ['GeoExt.util.Symbol'],
+ *         mixins: ['GeoExt.mixin.SymbolCheck'],
  *         // the contents of the `symbols` property will be checked
  *         symbols: [
  *             'ol.Map', // checking a class
@@ -31,29 +31,21 @@
  *             'ol.color::asString' // other way to reference a static method
  *         ]
  *         // … your configuration and methods …
- *     }, function(cls) {
- *         // actually call `check` with the just defined class:
- *         GeoExt.util.Symbol.check(cls);
  *     });
  *
  * Since this sort of checking usually only makes sense in debug mode, you can
- * additionally wrap the `symbols`-configuration and the call to `check` in
- * these &lt;debug&gt;-line comments:
+ * additionally wrap the `symbols`-configuration in these &lt;debug&gt;-line
+ * comments:
  *
  *     Ext.define('MyNewClass.DependingOnOpenLayersClasses', {
- *         requires: ['GeoExt.util.Symbol'],
+ *         mixins: ['GeoExt.mixin.SymbolCheck'],
  *         // <debug>
  *         symbols: []
  *         // </debug>
- *     }, function(cls) {
- *         // <debug>
- *         GeoExt.util.Symbol.check(cls);
- *         // </debug>
  *     });
  *
- * This means that the array of symbols and the check itself will not happen in
- * production builds as the wrapped lines are simply removed from the final
- * JavaScript.
+ * This means that the array of symbols is not defined in production builds
+ * as the wrapped lines are simply removed from the final JavaScript.
  *
  * If one of the symbols cannot be found, a warning will be printed to the
  * developer console (via `Ext.log.warn`, which will only print in a debug
@@ -62,11 +54,12 @@
  *     [W] The class "MyNewClass.DependingOnOpenLayersClasses" depends on the
  *     external symbol "ol.color.notExisting", which does not seem to exist.
  *
- * @class GeoExt.util.Symbol
+ * @class GeoExt.mixin.SymbolCheck
  */
-Ext.define('GeoExt.util.Symbol', {
-    extend: 'Ext.Base',
+Ext.define('GeoExt.mixin.SymbolCheck', {
+    extend: 'Ext.Mixin',
     statics: {
+        // <debug>
         /**
          * An object that we will use to store already looked up references in.
          *
@@ -85,7 +78,7 @@ Ext.define('GeoExt.util.Symbol', {
          * in the global context. Will log to the console if a symbol cannot be
          * found.
          *
-         * @param {Ext.Base} An ext class defining a property `symbols` that
+         * @param {Ext.Base} cls An ext class defining a property `symbols` that
          *     that this method will check.
          */
         check: function(cls) {
@@ -190,5 +183,25 @@ Ext.define('GeoExt.util.Symbol', {
             checkedCache[symbolStr] = isDefined;
             return isDefined;
         }
+        // </debug>
+    },
+
+    /**
+     * @property {String[]} symbols The symbols to check.
+     */
+
+    // <debug>
+
+    /**
+     * Whenever a class mixes in GeoExt.mixin.SymbolCheck, this method will be
+     * called and it actually runs the checks for all the defined #symbols.
+     *
+     * @param {Ext.Class} cls The class that this mixin is mixed into.
+     * @private
+     */
+    onClassMixedIn: function(cls) {
+        GeoExt.mixin.SymbolCheck.check(cls);
     }
+
+    // </debug>
 });

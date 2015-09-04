@@ -19,8 +19,11 @@
 Ext.define('GeoExt.data.store.Collection', {
     extend: 'Ext.data.Store',
     requires: [
-        'GeoExt.data.model.Object',
-        'GeoExt.util.Symbol'
+        'GeoExt.data.model.Object'
+    ],
+
+    mixins: [
+        'GeoExt.mixin.SymbolCheck'
     ],
 
     // <debug>
@@ -149,8 +152,4 @@ Ext.define('GeoExt.data.store.Collection', {
 
         this.callParent(arguments);
     }
-}, function(cls) {
-    // <debug>
-    GeoExt.util.Symbol.check(cls);
-    // </debug>
 });

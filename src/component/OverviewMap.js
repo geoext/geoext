@@ -63,8 +63,8 @@ Ext.define("GeoExt.component.OverviewMap", {
         'widget.gx_overviewmap',
         'widget.gx_component_overviewmap'
     ],
-    requires: [
-        'GeoExt.util.Symbol'
+    mixins: [
+        'GeoExt.mixin.SymbolCheck'
     ],
 
     // <debug>
@@ -486,8 +486,4 @@ Ext.define("GeoExt.component.OverviewMap", {
         this.boxFeature.setStyle(style);
         return style;
     }
-}, function(cls) {
-    // <debug>
-    GeoExt.util.Symbol.check(cls);
-    // </debug>
 });

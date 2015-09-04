@@ -40,11 +40,13 @@ Ext.define("GeoExt.component.Map", {
         "widget.gx_map",
         "widget.gx_component_map"
     ],
-
     requires: [
-        'GeoExt.data.store.Layer',
-        'GeoExt.util.Symbol'
+        'GeoExt.data.store.Layer'
     ],
+    mixins: [
+        'GeoExt.mixin.SymbolCheck'
+    ],
+
     // <debug>
     symbols: [
         'ol.layer.Base',
@@ -464,8 +466,4 @@ Ext.define("GeoExt.component.Map", {
     setView: function(view){
         this.getMap().setView(view);
     }
-}, function(cls) {
-    // <debug>
-    GeoExt.util.Symbol.check(cls);
-    // </debug>
 });

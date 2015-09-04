@@ -19,10 +19,12 @@
  */
 Ext.define('GeoExt.data.MapfishPrintProvider', {
     extend: 'Ext.Base',
-    mixins: ['Ext.mixin.Observable'],
+    mixins: [
+        'Ext.mixin.Observable',
+        'GeoExt.mixin.SymbolCheck'
+    ],
     requires: [
         'GeoExt.data.model.print.Capability',
-        'GeoExt.util.Symbol',
         'Ext.data.JsonStore'
     ],
     // <debug>
@@ -303,8 +305,4 @@ Ext.define('GeoExt.data.MapfishPrintProvider', {
             });
         }
     }
-}, function(cls) {
-    // <debug>
-    GeoExt.util.Symbol.check(cls);
-    // </debug>
 });

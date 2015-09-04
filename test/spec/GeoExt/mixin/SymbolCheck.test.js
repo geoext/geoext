@@ -1,10 +1,10 @@
-Ext.Loader.syncRequire(['GeoExt.util.Symbol']);
+Ext.Loader.syncRequire(['GeoExt.mixin.SymbolCheck']);
 
-describe('GeoExt.util.Symbol', function() {
+describe('GeoExt.mixin.SymbolCheck', function() {
 
     describe('Basics', function(){
         it('is defined', function(){
-            expect(GeoExt.util.Symbol).not.to.be(undefined);
+            expect(GeoExt.mixin.SymbolCheck).not.to.be(undefined);
         });
     });
 
@@ -21,11 +21,12 @@ describe('GeoExt.util.Symbol', function() {
 
     beforeEach(function() {
         // reset the local cache for each test
-        GeoExt.util.Symbol._checked = {};
+        GeoExt.mixin.SymbolCheck._checked = {};
         // set up the spy to be examined in the TestClass
         warnLoggerSpy = sinon.spy(Ext.log, 'warn');
         className = 'TestClass' + (+new Date());
         Ext.define(className, {
+            mixins: ['GeoExt.mixin.SymbolCheck'],
             symbols: [
                 // An existing class
                 'ol.layer.Base',
@@ -38,10 +39,8 @@ describe('GeoExt.util.Symbol', function() {
                 // A instance method using the shortcut
                 'ol.layer.Base#setVisible',
                 // A static method using the shortcut
-                'GeoExt.util.Symbol::check'
+                'GeoExt.mixin.SymbolCheck::check'
             ]
-        }, function(cls){
-            GeoExt.util.Symbol.check(cls);
         });
     });
     afterEach(function(){
@@ -60,7 +59,7 @@ describe('GeoExt.util.Symbol', function() {
             });
 
             it('filled the cache (direct requires)', function() {
-                var cache = GeoExt.util.Symbol._checked;
+                var cache = GeoExt.mixin.SymbolCheck._checked;
 
                 expect(cache['ol.layer.Base']).to.not.be(undefined);
                 expect(cache['ol.layer.Base']).to.be(true);
@@ -81,12 +80,14 @@ describe('GeoExt.util.Symbol', function() {
                 );
                 expect(cache['ol.layer.Base.prototype.setVisible']).to.be(true);
 
-                expect(cache['GeoExt.util.Symbol.check']).to.not.be(undefined);
-                expect(cache['GeoExt.util.Symbol.check']).to.be(true);
+                expect(cache['GeoExt.mixin.SymbolCheck.check']).to.not.be(
+                    undefined
+                );
+                expect(cache['GeoExt.mixin.SymbolCheck.check']).to.be(true);
             });
 
             it('filled the cache (intermediate requires)', function() {
-                var cache = GeoExt.util.Symbol._checked;
+                var cache = GeoExt.mixin.SymbolCheck._checked;
 
                 expect(cache['ol']).to.not.be(undefined);
                 expect(cache['ol']).to.be(true);
@@ -103,49 +104,48 @@ describe('GeoExt.util.Symbol', function() {
                 expect(cache['GeoExt']).to.not.be(undefined);
                 expect(cache['GeoExt']).to.be(true);
 
-                expect(cache['GeoExt.util']).to.not.be(undefined);
-                expect(cache['GeoExt.util']).to.be(true);
+                expect(cache['GeoExt.mixin']).to.not.be(undefined);
+                expect(cache['GeoExt.mixin']).to.be(true);
 
-                expect(cache['GeoExt.util.Symbol']).to.not.be(undefined);
-                expect(cache['GeoExt.util.Symbol']).to.be(true);
+                expect(cache['GeoExt.mixin.SymbolCheck']).to.not.be(undefined);
+                expect(cache['GeoExt.mixin.SymbolCheck']).to.be(true);
             });
 
             it('takes a short way out if no "symbols"', function() {
                 var normalizeSymbolSpy = sinon.spy(
-                    GeoExt.util.Symbol, 'normalizeSymbol'
+                    GeoExt.mixin.SymbolCheck, 'normalizeSymbol'
                 );
                 var checkSymbolSpy = sinon.spy(
-                    GeoExt.util.Symbol, 'checkSymbol'
+                    GeoExt.mixin.SymbolCheck, 'checkSymbol'
                 );
                 var isDefinedSymbolSpy = sinon.spy(
-                    GeoExt.util.Symbol, 'isDefinedSymbol'
+                    GeoExt.mixin.SymbolCheck, 'isDefinedSymbol'
                 );
                 Ext.define('NoMember_symbols', {
-                }, function(cls){
-                    GeoExt.util.Symbol.check(cls);
+                    mixins: ['GeoExt.mixin.SymbolCheck']
                 });
                 expect(normalizeSymbolSpy.called).to.be(false);
                 expect(checkSymbolSpy.called).to.be(false);
                 expect(isDefinedSymbolSpy.called).to.be(false);
 
                 // cleanup
-                GeoExt.util.Symbol.normalizeSymbol.restore();
-                GeoExt.util.Symbol.checkSymbol.restore();
-                GeoExt.util.Symbol.isDefinedSymbol.restore();
+                GeoExt.mixin.SymbolCheck.normalizeSymbol.restore();
+                GeoExt.mixin.SymbolCheck.checkSymbol.restore();
+                GeoExt.mixin.SymbolCheck.isDefinedSymbol.restore();
                 cleanupTestClass('NoMember_symbols');
             });
 
             it('takes a shortcut for checked symbols', function(){
-                GeoExt.util.Symbol.isDefinedSymbol(
+                GeoExt.mixin.SymbolCheck.isDefinedSymbol(
                     'Shub.Niggurath.Lord.Of.The.Wood'
                 );
                 var extEachSpy = sinon.spy(Ext, 'each');
                 var extIsDefinedSpy = sinon.spy(Ext, 'isDefined');
-                GeoExt.util.Symbol.isDefinedSymbol(
+                GeoExt.mixin.SymbolCheck.isDefinedSymbol(
                     'Shub.Niggurath.Lord.Of.The.Wood'
                 );
 
-                var cache = GeoExt.util.Symbol._checked;
+                var cache = GeoExt.mixin.SymbolCheck._checked;
 
                 expect(extIsDefinedSpy.called).to.be(true);
                 expect(extIsDefinedSpy.callCount).to.be(1);

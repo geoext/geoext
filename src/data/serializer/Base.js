@@ -19,8 +19,10 @@
 Ext.define('GeoExt.data.serializer.Base', {
     extend: 'Ext.Base',
     requires: [
-        'GeoExt.data.MapfishPrintProvider',
-        'GeoExt.util.Symbol'
+        'GeoExt.data.MapfishPrintProvider'
+    ],
+    mixins: [
+        'GeoExt.mixin.SymbolCheck'
     ],
 
     // <debug>
@@ -82,8 +84,4 @@ Ext.define('GeoExt.data.serializer.Base', {
             }
         }
     }
-}, function(cls) {
-    // <debug>
-    GeoExt.util.Symbol.check(cls);
-    // </debug>
 });

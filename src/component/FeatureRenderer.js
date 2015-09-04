@@ -21,9 +21,10 @@
 Ext.define('GeoExt.component.FeatureRenderer', {
     extend: 'Ext.Component',
     alias: 'widget.gx_renderer',
-    requires: [
-        'GeoExt.util.Symbol'
+    mixins: [
+        'GeoExt.mixin.SymbolCheck'
     ],
+
     // <debug>
     symbols: [
         'ol.extent.getCenter',
@@ -377,8 +378,4 @@ Ext.define('GeoExt.component.FeatureRenderer', {
             this.setSymbolizers(options.symbolizers);
         }
     }
-}, function(cls) {
-    // <debug>
-    GeoExt.util.Symbol.check(cls);
-    // </debug>
 });
