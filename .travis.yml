@@ -1,13 +1,20 @@
 language: node_js
 node_js: "0.12"
+env:
+  global:
+    secure: "GHK4yb1Xb9rjV9pK9NtrA9ckRv7cz98w6Ihc20MlEwUK3zaQw7l1fvQ8GjrkG4nYY3trhZQn1bmsQ5Raip+o3PQ/tUasa3nEiAKYHnzrgCoNhPOBTGDCwpllstpM75P5jpY7Ap0Dt/QBm1joOyznLDJ91oKe3Vra5UYwMHFAqhA="
 before_install:
   - ./ci/create-sencha-environment.sh
-install: npm install
+install:
+  - npm install
+  - gem install jsduck
 script:
   - npm run lint-js
   - npm test
   - ./ci/create-sencha-package.sh
-after_success: npm run ci-coverage
+after_success:
+  - npm run ci-coverage
+  - ./ci/update-gh-pages.sh > /dev/null 2>&1
 branches:
   only:
     - master

@@ -47,6 +47,7 @@ COPY_RESOURCES=".sencha resources sass src package.json build.xml LICENSE"
 
 # The name of the package
 GEOEXT_PACKAGE_NAME="GeoExt" # see the 'name'-prop of package.json
+GEOEXT_PACKAGE_VERSION=$(node -e 'console.log(require("./package.json").version)')
 
 # Properties to create a local package repository
 GEOEXT_REPO_NAME="GeoExt Contributors" # see the 'creator'-prop of package.json
