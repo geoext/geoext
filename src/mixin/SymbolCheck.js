@@ -59,7 +59,7 @@
 Ext.define('GeoExt.mixin.SymbolCheck', {
     extend: 'Ext.Mixin',
     statics: {
-        // <debug>
+
         /**
          * An object that we will use to store already looked up references in.
          *
@@ -82,6 +82,7 @@ Ext.define('GeoExt.mixin.SymbolCheck', {
          *     that this method will check.
          */
         check: function(cls) {
+            // <debug>
             var staticMe = this;
             var proto = cls.prototype;
             var olSymbols = proto && proto.symbols;
@@ -93,6 +94,7 @@ Ext.define('GeoExt.mixin.SymbolCheck', {
                 olSymbol = staticMe.normalizeSymbol(olSymbol);
                 staticMe.checkSymbol(olSymbol, clsName);
             });
+            // </debug>
         },
 
         /**
@@ -112,15 +114,19 @@ Ext.define('GeoExt.mixin.SymbolCheck', {
          * @private
          */
         normalizeSymbol: (function() {
+            // <debug>
             var hashRegEx = /#/g;
             var colonRegEx = /::/g;
+            // </debug>
             var normalizeFunction = function(symbolStr){
+                // <debug>
                 if (hashRegEx.test(symbolStr)) {
                     symbolStr = symbolStr.replace(hashRegEx, '.prototype.');
                 } else if (colonRegEx.test(symbolStr)) {
                     symbolStr = symbolStr.replace(colonRegEx, '.');
                 }
                 return symbolStr;
+                // </debug>
             };
             return normalizeFunction;
         }()),
@@ -136,6 +142,7 @@ Ext.define('GeoExt.mixin.SymbolCheck', {
          * @private
          */
         checkSymbol: function(symbolStr, clsName){
+            // <debug>
             var isDefined = this.isDefinedSymbol(symbolStr);
             if (!isDefined) {
                 Ext.log.warn(
@@ -144,6 +151,7 @@ Ext.define('GeoExt.mixin.SymbolCheck', {
                     'which does not seem to exist.'
                 );
             }
+            // </debug>
         },
 
         /**
@@ -155,6 +163,7 @@ Ext.define('GeoExt.mixin.SymbolCheck', {
          * @private
          */
         isDefinedSymbol: function(symbolStr){
+            // <debug>
             var checkedCache = this._checked;
             if (Ext.isDefined(checkedCache[symbolStr])) {
                 return checkedCache[symbolStr];
@@ -182,15 +191,13 @@ Ext.define('GeoExt.mixin.SymbolCheck', {
             });
             checkedCache[symbolStr] = isDefined;
             return isDefined;
+            // </debug>
         }
-        // </debug>
     },
 
     /**
      * @property {String[]} symbols The symbols to check.
      */
-
-    // <debug>
 
     /**
      * Whenever a class mixes in GeoExt.mixin.SymbolCheck, this method will be
@@ -200,8 +207,8 @@ Ext.define('GeoExt.mixin.SymbolCheck', {
      * @private
      */
     onClassMixedIn: function(cls) {
+        // <debug>
         GeoExt.mixin.SymbolCheck.check(cls);
+        // </debug>
     }
-
-    // </debug>
 });
