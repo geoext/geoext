@@ -22,7 +22,6 @@
             'GeoExt/data/MapfishPrintProvider.test.js',
             'GeoExt/grid/column/Symbolizer.test.js',
             'GeoExt/mixin/SymbolCheck.test.js',
-            'GeoExt/panel/Popup.test.js',
             'GeoExt/tree/Panel.test.js'
         ],
         getScriptTag = global.TestUtil.getExternalScriptTag,
