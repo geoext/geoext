@@ -16,7 +16,7 @@
 /**
  * Data model holding an OpenLayers feature.
  *
- * @class
+ * @class GeoExt.data.model.Feature
  */
 Ext.define('GeoExt.data.model.Feature', {
     extend: 'GeoExt.data.model.Object',

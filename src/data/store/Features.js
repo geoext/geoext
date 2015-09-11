@@ -16,7 +16,7 @@
 /**
  * A data store holding OpenLayers feature objects.
  *
- * @class
+ * @class GeoExt.data.store.Features
  */
 Ext.define('GeoExt.data.store.Features', {
     extend: 'GeoExt.data.store.Collection',

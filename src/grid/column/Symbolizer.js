@@ -17,6 +17,8 @@
  * An Ext.grid.column.Column pre-configured with a GeoExt.FeatureRenderer.
  * This can be used to display the rendering style of a vector feature in a
  * grid column.
+ *
+ * @class GeoExt.grid.column.Symbolizer
  */
 Ext.define('GeoExt.grid.column.Symbolizer', {
     extend: 'Ext.grid.column.Column',

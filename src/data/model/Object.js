@@ -15,6 +15,8 @@
  */
 /**
  * Simple model that maps an ol.Object to an Ext.data.Model.
+ *
+ * @class GeoExt.data.model.Object
  */
 Ext.define('GeoExt.data.model.Object', {
     extend: 'GeoExt.data.model.Base',
