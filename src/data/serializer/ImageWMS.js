@@ -15,6 +15,8 @@
  */
 /**
  * A serializer for layer that hava a `ol.source.ImageWMS` source.
+ *
+ * @class GeoExt.data.serializer.ImageWMS
  */
 Ext.define('GeoExt.data.serializer.ImageWMS', {
     extend: 'GeoExt.data.serializer.Base',

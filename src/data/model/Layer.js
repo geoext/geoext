@@ -16,7 +16,7 @@
 /**
  * The layer model class used by the stores.
  *
- * @class GeoExt.data.LayerModel
+ * @class GeoExt.data.model.Layer
  */
 Ext.define('GeoExt.data.model.Layer', {
     extend: 'GeoExt.data.model.Base',
