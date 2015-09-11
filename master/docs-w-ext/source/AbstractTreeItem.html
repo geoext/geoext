@@ -1,0 +1,560 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <title>The source code</title>
+  <link href="../resources/prettify/prettify.css" type="text/css" rel="stylesheet" />
+  <script type="text/javascript" src="../resources/prettify/prettify.js"></script>
+  <style type="text/css">
+    .highlight { display: block; background-color: #ddd; }
+  </style>
+  <script type="text/javascript">
+    function highlight() {
+      document.getElementById(location.hash.replace(/#/, "")).className = "highlight";
+    }
+  </script>
+</head>
+<body onload="prettyPrint(); highlight();">
+  <pre class="prettyprint lang-js"><span id='Ext-list-AbstractTreeItem'>/**
+</span> * The base class for all items in the `{@link Ext.list.Tree treelist}`.
+ * @since 6.0.0
+ */
+Ext.define('Ext.list.AbstractTreeItem', {
+    extend: 'Ext.Widget',
+
+<span id='Ext-list-AbstractTreeItem-method-setExpandable'>    /**
+</span>     * @method setExpandable
+     * @hide
+     */
+    
+<span id='Ext-list-AbstractTreeItem-method-setExpanded'>    /**
+</span>     * @method setExpanded
+     * @hide
+     */
+    
+<span id='Ext-list-AbstractTreeItem-method-setIconCls'>    /**
+</span>     * @method setIconCls
+     * @hide
+     */
+    
+<span id='Ext-list-AbstractTreeItem-method-setLeaf'>    /**
+</span>     * @method setLeaf
+     * @hide
+     */
+    
+<span id='Ext-list-AbstractTreeItem-method-setOwner'>    /**
+</span>     * @method setOwner
+     * @hide
+     */
+    
+<span id='Ext-list-AbstractTreeItem-method-setLoading'>    /**
+</span>     * @method setLoading
+     * @hide
+     */
+    
+<span id='Ext-list-AbstractTreeItem-method-setNode'>    /**
+</span>     * @method setNode
+     * @hide
+     */
+    
+<span id='Ext-list-AbstractTreeItem-method-setParentItem'>    /**
+</span>     * @method setParentItem
+     * @hide
+     */
+    
+<span id='Ext-list-AbstractTreeItem-method-setText'>    /**
+</span>     * @method setText
+     * @hide
+     */
+
+    cachedConfig: {
+<span id='Ext-list-AbstractTreeItem-cfg-expandable'>        /**
+</span>         * @cfg {Boolean} expandable
+         * `true` if this item is expandable. This value is taken from
+         * the underlying {@link #node}.
+         */
+        expandable: false,
+
+<span id='Ext-list-AbstractTreeItem-cfg-expanded'>        /**
+</span>         * @cfg {Boolean} expanded
+         * `true` if this item is expanded. This value is taken from
+         * the underlying {@link #node}.
+         */
+        expanded: false,
+
+<span id='Ext-list-AbstractTreeItem-cfg-floated'>        /**
+</span>         * @cfg {Boolean} floated
+         * `true` if this item is current floated. This mode applies when the owning
+         * `{@link Ext.list.Tree treelist}` is in `{@link Ext.list.Tree#micro micro}`
+         * mode and the sub-tree under this item should be presented as a floating
+         * element.
+         */
+        floated: false,
+
+<span id='Ext-list-AbstractTreeItem-cfg-iconCls'>        /**
+</span>         * @cfg {String} iconCls
+         * The class to use as an icon for this item. This value is taken from
+         * the underlying {@link #node}.
+         */
+        iconCls: '',
+
+<span id='Ext-list-AbstractTreeItem-cfg-leaf'>        /**
+</span>         * @cfg {Boolean} leaf
+         * `true` if this item is a leaf. This value is taken from
+         * the underlying {@link #node}.
+         */
+        leaf: true,
+
+<span id='Ext-list-AbstractTreeItem-cfg-loading'>        /**
+</span>         * @cfg {Boolean} loading
+         * `true` if this item is currently loading data. This value is taken from
+         * the underlying {@link #node}.
+         */
+        loading: false,
+
+<span id='Ext-list-AbstractTreeItem-cfg-selected'>        /**
+</span>         * @cfg {Boolean} selected
+         * `true` if this is the selected item in the tree.
+         */
+        selected: false,
+
+<span id='Ext-list-AbstractTreeItem-cfg-selectedParent'>        /**
+</span>         * @cfg {Boolean} selectedParent
+         * `true` if this item contains the {@link #selected} item in the tree.
+         */
+        selectedParent: false
+    },
+
+    config: {
+<span id='Ext-list-AbstractTreeItem-cfg-iconClsProperty'>        /**
+</span>         * @cfg {String} iconClsProperty
+         * The property from the {@link #node} to map for the {@link #iconCls} config.
+         */
+        iconClsProperty: 'iconCls',
+
+<span id='Ext-list-AbstractTreeItem-cfg-indent'>        indent: null,
+</span>
+<span id='Ext-list-AbstractTreeItem-cfg-owner'>        /**
+</span>         * @cfg {Ext.list.TreeList} owner
+         * The owning list for this container.
+         */
+        owner: null,
+
+<span id='Ext-list-AbstractTreeItem-cfg-node'>        /**
+</span>         * @cfg {Ext.data.TreeModel} node
+         * The backing node for this item.
+         */
+        node: null,
+
+<span id='Ext-list-AbstractTreeItem-cfg-parentItem'>        /**
+</span>         * @cfg {Ext.list.AbstractTreeItem} parentItem
+         * The parent item for this item. 
+         */
+        parentItem: null,
+
+<span id='Ext-list-AbstractTreeItem-cfg-text'>        /**
+</span>         * @cfg {String} text
+         * The text for this item. This value is taken from
+         * the underlying {@link #node}.
+         */
+        text: {
+            lazy: true,
+            $value: ''
+        },
+
+<span id='Ext-list-AbstractTreeItem-cfg-textProperty'>        /**
+</span>         * @cfg {String} textProperty
+         * The property from the {@link #node} to map for the {@link #text} config.
+         */
+        textProperty: 'text'
+    },
+
+<span id='Ext-list-AbstractTreeItem-method-updateNode'>    updateNode: function (node) {
+</span>        if (node) {
+            var me = this,
+                map = me.itemMap,
+                childNodes, owner, len, i, item, child;
+
+            me.element.dom.setAttribute('data-recordId', node.internalId);
+
+            if (!map) {
+                childNodes = node.childNodes;
+                owner = me.getOwner();
+                me.itemMap = map = {};
+                for (i = 0, len = childNodes.length; i &lt; len; ++i) {
+                    child = childNodes[i];
+                    item = owner.createItem(child, me);
+                    map[child.internalId] = item;
+                    me.insertItem(item, null);
+                }
+            }
+
+            me.setExpanded(node.isExpanded());
+            me.doNodeUpdate(node);
+        }
+    },
+
+<span id='Ext-list-AbstractTreeItem-method-updateSelected'>    updateSelected: function(selected) {
+</span>        if (!this.isConfiguring) {
+            var parent = this.getParentItem();
+            while (parent &amp;&amp; !parent.isRootListItem) {
+                parent.setSelectedParent(selected);
+                parent = parent.getParentItem();
+            }
+        }
+    },
+
+<span id='Ext-list-AbstractTreeItem-method-collapse'>    /**
+</span>     * Collapse this item. Does nothing if already collapsed.
+     */
+    collapse: function () {
+        this.getNode().collapse();
+    },
+
+<span id='Ext-list-AbstractTreeItem-method-expand'>    /**
+</span>     * Expand this item. Does nothing if already expanded.
+     */
+    expand: function () {
+        this.getNode().expand();
+    },
+
+<span id='Ext-list-AbstractTreeItem-method-getToolElement'>    /**
+</span>     * Gets the element to be used for the tree when it is in {@link Ext.list.Tree#mini mini} mode.
+     * @return {Ext.dom.Element} The element.
+     *
+     * @protected
+     * @template
+     */
+    getToolElement: Ext.emptyFn,
+
+<span id='Ext-list-AbstractTreeItem-method-insertItem'>    /**
+</span>     * Append a new child item to the DOM.
+     * @param {Ext.list.AbstractTreeItem} item The item to insert.
+     * @param {Ext.list.AbstractTreeItem} refItem The item the node is to
+     * be inserted before. `null` if the item is to be added to the end.
+     *
+     * @protected
+     * @template
+     */
+    insertItem: Ext.emptyFn,
+
+<span id='Ext-list-AbstractTreeItem-method-isExpanded'>    /**
+</span>     * Check if the current item is expanded.
+     * @return {Boolean} `true` if this item is expanded.
+     */
+    isExpanded: function () {
+        return this.getExpanded();
+    },
+
+<span id='Ext-list-AbstractTreeItem-method-isSelectionEvent'>    /**
+</span>     * Checks whether the event is an event that should select this node.
+     * @param {Ext.event.Event} e The event object.
+     * @return {Boolean} `true` if the event should select this node.
+     *
+     * @protected
+     * @template
+     */
+    isSelectionEvent: Ext.emptyFn,
+
+<span id='Ext-list-AbstractTreeItem-method-isToggleEvent'>    /**
+</span>     * Checks whether the event is an event that should toggle the expand/collapse state.
+     * @param {Ext.event.Event} e The event object.
+     * @return {Boolean} `true` if the event should toggle the expand/collapsed state.
+     * 
+     * @protected
+     * @template
+     */
+    isToggleEvent: Ext.emptyFn,
+
+<span id='Ext-list-AbstractTreeItem-method-nodeCollapse'>    /**
+</span>     * Handle this node being collapsed.
+     * @param {Ext.data.TreeModel} node  The node being collapsed.
+     *
+     * @protected
+     */
+    nodeCollapse: function (node, collapsingForExpand) {
+        var me = this,
+            owner = me.getOwner(),
+            animation = me.preventAnimation ? null : owner.getAnimation();
+
+        me.nodeCollapseBegin(animation, collapsingForExpand);
+
+        if (!animation) {
+            me.nodeCollapseEnd(collapsingForExpand);
+        }
+    },
+
+<span id='Ext-list-AbstractTreeItem-method-nodeCollapseBegin'>    nodeCollapseBegin: function (animation, collapsingForExpand) {
+</span>        var me = this,
+            owner = me.getOwner();
+
+        me.setExpanded(false);
+
+        owner.fireEvent('itemcollapse', owner, me);
+    },
+
+<span id='Ext-list-AbstractTreeItem-method-nodeCollapseEnd'>    nodeCollapseEnd: function (collapsingForExpand) {
+</span>        if (!collapsingForExpand) {
+            this.getOwner().updateLayout();
+        }
+    },
+
+<span id='Ext-list-AbstractTreeItem-method-nodeExpand'>    /**
+</span>     * Handle this node being expanded.
+     * @param {Ext.data.TreeModel} node  The node being expanded.
+     *
+     * @protected
+     */
+    nodeExpand: function (node) {
+        var me = this,
+            owner = me.getOwner(),
+            floated = me.getFloated(),
+            animation = !floated &amp;&amp; owner.getAnimation();
+
+        me.nodeExpandBegin(animation);
+
+        if (!animation) {
+            me.nodeExpandEnd();
+        }
+    },
+
+<span id='Ext-list-AbstractTreeItem-method-nodeExpandBegin'>    nodeExpandBegin: function (animation) {
+</span>        var me = this,
+            owner = me.getOwner();
+
+        me.setExpanded(true);
+
+        owner.fireEvent('itemexpand', owner, me);
+    },
+
+<span id='Ext-list-AbstractTreeItem-method-nodeExpandEnd'>    nodeExpandEnd: function () {
+</span>        this.getOwner().updateLayout();
+    },
+
+<span id='Ext-list-AbstractTreeItem-method-nodeInsert'>    /**
+</span>     * Handle a node being inserted as a child of this item.
+     * @param {Ext.data.TreeModel} node  The node being inserted.
+     * @param {Ext.data.TreeModel} refNode The node that is to be inserted before. `null`
+     * if this operation is an append.
+     *
+     * @protected
+     */
+    nodeInsert: function (node, refNode) {
+        var me = this,
+            owner = me.getOwner(),
+            map = me.itemMap,
+            id = node.internalId,
+            item = owner.getItem(node),
+            refItem = null,
+            oldParent;
+
+        if (item) {
+            oldParent = item.getParentItem();
+            // May have some kind of custom removal processing, allow it to happen, even if it's us
+            oldParent.removeItem(item);
+            if (oldParent !== me) {
+                oldParent.doUpdateExpandable();
+                item.setParentItem(me);
+            }
+        } else {
+            item = me.getOwner().createItem(node, me);
+        }
+        map[id] = item;
+
+        if (refNode) {
+            refItem = map[refNode.internalId];
+        }
+
+        me.insertItem(item, refItem);
+        me.doUpdateExpandable();
+
+        owner.fireEvent('iteminsert', owner, me, item, refItem);
+
+        owner.updateLayout();
+    },
+
+<span id='Ext-list-AbstractTreeItem-method-nodeRemove'>    /**
+</span>     * Handle a node being removed as a child of this item.
+     * @param {Ext.data.TreeModel} node  The node being removed.
+     *
+     * @protected
+     */
+    nodeRemove: function (node) {
+        var me = this,
+            map = me.itemMap,
+            owner = me.getOwner(),
+            id = node.internalId,
+            item = map[id];
+
+        if (item) {
+            delete map[id];
+            me.removeItem(item);
+            item.destroy();
+
+            me.doUpdateExpandable();
+
+            owner.fireEvent('itemremove', owner, me, item);
+
+            owner.updateLayout();
+        }
+    },
+
+<span id='Ext-list-AbstractTreeItem-method-nodeUpdate'>    /**
+</span>     * Handle this node having fields changed.
+     * 
+     * @param {Ext.data.TreeModel} node The node.
+     * @param {String[]} modifiedFieldNames The modified field names, if known.
+     *
+     * @protected
+     */
+    nodeUpdate: function (node, modifiedFieldNames) {
+        this.doNodeUpdate(node);
+    },
+
+<span id='Ext-list-AbstractTreeItem-method-removeItem'>    /**
+</span>     * Remove a child item from the DOM.
+     * @param {Ext.list.AbstractTreeItem} item The item to remove.
+     *
+     * @protected
+     * @template
+     */
+    removeItem: Ext.emptyFn,
+
+<span id='Ext-list-AbstractTreeItem-method-updateFloated'>    updateFloated: function (floated) {
+</span>        var me = this,
+            el = me.element,
+            placeholder = me.placeholder,
+            node, wasExpanded;
+
+        if (floated) {
+            placeholder = el.clone(false, true); // shallow, asDom
+            placeholder.id += '-placeholder'; // avoid duplicate id
+            me.placeholder = Ext.get(placeholder);
+
+            me.wasExpanded = me.getExpanded();
+            me.setExpanded(true);
+
+            el.dom.parentNode.insertBefore(placeholder, el.dom);
+
+            me.floater = me.createFloater(); // toolkit-specific
+        } else if (placeholder) {
+            wasExpanded = me.wasExpanded;
+            node = me.getNode();
+            me.setExpanded(wasExpanded);
+            if (!wasExpanded &amp;&amp; node.isExpanded()) {
+                // If we have been floating and expanded a child, we may have been
+                // expanded as part of the ancestors. Attempt to restore state.
+                me.preventAnimation = true;
+                node.collapse();
+                me.preventAnimation = false;
+            }
+            me.floater.remove(me, false); // don't destroy
+            placeholder.dom.parentNode.insertBefore(el.dom, placeholder.dom);
+
+            placeholder.destroy();
+            me.floater.destroy();
+
+            me.placeholder = me.floater = null;
+
+            me.floatedByMouseOver = me.floatedByClick = false;
+        }
+    },
+
+<span id='Ext-list-AbstractTreeItem-method-destroy'>    /**
+</span>     * @inheritdoc
+     */
+    destroy: function () {
+        var me = this,
+            map = me.itemMap,
+            owner = me.getOwner(),
+            key;
+
+        if (map) {
+            for (key in map) {
+                map[key].destroy();
+            }
+            me.itemMap = null;
+        }
+
+        if (owner) {
+            owner.removeItem(me.getNode());
+        }
+
+        me.setNode(null);
+        me.setParentItem(null);
+        me.setOwner(null);
+
+        me.callParent();
+    },
+
+<span id='Ext-list-AbstractTreeItem-property-privates'>    privates: {
+</span><span id='Ext-list-AbstractTreeItem-method-doNodeUpdate'>        /**
+</span>         * Update properties after a node update.
+         *
+         * @param {Ext.data.TreeModel} node The node.
+         * @param {String[]} modifiedFieldNames The modified field names, if known.
+         *
+         * @private
+         */
+        doNodeUpdate: function (node) {
+            var me = this,
+                textProperty = this.getTextProperty(),
+                iconClsProperty = this.getIconClsProperty();
+
+            if (textProperty) {
+                me.setText(node.data[textProperty]);
+            }
+
+            if (iconClsProperty) {
+                me.setIconCls(node.data[iconClsProperty]);
+            }
+
+            me.setLoading(node.isLoading());
+            me.setLeaf(node.isLeaf());
+            me.doUpdateExpandable();
+        },
+
+        doUpdateExpandable: function () {
+            var node = this.getNode();
+            this.setExpandable(node.isExpandable());
+        },
+
+<span id='Ext-list-AbstractTreeItem-method-onClick'>        /**
+</span>         * Handle a click on this item.
+         * @param {Ext.event.Event} The event.
+         *
+         * @private
+         */
+        onClick: function (e) {
+            var me = this;
+
+            if (me.isToggleEvent(e)) {
+                me.toggleExpanded();
+            }
+
+            if (me.isSelectionEvent(e)) {
+                me.getOwner().setSelection(me.getNode());
+            }
+        },
+
+        toggleExpanded: function() {
+            if (this.isExpanded()) {
+                this.collapse();
+            } else {
+                this.expand();
+            }
+        },
+
+        updateIndent: function (value) {
+            var items = this.itemMap,
+                id;
+
+            for (id in items) {
+                items[id].setIndent(value);
+            }
+        }
+    }
+});
+</pre>
+</body>
+</html>

@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <title>The source code</title>
+  <link href="../resources/prettify/prettify.css" type="text/css" rel="stylesheet" />
+  <script type="text/javascript" src="../resources/prettify/prettify.js"></script>
+  <style type="text/css">
+    .highlight { display: block; background-color: #ddd; }
+  </style>
+  <script type="text/javascript">
+    function highlight() {
+      document.getElementById(location.hash.replace(/#/, "")).className = "highlight";
+    }
+  </script>
+</head>
+<body onload="prettyPrint(); highlight();">
+  <pre class="prettyprint lang-js"><span id='Ext-scroll-DomScroller'>/**
+</span> * @class Ext.scroll.DomScroller
+ * @private
+ */
+Ext.define('Ext.scroll.DomScroller', {
+    extend: 'Ext.scroll.Scroller',
+    alias: 'scroller.dom',
+
+<span id='Ext-scroll-DomScroller-property-isDomScroller'>    isDomScroller: true,
+</span>
+<span id='Ext-scroll-DomScroller-property-_spacerCls'>    _spacerCls: Ext.baseCSSPrefix +  'domscroller-spacer',
+</span>
+<span id='Ext-scroll-DomScroller-method-getMaxPosition'>    getMaxPosition: function() {
+</span>        var element = this.getElement(),
+            x = 0,
+            y = 0,
+            dom;
+
+        if (element &amp;&amp; !element.destroyed) {
+            dom = element.dom;
+            x = dom.scrollWidth - dom.clientWidth;
+            y = dom.scrollHeight - dom.clientHeight;
+        }
+
+        return {
+            x: x,
+            y: y
+        };
+    },
+
+<span id='Ext-scroll-DomScroller-method-getMaxUserPosition'>    getMaxUserPosition: function() {
+</span>        var me = this,
+            element = me.getElement(),
+            x = 0,
+            y = 0,
+            dom;
+
+        if (element &amp;&amp; !element.destroyed) {
+            dom = element.dom;
+            if (me.getX()) {
+                x = dom.scrollWidth - dom.clientWidth;
+            }
+            if (me.getY()) {
+                y = dom.scrollHeight - dom.clientHeight;
+            }
+        }
+
+        return {
+            x: x,
+            y: y
+        };
+    },
+
+<span id='Ext-scroll-DomScroller-method-getPosition'>    getPosition: function() {
+</span>        var element = this.getElement(),
+            x = 0,
+            y = 0,
+            position;
+
+        if (element &amp;&amp; !element.destroyed) {
+            position = this.getElementScroll(element);
+            x = position.left;
+            y = position.top;
+        }
+
+        return {
+            x: x,
+            y: y
+        };
+    },
+
+<span id='Ext-scroll-DomScroller-method-getSize'>    getSize: function() {
+</span>        var element = this.getElement(),
+            size, dom;
+
+        if (element &amp;&amp; !element.destroyed) {
+            dom = element.dom;
+            size = {
+                x: dom.scrollWidth,
+                y: dom.scrollHeight
+            };
+        } else {
+            size = {
+                x: 0,
+                y: 0
+            };
+        }
+
+        return size;
+    },
+
+<span id='Ext-scroll-DomScroller-method-setSize'>    setSize: function(size) {
+</span>        var me = this,
+            element = me.getElement(),
+            spacer, x, y;
+
+        if (element) {
+            spacer = me.getSpacer();
+
+            // Typically a dom scroller simply assumes the scroll size dictated by its content.
+            // In some cases, however, it is necessary to be able to manipulate this scroll size
+            // (infinite lists for example).  This method positions a 1x1 px spacer element
+            // within the scroller element to set a specific scroll size.
+
+            if (size == null) {
+                spacer.hide();
+            } else {
+                if (typeof size === 'number') {
+                    x = size;
+                    y = size;
+                } else {
+                    x = size.x || 0;
+                    y = size.y || 0;
+                }
+
+                // Subtract spacer size from coordinates (spacer is always 1x1 px in size)
+                if (x &gt; 0) {
+                    x -= 1;
+                }
+                if (y &gt; 0) {
+                    y -= 1;
+                }
+
+                me.setSpacerXY(spacer, x, y);
+                spacer.show();
+            }
+        }
+    },
+
+<span id='Ext-scroll-DomScroller-method-updateElement'>    updateElement: function(element, oldElement) {
+</span>        this.initXStyle();
+        this.initYStyle();
+        this.callParent([element, oldElement]);
+    },
+
+<span id='Ext-scroll-DomScroller-method-updateX'>    updateX: function(x) {
+</span>        this.initXStyle();
+    },
+
+<span id='Ext-scroll-DomScroller-method-updateY'>    updateY: function(y) {
+</span>        this.initYStyle();
+    },
+
+<span id='Ext-scroll-DomScroller-property-privates'>    privates: {
+</span>        doScrollTo: function(x, y, animate) {
+            var me = this,
+                element = me.getElement(),
+                maxPosition, dom, to, xInf, yInf;
+
+            if (element &amp;&amp; !element.destroyed) {
+                dom = this.getElement().dom;
+
+                xInf = (x === Infinity);
+                yInf = (y === Infinity);
+
+                if (xInf || yInf) {
+                    maxPosition = me.getMaxPosition();
+                    if (xInf) {
+                        x = maxPosition.x;
+                    }
+                    if (yInf) {
+                        y = maxPosition.y;
+                    }
+                }
+
+                x = me.convertX(x);
+
+                if (animate) {
+                    to = {};
+
+                    if (y != null) {
+                        to.scrollTop = y;
+                    }
+
+                    if (x != null) {
+                        to.scrollLeft = x;
+                    }
+
+                    element.animate(Ext.mergeIf({
+                        to: {
+                            scrollTop: y,
+                            scrollLeft: x
+                        }
+                    }, animate));
+                } else {
+                    if (y != null) {
+                        dom.scrollTop = y;
+                    }
+                    if (x != null) {
+                        dom.scrollLeft = x;
+                    }
+                }
+            }
+        },
+
+        // rtl hook
+        getElementScroll: function(element) {
+            return element.getScroll();
+        },
+
+        getSpacer: function() {
+            var me = this,
+                spacer = me._spacer,
+                element;
+
+            // In some cases (e.g. infinite lists) we need to be able to tell the scroller
+            // to have a specific size, regardless of its contents.  This creates a spacer
+            // element which can then be absolutely positioned to affect the element's
+            // scroll size.
+            if (!spacer) {
+                element = me.getElement();
+                spacer = me._spacer = element.createChild({
+                    cls: me._spacerCls
+                });
+
+                spacer.setVisibilityMode(2); // 'display' visibilityMode
+
+                // make sure the element is positioned if it is not already.  This ensures
+                // that the spacer's position will affect the element's scroll size
+                element.position();
+            }
+
+            return spacer;
+        },
+
+        // rtl hook
+        setSpacerXY: function(spacer, x, y) {
+            spacer.setLocalXY(x, y);
+        },
+
+        stopAnimation: function() {
+            var anim = this.getElement().getActiveAnimation();
+            if (anim) {
+                anim.end();
+            }
+        }
+    }
+});
+</pre>
+</body>
+</html>

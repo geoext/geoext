@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <title>The source code</title>
+  <link href="../resources/prettify/prettify.css" type="text/css" rel="stylesheet" />
+  <script type="text/javascript" src="../resources/prettify/prettify.js"></script>
+  <style type="text/css">
+    .highlight { display: block; background-color: #ddd; }
+  </style>
+  <script type="text/javascript">
+    function highlight() {
+      document.getElementById(location.hash.replace(/#/, "")).className = "highlight";
+    }
+  </script>
+</head>
+<body onload="prettyPrint(); highlight();">
+  <pre class="prettyprint lang-js"><span id='Ext-event-gesture-MultiTouch'>/**
+</span> * A base class for gesture recognizers that involve multiple simultaneous contact points
+ * between the screen and the input-device, e.g. 'pinch' and 'rotate'
+ * @abstract
+ * @private
+ */
+Ext.define('Ext.event.gesture.MultiTouch', {
+    extend: 'Ext.event.gesture.Recognizer',
+
+<span id='Ext-event-gesture-MultiTouch-property-requiredTouchesCount'>    requiredTouchesCount: 2,
+</span>
+<span id='Ext-event-gesture-MultiTouch-property-isTracking'>    isTracking: false,
+</span>
+<span id='Ext-event-gesture-MultiTouch-property-isStarted'>    isStarted: false,
+</span>
+<span id='Ext-event-gesture-MultiTouch-method-onTouchStart'>    onTouchStart: function(e) {
+</span>        var requiredTouchesCount = this.requiredTouchesCount,
+            touches = e.touches,
+            touchesCount = touches.length;
+
+        if (touchesCount === requiredTouchesCount) {
+            this.start(e);
+        }
+        else if (touchesCount &gt; requiredTouchesCount) {
+            this.end(e);
+        }
+    },
+
+<span id='Ext-event-gesture-MultiTouch-method-onTouchEnd'>    onTouchEnd: function(e) {
+</span>        this.end(e);
+    },
+
+<span id='Ext-event-gesture-MultiTouch-method-onTouchCancel'>    onTouchCancel: function(e) {
+</span>        this.end(e, true);
+        return false;
+    },
+
+<span id='Ext-event-gesture-MultiTouch-method-start'>    start: function() {
+</span>        if (!this.isTracking) {
+            this.isTracking = true;
+            this.isStarted = false;
+        }
+    },
+
+<span id='Ext-event-gesture-MultiTouch-method-end'>    end: function(e, isCancel) {
+</span>        if (this.isTracking) {
+            this.isTracking = false;
+
+            if (this.isStarted) {
+                this.isStarted = false;
+
+                this[isCancel ? 'fireCancel' : 'fireEnd'](e);
+            }
+        }
+    },
+
+<span id='Ext-event-gesture-MultiTouch-method-reset'>    reset: function() {
+</span>        this.isTracking = this.isStarted = false;
+    }
+});
+</pre>
+</body>
+</html>

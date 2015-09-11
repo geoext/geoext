@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <title>The source code</title>
+  <link href="../resources/prettify/prettify.css" type="text/css" rel="stylesheet" />
+  <script type="text/javascript" src="../resources/prettify/prettify.js"></script>
+  <style type="text/css">
+    .highlight { display: block; background-color: #ddd; }
+  </style>
+  <script type="text/javascript">
+    function highlight() {
+      document.getElementById(location.hash.replace(/#/, "")).className = "highlight";
+    }
+  </script>
+</head>
+<body onload="prettyPrint(); highlight();">
+  <pre class="prettyprint lang-js">/* Copyright (c) 2015 The Open Source Geospatial Foundation
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see &lt;http://www.gnu.org/licenses/&gt;.
+ */
+<span id='GeoExt-component-Popup'>/**
+</span> * @class
+ */
+Ext.define('GeoExt.component.Popup', {
+    requires: [],
+    extend: 'Ext.Component',
+    alias: [
+        'widget.gx_popup',
+        'widget.gx_component_popup'
+    ],
+
+    config: {
+
+<span id='GeoExt-component-Popup-cfg-overlay'>        /**
+</span>         *
+         */
+        overlay: null,
+
+<span id='GeoExt-component-Popup-cfg-map'>        /**
+</span>         *
+         */
+        map: null
+    },
+
+<span id='GeoExt-component-Popup-property-overlayElement'>    /**
+</span>     * @private
+     */
+    overlayElement: null,
+
+<span id='GeoExt-component-Popup-property-overlayElementCreated'>    /**
+</span>     * @private
+     */
+    overlayElementCreated: false,
+
+<span id='GeoExt-component-Popup-property-cls'>    /**
+</span>     *
+     */
+    cls: 'gx-popup',
+
+<span id='GeoExt-component-Popup-method-constructor'>    /**
+</span>     * @private
+     */
+    constructor: function(config) {
+        var me = this,
+            cfg = config || {},
+            overlayElement;
+
+        if (!Ext.isDefined(cfg.map)) {
+            Ext.Error.raise(&quot;Required configuration 'map' not passed&quot;);
+        }
+        if (Ext.isDefined(cfg.renderTo)) {
+            // use the passed element/string
+            overlayElement = Ext.get(cfg.renderTo).dom;
+        } else {
+            // create a div we can reference in
+            // order to bind this div to an ol overlay
+            overlayElement = Ext.dom.Helper.append(Ext.getBody(), '&lt;div&gt;');
+            // keep track of the fact that we created the element, we should
+            // also clean it up once we are being destroyed.
+            me.overlayElementCreated = true;
+        }
+        cfg.renderTo = overlayElement;
+        me.overlayElement = overlayElement;
+        me.callParent([cfg]);
+    },
+
+<span id='GeoExt-component-Popup-method-initComponent'>    /**
+</span>     * @private
+     */
+    initComponent: function() {
+        var me = this;
+        me.on({
+            afterrender: me.setOverlayElement,
+            beforedestroy: me.onBeforeDestroy,
+            scope: me
+        });
+        me.callParent();
+        me.setupOverlay();
+    },
+
+<span id='GeoExt-component-Popup-method-setupOverlay'>    /**
+</span>     * @private
+     */
+    setupOverlay: function(){
+        var me = this;
+        var overlay = new ol.Overlay({
+            autoPan: true,
+            autoPanAnimation: {
+                duration: 250
+            }
+        });
+
+        me.getMap().addOverlay(overlay);
+        // fix layout of popup when its position changes
+        overlay.on('change:position', me.updateLayout, me);
+
+        // make accessible as member
+        me.setOverlay(overlay);
+    },
+
+<span id='GeoExt-component-Popup-method-setOverlayElement'>    /**
+</span>     * @private
+     */
+    setOverlayElement: function() {
+        // bind our containing div to the ol overlay
+        this.getOverlay().set('element', this.overlayElement);
+    },
+
+<span id='GeoExt-component-Popup-method-position'>    /**
+</span>     * (Re-)Positions the popup to the given coordinates.
+     */
+    position: function(coordinate) {
+        var me = this;
+        me.getOverlay().setPosition(coordinate);
+    },
+
+<span id='GeoExt-component-Popup-method-onBeforeDestroy'>    /**
+</span>     * @private
+     */
+    onBeforeDestroy: function(){
+        var me = this;
+        if (me.overlayElementCreated &amp;&amp; me.overlayElement) {
+            var parent = me.overlayElement.parentNode;
+            parent.removeChild(me.overlayElement);
+        }
+        me.getOverlay().un('change:position', me.doLayout, me);
+    }
+});
+</pre>
+</body>
+</html>

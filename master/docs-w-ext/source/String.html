@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <title>The source code</title>
+  <link href="../resources/prettify/prettify.css" type="text/css" rel="stylesheet" />
+  <script type="text/javascript" src="../resources/prettify/prettify.js"></script>
+  <style type="text/css">
+    .highlight { display: block; background-color: #ddd; }
+  </style>
+  <script type="text/javascript">
+    function highlight() {
+      document.getElementById(location.hash.replace(/#/, "")).className = "highlight";
+    }
+  </script>
+</head>
+<body onload="prettyPrint(); highlight();">
+  <pre class="prettyprint lang-js"><span id='Ext-data-field-String'>/**
+</span> */
+Ext.define('Ext.data.field.String', {
+    extend: 'Ext.data.field.Field',
+
+    alias: 'data.field.string',
+
+<span id='Ext-data-field-String-cfg-sortType'>    sortType: 'asUCString',
+</span>
+<span id='Ext-data-field-String-property-isStringField'>    isStringField: true,
+</span>
+<span id='Ext-data-field-String-method-convert'>    convert: function(v) {
+</span>        var defaultValue = this.allowNull ? null : '';
+        return (v === undefined || v === null) ? defaultValue : String(v);
+    },
+
+<span id='Ext-data-field-String-method-getType'>    getType: function() {
+</span>        return 'string';
+    }
+});
+</pre>
+</body>
+</html>

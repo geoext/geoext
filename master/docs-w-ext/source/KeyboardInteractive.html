@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <title>The source code</title>
+  <link href="../resources/prettify/prettify.css" type="text/css" rel="stylesheet" />
+  <script type="text/javascript" src="../resources/prettify/prettify.js"></script>
+  <style type="text/css">
+    .highlight { display: block; background-color: #ddd; }
+  </style>
+  <script type="text/javascript">
+    function highlight() {
+      document.getElementById(location.hash.replace(/#/, "")).className = "highlight";
+    }
+  </script>
+</head>
+<body onload="prettyPrint(); highlight();">
+  <pre class="prettyprint lang-js"><span id='Ext-util-KeyboardInteractive'>/**
+</span> * A mixin for Components that need to interact with the keyboard.
+ * @private
+ */
+Ext.define('Ext.util.KeyboardInteractive', {
+    extend: 'Ext.Mixin',
+    
+<span id='Ext-util-KeyboardInteractive-property-mixinConfig'>    mixinConfig: {
+</span>        id: 'keyboardinteractive'
+    },
+    
+    config: {
+<span id='Ext-util-KeyboardInteractive-cfg-keyHandlers'>        /**
+</span>         * @cfg {Object} keyHandlers Handlers for keydown events.
+         *
+         * This object's keys correspond to keyboard key names in
+         * {@link Ext.event.Event}, with values defined as method
+         * names that should be executed when a keydown event occurs
+         * for the specified key name.
+         * For example:
+         *
+         *      Ext.define('MyButton', {
+         *          extend: 'Ext.button.Button',
+         *          
+         *          config: {
+         *              keyHandlers: {
+         *                  ENTER: 'onEnterKey'
+         *              }
+         *          },
+         *          
+         *          onEnterKey: function(event) {
+         *              ...
+         *          }
+         *      });
+         *
+         * @private
+         */
+        keyHandlers: {
+            $value: null,
+            lazy: true
+        }
+    },
+    
+<span id='Ext-util-KeyboardInteractive-method-initKeyHandlers'>    initKeyHandlers: function(focusEl) {
+</span>        var me = this,
+            handlers = me.getKeyHandlers(),
+            handler;
+        
+        // In the majority of cases, the keyHandlers config will be processed
+        // at the component creation time, but the focusEl is only going to be
+        // available after rendering. Make sure we attach the keydown listener
+        // when that happens.
+        // The loop is just to check that the keyHandlers object is not empty.
+        for (handler in handlers) {
+            focusEl.on('keydown', me.handleKeydown, me);
+            me.keydownListenerAttached = true;
+            break;
+        }
+    },
+    
+<span id='Ext-util-KeyboardInteractive-method-applyKeyHandlers'>    applyKeyHandlers: function(config) {
+</span>        var me = this,
+            handlers = {},
+            focusEl, keyName, keyCode, handlerName, handlerFn;
+        
+        if (config) {
+            // Resolve handler names to function references upfront
+            // to avoid incurring dynamic lookup cost every time
+            for (keyName in config) {
+                handlerName = config[keyName];
+                
+                //&lt;debug&gt;
+                keyCode = Ext.event.Event[keyName];
+                
+                if (keyCode === undefined) {
+                    Ext.raise(&quot;Unknown key: &quot; + keyName +
+                                    &quot; in keyHandlers config for &quot; +
+                                    me.id + &quot;. Key names should be in &quot; +
+                                    &quot;UPPER CASE.&quot;);
+                }
+                //&lt;/debug&gt;
+                
+                if (typeof handlerName === 'function') {
+                    handlers[keyName] = handlerName;
+                }
+                else {
+                    handlers[keyName] = me[handlerName];
+                }
+                
+                //&lt;debug&gt;
+                if (typeof handlers[keyName] !== 'function') {
+                    Ext.log.warn(&quot;Undefined binding &quot; + handlerName +
+                                 &quot; for &quot; + keyName + &quot; key in &quot; +
+                                 &quot;keyHandlers config for &quot; + me.id);
+                }
+                //&lt;/debug&gt;
+            }
+            
+            // It is possible that key bindings were configured after
+            // the component was rendered (and initKeyHandlers called),
+            // so make sure that we have the keydown handler attached.
+            if (me.focusable &amp;&amp; me.rendered &amp;&amp; !me.destroyed &amp;&amp; !me.destroying) {
+                focusEl = me.getFocusEl();
+                
+                if (focusEl &amp;&amp; !me.keydownListenerAttached) {
+                    focusEl.on('keydown', me.handleKeydown, me);
+                    me.keydownListenerAttached = true;
+                }
+            }
+        }
+        
+        return handlers;
+    },
+    
+<span id='Ext-util-KeyboardInteractive-method-handleKeydown'>    handleKeydown: function(e) {
+</span>        var me = this,
+            keyName, handlerFn;
+        
+        keyName = e.getKeyName();
+        
+        if (keyName) {
+            handlerFn = me.getKeyHandlers()[keyName];
+        
+            if (handlerFn) {
+                handlerFn.call(me, e);
+            }
+        }
+    }
+});
+</pre>
+</body>
+</html>

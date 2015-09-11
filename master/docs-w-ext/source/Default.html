@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <title>The source code</title>
+  <link href="../resources/prettify/prettify.css" type="text/css" rel="stylesheet" />
+  <script type="text/javascript" src="../resources/prettify/prettify.js"></script>
+  <style type="text/css">
+    .highlight { display: block; background-color: #ddd; }
+  </style>
+  <script type="text/javascript">
+    function highlight() {
+      document.getElementById(location.hash.replace(/#/, "")).className = "highlight";
+    }
+  </script>
+</head>
+<body onload="prettyPrint(); highlight();">
+  <pre class="prettyprint lang-js"><span id='Ext-util-sizemonitor-Default'>/**
+</span> * @private
+ */
+Ext.define('Ext.util.sizemonitor.Default', {
+    extend: 'Ext.util.sizemonitor.Abstract',
+
+<span id='Ext-util-sizemonitor-Default-method-updateElement'>    updateElement: function(element) {},
+</span>
+<span id='Ext-util-sizemonitor-Default-method-bindListeners'>    bindListeners: function(bind) {
+</span>        var element = this.getElement().dom;
+
+        if (!element) {
+            return;
+        }
+
+        if (bind) {
+            element.onresize = this.refresh;
+        }
+        else {
+            delete element.onresize;
+        }
+    },
+
+<span id='Ext-util-sizemonitor-Default-method-getContentBounds'>    getContentBounds: function() {
+</span>       return this.getElement().dom.getBoundingClientRect();
+    },
+
+<span id='Ext-util-sizemonitor-Default-method-getContentWidth'>    getContentWidth: function() {
+</span>        return this.getElement().getWidth();
+    },
+
+<span id='Ext-util-sizemonitor-Default-method-getContentHeight'>    getContentHeight: function() {
+</span>        return this.getElement().getHeight();
+    }
+});</pre>
+</body>
+</html>

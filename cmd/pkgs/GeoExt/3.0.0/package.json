@@ -9,11 +9,11 @@
   "signatures": [
     {
       "name": "GeoExt Contributors",
-      "uuid": "7c375642-1f02-4b18-8988-cfbd4db49a9c",
-      "created": "2015-06-25T09:17:15Z",
+      "uuid": "64fd4368-cdf2-4830-9024-e56077d893ef",
+      "created": "2015-09-11T06:54:00Z",
       "algorithm": "SHA1withRSA",
-      "nonce": "D8p9Zzfohcw\u003d",
-      "signature": "FuainMDmhk1AH82i+I1V2r5MA7pmq8aszQgQZ2uEupUr2+JzhptOmUENClwZPerKrv1eUZ+GulEF5Jk1g1qShM3LooJGgPy9bjAgMvx+dBs23aO+K/SmdieDFJ7NCAYeuL9AlzwODNTbj/coM/Bv9LcdGkEBee5fKdm9Gc4Ir1UB23sJPB/9OlYa8DJA5Rd6v5TrtL2M5GAqc36LH3IP9AF1cipAJM9B/xdUHE+E7YkGS6uhbgkmQQqpcBjajT/pSCbO6351bmeqJGCeA5IxlBfxNslpxtEgeBZHbxUBnXNxvP/54EMb3RQeupAWBdxS0u5azY3e5t5jQLwrx+wuSw\u003d\u003d"
+      "nonce": "ZmaEEOcgwMg\u003d",
+      "signature": "OTH5BxsQgLy7t8VJFVmuIx/VDr3FfMXOekMBgI34Ia4MPmiges9q+fgMbYmMlj8VrkXeb9FToBdggyYtja5zxa90WNvYD9JBglVRz2bO67zXzOcUugK77GIJOmlFi6fJX4al7XV2LQ4n8b2uYxCd6RsNvXn3GbFVhU4DVpXEZZB2bGobItYEoFDf9yzbry3DLpEVNTOXYHCYFF9LkU+z4hMXyn5ly1F+2JLvS3LqRnXTGOlu3kTGRK4Z9GuX59ZZRu/YANVHmHwMt7VPpQO1NMAow6K6XC9/vW0IJwOgWgf9QYoJOi0C+WCNiZMmEyxYsmCZ9SpjE387lghGs8/Few\u003d\u003d"
     }
   ],
   "slicer": {
@@ -35,7 +35,7 @@
   "scripts": {
     "test": "phantomjs --ssl-protocol\u003dany --ignore-ssl-errors\u003dtrue ./node_modules/mocha-phantomjs/lib/mocha-phantomjs.coffee test/index.html",
     "test:watch": "watch \u0027npm test\u0027 src/ test/",
-    "lint-js": "eslint src/ examples/ \u0026\u0026 eslint -c .test.eslintrc test/spec/",
+    "lint-js": "eslint src/ examples/ \u0026\u0026 eslint -c test/.eslintrc test/spec/",
     "livereload": "live-reload --port 9091 src/ examples/ test/",
     "save-coverage": "phantomjs --ssl-protocol\u003dany --ignore-ssl-errors\u003dtrue ./node_modules/mocha-phantomjs/lib/mocha-phantomjs.coffee test/index.html spec \u0027{\"hooks\": \"../../../test/phantom_hooks.js\"}\u0027",
     "clean-coverage": "rm -rf src_instrumented src_old coverage",
@@ -45,17 +45,17 @@
   },
   "dependencies": {},
   "devDependencies": {
-    "coveralls": "2.11.2",
-    "eslint": "0.20.0",
+    "coveralls": "2.11.4",
+    "eslint": "1.1.0",
     "expect.js": "0.3.1",
-    "istanbul": "0.3.13",
-    "jshint": "2.5.6",
+    "istanbul": "0.3.18",
+    "jshint": "2.8.0",
     "live-reload": "1.1.0",
-    "mocha": "1.21.5",
-    "mocha-phantomjs": "3.5.1",
+    "mocha": "2.2.5",
+    "mocha-phantomjs": "3.6.0",
     "mocha-phantomjs-istanbul": "0.0.2",
-    "phantomjs": "1.9.10",
-    "sinon": "1.10.3",
+    "phantomjs": "1.9.1 - 1.9.7-15",
+    "sinon": "1.15.4",
     "watch": "0.16.0"
   }
 }

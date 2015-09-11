@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <title>The source code</title>
+  <link href="../resources/prettify/prettify.css" type="text/css" rel="stylesheet" />
+  <script type="text/javascript" src="../resources/prettify/prettify.js"></script>
+  <style type="text/css">
+    .highlight { display: block; background-color: #ddd; }
+  </style>
+  <script type="text/javascript">
+    function highlight() {
+      document.getElementById(location.hash.replace(/#/, "")).className = "highlight";
+    }
+  </script>
+</head>
+<body onload="prettyPrint(); highlight();">
+  <pre class="prettyprint lang-js"><span id='Ext-util-SorterCollection'>/**
+</span> * @private
+ */
+Ext.define('Ext.util.SorterCollection', {
+    extend: 'Ext.util.Collection',
+
+    requires: [
+        'Ext.util.Sorter'
+    ],
+
+<span id='Ext-util-SorterCollection-property-isSorterCollection'>    isSorterCollection: true,
+</span>
+<span id='Ext-util-SorterCollection-property-sortable'>    /**
+</span>     * @property {Ext.util.Sortable} sortable
+     * The owning sortable instance. The sortable's configuration governs this
+     * collection.
+     * @private
+     * @readonly
+     */
+    $sortable: null,
+
+<span id='Ext-util-SorterCollection-property-sortFn'>    /**
+</span>     * @property sortFn
+     * This is the cached sorting function which is a generated function that calls all the
+     * configured sorters in the correct order.
+     * @readonly
+     */
+    sortFn: null,
+    
+    config: {
+<span id='Ext-util-SorterCollection-cfg-applySorterOptionsFn'>        /**
+</span>         * @cfg {Function} applySorterOptionsFn
+         * A template method that can be used to apply options to a sorter during creation
+         * @private
+         */
+        sorterOptionsFn: null,
+        
+<span id='Ext-util-SorterCollection-cfg-applySorterOptionsScope'>        /**
+</span>         * @cfg {Object} applySorterOptionsScope
+         * The scope to execute the {@link #applySorterOptionsFn}
+         * @private
+         */
+        sorterOptionsScope: null
+    },
+
+<span id='Ext-util-SorterCollection-method-constructor'>    constructor: function (config) {
+</span>        var me = this;
+
+        me.sortFn = Ext.util.Sorter.createComparator(me);
+
+        me.callParent([config]);
+        me.setDecoder(me.decodeSorter);
+    },
+
+<span id='Ext-util-SorterCollection-method-addSort'>    addSort: function (property, direction, mode) {
+</span>        var me = this,
+            count, index, limit, options, primary, sorter, sorters;
+
+        if (!property) {
+            // nothing specified so just trigger a sort...
+            me.beginUpdate();
+            me.endUpdate();
+        } else {
+            options = me.getOptions();
+
+            if (property instanceof Array) {
+                sorters = property;
+                mode = direction;
+                direction = null;
+            } else if (Ext.isString(property)) {
+                if (!(sorter = me.get(property))) {
+                    sorters = [{
+                        property: property,
+                        direction: direction || options.getDefaultSortDirection()
+                    }];
+                } else {
+                    sorters = [sorter];
+                }
+            } else if (Ext.isFunction(property)) {
+                sorters = [{
+                    sorterFn: property,
+                    direction: direction || options.getDefaultSortDirection()
+                }];
+            } else {
+                //&lt;debug&gt;
+                if (!Ext.isObject(property)) {
+                    Ext.raise('Invalid sort descriptor: ' + property);
+                }
+                //&lt;/debug&gt;
+
+                sorters = [property];
+                mode = direction;
+                direction = null;
+            }
+
+            //&lt;debug&gt;
+            if (mode &amp;&amp; !me._sortModes[mode]) {
+                Ext.raise(
+                    'Sort mode should be &quot;multi&quot;, &quot;append&quot;, &quot;prepend&quot; or &quot;replace&quot;, not &quot;' +
+                                mode + '&quot;');
+            }
+            //&lt;/debug&gt;
+            mode = me._sortModes[mode || 'replace'];
+
+            primary = me.getAt(0);
+            count = me.length;
+            index = mode.append ? count : 0;
+
+            // We have multiple changes to make, so mark the sorters collection as updating
+            // before we start.
+            me.beginUpdate();
+
+            // Leverage the decode logic wired to the collection to up-convert sorters to
+            // real instances.
+            me.splice(index, mode.replace ? count : 0, sorters);
+
+            if (mode.multi) {
+                count = me.length;
+                limit = options.getMultiSortLimit();
+
+                if (count &gt; limit) {
+                    me.removeAt(limit, count); // count will be truncated
+                }
+            }
+
+            if (sorter &amp;&amp; direction) {
+                sorter.setDirection(direction);
+            } else if (index === 0 &amp;&amp; primary &amp;&amp; primary === me.getAt(0)) {
+                // If we just adjusted the sorters at the front and the primary sorter is
+                // still the primary sorter, toggle its direction:
+                primary.toggle();
+            }
+
+            me.endUpdate();
+        }
+    },
+
+<span id='Ext-util-SorterCollection-method-clear'>    clear: function() {
+</span>    // The owning Collection needs to have its onSortersEndUpdate called on sorter clear so that
+    // it clears its sorted flag.
+        this.beginUpdate();
+        this.callParent();
+        this.endUpdate(this.items);
+    },
+
+<span id='Ext-util-SorterCollection-method-getSortFn'>    /**
+</span>     * Returns an up to date sort function.
+     * @return {Function} The sort function.
+     */
+    getSortFn: function () {
+        return this.sortFn;
+    },
+    
+<span id='Ext-util-SorterCollection-method-getByProperty'>    /**
+</span>     * Get the first matching sorter with a matching property.
+     * @param {String} prop The property name
+     * @return {Ext.util.Sorter} The sorter. `null` if not found.
+     * @private
+     */
+    getByProperty: function(prop) {
+        var items = this.items,
+            len = items.length,
+            i, item;
+        
+        for (i = 0; i &lt; len; ++i) {
+            item = items[i];
+            if (item.getProperty() === prop) {
+                return item;
+            }
+        }
+        return null;
+    },
+
+<span id='Ext-util-SorterCollection-property-_sortModes'>    //-------------------------------------------------------------------------
+</span>    // Private
+
+    _sortModes: {
+        append:  { append:  1 },
+        multi:   { multi:   1 },
+        prepend: { prepend: 1 },
+        replace: { replace: 1 }
+    },
+
+<span id='Ext-util-SorterCollection-method-decodeSorter'>    decodeSorter: function (sorter, xclass) {
+</span>        var me = this,
+            options = me.getOptions(),
+            root = options.getRootProperty(),
+            sorterOptionsFn = me.getSorterOptionsFn(),
+            currentSorter, sorterConfig, type;
+
+        if (sorter.isSorter) {
+            if (!sorter.getRoot()) {
+                sorter.setRoot(root);
+            }
+        } else {
+            sorterConfig = {
+                direction: options.getDefaultSortDirection(),
+                root: root
+            };
+            type = typeof sorter;
+
+            // If we are dealing with a string we assume it is a property they want to sort on.
+            if (type === 'string') {
+                currentSorter = me.get(sorter);
+                if (currentSorter) {
+                    return currentSorter;
+                }
+
+                sorterConfig.property = sorter;
+            }
+            // If it is a function, we assume its a sorting function.
+            else if (type === 'function') {
+                sorterConfig.sorterFn = sorter;
+            }
+            // If we are dealing with an object, we assume its a Sorter configuration. In
+            // this case we create an instance of Sorter passing this configuration.
+            else {
+                // Finally we get to the point where it has to be invalid
+                // &lt;debug&gt;
+                if (!Ext.isObject(sorter)) {
+                    Ext.raise('Invalid sorter specified: ' + sorter);
+                }
+                // &lt;/debug&gt;
+
+                sorterConfig = Ext.apply(sorterConfig, sorter);
+
+                if (sorterConfig.fn) {
+                    sorterConfig.sorterFn = sorterConfig.fn;
+                    delete sorterConfig.fn;
+                }
+            }
+
+            // If a sorter config was created, make it an instance
+            sorter = Ext.create(xclass || 'Ext.util.Sorter', sorterConfig);
+        }
+
+        if (sorterOptionsFn) {
+            sorterOptionsFn.call(me.getSorterOptionsScope() || me, sorter);
+        }
+
+        return sorter;
+    },
+    
+<span id='Ext-util-SorterCollection-method-setSorterConfigure'>    setSorterConfigure: function(fn, scope) {
+</span>        this.setSorterOptionsFn(fn);
+        this.setSorterOptionsScope(scope);
+    },
+
+<span id='Ext-util-SorterCollection-method-decodeRemoveItems'>    decodeRemoveItems: function (args, index) {
+</span>        var me = this,
+            ret = (index === undefined) ? args : args[index];
+
+        if (!ret || !ret.$cloned) {
+            if (args.length &gt; index + 1 || !Ext.isIterable(ret)) {
+                ret = Ext.Array.slice(args, index);
+            }
+
+            var currentSorters = me.items,
+                ln = ret.length,
+                remove = [],
+                i, item, n, sorter, type;
+
+            for (i = 0; i &lt; ln; i++) {
+                sorter = ret[i];
+
+                if (sorter &amp;&amp; sorter.isSorter) {
+                    remove.push(sorter);
+                } else {
+                    type = typeof sorter;
+
+                    if (type === 'string') {
+                        sorter = me.get(sorter);
+                        if (sorter) {
+                            remove.push(sorter);
+                        }
+                    }
+                    else if (type === 'function') {
+                        for (n = currentSorters.length; n-- &gt; 0; ) {
+                            item = currentSorters[n];
+                            if (item.getSorterFn() === sorter) {
+                                remove.push(item);
+                            }
+                        }
+                    }
+                    //&lt;debug&gt;
+                    else {
+                        Ext.raise('Invalid sorter specification: ' + sorter);
+                    }
+                    //&lt;/debug&gt;
+                }
+            }
+
+            ret = remove;
+            ret.$cloned = true;
+        }
+
+        return ret;
+    },
+
+<span id='Ext-util-SorterCollection-method-getOptions'>    getOptions: function () {
+</span>        // Odd thing this. We need a Sortable to know how to manage our collection, but
+        // we may not have one. Of course as a Collection, we *are* one as well... just
+        // that is not really useful to sort the sorters themselves, but we do have the
+        // default options for Sortables baked in, so we'll do.
+        return this.$sortable || this;
+    }
+});
+</pre>
+</body>
+</html>

@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <title>The source code</title>
+  <link href="../resources/prettify/prettify.css" type="text/css" rel="stylesheet" />
+  <script type="text/javascript" src="../resources/prettify/prettify.js"></script>
+  <style type="text/css">
+    .highlight { display: block; background-color: #ddd; }
+  </style>
+  <script type="text/javascript">
+    function highlight() {
+      document.getElementById(location.hash.replace(/#/, "")).className = "highlight";
+    }
+  </script>
+</head>
+<body onload="prettyPrint(); highlight();">
+  <pre class="prettyprint lang-js"><span id='Ext-data-field-Boolean'>/**
+</span> */
+Ext.define('Ext.data.field.Boolean', {
+    extend: 'Ext.data.field.Field',
+
+    alias: [
+        'data.field.bool',
+        'data.field.boolean'
+    ],
+
+<span id='Ext-data-field-Boolean-property-isBooleanField'>    isBooleanField: true,
+</span>
+<span id='Ext-data-field-Boolean-property-trueRe'>    /**
+</span>     * @property [trueRe]
+     * Values matching this regular expression are considered `true`.
+     */
+    trueRe: /^\s*(?:true|yes|on|1)\s*$/i,
+
+<span id='Ext-data-field-Boolean-method-convert'>    convert: function (v) {
+</span>        if (typeof v === 'boolean') {
+            return v;
+        }
+        if (this.allowNull &amp;&amp; (v === undefined || v === null || v === '')) {
+            return null;
+        }
+        return this.trueRe.test(String(v));
+    },
+    
+<span id='Ext-data-field-Boolean-method-getType'>    getType: function() {
+</span>        return 'bool';
+    }
+});
+</pre>
+</body>
+</html>

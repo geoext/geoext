@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <title>The source code</title>
+  <link href="../resources/prettify/prettify.css" type="text/css" rel="stylesheet" />
+  <script type="text/javascript" src="../resources/prettify/prettify.js"></script>
+  <style type="text/css">
+    .highlight { display: block; background-color: #ddd; }
+  </style>
+  <script type="text/javascript">
+    function highlight() {
+      document.getElementById(location.hash.replace(/#/, "")).className = "highlight";
+    }
+  </script>
+</head>
+<body onload="prettyPrint(); highlight();">
+  <pre class="prettyprint lang-js">/* Copyright (c) 2015 The Open Source Geospatial Foundation
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see &lt;http://www.gnu.org/licenses/&gt;.
+ */
+<span id='GeoExt-data-LayerModel'>/**
+</span> * The layer model class used by the stores.
+ *
+ * @class GeoExt.data.LayerModel
+ */
+Ext.define('GeoExt.data.model.Layer', {
+    extend: 'GeoExt.data.model.Base',
+    mixins: [
+        'GeoExt.mixin.SymbolCheck'
+    ],
+
+<span id='GeoExt-data-LayerModel-property-symbols'>    // &lt;debug&gt;
+</span>    symbols: [
+        'ol.layer.Group',
+        'ol.layer.Base',
+        'ol.layer.Base#get'
+    ],
+    // &lt;/debug&gt;
+
+    statics: {
+<span id='GeoExt-data-LayerModel-static-method-createFromLayer'>        /**
+</span>         * Convenience function for creating new layer model instance object
+         * using a layer object.
+         *
+         * @param {OpenLayers.Layer} layer
+         * @return {GeoExt.data.LayerModel}
+         * @static
+         */
+        createFromLayer: function(layer) {
+            return this.getProxy().getReader().readRecords([layer]).records[0];
+        }
+    },
+<span id='GeoExt-data-LayerModel-property-fields'>    fields: [
+</span>        {
+            name: 'isLayerGroup',
+            type: 'boolean',
+            convert: function(v, record) {
+                var layer = record.getOlLayer();
+
+                if (layer) {
+                    return (layer instanceof ol.layer.Group);
+                }
+            }
+        },
+        {
+            name: 'text',
+            type: 'string',
+            convert: function(v, record) {
+                if (!v &amp;&amp; record.get('isLayerGroup')) {
+                    return 'ol.layer.Group';
+                } else {
+                    return v;
+                }
+            }
+        },
+        {
+            name: 'opacity',
+            type: 'number',
+            convert: function(v, record) {
+                var layer;
+
+                if (record.data instanceof ol.layer.Base) {
+                    layer = record.getOlLayer();
+                    return layer.get('opacity');
+                }
+            }
+        },
+        {
+            name: 'minResolution',
+            type: 'number',
+            convert: function(v, record){
+                var layer;
+
+                if (record.data instanceof ol.layer.Base) {
+                    layer = record.getOlLayer();
+                    return layer.get('minResolution');
+                }
+            }
+        },
+        {
+            name: 'maxResolution',
+            type: 'number',
+            convert: function(v, record){
+                var layer;
+
+                if (record.data instanceof ol.layer.Base) {
+                    layer = record.getOlLayer();
+                    return layer.get('maxResolution');
+                }
+            }
+        }
+    ],
+
+<span id='GeoExt-data-LayerModel-property-proxy'>    proxy: {
+</span>        type: 'memory',
+        reader: {
+            type: 'json'
+        }
+    },
+
+<span id='GeoExt-data-LayerModel-method-getOlLayer'>    /**
+</span>     * Returns the {ol.layer.Base} layer object used in this model instance.
+     *
+     * @return {ol.layer.Base}
+     */
+    getOlLayer: function() {
+        if (this.data instanceof ol.layer.Base) {
+            return this.data;
+        }
+    }
+});
+</pre>
+</body>
+</html>
