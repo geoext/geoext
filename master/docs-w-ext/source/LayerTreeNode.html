@@ -30,10 +30,10 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see &lt;http://www.gnu.org/licenses/&gt;.
  */
-<span id='GeoExt-data-LayerModel'>/**
+<span id='GeoExt-data-model-LayerTreeNode'>/**
 </span> * The layer model class used by the stores.
  *
- * @class GeoExt.data.LayerModel
+ * @class GeoExt.data.model.LayerTreeNode
  */
 Ext.define('GeoExt.data.model.LayerTreeNode', {
     extend: 'GeoExt.data.model.Layer',
@@ -45,13 +45,13 @@ Ext.define('GeoExt.data.model.LayerTreeNode', {
         'GeoExt.mixin.SymbolCheck'
     ],
 
-<span id='GeoExt-data-LayerModel-property-symbols'>    // &lt;debug&gt;
+<span id='GeoExt-data-model-LayerTreeNode-property-symbols'>    // &lt;debug&gt;
 </span>    symbols: [
         'ol.layer.Base',
         'ol.Object#get',
         'ol.Object#set'
     ],
-<span id='GeoExt-data-LayerModel-property-fields'>    // &lt;/debug&gt;
+<span id='GeoExt-data-model-LayerTreeNode-property-fields'>    // &lt;/debug&gt;
 </span>
     fields: [
         {
@@ -66,7 +66,7 @@ Ext.define('GeoExt.data.model.LayerTreeNode', {
                 }
             }
         }, {
-<span id='GeoExt-data-LayerModel-property-name'>            /**
+<span id='GeoExt-data-model-LayerTreeNode-property-name'>            /**
 </span>             * This should be set via tree panel.
              */
             name: '__toggleMode',
@@ -75,14 +75,14 @@ Ext.define('GeoExt.data.model.LayerTreeNode', {
         }
     ],
 
-<span id='GeoExt-data-LayerModel-property-proxy'>    proxy: {
+<span id='GeoExt-data-model-LayerTreeNode-cfg-proxy'>    proxy: {
 </span>        type: 'memory',
         reader: {
             type: 'json'
         }
     },
 
-<span id='GeoExt-data-LayerModel-method-constructor'>    /**
+<span id='GeoExt-data-model-LayerTreeNode-method-constructor'>    /**
 </span>     * TODO
      */
     constructor: function() {
@@ -97,7 +97,7 @@ Ext.define('GeoExt.data.model.LayerTreeNode', {
         }
     },
 
-<span id='GeoExt-data-LayerModel-method-onLayerVisibleChange'>    /**
+<span id='GeoExt-data-model-LayerTreeNode-method-onLayerVisibleChange'>    /**
 </span>     * TODO
      */
     onLayerVisibleChange: function(evt) {
@@ -108,7 +108,7 @@ Ext.define('GeoExt.data.model.LayerTreeNode', {
         }
     },
 
-<span id='GeoExt-data-LayerModel-method-set'>    /**
+<span id='GeoExt-data-model-LayerTreeNode-method-set'>    /**
 </span>     * Overriden to foward changes to the underlying ol.Object. All changes on
      * the Ext.data.Models properties will be set on the ol.Object as well.
      *
@@ -143,7 +143,7 @@ Ext.define('GeoExt.data.model.LayerTreeNode', {
         }
     },
 
-<span id='GeoExt-data-LayerModel-method-toggleParentNodes'>    /**
+<span id='GeoExt-data-model-LayerTreeNode-method-toggleParentNodes'>    /**
 </span>     * Handles Parentbehaviour of checked Nodes:
      * Checks parent Nodes if node is checked or unchecks parent Nodes if the
      * node is unchecked and no sibling is checked.
@@ -188,14 +188,14 @@ Ext.define('GeoExt.data.model.LayerTreeNode', {
         }
     },
 
-<span id='GeoExt-data-LayerModel-method-getRefItems'>    /**
+<span id='GeoExt-data-model-LayerTreeNode-method-getRefItems'>    /**
 </span>     * @inheritdoc
      */
     getRefItems: function() {
         return this.childNodes;
     },
 
-<span id='GeoExt-data-LayerModel-method-getRefOwner'>    /**
+<span id='GeoExt-data-model-LayerTreeNode-method-getRefOwner'>    /**
 </span>     * @inheritdoc
      */
     getRefOwner: function() {

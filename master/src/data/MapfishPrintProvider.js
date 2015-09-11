@@ -16,6 +16,8 @@
 
 /**
  * Provides an interface to a Mapfish or GeoServer print module.
+ *
+ * @class GeoExt.data.MapfishPrintProvider
  */
 Ext.define('GeoExt.data.MapfishPrintProvider', {
     extend: 'Ext.Base',

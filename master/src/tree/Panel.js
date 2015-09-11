@@ -49,6 +49,7 @@
  *         renderTo: 'treeDiv', // ID of the target <div>. Optional.
  *         rootVisible: false
  *     });
+ *
  * @class GeoExt.tree.Panel
  */
 Ext.define('GeoExt.tree.Panel', {

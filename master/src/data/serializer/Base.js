@@ -15,6 +15,8 @@
  */
 /**
  * The base class for all serializers.
+ *
+ * @class GeoExt.data.serializer.Base
  */
 Ext.define('GeoExt.data.serializer.Base', {
     extend: 'Ext.Base',

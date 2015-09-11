@@ -30,20 +30,23 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see &lt;http://www.gnu.org/licenses/&gt;.
  */
+<span id='GeoExt-data-model-print-Capability'>/**
+</span> * @class GeoExt.data.model.print.Capability
+ */
 Ext.define('GeoExt.data.model.print.Capability', {
     extend: 'GeoExt.data.model.Base',
     requires: [
         'GeoExt.data.model.print.Layout'
     ],
-    hasMany: [
-        {
+<span id='GeoExt-data-model-print-Capability-cfg-hasMany'>    hasMany: [
+</span>        {
             name: 'layouts',
             associationKey: 'layouts',
             model: 'print.Layout'
         }
     ],
-    fields: [
-        {
+<span id='GeoExt-data-model-print-Capability-property-fields'>    fields: [
+</span>        {
             name: 'app',
             type: 'string'
         },

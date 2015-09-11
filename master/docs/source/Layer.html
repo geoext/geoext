@@ -30,10 +30,10 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see &lt;http://www.gnu.org/licenses/&gt;.
  */
-<span id='GeoExt-data-LayerModel'>/**
+<span id='GeoExt-data-model-Layer'>/**
 </span> * The layer model class used by the stores.
  *
- * @class GeoExt.data.LayerModel
+ * @class GeoExt.data.model.Layer
  */
 Ext.define('GeoExt.data.model.Layer', {
     extend: 'GeoExt.data.model.Base',
@@ -41,7 +41,7 @@ Ext.define('GeoExt.data.model.Layer', {
         'GeoExt.mixin.SymbolCheck'
     ],
 
-<span id='GeoExt-data-LayerModel-property-symbols'>    // &lt;debug&gt;
+<span id='GeoExt-data-model-Layer-property-symbols'>    // &lt;debug&gt;
 </span>    symbols: [
         'ol.layer.Group',
         'ol.layer.Base',
@@ -50,7 +50,7 @@ Ext.define('GeoExt.data.model.Layer', {
     // &lt;/debug&gt;
 
     statics: {
-<span id='GeoExt-data-LayerModel-static-method-createFromLayer'>        /**
+<span id='GeoExt-data-model-Layer-static-method-createFromLayer'>        /**
 </span>         * Convenience function for creating new layer model instance object
          * using a layer object.
          *
@@ -62,7 +62,7 @@ Ext.define('GeoExt.data.model.Layer', {
             return this.getProxy().getReader().readRecords([layer]).records[0];
         }
     },
-<span id='GeoExt-data-LayerModel-property-fields'>    fields: [
+<span id='GeoExt-data-model-Layer-property-fields'>    fields: [
 </span>        {
             name: 'isLayerGroup',
             type: 'boolean',
@@ -123,14 +123,14 @@ Ext.define('GeoExt.data.model.Layer', {
         }
     ],
 
-<span id='GeoExt-data-LayerModel-property-proxy'>    proxy: {
+<span id='GeoExt-data-model-Layer-property-proxy'>    proxy: {
 </span>        type: 'memory',
         reader: {
             type: 'json'
         }
     },
 
-<span id='GeoExt-data-LayerModel-method-getOlLayer'>    /**
+<span id='GeoExt-data-model-Layer-method-getOlLayer'>    /**
 </span>     * Returns the {ol.layer.Base} layer object used in this model instance.
      *
      * @return {ol.layer.Base}

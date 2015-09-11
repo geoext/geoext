@@ -15,6 +15,8 @@
  */
 /**
  * A serializer for layer that hava a `ol.source.TileWMS` source.
+ *
+ * @class GeoExt.data.serializer.TileWMS
  */
 Ext.define('GeoExt.data.serializer.TileWMS', {
     extend: 'GeoExt.data.serializer.Base',

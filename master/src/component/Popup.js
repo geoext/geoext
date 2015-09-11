@@ -14,7 +14,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 /**
- * @class
+ * @class GeoExt.component.Popup
  */
 Ext.define('GeoExt.component.Popup', {
     requires: [],

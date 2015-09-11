@@ -15,6 +15,8 @@
  */
  /**
   * A serializer for layer that hava a `ol.source.XYZ` source.
+  *
+  * @class GeoExt.data.serializer.XYZ
   */
 Ext.define('GeoExt.data.serializer.XYZ', {
     extend: 'GeoExt.data.serializer.Base',

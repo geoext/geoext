@@ -17,6 +17,8 @@
 /**
  * A store that is synchronized with a GeoExt.data.store.Layer. It will be used
  * by a GeoExt.tree.Panel.
+ *
+ * @class GeoExt.data.store.Tree
  */
 Ext.define('GeoExt.data.store.Tree', {
     extend: 'Ext.data.TreeStore',
