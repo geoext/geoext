@@ -1,6 +1,6 @@
-Ext.Loader.syncRequire(['GeoExt.data.store.Collection']);
+Ext.Loader.syncRequire(['GeoExt.data.store.OlObjects']);
 
-describe('GeoExt.data.store.Collection', function() {
+describe('GeoExt.data.store.OlObjects', function() {
 
     var props = {
             key1: 'value1',
@@ -16,12 +16,12 @@ describe('GeoExt.data.store.Collection', function() {
 
     describe('basics', function(){
         it('is defined', function(){
-            expect(GeoExt.data.store.Collection).not.to.be(undefined);
+            expect(GeoExt.data.store.OlObjects).not.to.be(undefined);
         });
 
         it('can be instantiated', function() {
             expect(function() {
-                Ext.create('GeoExt.data.store.Collection');
+                Ext.create('GeoExt.data.store.OlObjects');
             }).to.not.throwException(Error);
         });
     });
@@ -30,7 +30,7 @@ describe('GeoExt.data.store.Collection', function() {
         var store;
 
         beforeEach(function() {
-            store = Ext.create('GeoExt.data.store.Collection', {
+            store = Ext.create('GeoExt.data.store.OlObjects', {
                 data: coll
             });
         });
@@ -52,7 +52,7 @@ describe('GeoExt.data.store.Collection', function() {
 
         beforeEach(function() {
             collection = new ol.Collection();
-            store = Ext.create('GeoExt.data.store.Collection', {
+            store = Ext.create('GeoExt.data.store.OlObjects', {
                 data: collection
             });
         });

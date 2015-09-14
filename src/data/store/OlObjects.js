@@ -16,9 +16,9 @@
 /**
  * Simple store that maps a ol.Collection to a Ext.data.Store.
  *
- * @class GeoExt.data.store.Collection
+ * @class GeoExt.data.store.OlObjects
  */
-Ext.define('GeoExt.data.store.Collection', {
+Ext.define('GeoExt.data.store.OlObjects', {
     extend: 'Ext.data.Store',
     requires: [
         'GeoExt.data.model.Object'
