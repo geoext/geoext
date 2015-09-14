@@ -41,7 +41,7 @@ Ext.define("GeoExt.component.Map", {
         "widget.gx_component_map"
     ],
     requires: [
-        'GeoExt.data.store.Layer'
+        'GeoExt.data.store.Layers'
     ],
     mixins: [
         'GeoExt.mixin.SymbolCheck'
@@ -145,7 +145,7 @@ Ext.define("GeoExt.component.Map", {
     mapRendered: false,
 
     /**
-     * @property {GeoExt.data.store.Layer} layerStore
+     * @property {GeoExt.data.store.Layers} layerStore
      * @private
      */
     layerStore: null,
@@ -186,7 +186,7 @@ Ext.define("GeoExt.component.Map", {
             me.setMap(olMap);
         }
 
-        me.layerStore = Ext.create('GeoExt.data.store.Layer', {
+        me.layerStore = Ext.create('GeoExt.data.store.Layers', {
             storeId: me.getId() + "-store",
             map: me.getMap()
         });
@@ -441,9 +441,9 @@ Ext.define("GeoExt.component.Map", {
     },
 
     /**
-     * Returns the GeoExt.data.store.Layer
+     * Returns the GeoExt.data.store.Layers
      *
-     * @return {GeoExt.data.store.Layer}
+     * @return {GeoExt.data.store.Layers}
      */
     getStore: function(){
         return this.layerStore;
