@@ -18,9 +18,9 @@
  * A store that is synchronized with a GeoExt.data.store.Layers. It will be used
  * by a GeoExt.tree.Panel.
  *
- * @class GeoExt.data.store.Tree
+ * @class GeoExt.data.store.LayersTree
  */
-Ext.define('GeoExt.data.store.Tree', {
+Ext.define('GeoExt.data.store.LayersTree', {
     extend: 'Ext.data.TreeStore',
 
     alternateClassName: ['GeoExt.data.TreeStore'],
@@ -139,7 +139,7 @@ Ext.define('GeoExt.data.store.Tree', {
             }
         } else {
             Ext.raise("Invalid folderToggleMode "
-                + "set in 'GeoExt.data.store.Tree': "
+                + "set in 'GeoExt.data.store.LayersTree': "
                 + folderToggleMode + ". 'classic' or 'ol3' are valid.");
         }
         return folderToggleMode;
