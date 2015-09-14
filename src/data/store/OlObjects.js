@@ -21,7 +21,7 @@
 Ext.define('GeoExt.data.store.OlObjects', {
     extend: 'Ext.data.Store',
     requires: [
-        'GeoExt.data.model.Object'
+        'GeoExt.data.model.OlObject'
     ],
 
     mixins: [
@@ -44,7 +44,7 @@ Ext.define('GeoExt.data.store.OlObjects', {
      */
     olCollection: null,
 
-    model: 'GeoExt.data.model.Object',
+    model: 'GeoExt.data.model.OlObject',
 
     proxy: {
         type: 'memory',

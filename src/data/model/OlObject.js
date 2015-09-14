@@ -16,9 +16,9 @@
 /**
  * Simple model that maps an ol.Object to an Ext.data.Model.
  *
- * @class GeoExt.data.model.Object
+ * @class GeoExt.data.model.OlObject
  */
-Ext.define('GeoExt.data.model.Object', {
+Ext.define('GeoExt.data.model.OlObject', {
     extend: 'GeoExt.data.model.Base',
     mixins: [
         'GeoExt.mixin.SymbolCheck'

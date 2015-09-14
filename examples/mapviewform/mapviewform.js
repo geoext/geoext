@@ -1,7 +1,7 @@
 Ext.require([
     'Ext.form.Panel',
     'GeoExt.component.Map',
-    'GeoExt.data.model.Object'
+    'GeoExt.data.model.OlObject'
 ]);
 
 Ext.application({
@@ -19,10 +19,10 @@ Ext.application({
         });
 
         // wrap ol.View in GeoExt Object model
-        var viewRecord = Ext.create('GeoExt.data.model.Object', view);
+        var viewRecord = Ext.create('GeoExt.data.model.OlObject', view);
 
         // wrap ol.layer.Layer in GeoExt Object model
-        var layerRecord = Ext.create('GeoExt.data.model.Object', layer);
+        var layerRecord = Ext.create('GeoExt.data.model.OlObject', layer);
 
         var viewForm = Ext.create('Ext.form.Panel', {
             title: 'View',
