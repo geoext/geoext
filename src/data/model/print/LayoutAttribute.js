@@ -14,9 +14,9 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 /**
- * @class GeoExt.data.model.print.LayoutAttributes
+ * @class GeoExt.data.model.print.LayoutAttribute
  */
-Ext.define('GeoExt.data.model.print.LayoutAttributes', {
+Ext.define('GeoExt.data.model.print.LayoutAttribute', {
     extend: 'GeoExt.data.model.Base',
     fields: [
         {

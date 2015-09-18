@@ -1,7 +1,7 @@
 Ext.require([
     'GeoExt.component.Map',
     'GeoExt.tree.Panel',
-    'GeoExt.data.store.Tree'
+    'GeoExt.data.store.LayersTree'
 ]);
 
 /**
@@ -138,7 +138,7 @@ Ext.application({
             items: [mapComponent]
         });
 
-        treeStore = Ext.create('GeoExt.data.store.Tree', {
+        treeStore = Ext.create('GeoExt.data.store.LayersTree', {
             layerGroup: olMap.getLayerGroup()
         });
 
@@ -168,7 +168,7 @@ Ext.application({
             }
         });
 
-        treeStore2 = Ext.create('GeoExt.data.store.Tree', {
+        treeStore2 = Ext.create('GeoExt.data.store.LayersTree', {
             layerGroup: olMap.getLayerGroup()
         });
 

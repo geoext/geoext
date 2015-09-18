@@ -1,11 +1,11 @@
-Ext.Loader.syncRequire(['GeoExt.data.model.Object']);
+Ext.Loader.syncRequire(['GeoExt.data.model.OlObject']);
 
 Ext.define('Test.data.model.Object', {
-    extend: 'GeoExt.data.model.Object',
+    extend: 'GeoExt.data.model.OlObject',
     fields: ['key1']
 });
 
-describe('GeoExt.data.model.Object', function() {
+describe('GeoExt.data.model.OlObject', function() {
 
     var props;
 
@@ -21,7 +21,7 @@ describe('GeoExt.data.model.Object', function() {
 
     describe('basics', function(){
         it('is defined', function(){
-            expect(GeoExt.data.model.Object).not.to.be(undefined);
+            expect(GeoExt.data.model.OlObject).not.to.be(undefined);
         });
     });
 

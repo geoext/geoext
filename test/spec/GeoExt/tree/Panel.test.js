@@ -263,7 +263,7 @@ describe('GeoExt.tree.Panel', function() {
                 document.body.appendChild(div);
                 var tree2 = Ext.create('GeoExt.tree.Panel', {
                     dragDrop: true,
-                    store: Ext.create('GeoExt.data.store.Tree', {
+                    store: Ext.create('GeoExt.data.store.LayersTree', {
                         layerGroup: new ol.layer.Group()
                     }),
                     viewConfig: {
@@ -321,7 +321,7 @@ describe('GeoExt.tree.Panel', function() {
                 layers: [layer1, innerGroup],
                 name: 'topMostGroup'
             });
-            store = Ext.create('GeoExt.data.store.Tree', {
+            store = Ext.create('GeoExt.data.store.LayersTree', {
                 layerGroup: topMostGroup
             });
             tree = Ext.create('GeoExt.tree.Panel', {
@@ -503,7 +503,7 @@ describe('GeoExt.tree.Panel', function() {
                 layers: [layer1, innerGroup],
                 name: 'topMostGroup'
             });
-            store = Ext.create('GeoExt.data.store.Tree', {
+            store = Ext.create('GeoExt.data.store.LayersTree', {
                 layerGroup: topMostGroup,
                 showLayerGroupNode: true // otherwise nothing will get cancelled
             });
