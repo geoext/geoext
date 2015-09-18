@@ -19,7 +19,7 @@
  * @class GeoExt.data.model.Feature
  */
 Ext.define('GeoExt.data.model.Feature', {
-    extend: 'GeoExt.data.model.Object',
+    extend: 'GeoExt.data.model.OlObject',
 
     /**
      * Returns the underlying Feature of this record.

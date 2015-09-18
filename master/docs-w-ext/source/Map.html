@@ -58,7 +58,7 @@ Ext.define(&quot;GeoExt.component.Map&quot;, {
         &quot;widget.gx_component_map&quot;
     ],
     requires: [
-        'GeoExt.data.store.Layer'
+        'GeoExt.data.store.Layers'
     ],
     mixins: [
         'GeoExt.mixin.SymbolCheck'
@@ -162,7 +162,7 @@ Ext.define(&quot;GeoExt.component.Map&quot;, {
     mapRendered: false,
 
 <span id='GeoExt-component-Map-property-layerStore'>    /**
-</span>     * @property {GeoExt.data.store.Layer} layerStore
+</span>     * @property {GeoExt.data.store.Layers} layerStore
      * @private
      */
     layerStore: null,
@@ -203,7 +203,7 @@ Ext.define(&quot;GeoExt.component.Map&quot;, {
             me.setMap(olMap);
         }
 
-        me.layerStore = Ext.create('GeoExt.data.store.Layer', {
+        me.layerStore = Ext.create('GeoExt.data.store.Layers', {
             storeId: me.getId() + &quot;-store&quot;,
             map: me.getMap()
         });
@@ -458,9 +458,9 @@ Ext.define(&quot;GeoExt.component.Map&quot;, {
     },
 
 <span id='GeoExt-component-Map-method-getStore'>    /**
-</span>     * Returns the GeoExt.data.store.Layer
+</span>     * Returns the GeoExt.data.store.Layers
      *
-     * @return {GeoExt.data.store.Layer}
+     * @return {GeoExt.data.store.Layers}
      */
     getStore: function(){
         return this.layerStore;

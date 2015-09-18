@@ -36,7 +36,7 @@
  *         renderTo: 'mapDiv' // ID of the target <div>. Optional.
  *     });
  *
- *     var treeStore = Ext.create('GeoExt.data.store.Tree', {
+ *     var treeStore = Ext.create('GeoExt.data.store.LayersTree', {
  *         model: 'GeoExt.data.TreeModel',
  *         layerStore: mapPanel.getStore()
  *     });

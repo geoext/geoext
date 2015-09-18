@@ -19,7 +19,7 @@
  * @class GeoExt.data.store.Features
  */
 Ext.define('GeoExt.data.store.Features', {
-    extend: 'GeoExt.data.store.Collection',
+    extend: 'GeoExt.data.store.OlObjects',
     mixins: [
         'GeoExt.mixin.SymbolCheck'
     ],

@@ -36,13 +36,13 @@
 Ext.define('GeoExt.data.model.print.Layout', {
     extend: 'GeoExt.data.model.Base',
     requires: [
-        'GeoExt.data.model.print.LayoutAttributes'
+        'GeoExt.data.model.print.LayoutAttribute'
     ],
 <span id='GeoExt-data-model-print-Layout-cfg-hasMany'>    hasMany: [
 </span>        {
             name: 'attributes',
             associationKey: 'attributes',
-            model: 'print.LayoutAttributes'
+            model: 'print.LayoutAttribute'
         }
     ],
 <span id='GeoExt-data-model-print-Layout-property-fields'>    fields: [
