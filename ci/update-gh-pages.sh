@@ -75,6 +75,7 @@ rm -Rf $DOCS_DIR/* # remove any content from previous runs
 jsduck \
     --title="$GEOEXT_PACKAGE_NAME $GEOEXT_PACKAGE_VERSION$DOC_SUFFIX Documentation" \
     --output="$DOCS_DIR/" \
+    --eg-iframe=docresources/eg-iframe.html \
     $TRAVIS_BUILD_DIR/src/
 
 # 2.2 … with ExtJS
@@ -85,7 +86,11 @@ jsduck \
     --output="$DOCS_W_EXT_DIR/" \
     "$DOWN_DIR/ext-$SENCHA_EXTJS_VERSION/packages/core/src" \
     "$DOWN_DIR/ext-$SENCHA_EXTJS_VERSION/classic/classic/src" \
+    --eg-iframe=docresources/eg-iframe.html \
     $TRAVIS_BUILD_DIR/src/
+
+# 2.3 Copy ext-6.0.x/build to the docs, to support live preview of the @example code
+cp -r $SENCHA_WS/build docs/extjs-build
 
 # 3. examples, resources & src copied from repo
 for RAW_CP_DIR in $RAW_CP_DIRS
