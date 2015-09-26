@@ -14,6 +14,46 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 /**
+ * An GeoExt.component.Popup can be used to displays a popup over the map.
+ *
+ * Example:
+ *
+ *     @example
+ *     var description;
+ *     var olMap = new ol.Map({
+ *         layers: [
+ *             new ol.layer.Tile({
+ *                source: new ol.source.MapQuest({layer: 'osm'})
+ *             })
+ *         ],
+ *         view: new ol.View({
+ *             center: ol.proj.transform([-8.751278, 40.611368], 'EPSG:4326', 'EPSG:3857'),
+ *             zoom: 12
+ *         })
+ *     });
+ *     var popup = Ext.create('GeoExt.component.Popup', {
+ *         map: olMap,
+ *         width: 140
+ *     });
+ *     var mapComponent = Ext.create('GeoExt.component.Map', {
+ *         map: olMap,
+ *         pointerRest: true,
+ *         pointerRestInterval: 750,
+ *         pointerRestPixelTolerance: 5,
+ *         renderTo: Ext.getBody()
+ *     });
+ *     mapComponent.on('pointerrest', function(evt) {
+ *         var coordinate = evt.coordinate;
+ *         hdms = ol.coordinate.toStringHDMS(ol.proj.transform(
+ *                 coordinate, 'EPSG:3857', 'EPSG:4326'));
+ *         hdms = hdms.replace(/([NS])/, '$1<br>');
+ *         popup.setHtml('<p><strong>Pointer rested on</strong>' +
+ *                 '<br /><code>' + hdms + '</code></p>');
+ *         popup.position(coordinate);
+ *         popup.show();
+ *     });
+ *     mapComponent.on('pointerrestout', popup.hide, popup);
+ *
  * @class GeoExt.component.Popup
  */
 Ext.define('GeoExt.component.Popup', {
