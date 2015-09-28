@@ -34,7 +34,7 @@ fi
 DOCS_DIR=$SUB_FOLDER_NAME/docs
 DOCS_W_EXT_DIR=$SUB_FOLDER_NAME/docs-w-ext
 
-RAW_CP_DIRS="examples resources src"
+RAW_CP_DIRS="docresources examples resources src"
 
 ORIGINAL_AUTHOR_NAME=$(git show --format="%aN" $TRAVIS_COMMIT)
 ORIGINAL_AUTHOR_EMAIL=$(git show --format="%ae" $TRAVIS_COMMIT)
