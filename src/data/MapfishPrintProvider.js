@@ -151,7 +151,7 @@ Ext.define('GeoExt.data.MapfishPrintProvider', {
                     inputLayers.push(layer);
                 });
             } else if (layers instanceof ol.Collection){
-                inputLayers = layers.getArray();
+                inputLayers = Ext.clone(layers.getArray());
             } else {
                 inputLayers = Ext.clone(layers);
             }
