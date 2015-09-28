@@ -38,37 +38,55 @@
  *
  * Example:
  *
- *     var mapComponent = Ext.create('GeoExt.component.Map', {
- *         map: new ol.Map({
- *             layers: [layer],
- *             view: new ol.View({
- *                 center: [0, 0],
- *                 zoom: 2
+ *     @example
+ *     var olMap = new ol.Map({
+ *         layers: [
+ *             new ol.layer.Tile({
+ *                source: new ol.source.MapQuest({layer: 'osm'})
  *             })
+ *         ],
+ *         view: new ol.View({
+ *             center: ol.proj.transform([-8.751278, 40.611368], 'EPSG:4326', 'EPSG:3857'),
+ *             zoom: 12
  *         })
  *     });
- *
- *     var mapPanel = Ext.create('Ext.panel.Panel', {
- *         title: 'GeoExt.component.OverviewMap Example',
- *         width: 800,
- *         height: 600,
- *         items: [mapComponent],
- *         renderTo: 'mapDiv' // ID of the target &lt;div&gt;. Optional.
+ *     var mapComponent = Ext.create('GeoExt.component.Map', {
+ *         map: olMap
  *     });
- *
  *     var overviewMap = Ext.create('GeoExt.component.OverviewMap', {
  *         parentMap: olMap
  *     });
- *
- *     var extPanel = Ext.create('Ext.panel.Panel', {
- *         title: 'OverviewMap in Panel',
- *         width: 400,
+ *     var overviewMapPanel = Ext.create('Ext.panel.Panel', {
+ *         width: 200,
  *         height: 200,
+ *         title: 'OverviewMap',
  *         layout: 'fit',
- *         items: [
- *             overviewMap
- *         ],
- *         renderTo: 'panelDiv' // ID of the target &lt;div&gt;. Optional.
+ *         items: [overviewMap]
+ *     });
+ *     var descriptionPanel = Ext.create('Ext.panel.Panel', {
+ *         width: 200,
+ *         title: 'Description',
+ *         layout: 'fit',
+ *         html: 'Map and overview panel'
+ *     });
+ *     var westPanel = Ext.create('Ext.panel.Panel', {
+ *         width: 200,
+ *         region: 'west',
+ *         layout: 'vbox',
+ *         items: [overviewMapPanel, descriptionPanel]
+ *     });
+ *     var mapPanel = Ext.create('Ext.panel.Panel', {
+ *        title: 'Map',
+ *        region: 'center',
+ *        layout: 'fit',
+ *        items: [mapComponent]
+ *     });
+ *     var mapAndOverviewPanel = Ext.create('Ext.panel.Panel', {
+ *        width: 600,
+ *        height: 600,
+ *        layout: 'border',
+ *        items: [mapPanel, westPanel],
+ *        renderTo: Ext.getBody()
  *     });
  *
  * @class GeoExt.component.OverviewMap

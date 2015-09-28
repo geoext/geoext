@@ -15,21 +15,30 @@
  */
 
 /**
- * Create a component container for a map.
  *
- * Example:
+ * The map component and a panel side by side
  *
+ *     @example
  *     var mapComponent = Ext.create('GeoExt.component.Map', {
- *         width: 800,
- *         height: 600,
+ *         width: 600,
+ *         height: 400,
  *         map: new ol.Map({
- *             layers: [layer],
+ *             layers: [
+ *                 new ol.layer.Tile({
+ *                     source: new ol.source.MapQuest({layer: 'osm'})
+ *                 })
+ *             ],
  *             view: new ol.View({
- *                 center: [0, 0],
- *                 zoom: 2
+ *                 center: ol.proj.transform([-8.751278, 40.611368], 'EPSG:4326', 'EPSG:3857'),
+ *                 zoom: 12
  *             })
- *         }),
- *         renderTo: 'mapDiv' // ID of the target <div>. Optional.
+ *         })
+ *     });
+ *     var mapPanel = Ext.create('Ext.panel.Panel', {
+ *         title: 'GeoExt.component.Map Example',
+ *         layout: 'fit',
+ *         items: [mapComponent],
+ *         renderTo: Ext.getBody()
  *     });
  *
  * @class GeoExt.component.Map

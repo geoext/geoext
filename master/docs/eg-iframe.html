@@ -3,10 +3,23 @@
 <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
     <meta http-equiv="X-UA-Compatible" content="chrome=1">
-    <title>Sencha Examples</title>
+    <title>GeoExt 3 Examples</title>
 
-    <script type="text/javascript" src="extjs-build/ext-all.js"></script>
-    <link rel="stylesheet" type="text/css" href="extjs-build/resources/css/ext-all.css">
+
+    <link rel="stylesheet" type="text/css" href="http://openlayers.org/en/master/css/ol.css">
+    <link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/extjs/6.0.0/classic/theme-crisp/resources/theme-crisp-all.css"/>
+
+    <script src="http://openlayers.org/en/master/build/ol.js"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/extjs/6.0.0/ext-all.js"></script>
+
+    <script>
+        Ext.Loader.setConfig({
+            enabled: true,
+            paths: {
+                'GeoExt': '../../src/'
+            }
+        });
+    </script>
 
     <script type="text/javascript">
         function loadInlineExample(code, options, callback) {
