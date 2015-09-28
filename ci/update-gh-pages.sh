@@ -59,6 +59,7 @@ git clone --branch $GH_PAGES_BRANCH $GH_PAGES_REPO $GH_PAGES_DIR
 
 cd $GH_PAGES_DIR
 
+
 # 1. Update GeoExt package
 mkdir -p cmd/pkgs/$GEOEXT_PACKAGE_NAME
 rm -Rf cmd/pkgs/$GEOEXT_PACKAGE_NAME/$GEOEXT_PACKAGE_VERSION
@@ -68,8 +69,17 @@ cp $INSTALL_DIR/../repo/pkgs/catalog.json cmd/pkgs/
 cp $INSTALL_DIR/../repo/pkgs/$GEOEXT_PACKAGE_NAME/catalog.json cmd/pkgs/$GEOEXT_PACKAGE_NAME
 
 
-# 2. Update the API docs
-# 2.1 … without ExtJS
+# 2. docresources, examples, resources & src copied from repo
+for RAW_CP_DIR in $RAW_CP_DIRS
+do
+    mkdir -p $SUB_FOLDER_NAME/$RAW_CP_DIR
+    rm -Rf $SUB_FOLDER_NAME/$RAW_CP_DIR/*
+    cp -r $TRAVIS_BUILD_DIR/$RAW_CP_DIR/* $SUB_FOLDER_NAME/$RAW_CP_DIR
+done
+
+
+# 3. Update the API docs
+# 3.1 … without ExtJS
 mkdir -p $DOCS_DIR # for the API-docs without ExtJS classes
 rm -Rf $DOCS_DIR/* # remove any content from previous runs
 jsduck \
@@ -78,7 +88,7 @@ jsduck \
     --eg-iframe=docresources/eg-iframe.html \
     $TRAVIS_BUILD_DIR/src/
 
-# 2.2 … with ExtJS
+# 3.2 … with ExtJS
 mkdir -p $DOCS_W_EXT_DIR # for the API-docs without ExtJS classes
 rm -Rf $DOCS_W_EXT_DIR/* # remove any content from previous runs
 jsduck \
@@ -89,16 +99,6 @@ jsduck \
     "$DOWN_DIR/ext-$SENCHA_EXTJS_VERSION/classic/classic/src" \
     $TRAVIS_BUILD_DIR/src/
 
-# 2.3 Copy ext-6.0.x/build to the docs, to support live preview of the @example code
-cp -r $SENCHA_WS/build docs/extjs-build
-
-# 3. examples, resources & src copied from repo
-for RAW_CP_DIR in $RAW_CP_DIRS
-do
-    mkdir -p $SUB_FOLDER_NAME/$RAW_CP_DIR
-    rm -Rf $SUB_FOLDER_NAME/$RAW_CP_DIR/*
-    cp -r $TRAVIS_BUILD_DIR/$RAW_CP_DIR/* $SUB_FOLDER_NAME/$RAW_CP_DIR
-done
 
 # 4. done.
 
