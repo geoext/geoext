@@ -34,7 +34,7 @@ fi
 DOCS_DIR=$SUB_FOLDER_NAME/docs
 DOCS_W_EXT_DIR=$SUB_FOLDER_NAME/docs-w-ext
 
-RAW_CP_DIRS="docresources examples resources src"
+RAW_CP_DIRS="examples resources src"
 
 ORIGINAL_AUTHOR_NAME=$(git show --format="%aN" $TRAVIS_COMMIT)
 ORIGINAL_AUTHOR_EMAIL=$(git show --format="%ae" $TRAVIS_COMMIT)
@@ -69,7 +69,7 @@ cp $INSTALL_DIR/../repo/pkgs/catalog.json cmd/pkgs/
 cp $INSTALL_DIR/../repo/pkgs/$GEOEXT_PACKAGE_NAME/catalog.json cmd/pkgs/$GEOEXT_PACKAGE_NAME
 
 
-# 2. docresources, examples, resources & src copied from repo
+# 2. examples, resources & src copied from repo
 for RAW_CP_DIR in $RAW_CP_DIRS
 do
     mkdir -p $SUB_FOLDER_NAME/$RAW_CP_DIR
@@ -85,7 +85,7 @@ rm -Rf $DOCS_DIR/* # remove any content from previous runs
 jsduck \
     --title="$GEOEXT_PACKAGE_NAME $GEOEXT_PACKAGE_VERSION$DOC_SUFFIX Documentation" \
     --output="$DOCS_DIR/" \
-    --eg-iframe=docresources/eg-iframe.html \
+    --eg-iframe=$TRAVIS_BUILD_DIR/docresources/eg-iframe.html \
     $TRAVIS_BUILD_DIR/src/
 
 # 3.2 … with ExtJS
@@ -94,7 +94,7 @@ rm -Rf $DOCS_W_EXT_DIR/* # remove any content from previous runs
 jsduck \
     --title="$GEOEXT_PACKAGE_NAME $GEOEXT_PACKAGE_VERSION$DOC_SUFFIX Documentation (incl. ExtJS classes)" \
     --output="$DOCS_W_EXT_DIR/" \
-    --eg-iframe=docresources/eg-iframe.html \
+    --eg-iframe=$TRAVIS_BUILD_DIR/docresources/eg-iframe.html \
     "$DOWN_DIR/ext-$SENCHA_EXTJS_VERSION/packages/core/src" \
     "$DOWN_DIR/ext-$SENCHA_EXTJS_VERSION/classic/classic/src" \
     $TRAVIS_BUILD_DIR/src/
