@@ -52,15 +52,15 @@ When you see `Waiting for changes...`, open the browser using [http://localhost:
 
 If the application is running properly, you can stop the web server with `^C` and move on.
 
-### Install GeoExt 3 package
+### GeoExt 3 package repository
 
-GeoExt 3 was developed as a ExtJS [package](http://docs.sencha.com/cmd/6.x/cmd_packages/cmd_packages.html). Install the `GeoExt3` package, using sencha cmd.
+GeoExt 3 was developed as a ExtJS [package](http://docs.sencha.com/cmd/6.x/cmd_packages/cmd_packages.html). We need to tell Sencha cmd where it can find the `GeoExt3` package.
 
 ```
 sencha package repo add GeoExt http://geoext.github.io/geoext3/cmd/pkgs
 ```
 
-Sencha cmd can be used to check that that GeoExt repository was added.
+Sencha cmd can be used to check that GeoExt repository is known. Later Sencha cmd will fetch the GeoExt 3 package from the repository to build our application.
 
 ```
 sencha repository list
@@ -74,6 +74,7 @@ Sencha Cmd v6.0.1.76
 [INF] 
 [INF]     sencha - http://cdn.sencha.com/cmd/packages/
 [INF]     GeoExt - http://geoext.github.io/geoext3/cmd/pkgs/
+[INF]     font-awesome - http://geoext.github.io/geoext3/cmd/pkgs/
 ```
 
 ### Adding a new view
@@ -98,7 +99,7 @@ We need to change the view created by `sencha generate view main.Map`.
 
 Three modifications are necessary. The view should extend `GeoExt.component.Map`, have an xtype `mappanel` assigned for future reference and needs an additional property `map`.
 
-The entire 'app/view/main/Map.js' is:
+The entire `app/view/main/Map.js` is:
 
 ```
 Ext.define("MyGeoExtApp.view.main.Map",{
@@ -215,14 +216,16 @@ Note: Do not change the global `requires`:
         // "GeoExt" // not here, put it under builds/classic/requires
     ],
 ```
-### Add OpenLayers library to index.html
+### Add OpenLayers 3 library to index.html
 
-Edit `index.html`, to include the OpenLayers library. Add these two lines, after the existing `<title>MyGeoExtApp</title>`.
+Edit `index.html`, to include the OpenLayers 3 library. Add these two lines, after the existing `<title>MyGeoExtApp</title>`.
 
 ```
     <link rel="stylesheet" type="text/css" href="http://openlayers.org/en/master/css/ol.css">
     <script src="http://openlayers.org/en/master/build/ol.js"></script>
 ```
+
+This includes all OpenLayers 3 functionality. After this exercise, you can consider [creating a custom build](http://openlayers.org/en/v3.9.0/doc/tutorials/custom-builds.html) to create a smaller OL3 library, adjusted to only what you need.
 
 ### Build and test the app
 
@@ -252,6 +255,10 @@ The following screenshots shows the result, for the classic (running on desktop 
 ### Celebrate and share
 
 Congratulations! Celebrate and share your accomplishment!
+
+### What Went Wrong?
+
+If you are unable to get this GeoExt 3 app up and running, check the Sencha cmd output for errors. Also check the browser inspector/development tools to find any errors if don't see the map.
 
 ### Further development
 
