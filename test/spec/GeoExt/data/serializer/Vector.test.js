@@ -294,6 +294,7 @@ describe('GeoExt.data.serializer.Vector', function() {
             expectedStyle['[_gx3_style_0 = \'' + styleId3 + '\']'] = {
                 symbolizers: [{
                     type: 'Text',
+                    fontColor: '#333333', // Default color of ol3
                     fontWeight: 'normal',
                     fontSize: '16px',
                     fontFamily: '"sans serif"',
@@ -306,6 +307,7 @@ describe('GeoExt.data.serializer.Vector', function() {
             expectedStyle['[_gx3_style_1 = \'' + styleId4 + '\']'] = {
                 symbolizers: [{
                     type: 'Text',
+                    fontColor: '#333333', // Default color of ol3
                     fontWeight: 'normal',
                     fontSize: '16px',
                     fontFamily: '"sans serif"',
