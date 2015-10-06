@@ -36,7 +36,7 @@ For more informations check the following links:
 
 GeoExt 3 is a [ExtJS package](http://docs.sencha.com/cmd/6.x/cmd_packages/cmd_packages.html). It can be used as any other ExtJS package, taking advantage of Sencha cmd.
 
-To help with your first GeoExt 3 project, follow the instructions provided to build a [GeoExt 3 Universal app](Universal%20app.md). This app runs on the desktop and on mobile.
+To help with your first GeoExt 3 project, follow the instructions provided to build a [GeoExt 3 Universal app](universal-app.md). This app runs on the desktop and on mobile.
 
 ## Examples
 
