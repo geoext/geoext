@@ -3,7 +3,7 @@
 Follow these instructions to build your first GeoExt 3 application, using Sencha cmd. These instructions were prepared using:
 
 * Sencha Cmd v6.0.1.76
-* ExtJs GPL 6.0.0 (ext.version.number=6.0.0.640)
+* ExtJS GPL 6.0.0 (ext.version.number=6.0.0.640)
 * GeoExt 3 (from 2015-10-03)
 
 We will create a basic GeoExt 3 based universal app. A universal app should use both the classic and modern toolkit to work on desktop and mobile browsers. At the end of this exercise, you should have an application displaying a OL3 map on a panel, both on the desktop and mobile browser.
@@ -14,12 +14,12 @@ Let's review the Sencha cmd used to create a basic universal app.
 
 Installing [Sencha Cmd](https://www.sencha.com/products/extjs/cmd-download/)
 
-Download ExtJs 6 GPL ([version ext-6.0.0](https://www.sencha.com/legal/gpl/)). Unzip it, and store it somewhere on your file system, like `/somewhere/ExtJs 6/ext-6.0.0/`
+Download ExtJS 6 GPL ([version ext-6.0.0](https://www.sencha.com/legal/gpl/)). Unzip it, and store it somewhere on your file system, like `/somewhere/ExtJS 6/ext-6.0.0/`
 
-To create a universal ExtJs 6 based app, do:
+To create a universal ExtJS 6 based app, do:
 
 ```
-sencha -sdk "/somewhere/ExtJs 6/ext-6.0.0/" generate app MyApp MyApp
+sencha -sdk "/somewhere/ExtJS 6/ext-6.0.0/" generate app MyApp MyApp
 cd MyApp
 sencha app watch
 ```
@@ -43,7 +43,7 @@ Let's do it! Please make sure that you are able to create the ExtJS Universal Ap
 You already have Sencha cmd and Sencha 6. Let's start with a basic ExtJS application.
 
 ```
-sencha -sdk "/somewhere/ExtJs 6/ext-6.0.0/" generate app MyGeoExtApp MyGeoExtApp
+sencha -sdk "/somewhere/ExtJS 6/ext-6.0.0/" generate app MyGeoExtApp MyGeoExtApp
 cd MyGeoExtApp/
 sencha app watch
 ```
