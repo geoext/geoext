@@ -34,40 +34,9 @@ For more informations check the following links:
 
 ## Use GeoExt 3 inside your Sencha app
 
-Install `sencha cmd`: http://www.sencha.com/products/sencha-cmd/#overview
+GeoExt 3 is a [ExtJS package](http://docs.sencha.com/cmd/6.x/cmd_packages/cmd_packages.html). It can be used as any other ExtJS package, taking advantage of Sencha cmd.
 
-First, add the remote repository
-
-```
-sencha package repo add GeoExt http://geoext.github.io/geoext3/cmd/pkgs
-```
-
-To use this package in a sencha app just add "GeoExt" to the "requires"-array
-in your app.json:
-
-```javascript
-    /**
-     * The list of required packages (with optional versions; default is "latest").
-     *
-     * For example,
-     *
-     *      "requires": [
-     *          "charts"
-     *      ]
-     */
-    "requires": [
-        "GeoExt"
-    ],
-```
-
-That's it, you can then use GeoExt components in your app. We strive to update
-this package regularily, while we are developing. If you want to get a newer
-version of the GeoExt package, you have to do the following
-
-* In your application: Remove the `packages/remote/GeoExt` folder
-* In your local package cache (`path/to/Sencha/Cmd/repo/pkgs`): Remove the
-  `GeoExt` folder
-* In your application issue `sencha app refresh`
+To help with your first GeoExt 3 project, follow the instructions provided to build a [GeoExt 3 Universal app](universal-app.md). This app runs on the desktop and on mobile.
 
 ## Examples
 
