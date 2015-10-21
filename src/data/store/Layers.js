@@ -278,24 +278,32 @@ Ext.define('GeoExt.data.store.Layers', {
      * Handler for a store's remove event.
      *
      * @param {Ext.data.Store} store
-     * @param {Ext.data.Model} record
+     * @param {Ext.data.Model[]} records
      * @private
      */
-    onRemove: function(store, record){
+    onRemove: function(store, records){
         var me = this;
+        var record;
+        var layer;
+        var found;
+        var i, ii;
         if(!me._removing) {
-            var layer = record.getOlLayer();
-            layer.un('propertychange', me.onChangeLayer, me);
-            var found = false;
-            me.map.getLayers().forEach(function(el) {
+            var compareFunc = function(el) {
                 if (el === layer) {
                     found = true;
                 }
-            });
-            if (found) {
-                me._removing = true;
-                me.removeMapLayer(record);
-                delete me._removing;
+            };
+            for (i = 0, ii = records.length; i < ii; ++i) {
+                record = records[i];
+                layer = record.getOlLayer();
+                found = false;
+                layer.un('propertychange', me.onChangeLayer, me);
+                me.map.getLayers().forEach(compareFunc);
+                if (found) {
+                    me._removing = true;
+                    me.removeMapLayer(record);
+                    delete me._removing;
+                }
             }
         }
     },

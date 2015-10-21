@@ -15,8 +15,8 @@
  */
 
 /**
- * A store that is synchronized with a GeoExt.data.store.Layers. It will be used
- * by a GeoExt.tree.Panel.
+ * A store that is synchronized with a GeoExt.data.store.Layers. It can be used
+ * by an Ext.tree.Panel.
  *
  * @class GeoExt.data.store.LayersTree
  */
@@ -24,6 +24,10 @@ Ext.define('GeoExt.data.store.LayersTree', {
     extend: 'Ext.data.TreeStore',
 
     alternateClassName: ['GeoExt.data.TreeStore'],
+
+    requires: [
+        'GeoExt.util.Layer'
+    ],
 
     mixins: [
         'GeoExt.mixin.SymbolCheck'
@@ -80,13 +84,6 @@ Ext.define('GeoExt.data.store.LayersTree', {
     },
 
     /**
-     * Defines if the given ol.layer.Group while be shown as node or not.
-     *
-     * @property {Boolean}
-     */
-    showLayerGroupNode: false,
-
-    /**
      * Defines if the order of the layers added to the store will be
      * reversed. The default behaviour and what most users expect is
      * that mapLayers on top are also on top in the tree.
@@ -115,11 +112,28 @@ Ext.define('GeoExt.data.store.LayersTree', {
         }
     },
 
+    root: {
+        expanded: true
+    },
+
     constructor: function(){
         var me = this;
         me.callParent(arguments);
-        me.on('nodebeforeexpand', me.handleNodeBeforeExpand, me);
-        me.on('noderemove', me.handleNodeRemove, me);
+
+        var collection = me.layerGroup.getLayers();
+        Ext.each(collection.getArray(), function(layer) {
+            me.addLayerNode(layer);
+        }, me, me.inverseLayerOrder);
+
+        me.bindGroupLayerCollectionEvents(me.layerGroup);
+
+        me.on({
+            remove: me.handleRemove,
+            noderemove: me.handleNodeRemove,
+            nodeappend: me.handleNodeAppend,
+            nodeinsert: me.handleNodeInsert,
+            scope: me
+        });
     },
 
     /**
@@ -127,7 +141,6 @@ Ext.define('GeoExt.data.store.LayersTree', {
      * @private
      */
     applyFolderToggleMode: function(folderToggleMode){
-
         if(folderToggleMode === 'classic' || folderToggleMode === 'ol3'){
             var rootNode = this.getRootNode();
             if(rootNode){
@@ -138,64 +151,39 @@ Ext.define('GeoExt.data.store.LayersTree', {
                 });
             }
         } else {
-            Ext.raise("Invalid folderToggleMode "
-                + "set in 'GeoExt.data.store.LayersTree': "
-                + folderToggleMode + ". 'classic' or 'ol3' are valid.");
+            Ext.raise("Invalid folderToggleMode set in " + this.self.getName()
+                + ": " + folderToggleMode + ". 'classic' or 'ol3' are valid.");
         }
         return folderToggleMode;
     },
 
     /**
-     * Adds a layer as a child to a node. It can be either an
-     * GeoExt.data.model.Layer or an ol.layer.Base.
+     * Listens to the remove event and syncs the attached layergroup.
      *
-     * @param {Ext.data.NodeInterface} node
-     * @param {GeoExt.data.model.Layer/ol.layer.Base} rec
-     */
-    addLayerNode: function(node, rec){
-        var me = this,
-            layer = rec instanceof ol.layer.Base ? rec : rec.data,
-            textProperty = me.getTextProperty(),
-            folderNode,
-            subLayers;
-
-        if(layer instanceof ol.layer.Group){
-            node.set('__toggleMode', me.getFolderToggleMode());
-            subLayers = layer.getLayers();
-            subLayers.once('add', me.onLayerCollectionChanged, me);
-            subLayers.once('remove', me.onLayerCollectionChanged, me);
-            layer.text = layer.get(textProperty);
-            folderNode = node.appendChild(layer);
-            Ext.each(subLayers.getArray(), function(childLayer) {
-                me.addLayerNode(folderNode, childLayer);
-            }, me, me.inverseLayerOrder);
-        } else {
-            layer.text = layer.get(textProperty);
-            node.appendChild(layer);
-        }
-    },
-
-    /**
-     * Listens to the nodebeforeexpand event. Adds nodes corresponding to the
-     * data type.
-     *
-     * @param {GeoExt.data.model.LayerTreeNode} node
+     * @param {GeoExt.data.store.LayersTree} store The layer store.
+     * @param {GeoExt.data.model.LayerTreeNode[]} records An array of the
+     *     removed nodes.
      * @private
      */
-    handleNodeBeforeExpand: function(node){
+    handleRemove: function(store, records){
         var me = this;
-        if(node.isRoot()){
-            if(me.showLayerGroupNode) {
-                me.addLayerNode(node, me.layerGroup);
-            } else {
-                var collection = me.layerGroup.getLayers();
-                collection.once('remove', me.onLayerCollectionChanged, me);
-                collection.once('add', me.onLayerCollectionChanged, me);
-                Ext.each(collection.getArray(), function(layer) {
-                    me.addLayerNode(node, layer);
-                }, me, me.inverseLayerOrder);
+        me.suspendCollectionEvents();
+        Ext.each(records, function(record) {
+            var layerOrGroup = record.getOlLayer();
+            if(layerOrGroup instanceof ol.layer.Group){
+                me.unbindGroupLayerCollectionEvents(layerOrGroup);
             }
-        }
+            var group = GeoExt.util.Layer.findParentGroup(
+                layerOrGroup, me.getLayerGroup()
+            );
+            if (!group) {
+                group = me.getLayerGroup();
+            }
+            if (group) {
+                group.getLayers().remove(layerOrGroup);
+            }
+        });
+        me.resumeCollectionEvents();
     },
 
     /**
@@ -208,14 +196,141 @@ Ext.define('GeoExt.data.store.LayersTree', {
      */
     handleNodeRemove: function(parentNode, removedNode){
         var me = this;
-        if(removedNode.isRoot()){
+        var layerOrGroup = removedNode.getOlLayer();
+        if (!layerOrGroup) {
+            layerOrGroup = me.getLayerGroup();
+        }
+        if(layerOrGroup instanceof ol.layer.Group){
+            me.unbindGroupLayerCollectionEvents(layerOrGroup);
+        }
+        var group = GeoExt.util.Layer.findParentGroup(
+            layerOrGroup, me.getLayerGroup()
+        );
+
+        if (group) {
+            me.suspendCollectionEvents();
+            group.getLayers().remove(layerOrGroup);
+            me.resumeCollectionEvents();
+        }
+    },
+
+    handleNodeAppend: function(parentNode, appendedNode){
+        var me = this;
+        var group = parentNode.getOlLayer();
+        var layer = appendedNode.getOlLayer();
+
+        if (!group) {
+            group = me.getLayerGroup();
+        }
+
+        // check if the layer is possibly already at the desired index:
+        var layerInGroupIdx = GeoExt.util.Layer.getLayerIndex(
+            layer, group
+        );
+        if (layerInGroupIdx === -1) {
+            me.suspendCollectionEvents();
+            if (me.inverseLayerOrder) {
+                group.getLayers().insertAt(0, layer);
+            } else {
+                group.getLayers().push(layer);
+            }
+            me.resumeCollectionEvents();
+        }
+    },
+
+    handleNodeInsert: function(parentNode, insertedNode, insertedBefore){
+        var me = this;
+        var group = parentNode.getOlLayer();
+        if (!group) {
+            // can only happen if a node was dragged before the visible root.
+            group = me.getLayerGroup();
+        }
+        var layer = insertedNode.getOlLayer();
+        var beforeLayer = insertedBefore.getOlLayer();
+        var groupLayers = group.getLayers();
+        var beforeIdx = GeoExt.util.Layer.getLayerIndex(beforeLayer, group);
+        var insertIdx = beforeIdx;
+        if (me.inverseLayerOrder) {
+            insertIdx += 1;
+        }
+
+        // check if the layer is possibly already at the desired index:
+        var currentLayerInGroupIdx = GeoExt.util.Layer.getLayerIndex(
+            layer, group
+        );
+        if (currentLayerInGroupIdx !== insertIdx) {
+            me.suspendCollectionEvents();
+            groupLayers.insertAt(insertIdx, layer);
+            me.resumeCollectionEvents();
+        }
+    },
+
+    /**
+     * Adds a layer as a node to the store. It can be an ol.layer.Base.
+     *
+     * @param {Ext.data.NodeInterface} node
+     */
+    addLayerNode: function(layerOrGroup){
+        var me = this;
+        // 2. get group to which the layer was added
+        var group = GeoExt.util.Layer.findParentGroup(
+            layerOrGroup, me.getLayerGroup()
+        );
+
+        // 3. get index of layer in that group
+        var layerIdx = GeoExt.util.Layer.getLayerIndex(layerOrGroup, group);
+
+        // 3.1 the index must probably be changed because of inverseLayerOrder
+        // TODO Check
+        if (me.inverseLayerOrder) {
+            var totalInGroup = group.getLayers().getLength();
+            layerIdx = totalInGroup - layerIdx - 1;
+        }
+
+        // 4. find the node that represents the group
+        var parentNode;
+        if (group === me.getLayerGroup()) {
+            parentNode = me.getRootNode();
+        } else {
+            parentNode = me.getRootNode().findChildBy(function(candidate){
+                return candidate.getOlLayer() === group;
+            }, me, true);
+        }
+        if (!parentNode) {
             return;
         }
-        var layer = removedNode.getOlLayer();
-        if(layer instanceof ol.layer.Group){
-            var collection = layer.getLayers();
-            collection.un('add', me.onLayerCollectionChanged, me);
-            collection.un('remove', me.onLayerCollectionChanged, me);
+
+        // 5. insert a new layer node at the specified index to that node
+        var layerNode = Ext.create('GeoExt.data.model.LayerTreeNode',
+            layerOrGroup
+        );
+        layerNode.set('text', layerOrGroup.get(me.getTextProperty()));
+        layerNode.commit();
+
+        parentNode.insertChild(layerIdx, layerNode);
+
+        if (layerOrGroup instanceof ol.layer.Group) {
+            layerOrGroup.getLayers().forEach(me.addLayerNode, me);
+        }
+    },
+
+    bindGroupLayerCollectionEvents: function(layerOrGroup) {
+        var me = this;
+        if (layerOrGroup instanceof ol.layer.Group) {
+            var collection = layerOrGroup.getLayers();
+            collection.on('remove', me.onLayerCollectionRemove, me);
+            collection.on('add', me.onLayerCollectionAdd, me);
+            collection.forEach(me.bindGroupLayerCollectionEvents, me);
+        }
+    },
+
+    unbindGroupLayerCollectionEvents: function(layerOrGroup) {
+        var me = this;
+        if (layerOrGroup instanceof ol.layer.Group) {
+            var collection = layerOrGroup.getLayers();
+            collection.un('remove', me.onLayerCollectionRemove, me);
+            collection.un('add', me.onLayerCollectionAdd, me);
+            collection.forEach(me.unbindGroupLayerCollectionEvents, me);
         }
     },
 
@@ -224,34 +339,38 @@ Ext.define('GeoExt.data.store.LayersTree', {
      *
      *  @private
      */
-    onLayerCollectionChanged: function(){
+    onLayerCollectionAdd: function(evt){
         var me = this;
         if (me.collectionEventsSuspended) {
             return;
         }
+        var layerOrGroup = evt.element;
+        me.addLayerNode(layerOrGroup);
+        me.bindGroupLayerCollectionEvents(layerOrGroup);
+    },
 
-        // remove all filters as long as we take care of the changed collection
-        // but keep a reference so we can add them in later
-        var currentFilters = me.getFilters();
-        var restoreFilters = [];
-        currentFilters.each(function(currentFilter) {
-            restoreFilters.push(currentFilter);
-            me.removeFilter(currentFilter);
-        });
-        me.getRootNode().removeAll();
-        if(me.showLayerGroupNode) {
-            me.addLayerNode(me.getRootNode(), me.getLayerGroup());
-        } else {
-            var collection = me.getLayerGroup().getLayers();
-            collection.once('remove', me.onLayerCollectionChanged, me);
-            collection.once('add', me.onLayerCollectionChanged, me);
-            Ext.each(collection.getArray(), function(layer) {
-                me.addLayerNode(me.getRootNode(), layer);
-            }, me, me.inverseLayerOrder);
+
+    onLayerCollectionRemove: function(evt){
+        var me = this;
+        if (me.collectionEventsSuspended) {
+            return;
         }
-
-        // now restore any filters we previously had
-        me.addFilter(restoreFilters);
+        var layerOrGroup = evt.element;
+        // 1. find the node that existed for that layer
+        var node = me.getRootNode().findChildBy(function(candidate) {
+            return candidate.getOlLayer() === layerOrGroup;
+        });
+        if (!node) {
+            return;
+        }
+        // 2. if grouplayer: cascade down and remove any possible listeners?
+        if (layerOrGroup instanceof ol.layer.Group) {
+            me.unbindGroupLayerCollectionEvents(layerOrGroup);
+        }
+        // 3. find the parent
+        var parent = node.parentNode;
+        // 4. remove the node from the parent
+        parent.removeChild(node);
     },
 
     /**

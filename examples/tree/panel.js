@@ -1,6 +1,5 @@
 Ext.require([
     'GeoExt.component.Map',
-    'GeoExt.tree.Panel',
     'GeoExt.data.store.LayersTree'
 ]);
 
@@ -41,6 +40,7 @@ Ext.application({
             visible: true
         });
 
+
         olMap = new ol.Map({
             layers: [group, layer3],
             view: new ol.View({
@@ -61,12 +61,14 @@ Ext.application({
         });
 
         treeStore = Ext.create('GeoExt.data.store.LayersTree', {
-            layerGroup: olMap.getLayerGroup(),
-            showLayerGroupNode: false
+            layerGroup: olMap.getLayerGroup()
         });
 
-        treePanel = Ext.create('GeoExt.tree.Panel', {
-            title: 'GeoExt.tree.Panel Example',
+        treePanel = Ext.create('Ext.tree.Panel', {
+            title: 'Tree Example',
+            viewConfig: {
+                plugins: { ptype: 'treeviewdragdrop' }
+            },
             store: treeStore,
             rootVisible: false,
             flex: 1,
