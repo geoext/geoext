@@ -30,393 +30,67 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see &lt;http://www.gnu.org/licenses/&gt;.
  */
-<span id='GeoExt-data-store-Layer'>/**
-</span> * A store that synchronizes a layers array of an OpenLayers.Map with a
- * layer store holding {@link GeoExt.data.mode.layer.Base} instances.
+<span id='GeoExt-util-Layer'>/**
+</span> * A utility class for working with OpenLayers layers.
  *
- * @class GeoExt.data.store.Layer
+ * @class GeoExt.util.Layer
  */
-Ext.define('GeoExt.data.store.Layer', {
-    extend: 'Ext.data.Store',
-    alternateClassName: ['GeoExt.data.LayerStore'],
-    requires: [
-        'GeoExt.data.model.Layer'
-    ],
-
-    mixins: [
-        'GeoExt.mixin.SymbolCheck'
-    ],
-
-<span id='GeoExt-data-store-Layer-property-symbols'>    // &lt;debug&gt;
-</span>    symbols: [
-        'ol.Collection#clear',
-        'ol.Collection#forEach',
-        'ol.Collection#getArray',
-        'ol.Collection#insertAt',
-        'ol.Collection#on',
-        'ol.Collection#push',
-        'ol.Collection#remove',
-        'ol.layer.Layer',
-        'ol.layer.Layer#get',
-        'ol.layer.Layer#on',
-        'ol.layer.Layer#set',
-        'ol.Map',
-        'ol.Map#getLayers'
-    ],
-<span id='GeoExt-data-store-Layer-cfg-model'>    // &lt;/debug&gt;
-</span>
-    model: 'GeoExt.data.model.Layer',
-
-    config: {
-<span id='GeoExt-data-store-Layer-cfg-map'>        /**
-</span>         * A configured map or a configuration object for the map constructor.
+Ext.define('GeoExt.util.Layer', {
+    statics: {
+<span id='GeoExt-util-Layer-static-method-findParentGroup'>        /**
+</span>         * A utility method to find the `ol.layer.Group` which is the direct
+         * parent of the passed layer. Searching starts at the passed
+         * startGroup. If `undefined` is returned, the layer is not a child of
+         * the `startGroup`.
          *
-         * @cfg {ol.Map/Object} map
+         * @param {ol.layer.Base} childLayer The layer whose group we want.
+         * @param {ol.layer.Group} startGroup The group layer that we will start
+         *     searching in.
+         * @return {ol.layer.Group} The direct parent group or undefined if the
+         *     group cannot be determined.
          */
-        map: null
-    },
+        findParentGroup: function(childLayer, startGroup){
+            var parentGroup,
+                findParentGroup = GeoExt.util.Layer.findParentGroup,
+                getLayerIndex = GeoExt.util.Layer.getLayerIndex;
 
-<span id='GeoExt-data-store-Layer-method-constructor'>    /**
-</span>     * TODO
-     */
-    constructor: function(config) {
-        var me = this;
-
-        me.callParent([config]);
-
-        if(config.map) {
-            this.bindMap(config.map);
-        }
-    },
-
-<span id='GeoExt-data-store-Layer-method-bindMap'>    /**
-</span>     * Bind this store to a map instance, once bound the store
-     * is synchronized with the map and vice-versa.
-     *
-     * @param {ol.Map} map The map instance.
-     */
-    bindMap: function(map){
-        var me = this;
-
-        if(!me.map) {
-            me.map = map;
-        }
-
-        if(map instanceof ol.Map){
-            var mapLayers = map.getLayers();
-            mapLayers.forEach(function(layer){
-                me.loadRawData(layer, true);
-            });
-
-            mapLayers.forEach(function(layer) {
-                layer.on('propertychange', me.onChangeLayer, me);
-            });
-            mapLayers.on('add', me.onAddLayer, me);
-            mapLayers.on('remove', me.onRemoveLayer, me);
-        }
-
-        me.on({
-            &quot;load&quot;: me.onLoad,
-            &quot;clear&quot;: me.onClear,
-            &quot;add&quot;: me.onAdd,
-            &quot;remove&quot;: me.onRemove,
-            &quot;update&quot;: me.onStoreUpdate,
-            scope: me
-        });
-
-        me.data.on({
-            &quot;replace&quot;: me.onReplace,
-            scope: me
-        });
-        me.fireEvent(&quot;bind&quot;, me, map);
-    },
-
-<span id='GeoExt-data-store-Layer-method-unbindMap'>    /**
-</span>     * Unbind this store from the map it is currently bound.
-     */
-    unbindMap: function() {
-        var me = this;
-
-        if (me.map &amp;&amp; me.map.getLayers()) {
-            me.map.getLayers().un('add', me.onAddLayer, me);
-            me.map.getLayers().un('remove', me.onRemoveLayer, me);
-        }
-        me.un(&quot;load&quot;, me.onLoad, me);
-        me.un(&quot;clear&quot;, me.onClear, me);
-        me.un(&quot;add&quot;, me.onAdd, me);
-        me.un(&quot;remove&quot;, me.onRemove, me);
-        me.un(&quot;update&quot;, me.onStoreUpdate, me);
-
-        me.data.un(&quot;replace&quot;, me.onReplace, me);
-
-        me.map = null;
-    },
-
-<span id='GeoExt-data-store-Layer-method-onChangeLayer'>    /**
-</span>     * Handler for layer changes.  When layer order changes, this moves the
-     * appropriate record within the store.
-     *
-     * @param {Object} evt
-     * @private
-     */
-    onChangeLayer: function(evt) {
-        var layer = evt.target;
-        var recordIndex = this.findBy(function(rec) {
-            return rec.getOlLayer() === layer;
-        });
-        if(recordIndex &gt; -1) {
-            var record = this.getAt(recordIndex);
-            if (evt.key === &quot;title&quot;) {
-                record.set(&quot;title&quot;, layer.get('title'));
+            if (getLayerIndex(childLayer, startGroup) !== -1) {
+                parentGroup = startGroup;
             } else {
-                this.fireEvent(&quot;update&quot;, this, record, Ext.data.Record.EDIT);
-            }
-        }
-    },
-
-<span id='GeoExt-data-store-Layer-method-onAddLayer'>    /**
-</span>     * Handler for a layer collection's add event.
-     *
-     * @param {Object} evt
-     * @private
-     */
-    onAddLayer: function(evt) {
-        var layer = evt.element;
-        var index = this.map.getLayers().getArray().indexOf(layer);
-        var me = this;
-        layer.on('propertychange', me.onChangeLayer, me);
-        if(!me._adding) {
-            me._adding = true;
-            var result = me.proxy.reader.read(layer);
-            me.insert(index, result.records);
-            delete me._adding;
-        }
-    },
-
-<span id='GeoExt-data-store-Layer-method-onRemoveLayer'>    /**
-</span>     * Handler for layer collection's remove event.
-     *
-     * @param {Object} evt
-     * @private
-     */
-    onRemoveLayer: function(evt){
-        var me = this;
-        if(!me._removing) {
-            var layer = evt.element,
-                rec = me.getByLayer(layer);
-            if (rec) {
-                me._removing = true;
-                layer.un('propertychange', me.onChangeLayer, me);
-                me.remove(rec);
-                delete me._removing;
-            }
-        }
-    },
-
-<span id='GeoExt-data-store-Layer-method-onLoad'>    /**
-</span>     * Handler for a store's load event.
-     *
-     * @param {Ext.data.Store} store
-     * @param {Ext.data.Model[]} records
-     * @param {Boolean} successful
-     * @private
-     */
-    onLoad: function(store, records, successful) {
-        var me = this;
-        if (successful) {
-            if (!Ext.isArray(records)) {
-                records = [records];
-            }
-            if(!me._addRecords) {
-                me._removing = true;
-                me.map.getLayers().forEach(function(layer) {
-                    layer.un('propertychange', me.onChangeLayer, me);
+                startGroup.getLayers().forEach(function(layer){
+                    if (!parentGroup &amp;&amp; layer instanceof ol.layer.Group) {
+                        parentGroup = findParentGroup(childLayer, layer);
+                        // sadly we cannot abort the forEach-iteration here
+                    }
                 });
-                me.map.getLayers().clear();
-                delete me._removing;
             }
-            var len = records.length;
-            if (len &gt; 0) {
-                var layers = new Array(len);
-                for (var i = 0; i &lt; len; i++) {
-                    layers[i] = records[i].getOlLayer();
-                    layers[i].on('propertychange', me.onChangeLayer, me);
-                }
-                me._adding = true;
-                me.map.getLayers().extend(layers);
-                delete me._adding;
-            }
-        }
-        delete me._addRecords;
-    },
 
-<span id='GeoExt-data-store-Layer-method-onClear'>    /**
-</span>     * Handler for a store's clear event.
-     *
-     * @private
-     */
-    onClear: function() {
-        var me = this;
-        me._removing = true;
-        me.map.getLayers().forEach(function(layer) {
-            layer.un('propertychange', me.onChangeLayer, me);
-        });
-        me.map.getLayers().clear();
-        delete me._removing;
-    },
+            return parentGroup;
+        },
 
-<span id='GeoExt-data-store-Layer-method-onAdd'>    /**
-</span>     * Handler for a store's add event.
-     *
-     * @param {Ext.data.Store} store
-     * @param {Ext.data.Model[]} records
-     * @param {Number} index
-     * @private
-     */
-    onAdd: function(store, records, index) {
-        var me = this;
-        if (!me._adding) {
-            me._adding = true;
-            var layer;
-            for (var i = 0, ii = records.length; i &lt; ii; ++i) {
-                layer = records[i].getOlLayer();
-                layer.on('propertychange', me.onChangeLayer, me);
-                if (index === 0) {
-                    me.map.getLayers().push(layer);
-                } else {
-                    me.map.getLayers().insertAt(index, layer);
-                }
-            }
-            delete me._adding;
-        }
-    },
+<span id='GeoExt-util-Layer-static-method-getLayerIndex'>        /**
+</span>         * A utility method to determine the zero based index of a layer in a
+         * layer group. Will return `-1` if the layer isn't a direct child of
+         * the group.
+         *
+         * @param {ol.layer.Base} layer The layer whose index we want.
+         * @param {ol.layer.Group} group The group to search in.
+         * @return {Number} The index or `-1` if the layer isn't a direct child
+         *     of the group.
+         */
+        getLayerIndex: function(layer, group){
+            var index = -1;
 
-<span id='GeoExt-data-store-Layer-method-onRemove'>    /**
-</span>     * Handler for a store's remove event.
-     *
-     * @param {Ext.data.Store} store
-     * @param {Ext.data.Model} record
-     * @private
-     */
-    onRemove: function(store, record){
-        var me = this;
-        if(!me._removing) {
-            var layer = record.getOlLayer();
-            layer.un('propertychange', me.onChangeLayer, me);
-            var found = false;
-            me.map.getLayers().forEach(function(el) {
-                if (el === layer) {
-                    found = true;
+            group.getLayers().forEach(function(candidate, idx){
+                if (index === -1 &amp;&amp; candidate === layer) {
+                    index = idx;
+                    // sadly we cannot abort the forEach-iteration here
                 }
             });
-            if (found) {
-                me._removing = true;
-                me.removeMapLayer(record);
-                delete me._removing;
-            }
-        }
-    },
 
-<span id='GeoExt-data-store-Layer-method-onStoreUpdate'>    /**
-</span>     * Handler for a store's update event.
-     *
-     * @param {Ext.data.Store} store
-     * @param {Ext.data.Model} record
-     * @param {Number} operation
-     */
-    onStoreUpdate: function(store, record, operation) {
-        if(operation === Ext.data.Record.EDIT) {
-            if (record.modified &amp;&amp; record.modified.title) {
-                var layer = record.getOlLayer();
-                var title = record.get(&quot;title&quot;);
-                if(title !== layer.get('title')) {
-                    layer.set('title', title);
-                }
-            }
-        }
-    },
-
-<span id='GeoExt-data-store-Layer-method-removeMapLayer'>    /**
-</span>     * Removes a record's layer from the bound map.
-     *
-     * @param {Ext.data.Record} record
-     * @private
-     */
-    removeMapLayer: function(record){
-        this.map.getLayers().remove(record.getOlLayer());
-    },
-
-<span id='GeoExt-data-store-Layer-method-onReplace'>    /**
-</span>     * Handler for a store's data collections' replace event.
-     *
-     * @param {String} key
-     * @param {Ext.data.Model} oldRecord In this case, a record that has
-     *     been replaced.
-     * @private
-     */
-    onReplace: function(key, oldRecord){
-        this.removeMapLayer(oldRecord);
-    },
-
-<span id='GeoExt-data-store-Layer-method-getByLayer'>    /**
-</span>     * Get the record for the specified layer.
-     *
-     * @param {OpenLayers.Layer} layer
-     * @return {Ext.data.Model} or undefined if not found
-     */
-    getByLayer: function(layer) {
-        var index = this.findBy(function(r) {
-            return r.getOlLayer() === layer;
-        });
-        if(index &gt; -1) {
-            return this.getAt(index);
-        }
-    },
-
-<span id='GeoExt-data-store-Layer-method-destroy'>    /**
-</span>     * Unbinds listeners by calling #unbind prior to being destroyed.
-     *
-     * @private
-     */
-    destroy: function() {
-        this.unbind();
-        this.callParent();
-    },
-
-<span id='GeoExt-data-store-Layer-method-loadRecords'>    /**
-</span>     * Overload loadRecords to set a flag if `addRecords` is `true`
-     * in the load options. Ext JS does not pass the load options to
-     * &quot;load&quot; callbacks, so this is how we provide that information
-     * to `onLoad`.
-     *
-     * @private
-     */
-    loadRecords: function(records, options) {
-        if(options &amp;&amp; options.addRecords) {
-            this._addRecords = true;
-        }
-        this.callParent(arguments);
-    },
-
-<span id='GeoExt-data-store-Layer-method-loadRawData'>    /**
-</span>     * @inheritdoc
-     *
-     * The event firing behaviour of Ext.4.1 is reestablished here. See also:
-     * [This discussion on the Sencha forum](http://www.sencha.com/forum/
-     * showthread.php?253596-beforeload-is-not-fired-by-loadRawData).
-     */
-    loadRawData: function(data, append) {
-        var me = this,
-            result = me.proxy.reader.read(data),
-            records = result.records;
-
-        if (result.success) {
-            me.totalCount = result.total;
-            me.loadRecords(records, append ? me.addRecordsOptions : undefined);
-            me.fireEvent('load', me, records, true);
+            return index;
         }
     }
-
 });
 </pre>
 </body>

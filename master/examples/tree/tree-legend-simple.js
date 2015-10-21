@@ -1,6 +1,5 @@
 Ext.require([
     'GeoExt.component.Map',
-    'GeoExt.tree.Panel',
     'GeoExt.data.store.LayersTree'
 ]);
 
@@ -142,12 +141,11 @@ Ext.application({
             layerGroup: olMap.getLayerGroup()
         });
 
-        treePanel = Ext.create('GeoExt.tree.Panel', {
+        treePanel = Ext.create('Ext.tree.Panel', {
             title: 'Legends in tree panel',
             store: treeStore,
             border: false,
             rootVisible: false,
-            dragDrop: false,
             hideHeaders: true,
             lines: false,
             flex: 1,
@@ -172,11 +170,10 @@ Ext.application({
             layerGroup: olMap.getLayerGroup()
         });
 
-        treePanel2 = Ext.create('GeoExt.tree.Panel', {
+        treePanel2 = Ext.create('Ext.tree.Panel', {
             title: 'treePanel',
             store: treeStore2,
             rootVisible: false,
-            dragDrop: false,
             border: false,
             flex: 1,
             hideHeaders: true,
