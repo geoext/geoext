@@ -68,14 +68,19 @@ cp -r $INSTALL_DIR/../repo/pkgs/$GEOEXT_PACKAGE_NAME/$GEOEXT_PACKAGE_VERSION cmd
 cp $INSTALL_DIR/../repo/pkgs/catalog.json cmd/pkgs/
 cp $INSTALL_DIR/../repo/pkgs/$GEOEXT_PACKAGE_NAME/catalog.json cmd/pkgs/$GEOEXT_PACKAGE_NAME
 
-
-# 2. examples, resources & src copied from repo
+# 2.
+# 2.1 examples, resources & src copied from repo
 for RAW_CP_DIR in $RAW_CP_DIRS
 do
     mkdir -p $SUB_FOLDER_NAME/$RAW_CP_DIR
     rm -Rf $SUB_FOLDER_NAME/$RAW_CP_DIR/*
     cp -r $TRAVIS_BUILD_DIR/$RAW_CP_DIR/* $SUB_FOLDER_NAME/$RAW_CP_DIR
 done
+
+# 2.2 copy created resources from build process
+cp $GEOEXT_IN_SENCHA_WS_FOLDER/build/$GEOEXT_PACKAGE_NAME.js $SUB_FOLDER_NAME
+cp $GEOEXT_IN_SENCHA_WS_FOLDER/build/$GEOEXT_PACKAGE_NAME-debug.js $SUB_FOLDER_NAME
+cp $GEOEXT_IN_SENCHA_WS_FOLDER/build/*css $SUB_FOLDER_NAME
 
 
 # 3. Update the API docs
