@@ -80,7 +80,6 @@ done
 # 2.2 copy created resources from build process
 cp $GEOEXT_IN_SENCHA_WS_FOLDER/build/$GEOEXT_PACKAGE_NAME.js $SUB_FOLDER_NAME
 cp $GEOEXT_IN_SENCHA_WS_FOLDER/build/$GEOEXT_PACKAGE_NAME-debug.js $SUB_FOLDER_NAME
-cp $GEOEXT_IN_SENCHA_WS_FOLDER/build/*css $SUB_FOLDER_NAME
 
 
 # 3. Update the API docs
