@@ -27,11 +27,11 @@
     "url": "https://github.com/geoext/geoext3.git"
   },
   "scripts": {
-    "test": "phantomjs --ssl-protocol=any --ignore-ssl-errors=true ./node_modules/mocha-phantomjs/lib/mocha-phantomjs.coffee test/index.html",
+    "test": "mocha-phantomjs --ssl-protocol=any --ignore-ssl-errors=true test/index.html",
     "test:watch": "watch 'npm test' src/ test/",
     "lint-js": "eslint src/ examples/ && eslint -c test/.eslintrc test/spec/",
     "livereload": "live-reload --port 9091 src/ examples/ test/",
-    "save-coverage": "phantomjs --ssl-protocol=any --ignore-ssl-errors=true ./node_modules/mocha-phantomjs/lib/mocha-phantomjs.coffee test/index.html spec '{\"hooks\": \"../../../test/phantom_hooks.js\"}'",
+    "save-coverage": "mocha-phantomjs --ssl-protocol=any --ignore-ssl-errors=true --hooks ./test/phantom_hooks.js test/index.html",
     "clean-coverage": "rm -rf src_instrumented src_old coverage",
     "ci-coverage": "npm run clean-coverage && istanbul instrument src -o src_instrumented && mv src src_old && mv src_instrumented src && istanbul cover npm run save-coverage && mv src src_instrumented && mv src_old src && istanbul report --root ./coverage lcovonly && cat ./coverage/lcov.info | coveralls",
     "html-coverage": "npm run clean-coverage && istanbul instrument src -o src_instrumented && mv src src_old && mv src_instrumented src && istanbul cover npm run save-coverage && mv src src_instrumented && mv src_old src && istanbul report --root ./coverage html",
@@ -40,16 +40,13 @@
   "dependencies": {},
   "devDependencies": {
     "coveralls": "2.11.4",
-    "eslint": "1.1.0",
+    "eslint": "1.7.3",
     "expect.js": "0.3.1",
     "istanbul": "0.3.18",
-    "jshint": "2.8.0",
     "live-reload": "1.1.0",
-    "mocha": "2.2.5",
-    "mocha-phantomjs": "3.6.0",
-    "mocha-phantomjs-istanbul": "0.0.2",
-    "phantomjs": "1.9.1 - 1.9.7-15",
-    "sinon": "1.15.4",
+    "mocha": "2.3.3",
+    "mocha-phantomjs": "4.0.1",
+    "sinon": "1.17.2",
     "watch": "0.16.0"
   }
 }
