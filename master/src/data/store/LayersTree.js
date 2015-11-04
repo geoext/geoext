@@ -83,6 +83,17 @@ Ext.define('GeoExt.data.store.LayersTree', {
         folderToggleMode: 'classic'
     },
 
+    statics: {
+        /**
+         * A string which we'll us for child nodes to detect if they are removed
+         * because their parent collapsed just recently. See the private
+         * method #onBeforeGroupNodeCollapse for an explanation.
+         *
+         * @private
+         */
+        KEY_COLLAPSE_REMOVE_OPT_OUT: '__remove_by_collapse__'
+    },
+
     /**
      * Defines if the order of the layers added to the store will be
      * reversed. The default behaviour and what most users expect is
@@ -167,8 +178,13 @@ Ext.define('GeoExt.data.store.LayersTree', {
      */
     handleRemove: function(store, records){
         var me = this;
+        var keyRemoveOptOut = me.self.KEY_COLLAPSE_REMOVE_OPT_OUT;
         me.suspendCollectionEvents();
         Ext.each(records, function(record) {
+            if (keyRemoveOptOut in record && record[keyRemoveOptOut] === true) {
+                delete record[keyRemoveOptOut];
+                return;
+            }
             var layerOrGroup = record.getOlLayer();
             if(layerOrGroup instanceof ol.layer.Group){
                 me.unbindGroupLayerCollectionEvents(layerOrGroup);
@@ -201,6 +217,7 @@ Ext.define('GeoExt.data.store.LayersTree', {
             layerOrGroup = me.getLayerGroup();
         }
         if(layerOrGroup instanceof ol.layer.Group){
+            removedNode.un('beforecollapse', me.onBeforeGroupNodeCollapse);
             me.unbindGroupLayerCollectionEvents(layerOrGroup);
         }
         var group = GeoExt.util.Layer.findParentGroup(
@@ -310,10 +327,38 @@ Ext.define('GeoExt.data.store.LayersTree', {
         parentNode.insertChild(layerIdx, layerNode);
 
         if (layerOrGroup instanceof ol.layer.Group) {
+            // See onBeforeGroupNodeCollapse for an explanation why we have this
+            layerNode.on('beforecollapse', me.onBeforeGroupNodeCollapse, me);
             layerOrGroup.getLayers().forEach(me.addLayerNode, me);
         }
     },
 
+    /**
+     * Bound as an eventlistener for layer nodes which are a folder / group on
+     * the beforecollapse event. Whenever a folder gets collapsed, ExtJS seems
+     * to actually remove the children from the store, triggering the removal
+     * of the actual layers in the map. This is an undesired behviour. We handle
+     * this as follows. Before the collapsing happens, we mark the childNodes,
+     * so we effectively opt-out in #handleRemove.
+     *
+     * @param {Ext.data.NodeInterface} node The collapsible folder node.
+     * @private
+     */
+    onBeforeGroupNodeCollapse: function(node){
+        var keyRemoveOptOut = this.self.KEY_COLLAPSE_REMOVE_OPT_OUT;
+        node.eachChild(function(child){
+            child[keyRemoveOptOut] = true;
+        });
+    },
+
+    /**
+     * A utility method which binds collection change events to the passed layer
+     * if it is a ol.layer.Group.
+     *
+     * @param {ol.layer.Base} layerOrGroup The layer to probably bind event
+     *     listeners for collection change events to.
+     * @private
+     */
     bindGroupLayerCollectionEvents: function(layerOrGroup) {
         var me = this;
         if (layerOrGroup instanceof ol.layer.Group) {
@@ -324,6 +369,14 @@ Ext.define('GeoExt.data.store.LayersTree', {
         }
     },
 
+    /**
+     * A utility method which unbinds collection change events from the passed
+     * layer if it is a ol.layer.Group.
+     *
+     * @param {ol.layer.Base} layerOrGroup The layer to probably unbind event
+     *     listeners for collection change events from.
+     * @private
+     */
     unbindGroupLayerCollectionEvents: function(layerOrGroup) {
         var me = this;
         if (layerOrGroup instanceof ol.layer.Group) {
