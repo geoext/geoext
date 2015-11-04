@@ -353,7 +353,7 @@ describe('GeoExt.data.store.LayersTree', function() {
         });
     });
 
-    describe('dragging leafs / layers and folders / groups', function(){
+    describe('Drag behaviour', function(){
         var dragTreeDiv;
         var layer1;
         var layer2;
@@ -494,6 +494,71 @@ describe('GeoExt.data.store.LayersTree', function() {
                 expect(topMostGroup.getLayers().item(1)).to.be(innerGroup);
 
                 done();
+            });
+        });
+    });
+
+    describe('Collapse behaviour', function(){
+        var dragTreeDiv;
+        var layer1;
+        var layer2;
+        var layer3;
+        var innerGroup;
+        var topMostGroup;
+        var store;
+        var tree;
+
+        beforeEach(function(){
+            dragTreeDiv = document.createElement('div');
+            dragTreeDiv.style.height = "500px";
+            document.body.appendChild(dragTreeDiv);
+
+            layer1 = new ol.layer.Vector({name: 'one'});
+            layer2 = new ol.layer.Vector({name: 'two'});
+            layer3 = new ol.layer.Vector({name: 'three'});
+            innerGroup = new ol.layer.Group({
+                layers: [layer2, layer3],
+                name: 'innergroup'
+            });
+            topMostGroup = new ol.layer.Group({
+                layers: [layer1, innerGroup],
+                name: 'topMostGroup'
+            });
+            store = Ext.create('GeoExt.data.store.LayersTree', {
+                layerGroup: topMostGroup,
+                inverseLayerOrder: false
+            });
+            tree = Ext.create('Ext.tree.Panel', {
+                store: store,
+                renderTo: dragTreeDiv,
+                viewConfig: {
+                    plugins: { ptype: 'treeviewdragdrop' }
+                },
+                height: 300
+            });
+        });
+        afterEach(function(){
+            store.destroy();
+            tree.destroy();
+            document.body.removeChild(dragTreeDiv);
+            dragTreeDiv = null;
+        });
+
+        it('does not remove sublayers if folder is collapsed', function(done){
+            tree.expandAll(function() {
+                // before collapse
+                var numInInnerGroup = innerGroup.getLayers().getLength();
+                expect(numInInnerGroup).to.be(2);
+
+                // collapse innergroup node
+                var innerGroupNode = store.getAt(2);
+                innerGroupNode.collapse(false, function(){
+                    numInInnerGroup = innerGroup.getLayers().getLength();
+
+                    // count must still be the same
+                    expect(numInInnerGroup).to.be(2);
+                    done();
+                });
             });
         });
 
