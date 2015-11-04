@@ -417,7 +417,7 @@ describe('GeoExt.data.MapfishPrintProvider', function() {
                     url: "http://webmapcenter.de/print-servlet-3.1.2/" +
                         "print/geoext/capabilities.json",
                     listeners: {
-                        'ready': function(){
+                        ready: function(){
                             var formats = this.capabilityRec.get('formats');
                             expect(formats).to.be.an(Array);
                             expect(formats.length).to.be(6);
@@ -436,7 +436,7 @@ describe('GeoExt.data.MapfishPrintProvider', function() {
                     url: "http://webmapcenter.de/print-servlet-3.1.2/" +
                         "print/geoext/capabilities.json",
                     listeners: {
-                        'ready': function(){
+                        ready: function(){
                             var layoutStore = this.capabilityRec.layouts();
                             var firstLayout = layoutStore.getAt(0);
                             var attributesStore = firstLayout.attributes();

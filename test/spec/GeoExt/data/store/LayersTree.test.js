@@ -225,11 +225,10 @@ describe('GeoExt.data.store.LayersTree', function() {
                 layers: [
                     new ol.layer.Tile({
                         visible: false,
-                        name: 'LAYERFOOD',
+                        name: 'LAYERGEOGRAPHYCLASS',
                         source: new ol.source.TileJSON({
                             url: 'http://api.tiles.mapbox.com/v3/'+
-                                'mapbox.20110804-hoa-foodinsecurity-'+
-                                '3month.jsonp',
+                                'mapbox.geography-class.jsonp',
                             crossOrigin: 'anonymous'
                         })
                     }),
