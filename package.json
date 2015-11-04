@@ -27,6 +27,7 @@
     "url": "https://github.com/geoext/geoext3.git"
   },
   "scripts": {
+    "pretest": "npm run-script lint-js",
     "test": "mocha-phantomjs --ssl-protocol=any --ignore-ssl-errors=true test/index.html",
     "test:watch": "watch 'npm test' src/ test/",
     "lint-js": "eslint src/ examples/ && eslint -c test/.eslintrc test/spec/",
