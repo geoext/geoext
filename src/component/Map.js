@@ -286,9 +286,9 @@ Ext.define("GeoExt.component.Map", {
 
         if (!me.rendered) {
             // make sure we do not fire any if the pointer left the component
-            me.on('afterrender', me.bindEnterLeaveListeners, me);
+            me.on('afterrender', me.bindOverLeaveListeners, me);
         } else {
-            me.bindEnterLeaveListeners();
+            me.bindOverLeaveListeners();
         }
 
     },
@@ -299,12 +299,12 @@ Ext.define("GeoExt.component.Map", {
      *
      * @private
      */
-    bindEnterLeaveListeners: function() {
+    bindOverLeaveListeners: function() {
         var me = this;
         var mapEl = me.getEl();
         if (mapEl) {
             mapEl.on({
-                mouseenter: me.onMouseEnter,
+                mouseover: me.onMouseOver,
                 mouseleave: me.onMouseLeave,
                 scope: me
             });
@@ -317,12 +317,12 @@ Ext.define("GeoExt.component.Map", {
      *
      * @private
      */
-    unbindEnterLeaveListeners: function() {
+    unbindOverLeaveListeners: function() {
         var me = this;
         var mapEl = me.getTargetEl ? me.getTargetEl() : me.element;
         if (mapEl) {
             mapEl.un({
-                mouseenter: me.onMouseEnter,
+                mouseover: me.onMouseOver,
                 mouseleave: me.onMouseLeave,
                 scope: me
             });
@@ -334,7 +334,7 @@ Ext.define("GeoExt.component.Map", {
      *
      * @private
      */
-    onMouseEnter: function() {
+    onMouseOver: function() {
         this.isMouseOverMapEl = true;
     },
 
@@ -349,11 +349,11 @@ Ext.define("GeoExt.component.Map", {
 
     /**
      * Unregisters the #bufferedPointerMove event listener and unbinds the
-     * enter- and leave-listeners.
+     * over- and leave-listeners.
      */
     unregisterPointerRestEvents: function(){
         var map = this.getMap();
-        this.unbindEnterLeaveListeners();
+        this.unbindOverLeaveListeners();
         if (map) {
             map.un('pointermove', this.bufferedPointerMove);
         }
