@@ -502,8 +502,12 @@ describe('GeoExt.data.store.LayersTree', function() {
         var layer1;
         var layer2;
         var layer3;
-        var innerGroup;
+        var layer4;
+        var layer5;
+        var innerGroup1;
+        var innerGroup2;
         var topMostGroup;
+        var rootNode;
         var store;
         var tree;
 
@@ -515,18 +519,33 @@ describe('GeoExt.data.store.LayersTree', function() {
             layer1 = new ol.layer.Vector({name: 'one'});
             layer2 = new ol.layer.Vector({name: 'two'});
             layer3 = new ol.layer.Vector({name: 'three'});
-            innerGroup = new ol.layer.Group({
-                layers: [layer2, layer3],
-                name: 'innergroup'
+            layer4 = new ol.layer.Vector({name: 'four'});
+            layer5 = new ol.layer.Vector({name: 'five'});
+            innerGroup1 = new ol.layer.Group({
+                layers: [layer4, layer5],
+                name: 'innergroup1'
+            });
+            innerGroup2 = new ol.layer.Group({
+                layers: [layer2, layer3, innerGroup1],
+                name: 'innergroup2'
             });
             topMostGroup = new ol.layer.Group({
-                layers: [layer1, innerGroup],
+                layers: [layer1, innerGroup2],
                 name: 'topMostGroup'
             });
+            olMap = new ol.Map({
+                target: div,
+                layers: [topMostGroup],
+                view: new ol.View({
+                    center: [0, 0],
+                    zoom: 2
+                })
+            });
             store = Ext.create('GeoExt.data.store.LayersTree', {
-                layerGroup: topMostGroup,
+                layerGroup: olMap.getLayerGroup(),
                 inverseLayerOrder: false
             });
+            rootNode = store.getRootNode();
             tree = Ext.create('Ext.tree.Panel', {
                 store: store,
                 renderTo: dragTreeDiv,
@@ -546,20 +565,60 @@ describe('GeoExt.data.store.LayersTree', function() {
         it('does not remove sublayers if folder is collapsed', function(done){
             tree.expandAll(function() {
                 // before collapse
-                var numInInnerGroup = innerGroup.getLayers().getLength();
-                expect(numInInnerGroup).to.be(2);
+                var numInInnerGroup = innerGroup2.getLayers().getLength();
+                expect(numInInnerGroup).to.be(3);
 
                 // collapse innergroup node
                 var innerGroupNode = store.getAt(2);
-                innerGroupNode.collapse(false, function(){
-                    numInInnerGroup = innerGroup.getLayers().getLength();
+                innerGroupNode.collapse(true, function(){
+                    numInInnerGroup = innerGroup2.getLayers().getLength();
 
                     // count must still be the same
-                    expect(numInInnerGroup).to.be(2);
+                    expect(numInInnerGroup).to.be(3);
                     done();
                 });
             });
         });
 
+        it('does not remove any folders or layers if topfolder is ' +
+           'collapsed', function(done){
+            tree.expandAll(function() {
+                function getAllLayers(map){
+                    var layers = map.getLayers();
+                    var allLayers = [];
+                    layers.forEach(function(l){
+                        if(l instanceof ol.layer.Group){
+                            Ext.each(getAllLayers(l), function(layeri){
+                                allLayers.push(layeri);
+                            });
+                        }
+                        allLayers.push(l);
+                    });
+                    return allLayers;
+                }
+                // before collapse
+                var expandedNumtopMostGroup = store.getTotalCount();
+                // expecting all groups + layers + ExtJs rootNode = 9 items
+                expect(expandedNumtopMostGroup).to.be(9);
+                var expandedAllLayersAndGroupsCount =
+                    getAllLayers(olMap).length;
+                // expecting all groups + layers = 8 items
+                expect(expandedAllLayersAndGroupsCount).to.be(8);
+
+                // collapse topgroup node
+                rootNode.collapseChildren(true, function(){
+                    var collapsedNumtopMostGroup = store.getTotalCount();
+                    // expecting ExtJs rootNode + first folder = 2 items
+                    // this is due to the strange behaviour that ExtJs removes
+                    // all children from first visible node on collapsing
+                    expect(collapsedNumtopMostGroup).to.be(2);
+                    var collapsedAllLayersAndGroupsCount =
+                        getAllLayers(olMap).length;
+                    // still expecting all groups + layers = 8 items
+                    expect(collapsedAllLayersAndGroupsCount).to.be(8);
+                    done();
+                });
+            });
+        });
     });
 });
