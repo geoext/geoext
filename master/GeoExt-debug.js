@@ -1389,9 +1389,9 @@ Ext.define("GeoExt.component.Map", {
         map.on('pointermove', me.bufferedPointerMove);
         if (!me.rendered) {
             // make sure we do not fire any if the pointer left the component
-            me.on('afterrender', me.bindEnterLeaveListeners, me);
+            me.on('afterrender', me.bindOverOutListeners, me);
         } else {
-            me.bindEnterLeaveListeners();
+            me.bindOverOutListeners();
         }
     },
     /**
@@ -1400,13 +1400,13 @@ Ext.define("GeoExt.component.Map", {
      *
      * @private
      */
-    bindEnterLeaveListeners: function() {
+    bindOverOutListeners: function() {
         var me = this;
         var mapEl = me.getEl();
         if (mapEl) {
             mapEl.on({
-                mouseenter: me.onMouseEnter,
-                mouseleave: me.onMouseLeave,
+                mouseover: me.onMouseOver,
+                mouseout: me.onMouseOut,
                 scope: me
             });
         }
@@ -1417,13 +1417,13 @@ Ext.define("GeoExt.component.Map", {
      *
      * @private
      */
-    unbindEnterLeaveListeners: function() {
+    unbindOverOutListeners: function() {
         var me = this;
         var mapEl = me.getTargetEl ? me.getTargetEl() : me.element;
         if (mapEl) {
             mapEl.un({
-                mouseenter: me.onMouseEnter,
-                mouseleave: me.onMouseLeave,
+                mouseover: me.onMouseOver,
+                mouseout: me.onMouseOut,
                 scope: me
             });
         }
@@ -1433,7 +1433,7 @@ Ext.define("GeoExt.component.Map", {
      *
      * @private
      */
-    onMouseEnter: function() {
+    onMouseOver: function() {
         this.isMouseOverMapEl = true;
     },
     /**
@@ -1441,16 +1441,16 @@ Ext.define("GeoExt.component.Map", {
      *
      * @private
      */
-    onMouseLeave: function() {
+    onMouseOut: function() {
         this.isMouseOverMapEl = false;
     },
     /**
      * Unregisters the #bufferedPointerMove event listener and unbinds the
-     * enter- and leave-listeners.
+     * over- and out-listeners.
      */
     unregisterPointerRestEvents: function() {
         var map = this.getMap();
-        this.unbindEnterLeaveListeners();
+        this.unbindOverOutListeners();
         if (map) {
             map.un('pointermove', this.bufferedPointerMove);
         }

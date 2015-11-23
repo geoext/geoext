@@ -303,74 +303,74 @@ Ext.define(&quot;GeoExt.component.Map&quot;, {
 
         if (!me.rendered) {
             // make sure we do not fire any if the pointer left the component
-            me.on('afterrender', me.bindEnterLeaveListeners, me);
+            me.on('afterrender', me.bindOverOutListeners, me);
         } else {
-            me.bindEnterLeaveListeners();
+            me.bindOverOutListeners();
         }
 
     },
 
-<span id='GeoExt-component-Map-method-bindEnterLeaveListeners'>    /**
+<span id='GeoExt-component-Map-method-bindOverOutListeners'>    /**
 </span>     * Registers listeners that'll take care of setting #isMouseOverMapEl to
      * correct values.
      *
      * @private
      */
-    bindEnterLeaveListeners: function() {
+    bindOverOutListeners: function() {
         var me = this;
         var mapEl = me.getEl();
         if (mapEl) {
             mapEl.on({
-                mouseenter: me.onMouseEnter,
-                mouseleave: me.onMouseLeave,
+                mouseover: me.onMouseOver,
+                mouseout: me.onMouseOut,
                 scope: me
             });
         }
     },
 
-<span id='GeoExt-component-Map-method-unbindEnterLeaveListeners'>    /**
+<span id='GeoExt-component-Map-method-unbindOverOutListeners'>    /**
 </span>     * Unregisters listeners that'll take care of setting #isMouseOverMapEl to
      * correct values.
      *
      * @private
      */
-    unbindEnterLeaveListeners: function() {
+    unbindOverOutListeners: function() {
         var me = this;
         var mapEl = me.getTargetEl ? me.getTargetEl() : me.element;
         if (mapEl) {
             mapEl.un({
-                mouseenter: me.onMouseEnter,
-                mouseleave: me.onMouseLeave,
+                mouseover: me.onMouseOver,
+                mouseout: me.onMouseOut,
                 scope: me
             });
         }
     },
 
-<span id='GeoExt-component-Map-method-onMouseEnter'>    /**
+<span id='GeoExt-component-Map-method-onMouseOver'>    /**
 </span>     * Sets isMouseOverMapEl to true, see #pointerRest.
      *
      * @private
      */
-    onMouseEnter: function() {
+    onMouseOver: function() {
         this.isMouseOverMapEl = true;
     },
 
-<span id='GeoExt-component-Map-method-onMouseLeave'>    /**
+<span id='GeoExt-component-Map-method-onMouseOut'>    /**
 </span>     * Sets isMouseOverMapEl to false, see #pointerRest.
      *
      * @private
      */
-    onMouseLeave: function() {
+    onMouseOut: function() {
         this.isMouseOverMapEl = false;
     },
 
 <span id='GeoExt-component-Map-method-unregisterPointerRestEvents'>    /**
 </span>     * Unregisters the #bufferedPointerMove event listener and unbinds the
-     * enter- and leave-listeners.
+     * over- and out-listeners.
      */
     unregisterPointerRestEvents: function(){
         var map = this.getMap();
-        this.unbindEnterLeaveListeners();
+        this.unbindOverOutListeners();
         if (map) {
             map.un('pointermove', this.bufferedPointerMove);
         }
