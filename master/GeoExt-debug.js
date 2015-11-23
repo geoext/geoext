@@ -4616,7 +4616,7 @@ Ext.define('GeoExt.data.store.LayersTree', {
      */
     onBeforeGroupNodeCollapse: function(node) {
         var keyRemoveOptOut = this.self.KEY_COLLAPSE_REMOVE_OPT_OUT;
-        node.eachChild(function(child) {
+        node.cascadeBy(function(child) {
             child[keyRemoveOptOut] = true;
         });
     },
