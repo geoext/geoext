@@ -301,7 +301,7 @@ Ext.define("GeoExt.component.Map", {
      */
     bindOverOutListeners: function() {
         var me = this;
-        var mapEl = me.getEl();
+        var mapEl = me.getTargetEl ? me.getTargetEl() : me.element;
         if (mapEl) {
             mapEl.on({
                 mouseover: me.onMouseOver,
