@@ -180,7 +180,8 @@ Add the following GeoExt 3 paths to `classpath`:
         "${toolkit.name}/src",
         "packages/remote/GeoExt/src/component",
         "packages/remote/GeoExt/src/data",
-        "packages/remote/GeoExt/src/mixin"
+        "packages/remote/GeoExt/src/mixin",
+        "packages/remote/GeoExt/src/util"
     ],
 ```
 
