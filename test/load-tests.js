@@ -6,6 +6,7 @@
             'GeoExt/component/Map.test.js',
             'GeoExt/component/OverviewMap.test.js',
             'GeoExt/component/Popup.test.js',
+            'GeoExt/data/model/Base.test.js',
             'GeoExt/data/model/Feature.test.js',
             'GeoExt/data/model/Layer.test.js',
             'GeoExt/data/model/OlObject.test.js',
