@@ -620,6 +620,7 @@ Ext.define('GeoExt.data.model.Base', {
         'Ext.data.identifier.Uuid'
     ],
     schema: {
+        id: 'geoext-schema',
         namespace: 'GeoExt.data.model'
     },
     identifier: 'uuid'
