@@ -1,4 +1,4 @@
-/* Copyright (c) 2015 The Open Source Geospatial Foundation
+/* Copyright (c) 2015-2016 The Open Source Geospatial Foundation
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -190,7 +190,7 @@ Ext.define('GeoExt.mixin.SymbolCheck', {
     }
 });
 
-/* Copyright (c) 2015 The Open Source Geospatial Foundation
+/* Copyright (c) 2015-2016 The Open Source Geospatial Foundation
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -596,7 +596,7 @@ Ext.define('GeoExt.component.FeatureRenderer', {
     }
 });
 
-/* Copyright (c) 2015 The Open Source Geospatial Foundation
+/* Copyright (c) 2015-2016 The Open Source Geospatial Foundation
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -626,7 +626,7 @@ Ext.define('GeoExt.data.model.Base', {
     identifier: 'uuid'
 });
 
-/* Copyright (c) 2015 The Open Source Geospatial Foundation
+/* Copyright (c) 2015-2016 The Open Source Geospatial Foundation
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -745,7 +745,7 @@ Ext.define('GeoExt.data.model.Layer', {
     }
 });
 
-/* Copyright (c) 2015 The Open Source Geospatial Foundation
+/* Copyright (c) 2015-2016 The Open Source Geospatial Foundation
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -1129,7 +1129,7 @@ Ext.define('GeoExt.data.store.Layers', {
     }
 });
 
-/* Copyright (c) 2015 The Open Source Geospatial Foundation
+/* Copyright (c) 2015-2016 The Open Source Geospatial Foundation
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -1563,7 +1563,7 @@ Ext.define("GeoExt.component.Map", {
     }
 });
 
-/* Copyright (c) 2015 The Open Source Geospatial Foundation
+/* Copyright (c) 2015-2016 The Open Source Geospatial Foundation
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -2014,7 +2014,7 @@ Ext.define("GeoExt.component.OverviewMap", {
     }
 });
 
-/* Copyright (c) 2015 The Open Source Geospatial Foundation
+/* Copyright (c) 2015-2016 The Open Source Geospatial Foundation
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -2186,7 +2186,7 @@ Ext.define('GeoExt.component.Popup', {
     }
 });
 
-/* Copyright (c) 2015 The Open Source Geospatial Foundation
+/* Copyright (c) 2015-2016 The Open Source Geospatial Foundation
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -2222,7 +2222,7 @@ Ext.define('GeoExt.data.model.print.LayoutAttribute', {
     ]
 });
 
-/* Copyright (c) 2015 The Open Source Geospatial Foundation
+/* Copyright (c) 2015-2016 The Open Source Geospatial Foundation
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -2260,7 +2260,7 @@ Ext.define('GeoExt.data.model.print.Layout', {
     ]
 });
 
-/* Copyright (c) 2015 The Open Source Geospatial Foundation
+/* Copyright (c) 2015-2016 The Open Source Geospatial Foundation
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -2301,7 +2301,7 @@ Ext.define('GeoExt.data.model.print.Capability', {
     ]
 });
 
-/* Copyright (c) 2015 The Open Source Geospatial Foundation
+/* Copyright (c) 2015-2016 The Open Source Geospatial Foundation
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -2589,7 +2589,7 @@ Ext.define('GeoExt.data.MapfishPrintProvider', {
     }
 });
 
-/* Copyright (c) 2015 The Open Source Geospatial Foundation
+/* Copyright (c) 2015-2016 The Open Source Geospatial Foundation
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -2733,7 +2733,7 @@ Ext.define('GeoExt.data.model.OlObject', {
     }
 });
 
-/* Copyright (c) 2015 The Open Source Geospatial Foundation
+/* Copyright (c) 2015-2016 The Open Source Geospatial Foundation
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -2765,7 +2765,7 @@ Ext.define('GeoExt.data.model.Feature', {
     }
 });
 
-/* Copyright (c) 2015 The Open Source Geospatial Foundation
+/* Copyright (c) 2015-2016 The Open Source Geospatial Foundation
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -2942,7 +2942,7 @@ Ext.define('GeoExt.data.model.LayerTreeNode', {
     Ext.data.NodeInterface.decorate(this);
 });
 
-/* Copyright (c) 2015 The Open Source Geospatial Foundation
+/* Copyright (c) 2015-2016 The Open Source Geospatial Foundation
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -3022,7 +3022,7 @@ Ext.define('GeoExt.data.serializer.Base', {
     }
 });
 
-/* Copyright (c) 2015 The Open Source Geospatial Foundation
+/* Copyright (c) 2015-2016 The Open Source Geospatial Foundation
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -3083,7 +3083,7 @@ Ext.define('GeoExt.data.serializer.ImageWMS', {
     cls.register(cls);
 });
 
-/* Copyright (c) 2015 The Open Source Geospatial Foundation
+/* Copyright (c) 2015-2016 The Open Source Geospatial Foundation
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -3144,7 +3144,7 @@ Ext.define('GeoExt.data.serializer.TileWMS', {
     cls.register(cls);
 });
 
-/* Copyright (c) 2015 The Open Source Geospatial Foundation
+/* Copyright (c) 2015-2016 The Open Source Geospatial Foundation
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -3701,7 +3701,7 @@ Ext.define('GeoExt.data.serializer.Vector', {
     cls.register(cls);
 });
 
-/* Copyright (c) 2015 The Open Source Geospatial Foundation
+/* Copyright (c) 2015-2016 The Open Source Geospatial Foundation
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -3798,7 +3798,7 @@ Ext.define('GeoExt.data.serializer.WMTS', {
     cls.register(cls);
 });
 
-/* Copyright (c) 2015 The Open Source Geospatial Foundation
+/* Copyright (c) 2015-2016 The Open Source Geospatial Foundation
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -3869,7 +3869,7 @@ Ext.define('GeoExt.data.serializer.XYZ', {
     cls.register(cls);
 });
 
-/* Copyright (c) 2015 The Open Source Geospatial Foundation
+/* Copyright (c) 2015-2016 The Open Source Geospatial Foundation
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -4006,7 +4006,7 @@ Ext.define('GeoExt.data.store.OlObjects', {
     }
 });
 
-/* Copyright (c) 2015 The Open Source Geospatial Foundation
+/* Copyright (c) 2015-2016 The Open Source Geospatial Foundation
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -4244,7 +4244,7 @@ Ext.define('GeoExt.data.store.Features', {
     }
 });
 
-/* Copyright (c) 2015 The Open Source Geospatial Foundation
+/* Copyright (c) 2015-2016 The Open Source Geospatial Foundation
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -4317,7 +4317,7 @@ Ext.define('GeoExt.util.Layer', {
     }
 });
 
-/* Copyright (c) 2015 The Open Source Geospatial Foundation
+/* Copyright (c) 2015-2016 The Open Source Geospatial Foundation
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -4709,7 +4709,7 @@ Ext.define('GeoExt.data.store.LayersTree', {
     }
 });
 
-/* Copyright (c) 2015 The Open Source Geospatial Foundation
+/* Copyright (c) 2015-2016 The Open Source Geospatial Foundation
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
