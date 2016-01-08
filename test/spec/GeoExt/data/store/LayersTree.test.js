@@ -228,7 +228,7 @@ describe('GeoExt.data.store.LayersTree', function() {
                         name: 'LAYERGEOGRAPHYCLASS',
                         source: new ol.source.TileJSON({
                             url: 'http://api.tiles.mapbox.com/v3/'+
-                                'mapbox.geography-class.jsonp',
+                                'mapbox.geography-class.json',
                             crossOrigin: 'anonymous'
                         })
                     }),
@@ -237,7 +237,7 @@ describe('GeoExt.data.store.LayersTree', function() {
                         name: 'LAYERLIGHT',
                         source: new ol.source.TileJSON({
                             url: 'http://api.tiles.mapbox.com/v3/'+
-                                'mapbox.world-borders-light.jsonp',
+                                'mapbox.world-borders-light.json',
                             crossOrigin: 'anonymous'
                         })
                     })
