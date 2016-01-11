@@ -18,16 +18,25 @@ Ext.application({
             })
         });
 
+        var labLayer = new ol.layer.Tile({
+            source: new ol.source.Stamen({
+                layer: 'terrain-labels'
+            })
+        });
+
         // wrap ol.View in GeoExt Object model
         var viewRecord = Ext.create('GeoExt.data.model.OlObject', view);
 
         // wrap ol.layer.Layer in GeoExt Object model
         var layerRecord = Ext.create('GeoExt.data.model.OlObject', layer);
+        var labLayerRecord = Ext.create('GeoExt.data.model.OlObject', labLayer);
 
         var viewForm = Ext.create('Ext.form.Panel', {
             title: 'View',
             bodyPadding: 5,
             defaults: {
+                xtype: 'numberfield',
+                allowBlank: false,
                 listeners: {
                     change: function() {
                         // update record on form changes
@@ -36,23 +45,19 @@ Ext.application({
                 }
             },
             items: [{
-                xtype: 'numberfield',
                 fieldLabel: 'Resolution (m)',
                 minValue: 1,
                 step: 100,
-                name: 'resolution',
-                allowBlank: false
+                name: 'resolution'
             }, {
-                xtype: 'numberfield',
                 fieldLabel: 'Rotation (rad)',
                 step: 0.1,
-                name: 'rotation',
-                allowBlank: false
+                name: 'rotation'
             }]
         });
 
         var layerForm = Ext.create('Ext.form.Panel', {
-            title: 'Layer',
+            title: 'Watercolor Layer',
             bodyPadding: 5,
             defaults: {
                 xtype: 'numberfield',
@@ -74,37 +79,45 @@ Ext.application({
             }]
         });
 
-        // only possible if webgl renderer is enabled
-        if (ol.has.WEBGL) {
-            layerForm.add([{
-                fieldLabel: 'Brightness',
-                name: 'brightness',
-                allowBlank: false
-            }, {
-                fieldLabel: 'Contrast',
+        var labLayerForm = Ext.create('Ext.form.Panel', {
+            title: 'Labels Layer',
+            bodyPadding: 5,
+            defaults: {
+                xtype: 'numberfield',
+                decimalPrecision: 3,
+                step: 0.125,
+                listeners: {
+                    change: function() {
+                        // update record on form changes
+                        labLayerRecord.set(this.up('form').getValues());
+                    }
+                }
+            },
+            items: [{
+                fieldLabel: 'Opacity',
                 minValue: 0,
-                name: 'contrast',
+                maxValue: 1,
+                name: 'opacity',
                 allowBlank: false
             }, {
-                fieldLabel: 'Hue',
-                name: 'hue',
-                allowBlank: false
-            }, {
-                fieldLabel: 'Saturation',
-                minValue: 0,
-                name: 'saturation',
-                allowBlank: false
-            }]);
-        }
+                fieldLabel: 'Visibility',
+                xtype: 'checkboxfield',
+                name: 'visible',
+                uncheckedValue: false
+            }]
+        });
 
         // bind map view changes to form
         view.on('propertychange', function() {
             viewForm.loadRecord(viewRecord);
         });
 
-        // bind layer to form
+        // bind layers to forms
         layer.on('propertychange', function() {
             layerForm.loadRecord(layerRecord);
+        });
+        labLayer.on('propertychange', function() {
+            labLayerForm.loadRecord(labLayerRecord);
         });
 
         Ext.create('Ext.Viewport', {
@@ -117,20 +130,16 @@ Ext.application({
                     map: new ol.Map({
                         layers: [
                             layer,
-                            new ol.layer.Tile({
-                                source: new ol.source.Stamen({
-                                    layer: 'terrain-labels'
-                                })
-                            })
+                            labLayer
                         ],
-                        view: view,
-                        renderer: ['webgl', 'canvas', 'dom']
+                        view: view
                     }),
                     listeners: {
                         boxready: function() {
                             // init forms with record data
                             viewForm.loadRecord(viewRecord);
                             layerForm.loadRecord(layerRecord);
+                            labLayerForm.loadRecord(labLayerRecord);
                         }
                     }
                 }]
@@ -144,6 +153,7 @@ Ext.application({
                 items: [
                     viewForm,
                     layerForm,
+                    labLayerForm,
                     {
                         title: 'Description',
                         contentEl: 'description'
