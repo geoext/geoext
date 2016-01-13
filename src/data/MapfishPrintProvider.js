@@ -33,6 +33,7 @@ Ext.define('GeoExt.data.MapfishPrintProvider', {
     symbols: [
         'ol.Collection',
         'ol.geom.Polygon.fromExtent',
+        'ol.Feature',
         'ol.layer.Layer#getSource',
         'ol.layer.Group',
         'ol.source.Vector.prototype.addFeature',
@@ -133,27 +134,28 @@ Ext.define('GeoExt.data.MapfishPrintProvider', {
         },
 
         /**
-         * Will return an array of ol-layers by the given collection.
-         * Layers contained in ol.layerGroups get extracted and groups
-         * get removed from returning array
+         * Will return an array of ol-layers by the given collection. Layers
+         * contained in `ol.layer.Group`s get extracted and groups get removed
+         * from returning array
          *
-         * @param {GeoExt.data.store.Layers, {ol.Collection.<ol.layer.Base>},
-         *     Array<ol.layer.Base>}
-         * @return {Array} inputLayers - the flat layers array
+         * @param {GeoExt.data.store.Layers|ol.Collection|ol.layer.Base[]} coll
+         *     The 'collection' of layers to get as array. If passed as
+         *     ol.Collection, all items must be `ol.layer.Base`.
+         * @return {Array} The flat layers array.
          */
-        getLayerArray: function(layers) {
+        getLayerArray: function(coll) {
             var inputLayers = [];
             var extractingLayerGroups = true;
 
-            if(layers instanceof GeoExt.data.store.Layers){
-                layers.each(function(layerRec) {
+            if(coll instanceof GeoExt.data.store.Layers){
+                coll.each(function(layerRec) {
                     var layer = layerRec.getOlLayer();
                     inputLayers.push(layer);
                 });
-            } else if (layers instanceof ol.Collection){
-                inputLayers = Ext.clone(layers.getArray());
+            } else if (coll instanceof ol.Collection){
+                inputLayers = Ext.clone(coll.getArray());
             } else {
-                inputLayers = Ext.clone(layers);
+                inputLayers = Ext.clone(coll);
             }
 
             while (extractingLayerGroups) {
@@ -185,9 +187,20 @@ Ext.define('GeoExt.data.MapfishPrintProvider', {
          * Will return an array of serialized layers for mapfish print servlet
          * v3.0.
          *
-         * @param {GeoExt.data.store.Layers, {ol.Collection.<ol.layer.Base>},
-         *     Array<ol.layer.Base>}
-         *
+         * @param {GeoExt.component.Map} mapComponent The GeoExt map component
+         *     to get the the layers from.
+         * @param {Function} [filterFn] A function to filter the layers to be
+         *     serialized.
+         * @param {ol.layer.Base} filterFn.item The layer to check for
+         *     inclusion.
+         * @param {Number} filterFn.index The index of the layer in the
+         *     flattened list.
+         * @param {Array} filterFn.array The complete flattened array of layers.
+         * @param {Boolean} filterFn.return Return a truthy value to keep the
+         *     layer and serialize it.
+         * @param {Object} [filterScope] The scope in which the filtering
+         *     function will be executed.
+         * @return {Object[]} An array of serialized layers.
          * @static
          */
         getSerializedLayers: function(mapComponent, filterFn, filterScope){
@@ -219,7 +232,17 @@ Ext.define('GeoExt.data.MapfishPrintProvider', {
         /**
          * Renders the extent of the printout. Will ensure that the extent is
          * always visible and that the ratio matches the ratio that clientInfo
-         * contains
+         * contains.
+         *
+         * @param {GeoExt.component.Map} mapComponent The map component to
+         *     render the print extent to.
+         * @param {ol.layer.Vector} extentLayer The vector layer to render the
+         *     print extent to.
+         * @param {Object} clientInfo Information about the desired print
+         *     dimensions.
+         * @param {Number} clientInfo.width The target width.
+         * @param {Number} clientInfo.height The target height.
+         * @return {ol.Feature} The feature representing the print extent.
          */
         renderPrintExtent: function(mapComponent, extentLayer, clientInfo){
             var mapComponentWidth = mapComponent.getWidth();

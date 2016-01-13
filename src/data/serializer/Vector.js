@@ -14,7 +14,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 /**
- * A serializer for layers that have a `ol.source.Vector` source.
+ * A serializer for layers that have an `ol.source.Vector` source.
  *
  * This class is heavily inspired by the excellent `ngeo` Print service class:
  * [camptocamp/ngeo](https://github.com/camptocamp/ngeo).
@@ -88,7 +88,7 @@ Ext.define('GeoExt.data.serializer.Vector', {
         },
 
         /**
-         * An object that maps an ol.geom.GeometryType to a printstyle type.
+         * An object that maps an `ol.geom.GeometryType` to a #PRINTSTYLE_TYPES.
          *
          * @private
          */
@@ -319,8 +319,8 @@ Ext.define('GeoExt.data.serializer.Vector', {
             },
 
         /**
-         * Encodes an ol.style.Fill and an optional ol.style.Stroke and adds it
-         * to the passed symbolizers array.
+         * Encodes an `ol.style.Fill` and an optional `ol.style.Stroke` and adds
+         * it to the passed symbolizers array.
          *
          * @param {Object[]} symbolizers Array of MapFish Print symbolizers.
          * @param {ol.style.Fill} fillStyle Fill style.
@@ -339,7 +339,7 @@ Ext.define('GeoExt.data.serializer.Vector', {
         },
 
         /**
-         * Encodes an ol.style.Stroke and adds it to the passed symbolizers
+         * Encodes an `ol.style.Stroke` and adds it to the passed symbolizers
          * array.
          *
          * @param {Object[]} symbolizers Array of MapFish Print symbolizers.
@@ -355,7 +355,7 @@ Ext.define('GeoExt.data.serializer.Vector', {
         },
 
         /**
-         * Encodes an ol.style.Image and adds it to the passed symbolizers
+         * Encodes an `ol.style.Image` and adds it to the passed symbolizers
          * array.
          *
          * @param {Object[]} symbolizers Array of MapFish Print symbolizers.
@@ -397,7 +397,7 @@ Ext.define('GeoExt.data.serializer.Vector', {
         },
 
         /**
-         * Encodes an ol.style.Text and adds it to the passed symbolizers
+         * Encodes an `ol.style.Text` and adds it to the passed symbolizers
          * array.
          *
          * @param {Object[]} symbolizers Array of MapFish Print symbolizers.
@@ -469,7 +469,7 @@ Ext.define('GeoExt.data.serializer.Vector', {
         },
 
         /**
-         * Encode the passed ol.style.Fill into the passed symbolizer.
+         * Encode the passed `ol.style.Fill` into the passed symbolizer.
          *
          * @param {Object} symbolizer MapFish Print symbolizer.
          * @param {ol.style.Fill} fillStyle Fill style.
@@ -485,7 +485,7 @@ Ext.define('GeoExt.data.serializer.Vector', {
         },
 
         /**
-         * Encode the passed ol.style.Stroke into the passed symbolizer.
+         * Encode the passed `ol.style.Stroke` into the passed symbolizer.
          *
          * @param {Object} symbolizer MapFish Print symbolizer.
          * @param {ol.style.Stroke} strokeStyle Stroke style.
@@ -509,8 +509,8 @@ Ext.define('GeoExt.data.serializer.Vector', {
          * Taken from https://github.com/google/closure-library color.js-file.
          * It is called `prependZeroIfNecessaryHelper` there.
          *
-         * @param {string} hex Hex value to prepend if single digit.
-         * @return {string} hex value prepended with zero if it was single
+         * @param {String} hex Hex value to prepend if single digit.
+         * @return {String} The hex value prepended with zero if it was single
          *     digit, otherwise the same value that was passed in.
          * @private
          */
@@ -522,9 +522,9 @@ Ext.define('GeoExt.data.serializer.Vector', {
          * Converts a color from RGB to hex representation.
          * Taken from https://github.com/google/closure-library color.js-file.
          *
-         * @param {number} r Amount of red, int between 0 and 255.
-         * @param {number} g Amount of green, int between 0 and 255.
-         * @param {number} b Amount of blue, int between 0 and 255.
+         * @param {Number} r Amount of red, int between 0 and 255.
+         * @param {Number} g Amount of green, int between 0 and 255.
+         * @param {Number} b Amount of blue, int between 0 and 255.
          * @return {String} The passed color in hex representation.
          * @private
          */
@@ -562,7 +562,7 @@ Ext.define('GeoExt.data.serializer.Vector', {
          * property #GX_UID_PROPERTY and modified in place if this hasn't
          * happened in a previous call.
          *
-         * @param {Object} The object to get the uid of.
+         * @param {Object} obj The object to get the uid of.
          * @return {String} The uid of the object.
          * @private
          */

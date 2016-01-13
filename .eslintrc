@@ -68,6 +68,13 @@
         "no-nested-ternary": 2,
         "no-trailing-spaces": 2,
         "semi": [2, "always"],
-        "max-len": [1, 80, 4]
+        "max-len": [1, 80, 4],
+
+        "valid-jsdoc": [2, {
+            "prefer": {
+                "returns": "return"
+            },
+            "requireReturn": false
+        }]
     }
 }

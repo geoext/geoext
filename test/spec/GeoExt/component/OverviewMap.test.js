@@ -252,7 +252,7 @@ describe('GeoExt.component.OverviewMap', function() {
 
     describe('static functions', function() {
 
-        describe('#rotateCoordsAroundCoords', function() {
+        describe('#rotateCoordAroundCoord', function() {
             var center;
             var coords;
             var expected;
@@ -274,7 +274,7 @@ describe('GeoExt.component.OverviewMap', function() {
             it('gives the same result as ol.coordinate.rotate center == [0, 0]',
                 function(){
                     var cls = GeoExt.component.OverviewMap;
-                    var got = cls.rotateCoordsAroundCoords(
+                    var got = cls.rotateCoordAroundCoord(
                         coords, center, rotation
                     );
                     expect(got).to.eql(expected);
@@ -286,7 +286,7 @@ describe('GeoExt.component.OverviewMap', function() {
             it('gives the correct result for center != [0, 0]',
                 function(){
                     var cls = GeoExt.component.OverviewMap;
-                    var got = cls.rotateCoordsAroundCoords(
+                    var got = cls.rotateCoordAroundCoord(
                         coords2, center2, rotation
                     );
                     expect(got).to.eql(expected2);
@@ -294,7 +294,7 @@ describe('GeoExt.component.OverviewMap', function() {
             );
         });
 
-        describe('#rotateGeomAroundCoords', function(){
+        describe('#rotateGeomAroundCoord', function(){
 
             var point;
             var point2;
@@ -323,21 +323,21 @@ describe('GeoExt.component.OverviewMap', function() {
             it('only rotates points and polygons, others returned unchanged',
                 function(){
                     var cls = GeoExt.component.OverviewMap;
-                    var rotatedPoint = cls.rotateGeomAroundCoords(
+                    var rotatedPoint = cls.rotateGeomAroundCoord(
                         point, center, rotation
                     );
                     expect(rotatedPoint.getCoordinates()).to.not.eql(
                         point2.getCoordinates()
                     );
 
-                    var rotatedLine = cls.rotateGeomAroundCoords(
+                    var rotatedLine = cls.rotateGeomAroundCoord(
                         line, center, rotation
                     );
                     expect(rotatedLine.getCoordinates()).to.eql(
                         line2.getCoordinates()
                     );
 
-                    var rotatedPolygon = cls.rotateGeomAroundCoords(
+                    var rotatedPolygon = cls.rotateGeomAroundCoord(
                         polygon, center, rotation
                     );
                     expect(rotatedPolygon.getCoordinates()).to.not.eql(
@@ -348,14 +348,14 @@ describe('GeoExt.component.OverviewMap', function() {
             );
 
             it('changes the given points and polygons in place', function(){
-                GeoExt.component.OverviewMap.rotateGeomAroundCoords(
+                GeoExt.component.OverviewMap.rotateGeomAroundCoord(
                     point, center, rotation
                 );
                 expect(point.getCoordinates()).to.not.eql(
                     point2.getCoordinates()
                 );
 
-                GeoExt.component.OverviewMap.rotateGeomAroundCoords(
+                GeoExt.component.OverviewMap.rotateGeomAroundCoord(
                     polygon, center, rotation
                 );
                 expect(polygon.getCoordinates()).to.not.eql(
@@ -365,7 +365,7 @@ describe('GeoExt.component.OverviewMap', function() {
 
             it('rotates points correctly', function(){
                 var expectedPoint = [ -3.7450018504813776, 17.96217782649107 ];
-                GeoExt.component.OverviewMap.rotateGeomAroundCoords(
+                GeoExt.component.OverviewMap.rotateGeomAroundCoord(
                     point, center, rotation
                 );
                 expect(point.getCoordinates()).to.eql(expectedPoint);
@@ -382,7 +382,7 @@ describe('GeoExt.component.OverviewMap', function() {
                     ]
                 ];
 
-                GeoExt.component.OverviewMap.rotateGeomAroundCoords(
+                GeoExt.component.OverviewMap.rotateGeomAroundCoord(
                     polygon, center, rotation
                 );
                 expect(polygon.getCoordinates()).to.eql(expectedPoly);

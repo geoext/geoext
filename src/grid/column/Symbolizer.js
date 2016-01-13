@@ -28,6 +28,13 @@ Ext.define('GeoExt.grid.column.Symbolizer', {
 
     /**
      * The default renderer method for ol.Feature objects.
+     *
+     * @param {Object} value The value to render for the current cell.
+     * @param {Object} meta A collection of metadata about the current cell; can
+     *     be used or modified by the renderer. Recognized properties are:
+     *     tdCls, tdAttr, and tdStyle.
+     * @param {Ext.data.Model} record The record for the current row.
+     * @return {String} The HTML-fragment to render as string.
      */
     defaultRenderer: function(value, meta, record) {
         var me = this,
@@ -64,11 +71,11 @@ Ext.define('GeoExt.grid.column.Symbolizer', {
     /**
      * Determines the style for the given feature record.
      *
-     * @private
-     * @param  {GeoExt.data.model.Feature} record A feature record to get the
+     * @param {GeoExt.data.model.Feature} record A feature record to get the
      *     styler for.
-     * @return {ol.style.Style[]|ol.style.Style} the style(s) applied to the
+     * @return {ol.style.Style[]|ol.style.Style} The style(s) applied to the
      *     given feature record.
+     * @private
      */
     determineStyle: function(record) {
         var feature = record.olObject;

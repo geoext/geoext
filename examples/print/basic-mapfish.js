@@ -81,6 +81,8 @@ Ext.application({
          *     * The button will print the first layout
          *     * The attributes used are the first of the above layout
          *     * We'll request the first dpi value of the suggested ones
+         * @param {GeoExt.data.MapfishPrintProvider} provider The print
+         *     provider.
          */
         var onPrintProviderReady = function(provider) {
             // this is the assumption: take the first layout and render an
