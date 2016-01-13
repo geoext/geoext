@@ -34,8 +34,8 @@
     "livereload": "live-reload --port 9091 src/ examples/ test/",
     "save-coverage": "mocha-phantomjs --ssl-protocol=any --ignore-ssl-errors=true --hooks ./test/phantom_hooks.js test/index.html",
     "clean-coverage": "rm -rf src_instrumented src_old coverage",
-    "ci-coverage": "npm run clean-coverage && istanbul instrument src -o src_instrumented && mv src src_old && mv src_instrumented src && istanbul cover npm run save-coverage && mv src src_instrumented && mv src_old src && istanbul report --root ./coverage lcovonly && cat ./coverage/lcov.info | coveralls",
-    "html-coverage": "npm run clean-coverage && istanbul instrument src -o src_instrumented && mv src src_old && mv src_instrumented src && istanbul cover npm run save-coverage && mv src src_instrumented && mv src_old src && istanbul report --root ./coverage html",
+    "ci-coverage": "npm run lint-js && npm run clean-coverage && istanbul instrument src -o src_instrumented && mv src src_old && mv src_instrumented src && istanbul cover npm run save-coverage && mv src src_instrumented && mv src_old src && istanbul report --root ./coverage lcovonly && cat ./coverage/lcov.info | coveralls",
+    "html-coverage": "npm run lint-js && npm run clean-coverage && istanbul instrument src -o src_instrumented && mv src src_old && mv src_instrumented src && istanbul cover npm run save-coverage && mv src src_instrumented && mv src_old src && istanbul report --root ./coverage html",
     "generate-example": "node bin/example-generator/index.js"
   },
   "dependencies": {},
