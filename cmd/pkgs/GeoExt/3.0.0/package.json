@@ -9,11 +9,11 @@
   "signatures": [
     {
       "name": "GeoExt Contributors",
-      "uuid": "aa32d34d-4422-473d-9d91-dad462788eab",
-      "created": "2016-01-12T07:22:40Z",
+      "uuid": "e6c9e802-2c40-403f-a7e6-dcc612ac98f1",
+      "created": "2016-01-14T09:47:24Z",
       "algorithm": "SHA1withRSA",
-      "nonce": "1lWFumFyx1Q\u003d",
-      "signature": "Fp1lK+oDraOgJ3k57ogwTqHjDh3Vi4tr7Y7zbXTbfwFJvuRpLy+8/2LU9VU9J1uT7FQ3rmVLccFs3jMrcmYFCfi9FxW+7cznpCNCR5XefztSknzCu9TxP8IMy7lWlLbcyRywFFQ+YojKVMWIr2+xjbItbHnKP3K5l9xYrI5SUR4A+WMn2EL/HRKYm+mj8BjgcmrxCUb3oxlfqUK3YXdNnMpz2+V1Hhafq/DlmvKStAxqfaS6jCnLiZ+YerZXTTr0iucpV/JfoUCONhwOJk/l9gY+FCVPXm/Jyd/qs53jEx1gjxh0WXoiXIfd9Kl/Y2q2Fg+N6nvNCcYOiVpLdRdOUQ\u003d\u003d"
+      "nonce": "EtZsLwkbT/0\u003d",
+      "signature": "VFB8BD8Sg99aSzVIsr+x6YpuzPgzXCf5XB8sepiLMyAyVQQ1BiErrlIZaBkL3/E72csyaCT0ETvU1adEIo+YF9cY9y1vl2NPG/se1HkKU7u4CrWmcS/KPTmn9RtfhhwRN8qv1iSdItgOuNv6lyOqNeHuTGv0Rj7bTJeZneKruHWoU0hAEJya2K9myRL1OHJXk5F0n3ZQvDxcBfuHFNfgMDU10pLggWUbitATIduDeooYOKq5uECkl6UfWMsg0P0RK4VTT2TZ7Ga1fLajy7LKt23y8HM3DOakFwufnrh8HRzgEIT5AslTLv2ETqj/embKqH+4PJ0MOtKVziGXAgUIgQ\u003d\u003d"
     }
   ],
   "slicer": {
@@ -40,8 +40,8 @@
     "livereload": "live-reload --port 9091 src/ examples/ test/",
     "save-coverage": "mocha-phantomjs --ssl-protocol\u003dany --ignore-ssl-errors\u003dtrue --hooks ./test/phantom_hooks.js test/index.html",
     "clean-coverage": "rm -rf src_instrumented src_old coverage",
-    "ci-coverage": "npm run clean-coverage \u0026\u0026 istanbul instrument src -o src_instrumented \u0026\u0026 mv src src_old \u0026\u0026 mv src_instrumented src \u0026\u0026 istanbul cover npm run save-coverage \u0026\u0026 mv src src_instrumented \u0026\u0026 mv src_old src \u0026\u0026 istanbul report --root ./coverage lcovonly \u0026\u0026 cat ./coverage/lcov.info | coveralls",
-    "html-coverage": "npm run clean-coverage \u0026\u0026 istanbul instrument src -o src_instrumented \u0026\u0026 mv src src_old \u0026\u0026 mv src_instrumented src \u0026\u0026 istanbul cover npm run save-coverage \u0026\u0026 mv src src_instrumented \u0026\u0026 mv src_old src \u0026\u0026 istanbul report --root ./coverage html",
+    "ci-coverage": "npm run lint-js \u0026\u0026 npm run clean-coverage \u0026\u0026 istanbul instrument src -o src_instrumented \u0026\u0026 mv src src_old \u0026\u0026 mv src_instrumented src \u0026\u0026 istanbul cover npm run save-coverage \u0026\u0026 mv src src_instrumented \u0026\u0026 mv src_old src \u0026\u0026 istanbul report --root ./coverage lcovonly \u0026\u0026 cat ./coverage/lcov.info | coveralls",
+    "html-coverage": "npm run lint-js \u0026\u0026 npm run clean-coverage \u0026\u0026 istanbul instrument src -o src_instrumented \u0026\u0026 mv src src_old \u0026\u0026 mv src_instrumented src \u0026\u0026 istanbul cover npm run save-coverage \u0026\u0026 mv src src_instrumented \u0026\u0026 mv src_old src \u0026\u0026 istanbul report --root ./coverage html",
     "generate-example": "node bin/example-generator/index.js"
   },
   "dependencies": {},
