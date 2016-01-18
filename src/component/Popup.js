@@ -16,10 +16,9 @@
 /**
  * An GeoExt.component.Popup can be used to displays a popup over the map.
  *
- * Example:
+ * Example (hover over anything in the map to see a popup):
  *
- *     @example
- *     var description;
+ *     @example preview
  *     var olMap = new ol.Map({
  *         layers: [
  *             new ol.layer.Tile({
@@ -27,33 +26,45 @@
  *             })
  *         ],
  *         view: new ol.View({
- *             center: ol.proj.transform([-8.751278, 40.611368],
- *                 'EPSG:4326', 'EPSG:3857'),
+ *             center: ol.proj.fromLonLat([-8.751278, 40.611368]),
  *             zoom: 12
  *         })
- *     });
- *     var popup = Ext.create('GeoExt.component.Popup', {
- *         map: olMap,
- *         width: 140
- *     });
+ *     })
  *     var mapComponent = Ext.create('GeoExt.component.Map', {
  *         map: olMap,
  *         pointerRest: true,
  *         pointerRestInterval: 750,
  *         pointerRestPixelTolerance: 5,
- *         renderTo: Ext.getBody()
+ *         renderTo: Ext.getBody(),
+ *         height: 200
+ *     });
+ *     var popup = Ext.create('GeoExt.component.Popup', {
+ *         map: olMap,
+ *         width: 140
  *     });
  *     mapComponent.on('pointerrest', function(evt) {
- *         var coordinate = evt.coordinate;
- *         hdms = ol.coordinate.toStringHDMS(ol.proj.transform(
- *                 coordinate, 'EPSG:3857', 'EPSG:4326'));
+ *         var coord = evt.coordinate;
+ *         var transformed = ol.proj.toLonLat(coord);
+ *         var hdms = ol.coordinate.toStringHDMS(transformed);
  *         hdms = hdms.replace(/([NS])/, '$1<br>');
  *         popup.setHtml('<p><strong>Pointer rested on</strong>' +
  *                 '<br /><code>' + hdms + '</code></p>');
- *         popup.position(coordinate);
+ *         popup.position(coord);
  *         popup.show();
  *     });
  *     mapComponent.on('pointerrestout', popup.hide, popup);
+ *
+ * The above example loads the provided CSS-file `resources/css/gx-popup.css`
+ * and also uses the following inline CSS:
+ *
+ *     .gx-popup p {
+ *         padding: 5px 5px 0 5px;
+ *         border-radius: 7px;
+ *         background-color: rgba(255,255,255,0.85);
+ *         border: 3px solid white;
+ *         margin: 0;
+ *         text-align: center;
+ *     }
  *
  * @class GeoExt.component.Popup
  */
@@ -89,12 +100,14 @@ Ext.define('GeoExt.component.Popup', {
     overlayElementCreated: false,
 
     /**
-     *
+     * The CSS class of the popup.
      */
     cls: 'gx-popup',
 
     /**
-     * @private
+     * Construct a popup.
+     *
+     * @param {Object} config The configuration object.
      */
     constructor: function(config) {
         var me = this,
@@ -164,6 +177,9 @@ Ext.define('GeoExt.component.Popup', {
 
     /**
      * (Re-)Positions the popup to the given coordinates.
+     *
+     * @param {ol.Coordinate} coordinate The new position of the popup as
+     *     `ol.Coordinate`.
      */
     position: function(coordinate) {
         var me = this;

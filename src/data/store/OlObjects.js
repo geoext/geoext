@@ -88,7 +88,9 @@ Ext.define('GeoExt.data.store.OlObjects', {
     },
 
     /**
-     * TODO
+     * Constructs a new OlObjects store.
+     *
+     * @param {Object} config The configuration object.
      */
     constructor: function(config) {
         config = config || {};
@@ -111,9 +113,9 @@ Ext.define('GeoExt.data.store.OlObjects', {
     },
 
     /**
-     * Forwards changes to the ol.Collection to the Ext.data.Store.
+     * Forwards changes to the `ol.Collection` to the Ext.data.Store.
      *
-     * @param {ol.CollectionEvent} evt
+     * @param {ol.CollectionEvent} evt The event emitted by the `ol.Collection`.
      */
     onOlCollectionAdd: function(evt) {
         var target = evt.target,
@@ -126,9 +128,9 @@ Ext.define('GeoExt.data.store.OlObjects', {
     },
 
     /**
-     * Forwards changes to the ol.Collection to the Ext.data.Store.
+     * Forwards changes to the `ol.Collection` to the Ext.data.Store.
      *
-     * @param {ol.CollectionEvent} evt
+     * @param {ol.CollectionEvent} evt The event emitted by the `ol.Collection`.
      */
     onOlCollectionRemove: function(evt) {
         var element = evt.element,

@@ -14,6 +14,10 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 /**
+ * A {@link GeoExt.data.model.print.Capability Capability} of a mapfish print
+ * service has many layouts. You can create correct instances of this class by
+ * using the GeoExt.data.MapfishPrintProvider.
+ *
  * @class GeoExt.data.model.print.Layout
  */
 Ext.define('GeoExt.data.model.print.Layout', {

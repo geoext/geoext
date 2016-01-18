@@ -38,8 +38,9 @@ Ext.define('GeoExt.data.model.OlObject', {
         /**
          * Gets a reference to an ol contructor function.
          *
-         * @param {String} str Description of the form "ol.layer.Base"
-         * @return {Function} the ol constructor
+         * @param {String} str Description of the form `"ol.layer.Base"`.
+         * @return {Function} the ol constructor.
+         * @static
          */
         getOlCLassRef: function(str) {
             var ref = ol,
@@ -69,7 +70,7 @@ Ext.define('GeoExt.data.model.OlObject', {
     olClass: 'ol.Object',
 
     /**
-     * The underlying ol.Object
+     * The underlying ol.Object.
      *
      * @property {ol.Object}
      */
@@ -104,11 +105,10 @@ Ext.define('GeoExt.data.model.OlObject', {
     },
 
     /**
-     * Listener to propertychange events of the underlying ol.Object.
-     * All changes on the object will be forwarded to the Ext.data.Model.
+     * Listener to propertychange events of the underlying `ol.Object`. All
+     * changes on the object will be forwarded to the Ext.data.Model.
      *
-     * @param  {ol.ObjectEvent} evt
-     *
+     * @param  {ol.ObjectEvent} evt The `ol.ObjectEvent` we receive as handler.
      * @private
      */
     onPropertychange: function(evt) {
@@ -121,12 +121,11 @@ Ext.define('GeoExt.data.model.OlObject', {
     },
 
     /**
-     * Overriden to foward changes to the underlying ol.Object. All changes on
-     * the Ext.data.Models properties will be set on the ol.Object as well.
+     * Overriden to foward changes to the underlying `ol.Object`. All changes on
+     * the Ext.data.Models properties will be set on the `ol.Object` as well.
      *
-     * @param {String|Object} key
-     * @param {Object} value
-     * @param {Object} options
+     * @param {String|Object} key The key to set.
+     * @param {Object} newValue The value to set.
      *
      * @inheritdoc
      */
@@ -154,7 +153,7 @@ Ext.define('GeoExt.data.model.OlObject', {
     },
 
     /**
-     * Overriden to un all added event listeners on the ol.Object.
+     * Overriden to unregister all added event listeners on the ol.Object.
      *
      * @inheritdoc
      */

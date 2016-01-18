@@ -14,7 +14,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 /**
- * The layer model class used by the stores.
+ * The layer tree node class used by the stores used in trees.
  *
  * @class GeoExt.data.model.LayerTreeNode
  */
@@ -66,7 +66,7 @@ Ext.define('GeoExt.data.model.LayerTreeNode', {
     },
 
     /**
-     * TODO
+     * @inheritDoc
      */
     constructor: function() {
         var layer;
@@ -81,7 +81,9 @@ Ext.define('GeoExt.data.model.LayerTreeNode', {
     },
 
     /**
-     * TODO
+     * Handler for the `change:visible` event of the layer.
+     *
+     * @param {ol.ObjectEvent} evt The emitted `ol.Object` event.
      */
     onLayerVisibleChange: function(evt) {
         var target = evt.target;
@@ -92,12 +94,12 @@ Ext.define('GeoExt.data.model.LayerTreeNode', {
     },
 
     /**
-     * Overriden to foward changes to the underlying ol.Object. All changes on
-     * the Ext.data.Models properties will be set on the ol.Object as well.
+     * Overriden to forward changes to the underlying `ol.Object`. All changes
+     * on the {Ext.data.Model} properties will be set on the `ol.Object` as
+     * well.
      *
-     * @param {String} key
-     * @param {Object} value
-     * @param {Object} options
+     * @param {String} key The key to set.
+     * @param {Object} newValue The value to set.
      *
      * @inheritdoc
      */
@@ -127,11 +129,12 @@ Ext.define('GeoExt.data.model.LayerTreeNode', {
     },
 
     /**
-     * Handles Parentbehaviour of checked Nodes:
-     * Checks parent Nodes if node is checked or unchecks parent Nodes if the
-     * node is unchecked and no sibling is checked.
+     * Handles parent behaviour of checked nodes: Checks parent Nodes if node
+     * is checked or unchecks parent nodes if the node is unchecked and no
+     * sibling is checked.
+     *
+     * @param {Boolean} newValue The newValue to pass through to the parent.
      * @private
-     * @param {Boolean} newValue
      */
     toggleParentNodes: function(newValue){
         var me = this;

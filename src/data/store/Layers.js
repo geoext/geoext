@@ -15,7 +15,7 @@
  */
 /**
  * A store that synchronizes a layers array of an OpenLayers.Map with a
- * layer store holding {@link GeoExt.data.mode.layer.Base} instances.
+ * layer store holding GeoExt.data.model.layer.Base instances.
  *
  * @class GeoExt.data.store.Layers
  */
@@ -60,7 +60,9 @@ Ext.define('GeoExt.data.store.Layers', {
     },
 
     /**
-     * TODO
+     * Constructs an instance of the layer store.
+     *
+     * @param {Object} config The configuration object.
      */
     constructor: function(config) {
         var me = this;
@@ -73,8 +75,8 @@ Ext.define('GeoExt.data.store.Layers', {
     },
 
     /**
-     * Bind this store to a map instance, once bound the store
-     * is synchronized with the map and vice-versa.
+     * Bind this store to a map instance; once bound, the store is synchronized
+     * with the map and vice-versa.
      *
      * @param {ol.Map} map The map instance.
      */
@@ -136,10 +138,10 @@ Ext.define('GeoExt.data.store.Layers', {
     },
 
     /**
-     * Handler for layer changes.  When layer order changes, this moves the
+     * Handler for layer changes. When layer order changes, this moves the
      * appropriate record within the store.
      *
-     * @param {Object} evt
+     * @param {ol.ObjectEvent} evt The emitted `ol.Object` event.
      * @private
      */
     onChangeLayer: function(evt) {
@@ -158,9 +160,9 @@ Ext.define('GeoExt.data.store.Layers', {
     },
 
     /**
-     * Handler for a layer collection's add event.
+     * Handler for a layer collection's `add` event.
      *
-     * @param {Object} evt
+     * @param {ol.CollectionEvent} evt The emitted `ol.Collection` event.
      * @private
      */
     onAddLayer: function(evt) {
@@ -177,9 +179,9 @@ Ext.define('GeoExt.data.store.Layers', {
     },
 
     /**
-     * Handler for layer collection's remove event.
+     * Handler for layer collection's `remove` event.
      *
-     * @param {Object} evt
+     * @param {ol.CollectionEvent} evt The emitted `ol.Collection` event.
      * @private
      */
     onRemoveLayer: function(evt){
@@ -197,11 +199,11 @@ Ext.define('GeoExt.data.store.Layers', {
     },
 
     /**
-     * Handler for a store's load event.
+     * Handler for a store's `load` event.
      *
-     * @param {Ext.data.Store} store
-     * @param {Ext.data.Model[]} records
-     * @param {Boolean} successful
+     * @param {Ext.data.Store} store The store that loaded.
+     * @param {Ext.data.Model[]} records An array of loades model instances.
+     * @param {Boolean} successful Whether loading was successful or not.
      * @private
      */
     onLoad: function(store, records, successful) {
@@ -234,7 +236,7 @@ Ext.define('GeoExt.data.store.Layers', {
     },
 
     /**
-     * Handler for a store's clear event.
+     * Handler for a store's `clear` event.
      *
      * @private
      */
@@ -249,11 +251,13 @@ Ext.define('GeoExt.data.store.Layers', {
     },
 
     /**
-     * Handler for a store's add event.
+     * Handler for a store's `add` event.
      *
-     * @param {Ext.data.Store} store
-     * @param {Ext.data.Model[]} records
-     * @param {Number} index
+     * @param {Ext.data.Store} store The store to which a model instance was
+     *     added.
+     * @param {Ext.data.Model[]} records The array of model instances that were
+     *     added.
+     * @param {Number} index The index at which the model instances were added.
      * @private
      */
     onAdd: function(store, records, index) {
@@ -275,10 +279,12 @@ Ext.define('GeoExt.data.store.Layers', {
     },
 
     /**
-     * Handler for a store's remove event.
+     * Handler for a store's `remove` event.
      *
-     * @param {Ext.data.Store} store
-     * @param {Ext.data.Model[]} records
+     * @param {Ext.data.Store} store The store from which a model instances
+     *     were removed.
+     * @param {Ext.data.Model[]} records The array of model instances that were
+     *     removed.
      * @private
      */
     onRemove: function(store, records){
@@ -309,11 +315,12 @@ Ext.define('GeoExt.data.store.Layers', {
     },
 
     /**
-     * Handler for a store's update event.
+     * Handler for a store's `update` event.
      *
-     * @param {Ext.data.Store} store
-     * @param {Ext.data.Model} record
-     * @param {Number} operation
+     * @param {Ext.data.Store} store The store which was updated.
+     * @param {Ext.data.Model} record The model instance that was updated.
+     * @param {String} operation The operation, either Ext.data.Model.EDIT,
+     *     Ext.data.Model.REJECT or Ext.data.Model.COMMIT.
      */
     onStoreUpdate: function(store, record, operation) {
         if(operation === Ext.data.Record.EDIT) {
@@ -330,7 +337,7 @@ Ext.define('GeoExt.data.store.Layers', {
     /**
      * Removes a record's layer from the bound map.
      *
-     * @param {Ext.data.Record} record
+     * @param {Ext.data.Model} record The removed model instance.
      * @private
      */
     removeMapLayer: function(record){
@@ -338,9 +345,9 @@ Ext.define('GeoExt.data.store.Layers', {
     },
 
     /**
-     * Handler for a store's data collections' replace event.
+     * Handler for a store's data collections' `replace` event.
      *
-     * @param {String} key
+     * @param {String} key The associated key.
      * @param {Ext.data.Model} oldRecord In this case, a record that has
      *     been replaced.
      * @private
@@ -352,8 +359,9 @@ Ext.define('GeoExt.data.store.Layers', {
     /**
      * Get the record for the specified layer.
      *
-     * @param {OpenLayers.Layer} layer
-     * @return {Ext.data.Model} or undefined if not found
+     * @param {ol.layer.Base} layer The layer to get a model instance for.
+     * @return {Ext.data.Model} The corresponding model instance or undefined if
+     *     not found.
      */
     getByLayer: function(layer) {
         var index = this.findBy(function(r) {
@@ -375,11 +383,15 @@ Ext.define('GeoExt.data.store.Layers', {
     },
 
     /**
-     * Overload loadRecords to set a flag if `addRecords` is `true`
-     * in the load options. Ext JS does not pass the load options to
-     * "load" callbacks, so this is how we provide that information
-     * to `onLoad`.
+     * Overload loadRecords to set a flag if `addRecords` is `true` in the load
+     * options. ExtJS does not pass the load options to "load" callbacks, so
+     * this is how we provide that information to `onLoad`.
      *
+     * @param {Ext.data.Model[]} records The array of records to load.
+     * @param {Object} options The loading options.
+     * @param {Boolean} [options.addRecords=false] Pass `true` to add these
+     *     records to the existing records, `false` to remove the Store's
+     *     existing records first.
      * @private
      */
     loadRecords: function(records, options) {

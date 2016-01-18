@@ -1,3 +1,4 @@
+apidoc/
 build/
 node_modules/
 sencha-error-*.log
