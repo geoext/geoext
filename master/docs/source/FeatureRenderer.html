@@ -31,7 +31,51 @@
  * along with this program.  If not, see &lt;http://www.gnu.org/licenses/&gt;.
  */
 <span id='GeoExt-component-FeatureRenderer'>/**
-</span> * The feature renderer
+</span> * A component that renders a `ol.style.Style` with an optional `ol.Feature`.
+ *
+ *     @example preview
+ *     var poly = Ext.create('GeoExt.component.FeatureRenderer', {
+ *         symbolizers: new ol.style.Style({
+ *             fill: new ol.style.Fill({color: 'red'})
+ *         })
+ *     });
+ *     var line = Ext.create('GeoExt.component.FeatureRenderer', {
+ *         symbolizers: new ol.style.Style({
+ *             stroke: new ol.style.Stroke({color: 'orange', width: 3}),
+ *         }),
+ *         symbolType: 'Line'
+ *     });
+ *     var point = Ext.create('GeoExt.component.FeatureRenderer', {
+ *         symbolizers: new ol.style.Style({
+ *             image: new ol.style.Circle({
+ *                 radius: 7,
+ *                 fill: new ol.style.Fill({color: 'gray'}),
+ *                 stroke: new ol.style.Stroke({color: 'black', width: 3}),
+ *             })
+ *         }),
+ *         symbolType: 'Point'
+ *     });
+ *     var star = Ext.create('GeoExt.component.FeatureRenderer', {
+ *         symbolizers: new ol.style.Style({
+ *             image: new ol.style.RegularShape({
+ *                 fill: new ol.style.Fill({color: 'blue'}),
+ *                 stroke: new ol.style.Stroke({color: 'green', width: 3}),
+ *                 points: 7,
+ *                 radius: 15,
+ *                 radius2: 7,
+ *                 angle: 0
+ *             })
+ *         }),
+ *         minWidth: 40,
+ *         minHeight: 40,
+ *         symbolType: 'Point'
+ *     });
+ *     Ext.create('Ext.panel.Panel', {
+ *         title: 'Rendering of ol.Features in a panel',
+ *         items: [poly, line, point, star],
+ *         border: false,
+ *         renderTo: Ext.getBody()
+ *     });
  *
  * @class GeoExt.component.FeatureRenderer
  */
@@ -71,12 +115,10 @@ Ext.define('GeoExt.component.FeatureRenderer', {
 <span id='GeoExt-component-FeatureRenderer-event-click'>    /**
 </span>     * Fires when the feature is clicked on.
      *
-     * Listener arguments:
-     *
-     *  * renderer - GeoExt.component.FeatureRenderer This feature renderer.
-     *
      * @event click
+     * @param {GeoExt.component.FeatureRenderer} renderer The feature renderer.
      */
+
     config: {
 <span id='GeoExt-component-FeatureRenderer-cfg-imgCls'>        /**
 </span>         * Optional class to set on the feature renderer div.
@@ -84,6 +126,7 @@ Ext.define('GeoExt.component.FeatureRenderer', {
          * @cfg {String}
          */
         imgCls: &quot;&quot;,
+
 <span id='GeoExt-component-FeatureRenderer-cfg-minWidth'>        /**
 </span>         * The minimum width.
          *
@@ -157,8 +200,9 @@ Ext.define('GeoExt.component.FeatureRenderer', {
          */
         symbolType: &quot;Polygon&quot;
     },
+
 <span id='GeoExt-component-FeatureRenderer-method-initComponent'>    /**
-</span>     *
+</span>     * Initialize the GeoExt.component.FeatureRenderer.
      */
     initComponent: function(){
         var me = this;
@@ -348,7 +392,10 @@ Ext.define('GeoExt.component.FeatureRenderer', {
 <span id='GeoExt-component-FeatureRenderer-method-applySymbolizers'>    /**
 </span>     * We're setting the symbolizers on the feature.
      *
-     * @param {ol.style.Style[]|ol.style.Style} symbolizers
+     * @param {ol.style.Style[]|ol.style.Style} symbolizers The style (or
+     *     array of styles) that have been set.
+     * @return {ol.style.Style[]|ol.style.Style} The style (or
+     *     array of styles) that have been set.
      * @private
      */
     applySymbolizers: function(symbolizers) {
@@ -358,10 +405,12 @@ Ext.define('GeoExt.component.FeatureRenderer', {
         }
         return symbolizers;
     },
+
 <span id='GeoExt-component-FeatureRenderer-method-applyFeature'>    /**
 </span>     * We're setting the feature and add it to the source.
      *
-     * @param {ol.Feature} feature
+     * @param {ol.Feature} feature The feature that has been set.
+     * @return {ol.Feature} feature The feature that has been set.
      * @private
      */
     applyFeature: function(feature) {
@@ -376,16 +425,16 @@ Ext.define('GeoExt.component.FeatureRenderer', {
         }
         return feature;
     },
+
 <span id='GeoExt-component-FeatureRenderer-method-update'>    /**
 </span>     * Update the `feature` or `symbolizers` and redraw the feature.
      *
      * Valid options:
      *
-     * @param options {Object} Object with properties to be updated.
-     * @param options.feature {ol.Feature} The new or updated
-     *     feature.
-     * @param options.symbolizers {ol.style.Style[]|ol.style.Style}
-     *     Symbolizers.
+     * @param {Object} options Object with properties to be updated.
+     * @param {ol.Feature} options.feature The new or updated feature.
+     * @param {ol.style.Style[]|ol.style.Style} options.symbolizers The
+     *     symbolizers.
      */
     update: function(options) {
         if (options.feature) {

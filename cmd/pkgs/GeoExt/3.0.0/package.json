@@ -9,11 +9,11 @@
   "signatures": [
     {
       "name": "GeoExt Contributors",
-      "uuid": "e6c9e802-2c40-403f-a7e6-dcc612ac98f1",
-      "created": "2016-01-14T09:47:24Z",
+      "uuid": "33e4a56d-1766-4031-bb15-3a30d48c8d99",
+      "created": "2016-01-18T09:36:35Z",
       "algorithm": "SHA1withRSA",
-      "nonce": "EtZsLwkbT/0\u003d",
-      "signature": "VFB8BD8Sg99aSzVIsr+x6YpuzPgzXCf5XB8sepiLMyAyVQQ1BiErrlIZaBkL3/E72csyaCT0ETvU1adEIo+YF9cY9y1vl2NPG/se1HkKU7u4CrWmcS/KPTmn9RtfhhwRN8qv1iSdItgOuNv6lyOqNeHuTGv0Rj7bTJeZneKruHWoU0hAEJya2K9myRL1OHJXk5F0n3ZQvDxcBfuHFNfgMDU10pLggWUbitATIduDeooYOKq5uECkl6UfWMsg0P0RK4VTT2TZ7Ga1fLajy7LKt23y8HM3DOakFwufnrh8HRzgEIT5AslTLv2ETqj/embKqH+4PJ0MOtKVziGXAgUIgQ\u003d\u003d"
+      "nonce": "iso25s9nR6E\u003d",
+      "signature": "MAisLr6g4HbG9YowkXW9DTGsvoF/kvQ4/Ah3fuFjF1Mkp78PYuFINLX9+i9pVXOQtZ8jO3GPtcy8r+M0Teeq7QTfw0nSmRBDuNNI4LEQhdXiekz7I3V2SeSvUsseIhYcD8jCobdBN3PKXmBk6+3imMBRc4XEr1PMXDsMgDHDUapCqbH0+bnpxpWcezhzTIde58m+Grd5bQZeJg8+J6WJvb60aUtRZfOTrBAIzZ0m/5jwdCmeAqc683P5yIzfIOA9WzU1UsNRd3XDremh+mBtWeeqRMj6/WIGL74PFmaRhes+cLR1Idylhm5DkTI7p0VfCj97E2MUAHaVCvTSqyrTOw\u003d\u003d"
     }
   ],
   "slicer": {
@@ -42,7 +42,8 @@
     "clean-coverage": "rm -rf src_instrumented src_old coverage",
     "ci-coverage": "npm run lint-js \u0026\u0026 npm run clean-coverage \u0026\u0026 istanbul instrument src -o src_instrumented \u0026\u0026 mv src src_old \u0026\u0026 mv src_instrumented src \u0026\u0026 istanbul cover npm run save-coverage \u0026\u0026 mv src src_instrumented \u0026\u0026 mv src_old src \u0026\u0026 istanbul report --root ./coverage lcovonly \u0026\u0026 cat ./coverage/lcov.info | coveralls",
     "html-coverage": "npm run lint-js \u0026\u0026 npm run clean-coverage \u0026\u0026 istanbul instrument src -o src_instrumented \u0026\u0026 mv src src_old \u0026\u0026 mv src_instrumented src \u0026\u0026 istanbul cover npm run save-coverage \u0026\u0026 mv src src_instrumented \u0026\u0026 mv src_old src \u0026\u0026 istanbul report --root ./coverage html",
-    "generate-example": "node bin/example-generator/index.js"
+    "generate-example": "node bin/example-generator/index.js",
+    "apidoc": "jsduck --config jsduck-cfg.json"
   },
   "dependencies": {},
   "devDependencies": {

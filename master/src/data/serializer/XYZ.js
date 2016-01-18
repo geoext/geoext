@@ -14,7 +14,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
  /**
-  * A serializer for layer that hava a `ol.source.XYZ` source.
+  * A serializer for layers that have an `ol.source.XYZ` source.
   *
   * @class GeoExt.data.serializer.XYZ
   */
@@ -60,11 +60,11 @@ Ext.define('GeoExt.data.serializer.XYZ', {
             this.validateSource(source);
             var tileGrid = source.getTileGrid();
             var serialized = {
-                "baseURL": source.getUrls()[0],
-                "opacity": layer.getOpacity(),
-                "resolutions": tileGrid.getResolutions(),
-                "tileSize": ol.size.toSize(tileGrid.getTileSize()),
-                "type": "OSM"
+                baseURL: source.getUrls()[0],
+                opacity: layer.getOpacity(),
+                resolutions: tileGrid.getResolutions(),
+                tileSize: ol.size.toSize(tileGrid.getTileSize()),
+                type: "OSM"
             };
             return serialized;
         }

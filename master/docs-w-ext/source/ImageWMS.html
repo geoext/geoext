@@ -31,7 +31,7 @@
  * along with this program.  If not, see &lt;http://www.gnu.org/licenses/&gt;.
  */
 <span id='GeoExt-data-serializer-ImageWMS'>/**
-</span> * A serializer for layer that hava a `ol.source.ImageWMS` source.
+</span> * A serializer for layers that have an `ol.source.ImageWMS` source.
  *
  * @class GeoExt.data.serializer.ImageWMS
  */
@@ -62,14 +62,14 @@ Ext.define('GeoExt.data.serializer.ImageWMS', {
         serialize: function(layer, source) {
             this.validateSource(source);
             var serialized = {
-                &quot;baseURL&quot;: source.getUrl(),
-                &quot;customParams&quot;: source.getParams(),
-                &quot;layers&quot;: [
+                baseURL: source.getUrl(),
+                customParams: source.getParams(),
+                layers: [
                     source.getParams().LAYERS
                 ],
-                &quot;opacity&quot;: layer.getOpacity(),
-                &quot;styles&quot;: [ &quot;&quot; ],
-                &quot;type&quot;: &quot;WMS&quot;
+                opacity: layer.getOpacity(),
+                styles: [ &quot;&quot; ],
+                type: &quot;WMS&quot;
             };
             return serialized;
         }

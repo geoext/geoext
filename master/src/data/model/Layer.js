@@ -37,8 +37,9 @@ Ext.define('GeoExt.data.model.Layer', {
          * Convenience function for creating new layer model instance object
          * using a layer object.
          *
-         * @param {OpenLayers.Layer} layer
-         * @return {GeoExt.data.LayerModel}
+         * @param {ol.layer.Base} layer The layer to create the model instance
+         *     for.
+         * @return {GeoExt.data.model.Layer} The created model instance.
          * @static
          */
         createFromLayer: function(layer) {
@@ -51,7 +52,6 @@ Ext.define('GeoExt.data.model.Layer', {
             type: 'boolean',
             convert: function(v, record) {
                 var layer = record.getOlLayer();
-
                 if (layer) {
                     return (layer instanceof ol.layer.Group);
                 }
@@ -73,7 +73,6 @@ Ext.define('GeoExt.data.model.Layer', {
             type: 'number',
             convert: function(v, record) {
                 var layer;
-
                 if (record.data instanceof ol.layer.Base) {
                     layer = record.getOlLayer();
                     return layer.get('opacity');
@@ -85,7 +84,6 @@ Ext.define('GeoExt.data.model.Layer', {
             type: 'number',
             convert: function(v, record){
                 var layer;
-
                 if (record.data instanceof ol.layer.Base) {
                     layer = record.getOlLayer();
                     return layer.get('minResolution');
@@ -97,7 +95,6 @@ Ext.define('GeoExt.data.model.Layer', {
             type: 'number',
             convert: function(v, record){
                 var layer;
-
                 if (record.data instanceof ol.layer.Base) {
                     layer = record.getOlLayer();
                     return layer.get('maxResolution');
@@ -114,9 +111,9 @@ Ext.define('GeoExt.data.model.Layer', {
     },
 
     /**
-     * Returns the {ol.layer.Base} layer object used in this model instance.
+     * Returns the `ol.layer.Base` object used in this model instance.
      *
-     * @return {ol.layer.Base}
+     * @return {ol.layer.Base} The `ol.layer.Base` object.
      */
     getOlLayer: function() {
         if (this.data instanceof ol.layer.Base) {

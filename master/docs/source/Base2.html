@@ -68,16 +68,17 @@ Ext.define('GeoExt.data.serializer.Base', {
          * @param {ol.source.Source} source The source of the layer to
          *    serialize.
          * @param {Number} viewRes The resolution of the mapview.
-         * @return {Object} a serialized representation of source and layer.
+         * @return {Object} A serialized representation of source and layer.
          */
         serialize: function() {
             Ext.raise('This method must be overriden by subclasses.');
+            return null; // so that we can have a shared JSDoc comment.
         },
 
 <span id='GeoExt-data-serializer-Base-static-method-register'>        /**
 </span>         * Given a subclass of GeoExt.data.serializer.Base, register the class
          * with the GeoExt.data.MapfishPrintProvider. This method is ususally
-         * called inside the 'after-create' function of Ext.class definitions.
+         * called inside the 'after-create' function of `Ext.class` definitions.
          *
          * @param {GeoExt.data.serializer.Base} subCls The class to register.
          * @protected
@@ -90,7 +91,7 @@ Ext.define('GeoExt.data.serializer.Base', {
         },
 
 <span id='GeoExt-data-serializer-Base-static-method-validateSource'>        /**
-</span>         * Given a concrete ol.source.Source instance, this method checks if
+</span>         * Given a concrete `ol.source.Source` instance, this method checks if
          * the non-abstract subclass is capable of serializing the source. Will
          * throw an exception if the source isn't valid for the serializer.
          *

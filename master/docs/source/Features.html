@@ -31,7 +31,7 @@
  * along with this program.  If not, see &lt;http://www.gnu.org/licenses/&gt;.
  */
 <span id='GeoExt-data-store-Features'>/**
-</span> * A data store holding OpenLayers feature objects.
+</span> * A data store holding OpenLayers feature objects (`ol.Feature`).
  *
  * @class GeoExt.data.store.Features
  */
@@ -64,35 +64,35 @@ Ext.define('GeoExt.data.store.Features', {
     config: {
 
 <span id='GeoExt-data-store-Features-cfg-layer'>        /**
-</span>         * Initial layer holding features which will be added to the store
+</span>         * Initial layer holding features which will be added to the store.
          *
          * @cfg {ol.Layer} layer
          */
 <span id='GeoExt-data-store-Features-property-layer'>        /**
-</span>         * @property {ol.Layer}
+</span>         * The layer object which is in sync with this store.
+         * @property {ol.Layer}
          * @readonly
-         * The layer object which is in sync with this store
          */
         layer: null
     },
 
 <span id='GeoExt-data-store-Features-cfg-map'>    /**
-</span>     * A map object to which a possible #layer will be added
+</span>     * A map object to which a possible #layer will be added.
      *
      * @cfg {ol.Map}
      */
     map: null,
 
 <span id='GeoExt-data-store-Features-cfg-createLayer'>    /**
-</span>     * Set this flag to true will create a vector #layer with the given
-     * #features and ads it to the given #map (if available)
+</span>     * Setting this flag to true will create a vector #layer with the given
+     * #features and adds it to the given #map (if available).
      *
      * @cfg {Boolean}
      */
     createLayer: false,
 
 <span id='GeoExt-data-store-Features-property-layerCreated'>    /**
-</span>     * Shows if the #layer has been created by constructor
+</span>     * Shows if the #layer has been created by constructor.
      *
      * @private
      * @property {Boolean}
@@ -108,16 +108,18 @@ Ext.define('GeoExt.data.store.Features', {
     style: null,
 
 <span id='GeoExt-data-store-Features-cfg-features'>    /**
-</span>     * Initial set of features. Has to be an ol.Collection object with
-     * ol.Feature objects in it.
+</span>     * Initial set of features. Has to be an `ol.Collection` object with
+     * `ol.Feature` objects in it.
      *
-     * @cfg {ol.Collection&lt;ol.Feature&gt;}
+     * @cfg {ol.Collection}
      */
     features: null,
 
 
 <span id='GeoExt-data-store-Features-method-constructor'>    /**
-</span>     * TODO
+</span>     * Constructs the feature store.
+     *
+     * @param {Object} config The configuration object.
      */
     constructor: function(config) {
         var me = this,
@@ -163,8 +165,8 @@ Ext.define('GeoExt.data.store.Features', {
 <span id='GeoExt-data-store-Features-method-getFeatures'>    /**
 </span>     * Returns the FeatureCollection which is in sync with this store.
      *
-     * @return {ol.Collection&lt;ol.Featrues&gt;} The underlying OpenLayers
-     *     FeatureCollection
+     * @return {ol.Collection} The underlying OpenLayers `ol.Collection` of
+     *     `ol.Feature`.
      */
     getFeatures: function() {
         return this.olCollection;
@@ -173,7 +175,7 @@ Ext.define('GeoExt.data.store.Features', {
 <span id='GeoExt-data-store-Features-method-getByFeature'>    /**
 </span>     * Returns the record corresponding to a feature.
      *
-     * @param  {ol.Feature} feature An ol.Feature object to get the record for
+     * @param {ol.Feature} feature An ol.Feature object to get the record for
      * @return {Ext.data.Model} The model instance corresponding to the feature
      */
     getByFeature: function(feature) {
@@ -257,7 +259,7 @@ Ext.define('GeoExt.data.store.Features', {
 <span id='GeoExt-data-store-Features-method-onFeaturesAdded'>    /**
 </span>     * Handler for #layer 'addfeature' event.
      *
-     * @param {Object} evt the event object of OpenLayers
+     * @param {Object} evt The event object of OpenLayers.
      * @private
      */
     onFeaturesAdded: function (evt) {
@@ -267,7 +269,7 @@ Ext.define('GeoExt.data.store.Features', {
 <span id='GeoExt-data-store-Features-method-onFeaturesRemoved'>    /**
 </span>     * Handler for #layer 'removefeature' event.
      *
-     * @param {Object} evt the event object of OpenLayers
+     * @param {Object} evt The event object of OpenLayers.
      * @private
      */
     onFeaturesRemoved: function (evt) {

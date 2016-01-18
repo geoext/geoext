@@ -31,7 +31,7 @@
  * along with this program.  If not, see &lt;http://www.gnu.org/licenses/&gt;.
  */
 <span id='GeoExt-data-serializer-WMTS'>/**
-</span> * A serializer for layer that have a `ol.source.WMTS` source.
+</span> * A serializer for layers that have an `ol.source.WMTS` source.
  *
  * This class is heavily inspired by the excellent `ngeo` Print service class:
  * [camptocamp/ngeo](https://github.com/camptocamp/ngeo).
@@ -99,18 +99,18 @@ Ext.define('GeoExt.data.serializer.WMTS', {
             });
 
             var serialized = {
-                &quot;baseURL&quot;: source.getUrls()[0],
-                &quot;dimensions&quot;: dimensionKeys,
-                &quot;dimensionParams&quot;: dimensions,
-                &quot;imageFormat&quot;: source.getFormat(),
-                &quot;layer&quot;: source.getLayer(),
-                &quot;matrices&quot;: matrices,
-                &quot;matrixSet&quot;: source.getMatrixSet(),
-                &quot;opacity&quot;: layer.getOpacity(),
-                &quot;requestEncoding&quot;: source.getRequestEncoding(),
-                &quot;style&quot;: source.getStyle(),
-                &quot;type&quot;: &quot;WMTS&quot;,
-                &quot;version&quot;: source.getVersion()
+                baseURL: source.getUrls()[0],
+                dimensions: dimensionKeys,
+                dimensionParams: dimensions,
+                imageFormat: source.getFormat(),
+                layer: source.getLayer(),
+                matrices: matrices,
+                matrixSet: source.getMatrixSet(),
+                opacity: layer.getOpacity(),
+                requestEncoding: source.getRequestEncoding(),
+                style: source.getStyle(),
+                type: &quot;WMTS&quot;,
+                version: source.getVersion()
             };
             return serialized;
         }

@@ -15,13 +15,13 @@
  */
 
 /**
- * An GeoExt.component.OverviewMap displays an overview map of an parent map.
+ * An GeoExt.component.OverviewMap displays an overview map of a parent map.
  * You can use this component as any other Ext.Component, e.g give it as an item
  * to a panel.
  *
  * Example:
  *
- *     @example
+ *     @example preview
  *     var olMap = new ol.Map({
  *         layers: [
  *             new ol.layer.Tile({
@@ -29,47 +29,34 @@
  *             })
  *         ],
  *         view: new ol.View({
- *             center: ol.proj.transform([-8.751278, 40.611368],
- *                 'EPSG:4326', 'EPSG:3857'),
- *             zoom: 12
+ *             center: ol.proj.fromLonLat([-8.751278, 40.611368]),
+ *             zoom: 12,
+ *             rotation: -Math.PI / 6
  *         })
  *     });
  *     var mapComponent = Ext.create('GeoExt.component.Map', {
  *         map: olMap
  *     });
- *     var overviewMap = Ext.create('GeoExt.component.OverviewMap', {
- *         parentMap: olMap
- *     });
- *     var overviewMapPanel = Ext.create('Ext.panel.Panel', {
- *         width: 200,
- *         height: 200,
- *         title: 'OverviewMap',
- *         layout: 'fit',
- *         items: [overviewMap]
- *     });
- *     var descriptionPanel = Ext.create('Ext.panel.Panel', {
- *         width: 200,
- *         title: 'Description',
- *         layout: 'fit',
- *         html: 'Map and overview panel'
- *     });
- *     var westPanel = Ext.create('Ext.panel.Panel', {
- *         width: 200,
- *         region: 'west',
- *         layout: 'vbox',
- *         items: [overviewMapPanel, descriptionPanel]
- *     });
  *     var mapPanel = Ext.create('Ext.panel.Panel', {
  *        title: 'Map',
  *        region: 'center',
  *        layout: 'fit',
- *        items: [mapComponent]
+ *        items: mapComponent
  *     });
- *     var mapAndOverviewPanel = Ext.create('Ext.panel.Panel', {
- *        width: 600,
- *        height: 600,
+ *     var overviewMapPanel = Ext.create('Ext.panel.Panel', {
+ *         title: 'OverviewMap',
+ *         region: 'west',
+ *         layout: 'fit',
+ *         width: 160,
+ *         // create the overview by passing the ol.Map:
+ *         items: Ext.create('GeoExt.component.OverviewMap', {
+ *             parentMap: olMap
+ *         })
+ *     });
+ *     Ext.create('Ext.panel.Panel', {
+ *        height: 300,
  *        layout: 'border',
- *        items: [mapPanel, westPanel],
+ *        items: [mapPanel, overviewMapPanel],
  *        renderTo: Ext.getBody()
  *     });
  *
@@ -128,20 +115,23 @@ Ext.define("GeoExt.component.OverviewMap", {
 
     config: {
         /**
-         * TODO
-         * @cfg {ol.Style} anchorStyle
+         * The style for the anchor feature which indicates the upper-left
+         * corner of the overview rectangle.
+         *
+         * @cfg {ol.style.Style} anchorStyle
          */
         anchorStyle: null,
 
         /**
-         * TODO
-         * @cfg {ol.Style} boxStyle
+         * The style for the overview rectangle.
+         *
+         * @cfg {ol.style.Style} boxStyle
          */
         boxStyle: null,
 
         /**
-         * An ol.Collection of ol.layers.Base. If not defined on construction,
-         * the layers of the parentMap will be used.
+         * An `ol.Collection` of `ol.layer.Base`. If not defined on
+         * construction, the layers of the #parentMap will be used.
          *
          * @cfg {ol.Collection}
          */
@@ -157,7 +147,8 @@ Ext.define("GeoExt.component.OverviewMap", {
 
         /**
          * A configured map or a configuration object for the map constructor.
-         * This is the overviewMap itself.
+         *
+         * **This is the overviewMap itself.**
          *
          * @cfg {ol.Map/Object} map
          */
@@ -165,7 +156,8 @@ Ext.define("GeoExt.component.OverviewMap", {
 
         /**
          * A configured map or a configuration object for the map constructor.
-         * This should be the map the overviewMap is bind to.
+         *
+         * **This should be the map the overviewMap is bound to.**
          *
          * @cfg {ol.Map} parentMap
          */
@@ -184,7 +176,7 @@ Ext.define("GeoExt.component.OverviewMap", {
          * recenter the map after a click on the overview. Only has effect
          * if #recenterOnClick is true.
          *
-         * @cfg {number} recenterDuration Amount of milliseconds for panning
+         * @cfg {Number} recenterDuration Amount of milliseconds for panning
          *     the parent map to the clicked location.
          */
         recenterDuration: 500
@@ -192,33 +184,49 @@ Ext.define("GeoExt.component.OverviewMap", {
 
     statics: {
         /**
-         * TODO
+         * Rotates a coordinate around another center coordinate and returns the
+         * new coordinate.
+         *
+         * @param {Number[]} coord The coordinate to rotate as array with
+         *     `[x, y]`.
+         * @param {Number[]} center The coordinate to rotate around as array
+         *     with `[x, y]`.
+         * @param {Number} rotation The rotation in radians.
+         * @return {Number[]} The rotate coordinate as array with `[x, y]`.
          */
-        rotateCoordsAroundCoords: function(coords, center, rotation){
+        rotateCoordAroundCoord: function(coord, center, rotation){
             var cosTheta = Math.cos(rotation);
             var sinTheta = Math.sin(rotation);
 
-            var x = (cosTheta * (coords[0] - center[0]) - sinTheta *
-                    (coords[1] - center[1]) + center[0]);
-
-            var y = (sinTheta * (coords[0] - center[0]) + cosTheta *
-                    (coords[1] - center[1]) + center[1]);
+            var x = (cosTheta * (coord[0] - center[0]) - sinTheta *
+                    (coord[1] - center[1]) + center[0]);
+            var y = (sinTheta * (coord[0] - center[0]) + cosTheta *
+                    (coord[1] - center[1]) + center[1]);
 
             return [x, y];
         },
 
         /**
-         * TODO
+         * Rotates a geometry around a center coordinate and returns the
+         * new geometry. Only reliably works with instances of `ol.geom.Point`
+         * or `ol.geom.Polygon`, the latter loosing any inner rings (holes) it
+         * may have.
+         *
+         * @param {ol.geom.Point|ol.geom.Polygon} geom The geometry to rotate.
+         * @param {Number[]} centerCoord The coordinate to rotate around as
+         *     array with `[x, y]`.
+         * @param {Number} rotation The rotation in radians.
+         * @return {Number[]} The rotate coordinate as array with `[x, y]`.
          */
-        rotateGeomAroundCoords: function(geom, centerCoords, rotation){
+        rotateGeomAroundCoord: function(geom, centerCoord, rotation){
             var me = this;
             var ar = [];
             var coords;
 
             if(geom instanceof ol.geom.Point){
                 ar.push(
-                    me.rotateCoordsAroundCoords(
-                        geom.getCoordinates(), centerCoords, rotation
+                    me.rotateCoordAroundCoord(
+                        geom.getCoordinates(), centerCoord, rotation
                     )
                 );
                 geom.setCoordinates(ar[0]);
@@ -226,8 +234,8 @@ Ext.define("GeoExt.component.OverviewMap", {
                 coords = geom.getCoordinates()[0];
                 coords.forEach(function(coord){
                     ar.push(
-                        me.rotateCoordsAroundCoords(
-                            coord, centerCoords, rotation
+                        me.rotateCoordAroundCoord(
+                            coord, centerCoord, rotation
                         )
                     );
                 });
@@ -269,7 +277,7 @@ Ext.define("GeoExt.component.OverviewMap", {
     },
 
     /**
-     * TODO
+     * Initializes the GeoExt.component.OverviewMap.
      */
     initComponent: function() {
         var me = this;
@@ -289,7 +297,10 @@ Ext.define("GeoExt.component.OverviewMap", {
     },
 
     /**
-     * TODO
+     * Creates the ol instances we need: two features for the box and the
+     * anchor, and a vector layer with empty source to hold the features.
+     *
+     * @private
      */
     initOverviewFeatures: function(){
         var me = this;
@@ -301,7 +312,9 @@ Ext.define("GeoExt.component.OverviewMap", {
     },
 
     /**
-     * TODO
+     * Initializes the #map from the configuration and the #parentMap.
+     *
+     * @private
      */
     initOverviewMap: function(){
         var me = this,
@@ -363,6 +376,7 @@ Ext.define("GeoExt.component.OverviewMap", {
     /**
      * Called when a property of the parent maps view changes.
      *
+     * @param {ol.ObjectEvent} evt The event emitted by the `ol.Object`.
      * @private
      */
     onParentViewPropChange: function(evt){
@@ -375,6 +389,7 @@ Ext.define("GeoExt.component.OverviewMap", {
      * Handler for the click event of the overview map. Recenters the parent
      * map to the clicked location.
      *
+     * @param {ol.MapBrowserEvent} evt The click event on the map.
      * @private
      */
     overviewMapClicked: function(evt){
@@ -403,13 +418,13 @@ Ext.define("GeoExt.component.OverviewMap", {
             parentCenter = parentMapView.getCenter(),
             geom = ol.geom.Polygon.fromExtent(parentExtent);
 
-        geom = me.self.rotateGeomAroundCoords(
+        geom = me.self.rotateGeomAroundCoord(
             geom, parentCenter, parentRotation
         );
         me.boxFeature.setGeometry(geom);
 
         var anchor = new ol.geom.Point(ol.extent.getTopLeft(parentExtent));
-        anchor = me.self.rotateGeomAroundCoords(
+        anchor = me.self.rotateGeomAroundCoord(
             anchor, parentCenter, parentRotation
         );
         me.anchorFeature.setGeometry(anchor);
@@ -417,6 +432,9 @@ Ext.define("GeoExt.component.OverviewMap", {
 
     /**
      * Set an OverviewMap property (center or resolution).
+     *
+     * @param {String} key The name of the property, either `'center'` or
+     *     `'resolution'`
      */
     setOverviewMapProperty: function(key){
         var me = this,
@@ -436,6 +454,9 @@ Ext.define("GeoExt.component.OverviewMap", {
      * The applier for recenterOnClick method. Takes care of initially
      * registering an appropriate eventhandler and also unregistering if the
      * property changes.
+     *
+     * @param {Boolean} shallRecenter The value for #recenterOnClick that was
+     *     set.
      */
     applyRecenterOnClick: function(shallRecenter){
         var me = this,
@@ -476,6 +497,10 @@ Ext.define("GeoExt.component.OverviewMap", {
 
     /**
      * Update the size of the ol.Map onResize.
+     *
+     * TODO can we reuse the mapcomponent code? Perhaps even for this complete
+     *     class???
+     * @private
      */
     onResize: function(){
         // Get the corresponding view of the controller (the mapPanel).
@@ -491,7 +516,11 @@ Ext.define("GeoExt.component.OverviewMap", {
     },
 
     /**
-     * TODO
+     * The applier for the anchor style.
+     *
+     * @param {ol.Style} style The new style for the anchor feature that was
+     *     set.
+     * @return {ol.Style} The new style for the anchor feature.
      */
     applyAnchorStyle: function(style){
         this.anchorFeature.setStyle(style);
@@ -499,7 +528,10 @@ Ext.define("GeoExt.component.OverviewMap", {
     },
 
     /**
-     * TODO
+     * The applier for the box style.
+     *
+     * @param {ol.Style} style The new style for the box feature that was set.
+     * @return {ol.Style} The new style for the box feature.
      */
     applyBoxStyle: function(style){
         this.boxFeature.setStyle(style);

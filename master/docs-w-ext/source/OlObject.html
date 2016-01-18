@@ -55,8 +55,9 @@ Ext.define('GeoExt.data.model.OlObject', {
 <span id='GeoExt-data-model-OlObject-static-method-getOlCLassRef'>        /**
 </span>         * Gets a reference to an ol contructor function.
          *
-         * @param {String} str Description of the form &quot;ol.layer.Base&quot;
-         * @return {Function} the ol constructor
+         * @param {String} str Description of the form `&quot;ol.layer.Base&quot;`.
+         * @return {Function} the ol constructor.
+         * @static
          */
         getOlCLassRef: function(str) {
             var ref = ol,
@@ -86,7 +87,7 @@ Ext.define('GeoExt.data.model.OlObject', {
     olClass: 'ol.Object',
 
 <span id='GeoExt-data-model-OlObject-property-olObject'>    /**
-</span>     * The underlying ol.Object
+</span>     * The underlying ol.Object.
      *
      * @property {ol.Object}
      */
@@ -121,11 +122,10 @@ Ext.define('GeoExt.data.model.OlObject', {
     },
 
 <span id='GeoExt-data-model-OlObject-method-onPropertychange'>    /**
-</span>     * Listener to propertychange events of the underlying ol.Object.
-     * All changes on the object will be forwarded to the Ext.data.Model.
+</span>     * Listener to propertychange events of the underlying `ol.Object`. All
+     * changes on the object will be forwarded to the Ext.data.Model.
      *
-     * @param  {ol.ObjectEvent} evt
-     *
+     * @param  {ol.ObjectEvent} evt The `ol.ObjectEvent` we receive as handler.
      * @private
      */
     onPropertychange: function(evt) {
@@ -138,12 +138,11 @@ Ext.define('GeoExt.data.model.OlObject', {
     },
 
 <span id='GeoExt-data-model-OlObject-method-set'>    /**
-</span>     * Overriden to foward changes to the underlying ol.Object. All changes on
-     * the Ext.data.Models properties will be set on the ol.Object as well.
+</span>     * Overriden to foward changes to the underlying `ol.Object`. All changes on
+     * the Ext.data.Models properties will be set on the `ol.Object` as well.
      *
-     * @param {String|Object} key
-     * @param {Object} value
-     * @param {Object} options
+     * @param {String|Object} key The key to set.
+     * @param {Object} newValue The value to set.
      *
      * @inheritdoc
      */
@@ -171,7 +170,7 @@ Ext.define('GeoExt.data.model.OlObject', {
     },
 
 <span id='GeoExt-data-model-OlObject-method-destroy'>    /**
-</span>     * Overriden to un all added event listeners on the ol.Object.
+</span>     * Overriden to unregister all added event listeners on the ol.Object.
      *
      * @inheritdoc
      */

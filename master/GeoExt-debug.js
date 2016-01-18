@@ -206,7 +206,51 @@ Ext.define('GeoExt.mixin.SymbolCheck', {
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 /**
- * The feature renderer
+ * A component that renders a `ol.style.Style` with an optional `ol.Feature`.
+ *
+ *     @example preview
+ *     var poly = Ext.create('GeoExt.component.FeatureRenderer', {
+ *         symbolizers: new ol.style.Style({
+ *             fill: new ol.style.Fill({color: 'red'})
+ *         })
+ *     });
+ *     var line = Ext.create('GeoExt.component.FeatureRenderer', {
+ *         symbolizers: new ol.style.Style({
+ *             stroke: new ol.style.Stroke({color: 'orange', width: 3}),
+ *         }),
+ *         symbolType: 'Line'
+ *     });
+ *     var point = Ext.create('GeoExt.component.FeatureRenderer', {
+ *         symbolizers: new ol.style.Style({
+ *             image: new ol.style.Circle({
+ *                 radius: 7,
+ *                 fill: new ol.style.Fill({color: 'gray'}),
+ *                 stroke: new ol.style.Stroke({color: 'black', width: 3}),
+ *             })
+ *         }),
+ *         symbolType: 'Point'
+ *     });
+ *     var star = Ext.create('GeoExt.component.FeatureRenderer', {
+ *         symbolizers: new ol.style.Style({
+ *             image: new ol.style.RegularShape({
+ *                 fill: new ol.style.Fill({color: 'blue'}),
+ *                 stroke: new ol.style.Stroke({color: 'green', width: 3}),
+ *                 points: 7,
+ *                 radius: 15,
+ *                 radius2: 7,
+ *                 angle: 0
+ *             })
+ *         }),
+ *         minWidth: 40,
+ *         minHeight: 40,
+ *         symbolType: 'Point'
+ *     });
+ *     Ext.create('Ext.panel.Panel', {
+ *         title: 'Rendering of ol.Features in a panel',
+ *         items: [poly, line, point, star],
+ *         border: false,
+ *         renderTo: Ext.getBody()
+ *     });
  *
  * @class GeoExt.component.FeatureRenderer
  */
@@ -242,11 +286,8 @@ Ext.define('GeoExt.component.FeatureRenderer', {
     /**
      * Fires when the feature is clicked on.
      *
-     * Listener arguments:
-     *
-     *  * renderer - GeoExt.component.FeatureRenderer This feature renderer.
-     *
      * @event click
+     * @param {GeoExt.component.FeatureRenderer} renderer The feature renderer.
      */
     config: {
         /**
@@ -320,7 +361,7 @@ Ext.define('GeoExt.component.FeatureRenderer', {
         symbolType: "Polygon"
     },
     /**
-     *
+     * Initialize the GeoExt.component.FeatureRenderer.
      */
     initComponent: function() {
         var me = this;
@@ -547,7 +588,10 @@ Ext.define('GeoExt.component.FeatureRenderer', {
     /**
      * We're setting the symbolizers on the feature.
      *
-     * @param {ol.style.Style[]|ol.style.Style} symbolizers
+     * @param {ol.style.Style[]|ol.style.Style} symbolizers The style (or
+     *     array of styles) that have been set.
+     * @return {ol.style.Style[]|ol.style.Style} The style (or
+     *     array of styles) that have been set.
      * @private
      */
     applySymbolizers: function(symbolizers) {
@@ -560,7 +604,8 @@ Ext.define('GeoExt.component.FeatureRenderer', {
     /**
      * We're setting the feature and add it to the source.
      *
-     * @param {ol.Feature} feature
+     * @param {ol.Feature} feature The feature that has been set.
+     * @return {ol.Feature} feature The feature that has been set.
      * @private
      */
     applyFeature: function(feature) {
@@ -580,11 +625,10 @@ Ext.define('GeoExt.component.FeatureRenderer', {
      *
      * Valid options:
      *
-     * @param options {Object} Object with properties to be updated.
-     * @param options.feature {ol.Feature} The new or updated
-     *     feature.
-     * @param options.symbolizers {ol.style.Style[]|ol.style.Style}
-     *     Symbolizers.
+     * @param {Object} options Object with properties to be updated.
+     * @param {ol.Feature} options.feature The new or updated feature.
+     * @param {ol.style.Style[]|ol.style.Style} options.symbolizers The
+     *     symbolizers.
      */
     update: function(options) {
         if (options.feature) {
@@ -661,8 +705,9 @@ Ext.define('GeoExt.data.model.Layer', {
          * Convenience function for creating new layer model instance object
          * using a layer object.
          *
-         * @param {OpenLayers.Layer} layer
-         * @return {GeoExt.data.LayerModel}
+         * @param {ol.layer.Base} layer The layer to create the model instance
+         *     for.
+         * @return {GeoExt.data.model.Layer} The created model instance.
          * @static
          */
         createFromLayer: function(layer) {
@@ -734,9 +779,9 @@ Ext.define('GeoExt.data.model.Layer', {
         }
     },
     /**
-     * Returns the {ol.layer.Base} layer object used in this model instance.
+     * Returns the `ol.layer.Base` object used in this model instance.
      *
-     * @return {ol.layer.Base}
+     * @return {ol.layer.Base} The `ol.layer.Base` object.
      */
     getOlLayer: function() {
         if (this.data instanceof ol.layer.Base) {
@@ -762,7 +807,7 @@ Ext.define('GeoExt.data.model.Layer', {
  */
 /**
  * A store that synchronizes a layers array of an OpenLayers.Map with a
- * layer store holding {@link GeoExt.data.mode.layer.Base} instances.
+ * layer store holding GeoExt.data.model.layer.Base instances.
  *
  * @class GeoExt.data.store.Layers
  */
@@ -802,7 +847,9 @@ Ext.define('GeoExt.data.store.Layers', {
         map: null
     },
     /**
-     * TODO
+     * Constructs an instance of the layer store.
+     *
+     * @param {Object} config The configuration object.
      */
     constructor: function(config) {
         var me = this;
@@ -814,8 +861,8 @@ Ext.define('GeoExt.data.store.Layers', {
         }
     },
     /**
-     * Bind this store to a map instance, once bound the store
-     * is synchronized with the map and vice-versa.
+     * Bind this store to a map instance; once bound, the store is synchronized
+     * with the map and vice-versa.
      *
      * @param {ol.Map} map The map instance.
      */
@@ -867,10 +914,10 @@ Ext.define('GeoExt.data.store.Layers', {
         me.map = null;
     },
     /**
-     * Handler for layer changes.  When layer order changes, this moves the
+     * Handler for layer changes. When layer order changes, this moves the
      * appropriate record within the store.
      *
-     * @param {Object} evt
+     * @param {ol.ObjectEvent} evt The emitted `ol.Object` event.
      * @private
      */
     onChangeLayer: function(evt) {
@@ -888,9 +935,9 @@ Ext.define('GeoExt.data.store.Layers', {
         }
     },
     /**
-     * Handler for a layer collection's add event.
+     * Handler for a layer collection's `add` event.
      *
-     * @param {Object} evt
+     * @param {ol.CollectionEvent} evt The emitted `ol.Collection` event.
      * @private
      */
     onAddLayer: function(evt) {
@@ -906,9 +953,9 @@ Ext.define('GeoExt.data.store.Layers', {
         }
     },
     /**
-     * Handler for layer collection's remove event.
+     * Handler for layer collection's `remove` event.
      *
-     * @param {Object} evt
+     * @param {ol.CollectionEvent} evt The emitted `ol.Collection` event.
      * @private
      */
     onRemoveLayer: function(evt) {
@@ -925,11 +972,11 @@ Ext.define('GeoExt.data.store.Layers', {
         }
     },
     /**
-     * Handler for a store's load event.
+     * Handler for a store's `load` event.
      *
-     * @param {Ext.data.Store} store
-     * @param {Ext.data.Model[]} records
-     * @param {Boolean} successful
+     * @param {Ext.data.Store} store The store that loaded.
+     * @param {Ext.data.Model[]} records An array of loades model instances.
+     * @param {Boolean} successful Whether loading was successful or not.
      * @private
      */
     onLoad: function(store, records, successful) {
@@ -963,7 +1010,7 @@ Ext.define('GeoExt.data.store.Layers', {
         delete me._addRecords;
     },
     /**
-     * Handler for a store's clear event.
+     * Handler for a store's `clear` event.
      *
      * @private
      */
@@ -977,11 +1024,13 @@ Ext.define('GeoExt.data.store.Layers', {
         delete me._removing;
     },
     /**
-     * Handler for a store's add event.
+     * Handler for a store's `add` event.
      *
-     * @param {Ext.data.Store} store
-     * @param {Ext.data.Model[]} records
-     * @param {Number} index
+     * @param {Ext.data.Store} store The store to which a model instance was
+     *     added.
+     * @param {Ext.data.Model[]} records The array of model instances that were
+     *     added.
+     * @param {Number} index The index at which the model instances were added.
      * @private
      */
     onAdd: function(store, records, index) {
@@ -1003,10 +1052,12 @@ Ext.define('GeoExt.data.store.Layers', {
         }
     },
     /**
-     * Handler for a store's remove event.
+     * Handler for a store's `remove` event.
      *
-     * @param {Ext.data.Store} store
-     * @param {Ext.data.Model[]} records
+     * @param {Ext.data.Store} store The store from which a model instances
+     *     were removed.
+     * @param {Ext.data.Model[]} records The array of model instances that were
+     *     removed.
      * @private
      */
     onRemove: function(store, records) {
@@ -1036,11 +1087,12 @@ Ext.define('GeoExt.data.store.Layers', {
         }
     },
     /**
-     * Handler for a store's update event.
+     * Handler for a store's `update` event.
      *
-     * @param {Ext.data.Store} store
-     * @param {Ext.data.Model} record
-     * @param {Number} operation
+     * @param {Ext.data.Store} store The store which was updated.
+     * @param {Ext.data.Model} record The model instance that was updated.
+     * @param {String} operation The operation, either Ext.data.Model.EDIT,
+     *     Ext.data.Model.REJECT or Ext.data.Model.COMMIT.
      */
     onStoreUpdate: function(store, record, operation) {
         if (operation === Ext.data.Record.EDIT) {
@@ -1056,16 +1108,16 @@ Ext.define('GeoExt.data.store.Layers', {
     /**
      * Removes a record's layer from the bound map.
      *
-     * @param {Ext.data.Record} record
+     * @param {Ext.data.Model} record The removed model instance.
      * @private
      */
     removeMapLayer: function(record) {
         this.map.getLayers().remove(record.getOlLayer());
     },
     /**
-     * Handler for a store's data collections' replace event.
+     * Handler for a store's data collections' `replace` event.
      *
-     * @param {String} key
+     * @param {String} key The associated key.
      * @param {Ext.data.Model} oldRecord In this case, a record that has
      *     been replaced.
      * @private
@@ -1076,8 +1128,9 @@ Ext.define('GeoExt.data.store.Layers', {
     /**
      * Get the record for the specified layer.
      *
-     * @param {OpenLayers.Layer} layer
-     * @return {Ext.data.Model} or undefined if not found
+     * @param {ol.layer.Base} layer The layer to get a model instance for.
+     * @return {Ext.data.Model} The corresponding model instance or undefined if
+     *     not found.
      */
     getByLayer: function(layer) {
         var index = this.findBy(function(r) {
@@ -1097,11 +1150,15 @@ Ext.define('GeoExt.data.store.Layers', {
         this.callParent();
     },
     /**
-     * Overload loadRecords to set a flag if `addRecords` is `true`
-     * in the load options. Ext JS does not pass the load options to
-     * "load" callbacks, so this is how we provide that information
-     * to `onLoad`.
+     * Overload loadRecords to set a flag if `addRecords` is `true` in the load
+     * options. ExtJS does not pass the load options to "load" callbacks, so
+     * this is how we provide that information to `onLoad`.
      *
+     * @param {Ext.data.Model[]} records The array of records to load.
+     * @param {Object} options The loading options.
+     * @param {Boolean} [options.addRecords=false] Pass `true` to add these
+     *     records to the existing records, `false` to remove the Store's
+     *     existing records first.
      * @private
      */
     loadRecords: function(records, options) {
@@ -1145,13 +1202,13 @@ Ext.define('GeoExt.data.store.Layers', {
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 /**
+ * A component that renders an `ol.Map` and that can be used in any ExtJS
+ * layout.
  *
- * The map component and a panel side by side
+ * An example: A map component rendered insiide of a panel:
  *
- *     @example
+ *     @example preview
  *     var mapComponent = Ext.create('GeoExt.component.Map', {
- *         width: 600,
- *         height: 400,
  *         map: new ol.Map({
  *             layers: [
  *                 new ol.layer.Tile({
@@ -1159,15 +1216,14 @@ Ext.define('GeoExt.data.store.Layers', {
  *                 })
  *             ],
  *             view: new ol.View({
- *                 center: ol.proj.transform([-8.751278, 40.611368],
- *                     'EPSG:4326', 'EPSG:3857'),
+ *                 center: ol.proj.fromLonLat([-8.751278, 40.611368]),
  *                 zoom: 12
  *             })
  *         })
  *     });
  *     var mapPanel = Ext.create('Ext.panel.Panel', {
  *         title: 'GeoExt.component.Map Example',
- *         layout: 'fit',
+ *         height: 200,
  *         items: [mapComponent],
  *         renderTo: Ext.getBody()
  *     });
@@ -1220,7 +1276,6 @@ Ext.define("GeoExt.component.Map", {
      *     the center of the tolerance bounds (itself configurable with the the
      *     configuration #pointerRestPixelTolerance). If this is null, a
      *     completely *new* pointerrest event just happened.
-     *
      */
     /**
      * @event pointerrestout
@@ -1474,7 +1529,7 @@ Ext.define("GeoExt.component.Map", {
     /**
      * Returns the center coordinate of the view.
      *
-     * @return {ol.Coordinate}
+     * @return {ol.Coordinate} The center of the map view as `ol.Coordinate`.
      */
     getCenter: function() {
         return this.getMap().getView().getCenter();
@@ -1482,7 +1537,7 @@ Ext.define("GeoExt.component.Map", {
     /**
      * Set the center of the view.
      *
-     * @param {ol.Coordinate} center
+     * @param {ol.Coordinate} center The new center as `ol.Coordinate`.
      */
     setCenter: function(center) {
         this.getMap().getView().setCenter(center);
@@ -1490,7 +1545,7 @@ Ext.define("GeoExt.component.Map", {
     /**
      * Returns the extent of the current view.
      *
-     * @return {ol.Extent}
+     * @return {ol.Extent} The extent of the map view as `ol.Extent`.
      */
     getExtent: function() {
         return this.getView().calculateExtent(this.getMap().getSize());
@@ -1498,7 +1553,7 @@ Ext.define("GeoExt.component.Map", {
     /**
      * Set the extent of the view.
      *
-     * @param {ol.Extent} extent
+     * @param {ol.Extent} extent The extent as `ol.Extent`.
      */
     setExtent: function(extent) {
         this.getView().fit(extent, this.getMap().getSize());
@@ -1514,19 +1569,19 @@ Ext.define("GeoExt.component.Map", {
     /**
      * Add a layer to the map.
      *
-     * @param {ol.layer.Base} layer
+     * @param {ol.layer.Base} layer The layer to add.
      */
     addLayer: function(layer) {
         if (layer instanceof ol.layer.Base) {
             this.getMap().addLayer(layer);
         } else {
-            Ext.Error.raise('Can not add layer ' + layer + ' cause it is not ' + 'an instance of ol.layer.Base');
+            Ext.Error.raise('Can not add layer ' + layer + ' as it is not ' + 'an instance of ol.layer.Base');
         }
     },
     /**
-     * Add a layer to the map.
+     * Remove a layer from the map.
      *
-     * @param {ol.layer.Base} layer
+     * @param {ol.layer.Base} layer The layer to remove.
      */
     removeLayer: function(layer) {
         if (layer instanceof ol.layer.Base) {
@@ -1534,13 +1589,13 @@ Ext.define("GeoExt.component.Map", {
                 this.getMap().removeLayer(layer);
             }
         } else {
-            Ext.Error.raise('Can not add layer ' + layer + ' cause it is not ' + 'an instance of ol.layer.Base');
+            Ext.Error.raise('Can not add layer ' + layer + ' as it is not ' + 'an instance of ol.layer.Base');
         }
     },
     /**
-     * Returns the GeoExt.data.store.Layers
+     * Returns the GeoExt.data.store.Layers.
      *
-     * @return {GeoExt.data.store.Layers}
+     * @return {GeoExt.data.store.Layers} The layer store.
      */
     getStore: function() {
         return this.layerStore;
@@ -1548,7 +1603,7 @@ Ext.define("GeoExt.component.Map", {
     /**
      * Returns the view of the map.
      *
-     * @return {ol.View}
+     * @return {ol.View} The `ol.View` of the map.
      */
     getView: function() {
         return this.getMap().getView();
@@ -1556,7 +1611,7 @@ Ext.define("GeoExt.component.Map", {
     /**
      * Set the view of the map.
      *
-     * @param {ol.View} view
+     * @param {ol.View} view The `ol.View` to use for the map.
      */
     setView: function(view) {
         this.getMap().setView(view);
@@ -1579,13 +1634,13 @@ Ext.define("GeoExt.component.Map", {
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 /**
- * An GeoExt.component.OverviewMap displays an overview map of an parent map.
+ * An GeoExt.component.OverviewMap displays an overview map of a parent map.
  * You can use this component as any other Ext.Component, e.g give it as an item
  * to a panel.
  *
  * Example:
  *
- *     @example
+ *     @example preview
  *     var olMap = new ol.Map({
  *         layers: [
  *             new ol.layer.Tile({
@@ -1593,47 +1648,34 @@ Ext.define("GeoExt.component.Map", {
  *             })
  *         ],
  *         view: new ol.View({
- *             center: ol.proj.transform([-8.751278, 40.611368],
- *                 'EPSG:4326', 'EPSG:3857'),
- *             zoom: 12
+ *             center: ol.proj.fromLonLat([-8.751278, 40.611368]),
+ *             zoom: 12,
+ *             rotation: -Math.PI / 6
  *         })
  *     });
  *     var mapComponent = Ext.create('GeoExt.component.Map', {
  *         map: olMap
  *     });
- *     var overviewMap = Ext.create('GeoExt.component.OverviewMap', {
- *         parentMap: olMap
- *     });
- *     var overviewMapPanel = Ext.create('Ext.panel.Panel', {
- *         width: 200,
- *         height: 200,
- *         title: 'OverviewMap',
- *         layout: 'fit',
- *         items: [overviewMap]
- *     });
- *     var descriptionPanel = Ext.create('Ext.panel.Panel', {
- *         width: 200,
- *         title: 'Description',
- *         layout: 'fit',
- *         html: 'Map and overview panel'
- *     });
- *     var westPanel = Ext.create('Ext.panel.Panel', {
- *         width: 200,
- *         region: 'west',
- *         layout: 'vbox',
- *         items: [overviewMapPanel, descriptionPanel]
- *     });
  *     var mapPanel = Ext.create('Ext.panel.Panel', {
  *        title: 'Map',
  *        region: 'center',
  *        layout: 'fit',
- *        items: [mapComponent]
+ *        items: mapComponent
  *     });
- *     var mapAndOverviewPanel = Ext.create('Ext.panel.Panel', {
- *        width: 600,
- *        height: 600,
+ *     var overviewMapPanel = Ext.create('Ext.panel.Panel', {
+ *         title: 'OverviewMap',
+ *         region: 'west',
+ *         layout: 'fit',
+ *         width: 160,
+ *         // create the overview by passing the ol.Map:
+ *         items: Ext.create('GeoExt.component.OverviewMap', {
+ *             parentMap: olMap
+ *         })
+ *     });
+ *     Ext.create('Ext.panel.Panel', {
+ *        height: 300,
  *        layout: 'border',
- *        items: [mapPanel, westPanel],
+ *        items: [mapPanel, overviewMapPanel],
  *        renderTo: Ext.getBody()
  *     });
  *
@@ -1690,18 +1732,21 @@ Ext.define("GeoExt.component.OverviewMap", {
     ],
     config: {
         /**
-         * TODO
-         * @cfg {ol.Style} anchorStyle
+         * The style for the anchor feature which indicates the upper-left
+         * corner of the overview rectangle.
+         *
+         * @cfg {ol.style.Style} anchorStyle
          */
         anchorStyle: null,
         /**
-         * TODO
-         * @cfg {ol.Style} boxStyle
+         * The style for the overview rectangle.
+         *
+         * @cfg {ol.style.Style} boxStyle
          */
         boxStyle: null,
         /**
-         * An ol.Collection of ol.layers.Base. If not defined on construction,
-         * the layers of the parentMap will be used.
+         * An `ol.Collection` of `ol.layer.Base`. If not defined on
+         * construction, the layers of the #parentMap will be used.
          *
          * @cfg {ol.Collection}
          */
@@ -1715,14 +1760,16 @@ Ext.define("GeoExt.component.OverviewMap", {
         magnification: 5,
         /**
          * A configured map or a configuration object for the map constructor.
-         * This is the overviewMap itself.
+         *
+         * **This is the overviewMap itself.**
          *
          * @cfg {ol.Map/Object} map
          */
         map: null,
         /**
          * A configured map or a configuration object for the map constructor.
-         * This should be the map the overviewMap is bind to.
+         *
+         * **This should be the map the overviewMap is bound to.**
          *
          * @cfg {ol.Map} parentMap
          */
@@ -1739,39 +1786,56 @@ Ext.define("GeoExt.component.OverviewMap", {
          * recenter the map after a click on the overview. Only has effect
          * if #recenterOnClick is true.
          *
-         * @cfg {number} recenterDuration Amount of milliseconds for panning
+         * @cfg {Number} recenterDuration Amount of milliseconds for panning
          *     the parent map to the clicked location.
          */
         recenterDuration: 500
     },
     statics: {
         /**
-         * TODO
+         * Rotates a coordinate around another center coordinate and returns the
+         * new coordinate.
+         *
+         * @param {Number[]} coord The coordinate to rotate as array with
+         *     `[x, y]`.
+         * @param {Number[]} center The coordinate to rotate around as array
+         *     with `[x, y]`.
+         * @param {Number} rotation The rotation in radians.
+         * @return {Number[]} The rotate coordinate as array with `[x, y]`.
          */
-        rotateCoordsAroundCoords: function(coords, center, rotation) {
+        rotateCoordAroundCoord: function(coord, center, rotation) {
             var cosTheta = Math.cos(rotation);
             var sinTheta = Math.sin(rotation);
-            var x = (cosTheta * (coords[0] - center[0]) - sinTheta * (coords[1] - center[1]) + center[0]);
-            var y = (sinTheta * (coords[0] - center[0]) + cosTheta * (coords[1] - center[1]) + center[1]);
+            var x = (cosTheta * (coord[0] - center[0]) - sinTheta * (coord[1] - center[1]) + center[0]);
+            var y = (sinTheta * (coord[0] - center[0]) + cosTheta * (coord[1] - center[1]) + center[1]);
             return [
                 x,
                 y
             ];
         },
         /**
-         * TODO
+         * Rotates a geometry around a center coordinate and returns the
+         * new geometry. Only reliably works with instances of `ol.geom.Point`
+         * or `ol.geom.Polygon`, the latter loosing any inner rings (holes) it
+         * may have.
+         *
+         * @param {ol.geom.Point|ol.geom.Polygon} geom The geometry to rotate.
+         * @param {Number[]} centerCoord The coordinate to rotate around as
+         *     array with `[x, y]`.
+         * @param {Number} rotation The rotation in radians.
+         * @return {Number[]} The rotate coordinate as array with `[x, y]`.
          */
-        rotateGeomAroundCoords: function(geom, centerCoords, rotation) {
+        rotateGeomAroundCoord: function(geom, centerCoord, rotation) {
             var me = this;
             var ar = [];
             var coords;
             if (geom instanceof ol.geom.Point) {
-                ar.push(me.rotateCoordsAroundCoords(geom.getCoordinates(), centerCoords, rotation));
+                ar.push(me.rotateCoordAroundCoord(geom.getCoordinates(), centerCoord, rotation));
                 geom.setCoordinates(ar[0]);
             } else if (geom instanceof ol.geom.Polygon) {
                 coords = geom.getCoordinates()[0];
                 coords.forEach(function(coord) {
-                    ar.push(me.rotateCoordsAroundCoords(coord, centerCoords, rotation));
+                    ar.push(me.rotateCoordAroundCoord(coord, centerCoord, rotation));
                 });
                 geom.setCoordinates([
                     ar
@@ -1807,7 +1871,7 @@ Ext.define("GeoExt.component.OverviewMap", {
         this.callParent(arguments);
     },
     /**
-     * TODO
+     * Initializes the GeoExt.component.OverviewMap.
      */
     initComponent: function() {
         var me = this;
@@ -1822,7 +1886,10 @@ Ext.define("GeoExt.component.OverviewMap", {
         me.callParent();
     },
     /**
-     * TODO
+     * Creates the ol instances we need: two features for the box and the
+     * anchor, and a vector layer with empty source to hold the features.
+     *
+     * @private
      */
     initOverviewFeatures: function() {
         var me = this;
@@ -1833,7 +1900,9 @@ Ext.define("GeoExt.component.OverviewMap", {
         });
     },
     /**
-     * TODO
+     * Initializes the #map from the configuration and the #parentMap.
+     *
+     * @private
      */
     initOverviewMap: function() {
         var me = this,
@@ -1886,6 +1955,7 @@ Ext.define("GeoExt.component.OverviewMap", {
     /**
      * Called when a property of the parent maps view changes.
      *
+     * @param {ol.ObjectEvent} evt The event emitted by the `ol.Object`.
      * @private
      */
     onParentViewPropChange: function(evt) {
@@ -1897,6 +1967,7 @@ Ext.define("GeoExt.component.OverviewMap", {
      * Handler for the click event of the overview map. Recenters the parent
      * map to the clicked location.
      *
+     * @param {ol.MapBrowserEvent} evt The click event on the map.
      * @private
      */
     overviewMapClicked: function(evt) {
@@ -1921,14 +1992,17 @@ Ext.define("GeoExt.component.OverviewMap", {
             parentRotation = parentMapView.getRotation(),
             parentCenter = parentMapView.getCenter(),
             geom = ol.geom.Polygon.fromExtent(parentExtent);
-        geom = me.self.rotateGeomAroundCoords(geom, parentCenter, parentRotation);
+        geom = me.self.rotateGeomAroundCoord(geom, parentCenter, parentRotation);
         me.boxFeature.setGeometry(geom);
         var anchor = new ol.geom.Point(ol.extent.getTopLeft(parentExtent));
-        anchor = me.self.rotateGeomAroundCoords(anchor, parentCenter, parentRotation);
+        anchor = me.self.rotateGeomAroundCoord(anchor, parentCenter, parentRotation);
         me.anchorFeature.setGeometry(anchor);
     },
     /**
      * Set an OverviewMap property (center or resolution).
+     *
+     * @param {String} key The name of the property, either `'center'` or
+     *     `'resolution'`
      */
     setOverviewMapProperty: function(key) {
         var me = this,
@@ -1945,6 +2019,9 @@ Ext.define("GeoExt.component.OverviewMap", {
      * The applier for recenterOnClick method. Takes care of initially
      * registering an appropriate eventhandler and also unregistering if the
      * property changes.
+     *
+     * @param {Boolean} shallRecenter The value for #recenterOnClick that was
+     *     set.
      */
     applyRecenterOnClick: function(shallRecenter) {
         var me = this,
@@ -1985,6 +2062,10 @@ Ext.define("GeoExt.component.OverviewMap", {
     },
     /**
      * Update the size of the ol.Map onResize.
+     *
+     * TODO can we reuse the mapcomponent code? Perhaps even for this complete
+     *     class???
+     * @private
      */
     onResize: function() {
         // Get the corresponding view of the controller (the mapPanel).
@@ -1999,14 +2080,21 @@ Ext.define("GeoExt.component.OverviewMap", {
         }
     },
     /**
-     * TODO
+     * The applier for the anchor style.
+     *
+     * @param {ol.Style} style The new style for the anchor feature that was
+     *     set.
+     * @return {ol.Style} The new style for the anchor feature.
      */
     applyAnchorStyle: function(style) {
         this.anchorFeature.setStyle(style);
         return style;
     },
     /**
-     * TODO
+     * The applier for the box style.
+     *
+     * @param {ol.Style} style The new style for the box feature that was set.
+     * @return {ol.Style} The new style for the box feature.
      */
     applyBoxStyle: function(style) {
         this.boxFeature.setStyle(style);
@@ -2032,10 +2120,9 @@ Ext.define("GeoExt.component.OverviewMap", {
 /**
  * An GeoExt.component.Popup can be used to displays a popup over the map.
  *
- * Example:
+ * Example (hover over anything in the map to see a popup):
  *
- *     @example
- *     var description;
+ *     @example preview
  *     var olMap = new ol.Map({
  *         layers: [
  *             new ol.layer.Tile({
@@ -2043,33 +2130,45 @@ Ext.define("GeoExt.component.OverviewMap", {
  *             })
  *         ],
  *         view: new ol.View({
- *             center: ol.proj.transform([-8.751278, 40.611368],
- *                 'EPSG:4326', 'EPSG:3857'),
+ *             center: ol.proj.fromLonLat([-8.751278, 40.611368]),
  *             zoom: 12
  *         })
- *     });
- *     var popup = Ext.create('GeoExt.component.Popup', {
- *         map: olMap,
- *         width: 140
- *     });
+ *     })
  *     var mapComponent = Ext.create('GeoExt.component.Map', {
  *         map: olMap,
  *         pointerRest: true,
  *         pointerRestInterval: 750,
  *         pointerRestPixelTolerance: 5,
- *         renderTo: Ext.getBody()
+ *         renderTo: Ext.getBody(),
+ *         height: 200
+ *     });
+ *     var popup = Ext.create('GeoExt.component.Popup', {
+ *         map: olMap,
+ *         width: 140
  *     });
  *     mapComponent.on('pointerrest', function(evt) {
- *         var coordinate = evt.coordinate;
- *         hdms = ol.coordinate.toStringHDMS(ol.proj.transform(
- *                 coordinate, 'EPSG:3857', 'EPSG:4326'));
+ *         var coord = evt.coordinate;
+ *         var transformed = ol.proj.toLonLat(coord);
+ *         var hdms = ol.coordinate.toStringHDMS(transformed);
  *         hdms = hdms.replace(/([NS])/, '$1<br>');
  *         popup.setHtml('<p><strong>Pointer rested on</strong>' +
  *                 '<br /><code>' + hdms + '</code></p>');
- *         popup.position(coordinate);
+ *         popup.position(coord);
  *         popup.show();
  *     });
  *     mapComponent.on('pointerrestout', popup.hide, popup);
+ *
+ * The above example loads the provided CSS-file `resources/css/gx-popup.css`
+ * and also uses the following inline CSS:
+ *
+ *     .gx-popup p {
+ *         padding: 5px 5px 0 5px;
+ *         border-radius: 7px;
+ *         background-color: rgba(255,255,255,0.85);
+ *         border: 3px solid white;
+ *         margin: 0;
+ *         text-align: center;
+ *     }
  *
  * @class GeoExt.component.Popup
  */
@@ -2099,11 +2198,13 @@ Ext.define('GeoExt.component.Popup', {
      */
     overlayElementCreated: false,
     /**
-     *
+     * The CSS class of the popup.
      */
     cls: 'gx-popup',
     /**
-     * @private
+     * Construct a popup.
+     *
+     * @param {Object} config The configuration object.
      */
     constructor: function(config) {
         var me = this,
@@ -2168,6 +2269,9 @@ Ext.define('GeoExt.component.Popup', {
     },
     /**
      * (Re-)Positions the popup to the given coordinates.
+     *
+     * @param {ol.Coordinate} coordinate The new position of the popup as
+     *     `ol.Coordinate`.
      */
     position: function(coordinate) {
         var me = this;
@@ -2202,6 +2306,10 @@ Ext.define('GeoExt.component.Popup', {
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 /**
+ * A {@link GeoExt.data.model.print.Layout Layout} of a mapfish print service
+ * has many layout attributes. You can create correct instances of this class
+ * by using the GeoExt.data.MapfishPrintProvider.
+ *
  * @class GeoExt.data.model.print.LayoutAttribute
  */
 Ext.define('GeoExt.data.model.print.LayoutAttribute', {
@@ -2238,6 +2346,10 @@ Ext.define('GeoExt.data.model.print.LayoutAttribute', {
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 /**
+ * A {@link GeoExt.data.model.print.Capability Capability} of a mapfish print
+ * service has many layouts. You can create correct instances of this class by
+ * using the GeoExt.data.MapfishPrintProvider.
+ *
  * @class GeoExt.data.model.print.Layout
  */
 Ext.define('GeoExt.data.model.print.Layout', {
@@ -2276,6 +2388,9 @@ Ext.define('GeoExt.data.model.print.Layout', {
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 /**
+ * A data model that represents a `Capability` of a mapfish print service: It
+ * can comfortably be generated by using an GeoExt.data.MapfishPrintProvider.
+ *
  * @class GeoExt.data.model.print.Capability
  */
 Ext.define('GeoExt.data.model.print.Capability', {
@@ -2334,6 +2449,7 @@ Ext.define('GeoExt.data.MapfishPrintProvider', {
     symbols: [
         'ol.Collection',
         'ol.geom.Polygon.fromExtent',
+        'ol.Feature',
         'ol.layer.Layer#getSource',
         'ol.layer.Group',
         'ol.source.Vector.prototype.addFeature',
@@ -2426,26 +2542,27 @@ Ext.define('GeoExt.data.MapfishPrintProvider', {
             return serializer;
         },
         /**
-         * Will return an array of ol-layers by the given collection.
-         * Layers contained in ol.layerGroups get extracted and groups
-         * get removed from returning array
+         * Will return an array of ol-layers by the given collection. Layers
+         * contained in `ol.layer.Group`s get extracted and groups get removed
+         * from returning array
          *
-         * @param {GeoExt.data.store.Layers, {ol.Collection.<ol.layer.Base>},
-         *     Array<ol.layer.Base>}
-         * @return {Array} inputLayers - the flat layers array
+         * @param {GeoExt.data.store.Layers|ol.Collection|ol.layer.Base[]} coll
+         *     The 'collection' of layers to get as array. If passed as
+         *     ol.Collection, all items must be `ol.layer.Base`.
+         * @return {Array} The flat layers array.
          */
-        getLayerArray: function(layers) {
+        getLayerArray: function(coll) {
             var inputLayers = [];
             var extractingLayerGroups = true;
-            if (layers instanceof GeoExt.data.store.Layers) {
-                layers.each(function(layerRec) {
+            if (coll instanceof GeoExt.data.store.Layers) {
+                coll.each(function(layerRec) {
                     var layer = layerRec.getOlLayer();
                     inputLayers.push(layer);
                 });
-            } else if (layers instanceof ol.Collection) {
-                inputLayers = Ext.clone(layers.getArray());
+            } else if (coll instanceof ol.Collection) {
+                inputLayers = Ext.clone(coll.getArray());
             } else {
-                inputLayers = Ext.clone(layers);
+                inputLayers = Ext.clone(coll);
             }
             while (extractingLayerGroups) {
                 var groups = [];
@@ -2475,9 +2592,20 @@ Ext.define('GeoExt.data.MapfishPrintProvider', {
          * Will return an array of serialized layers for mapfish print servlet
          * v3.0.
          *
-         * @param {GeoExt.data.store.Layers, {ol.Collection.<ol.layer.Base>},
-         *     Array<ol.layer.Base>}
-         *
+         * @param {GeoExt.component.Map} mapComponent The GeoExt map component
+         *     to get the the layers from.
+         * @param {Function} [filterFn] A function to filter the layers to be
+         *     serialized.
+         * @param {ol.layer.Base} filterFn.item The layer to check for
+         *     inclusion.
+         * @param {Number} filterFn.index The index of the layer in the
+         *     flattened list.
+         * @param {Array} filterFn.array The complete flattened array of layers.
+         * @param {Boolean} filterFn.return Return a truthy value to keep the
+         *     layer and serialize it.
+         * @param {Object} [filterScope] The scope in which the filtering
+         *     function will be executed.
+         * @return {Object[]} An array of serialized layers.
          * @static
          */
         getSerializedLayers: function(mapComponent, filterFn, filterScope) {
@@ -2502,7 +2630,17 @@ Ext.define('GeoExt.data.MapfishPrintProvider', {
         /**
          * Renders the extent of the printout. Will ensure that the extent is
          * always visible and that the ratio matches the ratio that clientInfo
-         * contains
+         * contains.
+         *
+         * @param {GeoExt.component.Map} mapComponent The map component to
+         *     render the print extent to.
+         * @param {ol.layer.Vector} extentLayer The vector layer to render the
+         *     print extent to.
+         * @param {Object} clientInfo Information about the desired print
+         *     dimensions.
+         * @param {Number} clientInfo.width The target width.
+         * @param {Number} clientInfo.height The target height.
+         * @return {ol.Feature} The feature representing the print extent.
          */
         renderPrintExtent: function(mapComponent, extentLayer, clientInfo) {
             var mapComponentWidth = mapComponent.getWidth();
@@ -2625,8 +2763,9 @@ Ext.define('GeoExt.data.model.OlObject', {
         /**
          * Gets a reference to an ol contructor function.
          *
-         * @param {String} str Description of the form "ol.layer.Base"
-         * @return {Function} the ol constructor
+         * @param {String} str Description of the form `"ol.layer.Base"`.
+         * @return {Function} the ol constructor.
+         * @static
          */
         getOlCLassRef: function(str) {
             var ref = ol,
@@ -2652,7 +2791,7 @@ Ext.define('GeoExt.data.model.OlObject', {
      */
     olClass: 'ol.Object',
     /**
-     * The underlying ol.Object
+     * The underlying ol.Object.
      *
      * @property {ol.Object}
      */
@@ -2681,11 +2820,10 @@ Ext.define('GeoExt.data.model.OlObject', {
         me.olObject.on('propertychange', me.onPropertychange, me);
     },
     /**
-     * Listener to propertychange events of the underlying ol.Object.
-     * All changes on the object will be forwarded to the Ext.data.Model.
+     * Listener to propertychange events of the underlying `ol.Object`. All
+     * changes on the object will be forwarded to the Ext.data.Model.
      *
-     * @param  {ol.ObjectEvent} evt
-     *
+     * @param  {ol.ObjectEvent} evt The `ol.ObjectEvent` we receive as handler.
      * @private
      */
     onPropertychange: function(evt) {
@@ -2696,12 +2834,11 @@ Ext.define('GeoExt.data.model.OlObject', {
         }
     },
     /**
-     * Overriden to foward changes to the underlying ol.Object. All changes on
-     * the Ext.data.Models properties will be set on the ol.Object as well.
+     * Overriden to foward changes to the underlying `ol.Object`. All changes on
+     * the Ext.data.Models properties will be set on the `ol.Object` as well.
      *
-     * @param {String|Object} key
-     * @param {Object} value
-     * @param {Object} options
+     * @param {String|Object} key The key to set.
+     * @param {Object} newValue The value to set.
      *
      * @inheritdoc
      */
@@ -2723,7 +2860,7 @@ Ext.define('GeoExt.data.model.OlObject', {
         this.__updating = false;
     },
     /**
-     * Overriden to un all added event listeners on the ol.Object.
+     * Overriden to unregister all added event listeners on the ol.Object.
      *
      * @inheritdoc
      */
@@ -2749,16 +2886,16 @@ Ext.define('GeoExt.data.model.OlObject', {
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 /**
- * Data model holding an OpenLayers feature.
+ * Data model holding an OpenLayers feature (`ol.Feature`).
  *
  * @class GeoExt.data.model.Feature
  */
 Ext.define('GeoExt.data.model.Feature', {
     extend: 'GeoExt.data.model.OlObject',
     /**
-     * Returns the underlying Feature of this record.
+     * Returns the underlying `ol.Feature` of this record.
      *
-     * @return {ol.Feature}
+     * @return {ol.Feature} The underlying `ol.Feature`.
      */
     getFeature: function() {
         return this.olObject;
@@ -2781,7 +2918,7 @@ Ext.define('GeoExt.data.model.Feature', {
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 /**
- * The layer model class used by the stores.
+ * The layer tree node class used by the stores used in trees.
  *
  * @class GeoExt.data.model.LayerTreeNode
  */
@@ -2828,7 +2965,7 @@ Ext.define('GeoExt.data.model.LayerTreeNode', {
         }
     },
     /**
-     * TODO
+     * @inheritDoc
      */
     constructor: function() {
         var layer;
@@ -2840,7 +2977,9 @@ Ext.define('GeoExt.data.model.LayerTreeNode', {
         }
     },
     /**
-     * TODO
+     * Handler for the `change:visible` event of the layer.
+     *
+     * @param {ol.ObjectEvent} evt The emitted `ol.Object` event.
      */
     onLayerVisibleChange: function(evt) {
         var target = evt.target;
@@ -2849,12 +2988,12 @@ Ext.define('GeoExt.data.model.LayerTreeNode', {
         }
     },
     /**
-     * Overriden to foward changes to the underlying ol.Object. All changes on
-     * the Ext.data.Models properties will be set on the ol.Object as well.
+     * Overriden to forward changes to the underlying `ol.Object`. All changes
+     * on the {Ext.data.Model} properties will be set on the `ol.Object` as
+     * well.
      *
-     * @param {String} key
-     * @param {Object} value
-     * @param {Object} options
+     * @param {String} key The key to set.
+     * @param {Object} newValue The value to set.
      *
      * @inheritdoc
      */
@@ -2881,11 +3020,12 @@ Ext.define('GeoExt.data.model.LayerTreeNode', {
         }
     },
     /**
-     * Handles Parentbehaviour of checked Nodes:
-     * Checks parent Nodes if node is checked or unchecks parent Nodes if the
-     * node is unchecked and no sibling is checked.
+     * Handles parent behaviour of checked nodes: Checks parent Nodes if node
+     * is checked or unchecks parent nodes if the node is unchecked and no
+     * sibling is checked.
+     *
+     * @param {Boolean} newValue The newValue to pass through to the parent.
      * @private
-     * @param {Boolean} newValue
      */
     toggleParentNodes: function(newValue) {
         var me = this;
@@ -2990,15 +3130,17 @@ Ext.define('GeoExt.data.serializer.Base', {
          * @param {ol.source.Source} source The source of the layer to
          *    serialize.
          * @param {Number} viewRes The resolution of the mapview.
-         * @return {Object} a serialized representation of source and layer.
+         * @return {Object} A serialized representation of source and layer.
          */
         serialize: function() {
             Ext.raise('This method must be overriden by subclasses.');
+            return null;
         },
+        // so that we can have a shared JSDoc comment.
         /**
          * Given a subclass of GeoExt.data.serializer.Base, register the class
          * with the GeoExt.data.MapfishPrintProvider. This method is ususally
-         * called inside the 'after-create' function of Ext.class definitions.
+         * called inside the 'after-create' function of `Ext.class` definitions.
          *
          * @param {GeoExt.data.serializer.Base} subCls The class to register.
          * @protected
@@ -3007,7 +3149,7 @@ Ext.define('GeoExt.data.serializer.Base', {
             GeoExt.data.MapfishPrintProvider.registerSerializer(subCls.sourceCls, subCls);
         },
         /**
-         * Given a concrete ol.source.Source instance, this method checks if
+         * Given a concrete `ol.source.Source` instance, this method checks if
          * the non-abstract subclass is capable of serializing the source. Will
          * throw an exception if the source isn't valid for the serializer.
          *
@@ -3038,7 +3180,7 @@ Ext.define('GeoExt.data.serializer.Base', {
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 /**
- * A serializer for layer that hava a `ol.source.ImageWMS` source.
+ * A serializer for layers that have an `ol.source.ImageWMS` source.
  *
  * @class GeoExt.data.serializer.ImageWMS
  */
@@ -3064,16 +3206,16 @@ Ext.define('GeoExt.data.serializer.ImageWMS', {
         serialize: function(layer, source) {
             this.validateSource(source);
             var serialized = {
-                    "baseURL": source.getUrl(),
-                    "customParams": source.getParams(),
-                    "layers": [
+                    baseURL: source.getUrl(),
+                    customParams: source.getParams(),
+                    layers: [
                         source.getParams().LAYERS
                     ],
-                    "opacity": layer.getOpacity(),
-                    "styles": [
+                    opacity: layer.getOpacity(),
+                    styles: [
                         ""
                     ],
-                    "type": "WMS"
+                    type: "WMS"
                 };
             return serialized;
         }
@@ -3099,7 +3241,7 @@ Ext.define('GeoExt.data.serializer.ImageWMS', {
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 /**
- * A serializer for layer that hava a `ol.source.TileWMS` source.
+ * A serializer for layers that have an `ol.source.TileWMS` source.
  *
  * @class GeoExt.data.serializer.TileWMS
  */
@@ -3125,16 +3267,16 @@ Ext.define('GeoExt.data.serializer.TileWMS', {
         serialize: function(layer, source) {
             this.validateSource(source);
             var serialized = {
-                    "baseURL": source.getUrls()[0],
-                    "customParams": source.getParams(),
-                    "layers": [
+                    baseURL: source.getUrls()[0],
+                    customParams: source.getParams(),
+                    layers: [
                         source.getParams().LAYERS
                     ],
-                    "opacity": layer.getOpacity(),
-                    "styles": [
+                    opacity: layer.getOpacity(),
+                    styles: [
                         ""
                     ],
-                    "type": "WMS"
+                    type: "WMS"
                 };
             return serialized;
         }
@@ -3160,7 +3302,7 @@ Ext.define('GeoExt.data.serializer.TileWMS', {
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 /**
- * A serializer for layers that have a `ol.source.Vector` source.
+ * A serializer for layers that have an `ol.source.Vector` source.
  *
  * This class is heavily inspired by the excellent `ngeo` Print service class:
  * [camptocamp/ngeo](https://github.com/camptocamp/ngeo).
@@ -3229,7 +3371,7 @@ Ext.define('GeoExt.data.serializer.Vector', {
             POLYGON: 'Polygon'
         },
         /**
-         * An object that maps an ol.geom.GeometryType to a printstyle type.
+         * An object that maps an `ol.geom.GeometryType` to a #PRINTSTYLE_TYPES.
          *
          * @private
          */
@@ -3433,8 +3575,8 @@ Ext.define('GeoExt.data.serializer.Vector', {
             }
         },
         /**
-         * Encodes an ol.style.Fill and an optional ol.style.Stroke and adds it
-         * to the passed symbolizers array.
+         * Encodes an `ol.style.Fill` and an optional `ol.style.Stroke` and adds
+         * it to the passed symbolizers array.
          *
          * @param {Object[]} symbolizers Array of MapFish Print symbolizers.
          * @param {ol.style.Fill} fillStyle Fill style.
@@ -3452,7 +3594,7 @@ Ext.define('GeoExt.data.serializer.Vector', {
             symbolizers.push(symbolizer);
         },
         /**
-         * Encodes an ol.style.Stroke and adds it to the passed symbolizers
+         * Encodes an `ol.style.Stroke` and adds it to the passed symbolizers
          * array.
          *
          * @param {Object[]} symbolizers Array of MapFish Print symbolizers.
@@ -3467,7 +3609,7 @@ Ext.define('GeoExt.data.serializer.Vector', {
             symbolizers.push(symbolizer);
         },
         /**
-         * Encodes an ol.style.Image and adds it to the passed symbolizers
+         * Encodes an `ol.style.Image` and adds it to the passed symbolizers
          * array.
          *
          * @param {Object[]} symbolizers Array of MapFish Print symbolizers.
@@ -3508,7 +3650,7 @@ Ext.define('GeoExt.data.serializer.Vector', {
             }
         },
         /**
-         * Encodes an ol.style.Text and adds it to the passed symbolizers
+         * Encodes an `ol.style.Text` and adds it to the passed symbolizers
          * array.
          *
          * @param {Object[]} symbolizers Array of MapFish Print symbolizers.
@@ -3571,7 +3713,7 @@ Ext.define('GeoExt.data.serializer.Vector', {
             symbolizers.push(symbolizer);
         },
         /**
-         * Encode the passed ol.style.Fill into the passed symbolizer.
+         * Encode the passed `ol.style.Fill` into the passed symbolizer.
          *
          * @param {Object} symbolizer MapFish Print symbolizer.
          * @param {ol.style.Fill} fillStyle Fill style.
@@ -3586,7 +3728,7 @@ Ext.define('GeoExt.data.serializer.Vector', {
             }
         },
         /**
-         * Encode the passed ol.style.Stroke into the passed symbolizer.
+         * Encode the passed `ol.style.Stroke` into the passed symbolizer.
          *
          * @param {Object} symbolizer MapFish Print symbolizer.
          * @param {ol.style.Stroke} strokeStyle Stroke style.
@@ -3609,8 +3751,8 @@ Ext.define('GeoExt.data.serializer.Vector', {
          * Taken from https://github.com/google/closure-library color.js-file.
          * It is called `prependZeroIfNecessaryHelper` there.
          *
-         * @param {string} hex Hex value to prepend if single digit.
-         * @return {string} hex value prepended with zero if it was single
+         * @param {String} hex Hex value to prepend if single digit.
+         * @return {String} The hex value prepended with zero if it was single
          *     digit, otherwise the same value that was passed in.
          * @private
          */
@@ -3621,9 +3763,9 @@ Ext.define('GeoExt.data.serializer.Vector', {
          * Converts a color from RGB to hex representation.
          * Taken from https://github.com/google/closure-library color.js-file.
          *
-         * @param {number} r Amount of red, int between 0 and 255.
-         * @param {number} g Amount of green, int between 0 and 255.
-         * @param {number} b Amount of blue, int between 0 and 255.
+         * @param {Number} r Amount of red, int between 0 and 255.
+         * @param {Number} g Amount of green, int between 0 and 255.
+         * @param {Number} b Amount of blue, int between 0 and 255.
          * @return {String} The passed color in hex representation.
          * @private
          */
@@ -3656,7 +3798,7 @@ Ext.define('GeoExt.data.serializer.Vector', {
          * property #GX_UID_PROPERTY and modified in place if this hasn't
          * happened in a previous call.
          *
-         * @param {Object} The object to get the uid of.
+         * @param {Object} obj The object to get the uid of.
          * @return {String} The uid of the object.
          * @private
          */
@@ -3717,7 +3859,7 @@ Ext.define('GeoExt.data.serializer.Vector', {
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 /**
- * A serializer for layer that have a `ol.source.WMTS` source.
+ * A serializer for layers that have an `ol.source.WMTS` source.
  *
  * This class is heavily inspired by the excellent `ngeo` Print service class:
  * [camptocamp/ngeo](https://github.com/camptocamp/ngeo).
@@ -3777,18 +3919,18 @@ Ext.define('GeoExt.data.serializer.WMTS', {
                 });
             });
             var serialized = {
-                    "baseURL": source.getUrls()[0],
-                    "dimensions": dimensionKeys,
-                    "dimensionParams": dimensions,
-                    "imageFormat": source.getFormat(),
-                    "layer": source.getLayer(),
-                    "matrices": matrices,
-                    "matrixSet": source.getMatrixSet(),
-                    "opacity": layer.getOpacity(),
-                    "requestEncoding": source.getRequestEncoding(),
-                    "style": source.getStyle(),
-                    "type": "WMTS",
-                    "version": source.getVersion()
+                    baseURL: source.getUrls()[0],
+                    dimensions: dimensionKeys,
+                    dimensionParams: dimensions,
+                    imageFormat: source.getFormat(),
+                    layer: source.getLayer(),
+                    matrices: matrices,
+                    matrixSet: source.getMatrixSet(),
+                    opacity: layer.getOpacity(),
+                    requestEncoding: source.getRequestEncoding(),
+                    style: source.getStyle(),
+                    type: "WMTS",
+                    version: source.getVersion()
                 };
             return serialized;
         }
@@ -3814,7 +3956,7 @@ Ext.define('GeoExt.data.serializer.WMTS', {
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 /**
-  * A serializer for layer that hava a `ol.source.XYZ` source.
+  * A serializer for layers that have an `ol.source.XYZ` source.
   *
   * @class GeoExt.data.serializer.XYZ
   */
@@ -3855,11 +3997,11 @@ Ext.define('GeoExt.data.serializer.XYZ', {
             this.validateSource(source);
             var tileGrid = source.getTileGrid();
             var serialized = {
-                    "baseURL": source.getUrls()[0],
-                    "opacity": layer.getOpacity(),
-                    "resolutions": tileGrid.getResolutions(),
-                    "tileSize": ol.size.toSize(tileGrid.getTileSize()),
-                    "type": "OSM"
+                    baseURL: source.getUrls()[0],
+                    opacity: layer.getOpacity(),
+                    resolutions: tileGrid.getResolutions(),
+                    tileSize: ol.size.toSize(tileGrid.getTileSize()),
+                    type: "OSM"
                 };
             return serialized;
         }
@@ -3947,7 +4089,9 @@ Ext.define('GeoExt.data.store.OlObjects', {
         }
     },
     /**
-     * TODO
+     * Constructs a new OlObjects store.
+     *
+     * @param {Object} config The configuration object.
      */
     constructor: function(config) {
         config = config || {};
@@ -3967,9 +4111,9 @@ Ext.define('GeoExt.data.store.OlObjects', {
         this.olCollection.on('remove', this.onOlCollectionRemove, this);
     },
     /**
-     * Forwards changes to the ol.Collection to the Ext.data.Store.
+     * Forwards changes to the `ol.Collection` to the Ext.data.Store.
      *
-     * @param {ol.CollectionEvent} evt
+     * @param {ol.CollectionEvent} evt The event emitted by the `ol.Collection`.
      */
     onOlCollectionAdd: function(evt) {
         var target = evt.target,
@@ -3980,9 +4124,9 @@ Ext.define('GeoExt.data.store.OlObjects', {
         }
     },
     /**
-     * Forwards changes to the ol.Collection to the Ext.data.Store.
+     * Forwards changes to the `ol.Collection` to the Ext.data.Store.
      *
-     * @param {ol.CollectionEvent} evt
+     * @param {ol.CollectionEvent} evt The event emitted by the `ol.Collection`.
      */
     onOlCollectionRemove: function(evt) {
         var element = evt.element,
@@ -4022,7 +4166,7 @@ Ext.define('GeoExt.data.store.OlObjects', {
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 /**
- * A data store holding OpenLayers feature objects.
+ * A data store holding OpenLayers feature objects (`ol.Feature`).
  *
  * @class GeoExt.data.store.Features
  */
@@ -4049,32 +4193,32 @@ Ext.define('GeoExt.data.store.Features', {
     model: 'GeoExt.data.model.Feature',
     config: {
         /**
-         * Initial layer holding features which will be added to the store
+         * Initial layer holding features which will be added to the store.
          *
          * @cfg {ol.Layer} layer
          */
         /**
+         * The layer object which is in sync with this store.
          * @property {ol.Layer}
          * @readonly
-         * The layer object which is in sync with this store
          */
         layer: null
     },
     /**
-     * A map object to which a possible #layer will be added
+     * A map object to which a possible #layer will be added.
      *
      * @cfg {ol.Map}
      */
     map: null,
     /**
-     * Set this flag to true will create a vector #layer with the given
-     * #features and ads it to the given #map (if available)
+     * Setting this flag to true will create a vector #layer with the given
+     * #features and adds it to the given #map (if available).
      *
      * @cfg {Boolean}
      */
     createLayer: false,
     /**
-     * Shows if the #layer has been created by constructor
+     * Shows if the #layer has been created by constructor.
      *
      * @private
      * @property {Boolean}
@@ -4088,14 +4232,16 @@ Ext.define('GeoExt.data.store.Features', {
      */
     style: null,
     /**
-     * Initial set of features. Has to be an ol.Collection object with
-     * ol.Feature objects in it.
+     * Initial set of features. Has to be an `ol.Collection` object with
+     * `ol.Feature` objects in it.
      *
-     * @cfg {ol.Collection<ol.Feature>}
+     * @cfg {ol.Collection}
      */
     features: null,
     /**
-     * TODO
+     * Constructs the feature store.
+     *
+     * @param {Object} config The configuration object.
      */
     constructor: function(config) {
         var me = this,
@@ -4136,8 +4282,8 @@ Ext.define('GeoExt.data.store.Features', {
     /**
      * Returns the FeatureCollection which is in sync with this store.
      *
-     * @return {ol.Collection<ol.Featrues>} The underlying OpenLayers
-     *     FeatureCollection
+     * @return {ol.Collection} The underlying OpenLayers `ol.Collection` of
+     *     `ol.Feature`.
      */
     getFeatures: function() {
         return this.olCollection;
@@ -4145,7 +4291,7 @@ Ext.define('GeoExt.data.store.Features', {
     /**
      * Returns the record corresponding to a feature.
      *
-     * @param  {ol.Feature} feature An ol.Feature object to get the record for
+     * @param {ol.Feature} feature An ol.Feature object to get the record for
      * @return {Ext.data.Model} The model instance corresponding to the feature
      */
     getByFeature: function(feature) {
@@ -4219,7 +4365,7 @@ Ext.define('GeoExt.data.store.Features', {
     /**
      * Handler for #layer 'addfeature' event.
      *
-     * @param {Object} evt the event object of OpenLayers
+     * @param {Object} evt The event object of OpenLayers.
      * @private
      */
     onFeaturesAdded: function(evt) {
@@ -4228,7 +4374,7 @@ Ext.define('GeoExt.data.store.Features', {
     /**
      * Handler for #layer 'removefeature' event.
      *
-     * @param {Object} evt the event object of OpenLayers
+     * @param {Object} evt The event object of OpenLayers.
      * @private
      */
     onFeaturesRemoved: function(evt) {
@@ -4333,8 +4479,8 @@ Ext.define('GeoExt.util.Layer', {
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 /**
- * A store that is synchronized with a GeoExt.data.store.Layers. It can be used
- * by an Ext.tree.Panel.
+ * A store that is synchronized with a GeoExt.data.store.Layers. It can be
+ * used by an {Ext.tree.Panel}.
  *
  * @class GeoExt.data.store.LayersTree
  */
@@ -4375,19 +4521,19 @@ Ext.define('GeoExt.data.store.LayersTree', {
          */
         textProperty: 'name',
         /**
-         * Configures the behaviour of the checkbox of an ol.layer.Group
-         * (folder). Possible values are 'classic' or 'ol3'.
-         * 'classic' forwards the checkstate to the children of the folder.
-         * 'ol3' emulates the behaviour of ol.layer.Group. So an layerGroup can
-         * be invisible but can have visible children.
-         * 'classic':
-         *   - Check a leaf --> all parent nodes are checked
-         *   - Uncheck all leafs in a folder --> parent node is unchecked
-         *   - Check a folder Node --> all children are checked
-         *   - Uncheck a folder Node --> all children are unchecked
-         * 'ol3':
-         *   - Emulates the behaviour of an ol.layer.Group, so a parentfolder
+         * Configures the behaviour of the checkbox of an `ol.layer.Group`
+         * (folder). Possible values are `'classic'` or `'ol3'`.
+         *
+         * * `'classic'` forwards the checkstate to the children of the folder.
+         *   * Check a leaf => all parent nodes are checked
+         *   * Uncheck all leafs in a folder => parent node is unchecked
+         *   * Check a folder Node => all children are checked
+         *   * Uncheck a folder Node => all children are unchecked
+         * * `'ol3'` emulates the behaviour of `ol.layer.Group`. So a layerGroup
+         *   can be invisible but can have visible children.
+         *   * Emulates the behaviour of an `ol.layer.Group,` so a parentfolder
          *     can be unchecked but still contain checked leafs and vice versa.
+         *
          * @cfg
          */
         folderToggleMode: 'classic'
@@ -4431,6 +4577,9 @@ Ext.define('GeoExt.data.store.LayersTree', {
     root: {
         expanded: true
     },
+    /**
+     * Constructs a LayersTree store.
+     */
     constructor: function() {
         var me = this;
         me.callParent(arguments);
@@ -4448,7 +4597,10 @@ Ext.define('GeoExt.data.store.LayersTree', {
         });
     },
     /**
-     * Apllies the folderToggleMode to the treenodes.
+     * Applies the #folderToggleMode to the treenodes.
+     *
+     * @param {String} folderToggleMode The folderToggleMode that was set.
+     * @return {String} The folderToggleMode that was set.
      * @private
      */
     applyFolderToggleMode: function(folderToggleMode) {
@@ -4462,12 +4614,12 @@ Ext.define('GeoExt.data.store.LayersTree', {
                 });
             }
         } else {
-            Ext.raise("Invalid folderToggleMode set in " + this.self.getName() + ": " + folderToggleMode + ". 'classic' or 'ol3' are valid.");
+            Ext.raise("Invalid folderToggleMode set in " + this.self.getName() + ": " + folderToggleMode + "; 'classic' or 'ol3' are valid.");
         }
         return folderToggleMode;
     },
     /**
-     * Listens to the remove event and syncs the attached layergroup.
+     * Listens to the `remove` event and syncs the attached layergroup.
      *
      * @param {GeoExt.data.store.LayersTree} store The layer store.
      * @param {GeoExt.data.model.LayerTreeNode[]} records An array of the
@@ -4498,11 +4650,11 @@ Ext.define('GeoExt.data.store.LayersTree', {
         me.resumeCollectionEvents();
     },
     /**
-     * Listens to the noderemove event. Updates the tree with the current
+     * Listens to the `noderemove` event. Updates the tree with the current
      * map state.
      *
-     * @param {GeoExt.data.model.LayerTreeNode} parentNode
-     * @param {GeoExt.data.model.LayerTreeNode} removedNode
+     * @param {GeoExt.data.model.LayerTreeNode} parentNode The parent node.
+     * @param {GeoExt.data.model.LayerTreeNode} removedNode The removed node.
      * @private
      */
     handleNodeRemove: function(parentNode, removedNode) {
@@ -4522,6 +4674,14 @@ Ext.define('GeoExt.data.store.LayersTree', {
             me.resumeCollectionEvents();
         }
     },
+    /**
+     * Listens to the `nodeappend` event. Updates the tree with the current
+     * map state.
+     *
+     * @param {GeoExt.data.model.LayerTreeNode} parentNode The parent node.
+     * @param {GeoExt.data.model.LayerTreeNode} appendedNode The appended node.
+     * @private
+     */
     handleNodeAppend: function(parentNode, appendedNode) {
         var me = this;
         var group = parentNode.getOlLayer();
@@ -4541,6 +4701,16 @@ Ext.define('GeoExt.data.store.LayersTree', {
             me.resumeCollectionEvents();
         }
     },
+    /**
+     * Listens to the `nodeinsert` event. Updates the tree with the current
+     * map state.
+     *
+     * @param {GeoExt.data.model.LayerTreeNode} parentNode The parent node.
+     * @param {GeoExt.data.model.LayerTreeNode} insertedNode The inserted node.
+     * @param {GeoExt.data.model.LayerTreeNode} insertedBefore The node we were
+     *     inserted before.
+     * @private
+     */
     handleNodeInsert: function(parentNode, insertedNode, insertedBefore) {
         var me = this;
         var group = parentNode.getOlLayer();
@@ -4565,9 +4735,9 @@ Ext.define('GeoExt.data.store.LayersTree', {
         }
     },
     /**
-     * Adds a layer as a node to the store. It can be an ol.layer.Base.
+     * Adds a layer as a node to the store. It can be an `ol.layer.Base`.
      *
-     * @param {Ext.data.NodeInterface} node
+     * @param {ol.layer.Base} layerOrGroup The layer or layer group to add.
      */
     addLayerNode: function(layerOrGroup) {
         var me = this;
@@ -4609,7 +4779,7 @@ Ext.define('GeoExt.data.store.LayersTree', {
      * the beforecollapse event. Whenever a folder gets collapsed, ExtJS seems
      * to actually remove the children from the store, triggering the removal
      * of the actual layers in the map. This is an undesired behviour. We handle
-     * this as follows. Before the collapsing happens, we mark the childNodes,
+     * this as follows: Before the collapsing happens, we mark the childNodes,
      * so we effectively opt-out in #handleRemove.
      *
      * @param {Ext.data.NodeInterface} node The collapsible folder node.
@@ -4623,7 +4793,7 @@ Ext.define('GeoExt.data.store.LayersTree', {
     },
     /**
      * A utility method which binds collection change events to the passed layer
-     * if it is a ol.layer.Group.
+     * if it is a `ol.layer.Group`.
      *
      * @param {ol.layer.Base} layerOrGroup The layer to probably bind event
      *     listeners for collection change events to.
@@ -4640,7 +4810,7 @@ Ext.define('GeoExt.data.store.LayersTree', {
     },
     /**
      * A utility method which unbinds collection change events from the passed
-     * layer if it is a ol.layer.Group.
+     * layer if it is a `ol.layer.Group`.
      *
      * @param {ol.layer.Base} layerOrGroup The layer to probably unbind event
      *     listeners for collection change events from.
@@ -4656,9 +4826,12 @@ Ext.define('GeoExt.data.store.LayersTree', {
         }
     },
     /**
-     *  Remove children from rootNode and read the layerGroup-collection.
+     * Handles the `add` event of a managed `ol.layer.Group` and eventually
+     * removes the appropriate node.
      *
-     *  @private
+     * @param {ol.CollectionEvent} evt The event object holding a reference to
+     *     the relevant `ol.layer.Base`.
+     * @private
      */
     onLayerCollectionAdd: function(evt) {
         var me = this;
@@ -4669,6 +4842,14 @@ Ext.define('GeoExt.data.store.LayersTree', {
         me.addLayerNode(layerOrGroup);
         me.bindGroupLayerCollectionEvents(layerOrGroup);
     },
+    /**
+     * Handles the `remove` event of a managed `ol.layer.Group` and eventually
+     * removes the appropriate node.
+     *
+     * @param {ol.CollectionEvent} evt The event object holding a reference to
+     *     the relevant `ol.layer.Base`.
+     * @private
+     */
     onLayerCollectionRemove: function(evt) {
         var me = this;
         if (me.collectionEventsSuspended) {
@@ -4682,7 +4863,7 @@ Ext.define('GeoExt.data.store.LayersTree', {
         if (!node) {
             return;
         }
-        // 2. if grouplayer: cascade down and remove any possible listeners?
+        // 2. if grouplayer: cascade down and remove any possible listeners
         if (layerOrGroup instanceof ol.layer.Group) {
             me.unbindGroupLayerCollectionEvents(layerOrGroup);
         }
@@ -4701,7 +4882,7 @@ Ext.define('GeoExt.data.store.LayersTree', {
     },
     /**
      * Undoes the effect of #suspendCollectionEvents; so that the store is now
-     * listening to change events on the underlying OpenLayers collections.
+     * listening to change events on the underlying OpenLayers collections
      * again.
      */
     resumeCollectionEvents: function() {
@@ -4742,6 +4923,13 @@ Ext.define('GeoExt.grid.column.Symbolizer', {
     ],
     /**
      * The default renderer method for ol.Feature objects.
+     *
+     * @param {Object} value The value to render for the current cell.
+     * @param {Object} meta A collection of metadata about the current cell; can
+     *     be used or modified by the renderer. Recognized properties are:
+     *     tdCls, tdAttr, and tdStyle.
+     * @param {Ext.data.Model} record The record for the current row.
+     * @return {String} The HTML-fragment to render as string.
      */
     defaultRenderer: function(value, meta, record) {
         var me = this,
@@ -4774,11 +4962,11 @@ Ext.define('GeoExt.grid.column.Symbolizer', {
     /**
      * Determines the style for the given feature record.
      *
-     * @private
-     * @param  {GeoExt.data.model.Feature} record A feature record to get the
+     * @param {GeoExt.data.model.Feature} record A feature record to get the
      *     styler for.
-     * @return {ol.style.Style[]|ol.style.Style} the style(s) applied to the
+     * @return {ol.style.Style[]|ol.style.Style} The style(s) applied to the
      *     given feature record.
+     * @private
      */
     determineStyle: function(record) {
         var feature = record.olObject;

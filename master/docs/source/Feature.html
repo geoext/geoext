@@ -31,7 +31,7 @@
  * along with this program.  If not, see &lt;http://www.gnu.org/licenses/&gt;.
  */
 <span id='GeoExt-data-model-Feature'>/**
-</span> * Data model holding an OpenLayers feature.
+</span> * Data model holding an OpenLayers feature (`ol.Feature`).
  *
  * @class GeoExt.data.model.Feature
  */
@@ -39,9 +39,9 @@ Ext.define('GeoExt.data.model.Feature', {
     extend: 'GeoExt.data.model.OlObject',
 
 <span id='GeoExt-data-model-Feature-method-getFeature'>    /**
-</span>     * Returns the underlying Feature of this record.
+</span>     * Returns the underlying `ol.Feature` of this record.
      *
-     * @return {ol.Feature}
+     * @return {ol.Feature} The underlying `ol.Feature`.
      */
     getFeature: function() {
         return this.olObject;

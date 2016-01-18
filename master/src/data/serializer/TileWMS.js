@@ -14,7 +14,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 /**
- * A serializer for layer that hava a `ol.source.TileWMS` source.
+ * A serializer for layers that have an `ol.source.TileWMS` source.
  *
  * @class GeoExt.data.serializer.TileWMS
  */
@@ -45,14 +45,14 @@ Ext.define('GeoExt.data.serializer.TileWMS', {
         serialize: function(layer, source) {
             this.validateSource(source);
             var serialized = {
-                "baseURL": source.getUrls()[0],
-                "customParams": source.getParams(),
-                "layers": [
+                baseURL: source.getUrls()[0],
+                customParams: source.getParams(),
+                layers: [
                     source.getParams().LAYERS
                 ],
-                "opacity": layer.getOpacity(),
-                "styles": [ "" ],
-                "type": "WMS"
+                opacity: layer.getOpacity(),
+                styles: [ "" ],
+                type: "WMS"
             };
             return serialized;
         }
