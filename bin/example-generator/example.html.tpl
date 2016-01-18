@@ -31,7 +31,5 @@
     </script>
 
     <script src="@@EXAMPLE_NAME@@.js"></script>
-    <!-- Automatically reload on source changes, just append #reload to URL -->
-    <script src="../../util/live-reload.js"></script>
 </body>
 </html>
