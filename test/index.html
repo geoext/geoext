@@ -20,14 +20,13 @@
   <script src="http://openlayers.org/en/master/build/ol.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/extjs/6.0.0/ext-all.js"></script>
   <script>
+    // set Ext loader path
     Ext.Loader.setConfig({
         enabled: true,
         paths: {
             'GeoExt': '../src'
         }
     });
-  </script>
-  <script>
     // needed for slow external resources:
     // https://github.com/nathanboktae/mocha-phantomjs/issues/213
     window.initMochaPhantomJS && window.initMochaPhantomJS();
@@ -36,10 +35,28 @@
       bail: false
     });
   </script>
-
-  <script src="./test-helper-functions.js"></script>
-  <script src="./load-tests.js"></script>
-
+  <script src='spec/GeoExt/component/FeatureRenderer.test.js'></script>
+  <script src='spec/GeoExt/component/Map.test.js'></script>
+  <script src='spec/GeoExt/component/OverviewMap.test.js'></script>
+  <script src='spec/GeoExt/component/Popup.test.js'></script>
+  <script src='spec/GeoExt/data/MapfishPrintProvider.test.js'></script>
+  <script src='spec/GeoExt/data/model/Base.test.js'></script>
+  <script src='spec/GeoExt/data/model/Feature.test.js'></script>
+  <script src='spec/GeoExt/data/model/Layer.test.js'></script>
+  <script src='spec/GeoExt/data/model/OlObject.test.js'></script>
+  <script src='spec/GeoExt/data/serializer/Base.test.js'></script>
+  <script src='spec/GeoExt/data/serializer/ImageWMS.test.js'></script>
+  <script src='spec/GeoExt/data/serializer/TileWMS.test.js'></script>
+  <script src='spec/GeoExt/data/serializer/Vector.test.js'></script>
+  <script src='spec/GeoExt/data/serializer/WMTS.test.js'></script>
+  <script src='spec/GeoExt/data/serializer/XYZ.test.js'></script>
+  <script src='spec/GeoExt/data/store/Features.test.js'></script>
+  <script src='spec/GeoExt/data/store/Layers.test.js'></script>
+  <script src='spec/GeoExt/data/store/LayersTree.test.js'></script>
+  <script src='spec/GeoExt/data/store/OlObjects.test.js'></script>
+  <script src='spec/GeoExt/grid/column/Symbolizer.test.js'></script>
+  <script src='spec/GeoExt/mixin/SymbolCheck.test.js'></script>
+  <script src='spec/GeoExt/util/Layer.test.js'></script>
   <script>
     mocha.run();
   </script>
