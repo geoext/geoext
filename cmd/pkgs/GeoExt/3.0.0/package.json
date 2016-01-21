@@ -9,11 +9,11 @@
   "signatures": [
     {
       "name": "GeoExt Contributors",
-      "uuid": "33e4a56d-1766-4031-bb15-3a30d48c8d99",
-      "created": "2016-01-18T09:36:35Z",
+      "uuid": "328e027c-e6be-4927-8fba-c1eda56b4f2a",
+      "created": "2016-01-21T07:07:02Z",
       "algorithm": "SHA1withRSA",
-      "nonce": "iso25s9nR6E\u003d",
-      "signature": "MAisLr6g4HbG9YowkXW9DTGsvoF/kvQ4/Ah3fuFjF1Mkp78PYuFINLX9+i9pVXOQtZ8jO3GPtcy8r+M0Teeq7QTfw0nSmRBDuNNI4LEQhdXiekz7I3V2SeSvUsseIhYcD8jCobdBN3PKXmBk6+3imMBRc4XEr1PMXDsMgDHDUapCqbH0+bnpxpWcezhzTIde58m+Grd5bQZeJg8+J6WJvb60aUtRZfOTrBAIzZ0m/5jwdCmeAqc683P5yIzfIOA9WzU1UsNRd3XDremh+mBtWeeqRMj6/WIGL74PFmaRhes+cLR1Idylhm5DkTI7p0VfCj97E2MUAHaVCvTSqyrTOw\u003d\u003d"
+      "nonce": "HyzH/v10ycc\u003d",
+      "signature": "C9zCFkwiBlnnVOqJyrxc00hH9dKUwDHQHRD2NaswyNqFOJEQPurpqU/AfZJU7vzv4dd7qlRBeb/fVL4hLIT8mVmTVWS3523mvicI9TQuErWk6+GZdXi09JszMLaJ+kbUIGFYRaTuslvhLHQG02qGWuolsokHk63f2XLls78HrN4Mhvh51uO7HhfhZzGZjD34RzjTx7fIarMlDy6EFWA5L2x6pVQOPBlGxqNeElcA7c8I6ROu19NLftz5AmJnpKVsLJZ8P2fr6qrr4xMtGZybRU8q+PFyrL9ZCqgqDCctwDhV8l7Wkq2ABHmDyjLCkdG3YCnxEziEeb3AGESNab6wiw\u003d\u003d"
     }
   ],
   "slicer": {
@@ -33,28 +33,32 @@
     "url": "https://github.com/geoext/geoext3.git"
   },
   "scripts": {
-    "pretest": "npm run-script lint-js",
-    "test": "mocha-phantomjs --ssl-protocol\u003dany --ignore-ssl-errors\u003dtrue test/index.html",
-    "test:watch": "watch \u0027npm test\u0027 src/ test/",
-    "lint-js": "eslint src/ examples/ \u0026\u0026 eslint -c test/.eslintrc test/spec/",
-    "livereload": "live-reload --port 9091 src/ examples/ test/",
-    "save-coverage": "mocha-phantomjs --ssl-protocol\u003dany --ignore-ssl-errors\u003dtrue --hooks ./test/phantom_hooks.js test/index.html",
-    "clean-coverage": "rm -rf src_instrumented src_old coverage",
-    "ci-coverage": "npm run lint-js \u0026\u0026 npm run clean-coverage \u0026\u0026 istanbul instrument src -o src_instrumented \u0026\u0026 mv src src_old \u0026\u0026 mv src_instrumented src \u0026\u0026 istanbul cover npm run save-coverage \u0026\u0026 mv src src_instrumented \u0026\u0026 mv src_old src \u0026\u0026 istanbul report --root ./coverage lcovonly \u0026\u0026 cat ./coverage/lcov.info | coveralls",
-    "html-coverage": "npm run lint-js \u0026\u0026 npm run clean-coverage \u0026\u0026 istanbul instrument src -o src_instrumented \u0026\u0026 mv src src_old \u0026\u0026 mv src_instrumented src \u0026\u0026 istanbul cover npm run save-coverage \u0026\u0026 mv src src_instrumented \u0026\u0026 mv src_old src \u0026\u0026 istanbul report --root ./coverage html",
-    "generate-example": "node bin/example-generator/index.js",
-    "apidoc": "jsduck --config jsduck-cfg.json"
+    "clean": "rm -rf coverage apidoc",
+    "lint": "eslint src/ examples/ \u0026\u0026 eslint -c test/.eslintrc test/",
+    "pretest": "npm run-script lint",
+    "test": "karma start test/karma.conf.js --single-run",
+    "test:coverage": "karma start test/karma.conf.js --single-run --reporters coverage",
+    "test:watch": "karma start test/karma.conf.js",
+    "start": "browser-sync start --server --directory --files \u0027src, test, examples\u0027",
+    "coveralls": "cat coverage/lcov.info | coveralls",
+    "generate:example": "node bin/example-generator/index.js",
+    "generate:doc": "jsduck --config jsduck-cfg.json"
   },
   "dependencies": {},
   "devDependencies": {
+    "browser-sync": "2.11.1",
     "coveralls": "2.11.4",
     "eslint": "1.7.3",
     "expect.js": "0.3.1",
-    "istanbul": "0.3.18",
-    "live-reload": "1.1.0",
+    "karma-coverage": "0.5.3",
+    "karma-eslint": "2.0.1",
+    "karma-expect": "1.1.1",
+    "karma-mocha": "0.2.1",
+    "karma-phantomjs-launcher": "0.2.3",
+    "karma-sinon": "1.0.4",
+    "karma": "0.13.19",
     "mocha": "2.3.3",
-    "mocha-phantomjs": "4.0.1",
-    "sinon": "1.17.2",
-    "watch": "0.16.0"
+    "phantomjs": "1.9.19",
+    "sinon": "1.17.2"
   }
 }
