@@ -10,16 +10,47 @@
 
 In order to develop GeoExt 3 you'll need certain things on your machine:
 
-* git
-* node.js & npm
-* a local webserver (for browser tests that do XHR)
+* [`git`](https://git-scm.com)
+* [Node.js & `npm`](https://nodejs.org/en/)
+* [`jsduck`](https://github.com/senchalabs/jsduck])
 
-Additionally, if you want to reuse the GeoExt 3 library in your sencha
-applications, you'll need the sencha cmd. See the [top-level README](README.md)
-for more information regarding sencha.
+Additionally, if you want to reuse the GeoExt 3 library in your Sencha
+applications, you'll need the Sencha CMD tool. See the
+[top-level README](README.md) for more information regarding `sencha`.
 
+## Install required development dependencies
 
-## git & github
+GeoExt3 comes prepared with some scripts and a testing environment. To use it,
+you'll need to install some dependencies that are declared in the `package.json`
+file of the project folder. With `npm` installed (see information above) simply
+run `npm install` in the project root once after checking out from GitHub.
+
+## Provided `npm` scripts
+
+There are a number of preconfigured scripts that can be executed via
+`npm run-script TARGET` from the base directory of the repository:
+
+* `clean` removes generated files and folders.
+* `lint` checks code for linting errors.
+* `test` runs the headless test suite.
+* `test:coverage` runs the headless test suite only outputting coverage files.
+* `test:watch` runs the test suite when changes in the `src` or `test`
+directories are detected (end via `CTRL+C`).
+* `start` starts a web server for local development on port 3000. When changes
+to the source code are detected, the browser page is reloaded (end via
+  `CTRL+C`).
+* `coveralls` is used by the continues integration platform
+[Travis CI](https://travis-ci.org/geoext/geoext3) to upload coverage info to
+[Coveralls.io](https://coveralls.io/github/geoext/geoext3)
+* `generate:example`generates a sample application in the examples folder. Use
+this to start a new feature example for GeoExt3.
+* `generate:doc` generates an API documentation that you can access in the
+browser via `/apidocs/index.html`. (requires the external `jsduck` command)
+
+Make sure to run `npm install` before using these scripts as this will install
+required dependencies locally.
+
+## Git & GitHub
 
 Please always work on a feature branch, and submit pull requests (PR) from
 there. Your commit messages should follow the following format:
@@ -53,30 +84,40 @@ changes on the latest master.
 Don't worry, if this sounds like a lot of hassle; we'll sort any possible
 problems out together.
 
+## Running a local development server
+
+To start working on GeoExt3, checking out the example applications and running
+the test suite in your browser, you can use the `npm start` command. This will
+fire up a local development server with it's content root set to the projects
+root folder. The browser page is reloaded if changes in the source or test
+directory are detected.
+
+Alternatively, you may use any other web server of your choice.
+
 ## Linting your JavaScript
 
 Please run …
 
 ```shell
-$ npm run lint-js
+$ npm run-script lint
 ```
 
 … and fix any warnings or errors produced, before you open a PR.
 
 
-## Testing you code
+## Testing
 
-We require that changes to the project do not break the existing testsuite. If
+We require that changes to the project do not break the existing test suite. If
 you add something to the library, try to add tests so it is easier to see if
 everything works as expected.
 
 We currently do not have everything tested that needs tests, so we'll need to
-improve here. Any PRs in that directions are ver much welcomed!
+improve here. Any PRs in that directions are very much welcomed!
 
 
-### Running the testsuite
+### Running the test suite
 
-You can run the testsuite on the commandline:
+You can run the test suite on the commandline:
 
 ```shell
 $ # in a clone of the repository
@@ -84,81 +125,45 @@ $ npm install # only once
 $ npm test
 ```
 
-The testsuite can (and should) also be run in actual browsers. Host the
-repository through a webserver (Apache or whatever you like), and open the URL
-http://localhost:port/path/to/geoext/test
-
-If you do nnot have a webserver, use this handy python command which will serve
-the current directory on localhost:2222
-
-```shell
-$ python -m SimpleHTTPServer 2222
-```
-
+The test suite can (and should) also be run in actual browsers. To do so, run
+`npm start` to fire up a local development server and browse to the
+[test suites index file](http:localhost:3000/test/index.html).
 
 ### Rerun the tests automatically when sources change
 
-To get instant feedback whether you current edits on source or test code have the
-intended effect, you can use the following commands.
+To get instant feedback whether you current edits on source or test code have
+the intended effect, you can use the following commands.
 
 
-#### Run the headless testsuite on source change
-
-```shell
-$ npm run test:watch
-```
-
-Changes in the `src/`- or `test/`-folder will rerun the testsuite automatically.
-
-
-#### Reload the browser testsuite or examples on source change
+#### Run the headless test suite on source change
 
 ```shell
-$ npm run livereload
+$ npm run-script test:watch
 ```
 
-Then open the testsuite or an example and append the following hash `#reload`.
+Changes in the `src/`- or `test/`-folder will rerun the test suite
+automatically.
 
-E.g. open …
+Running the test suite generates coverage reports in the `coverage/` subdir.
 
-  * `http://localhost:port/path/to/geoext/test/#reload` or
-  * `http://localhost:port/path/to/geoext/examples/component/overviewMap.html#reload`
-
-Changes in the `examples/`-, `src/`- or `test/`-folder will automatically reload
-the pages that contain the `#reload`-hash.
-
-
-## Code coverage
-
-You can check if the unit-tests cover all relevant lines, statements, … of the
-source code by issuing the following command:
+If you want to remove the generated artifacts:
 
 ```shell
-$ npm run html-coverage
+$ npm run-script clean
 ```
 
-Then navigate your browser to the following URL:
+## Sencha CMD
 
-* `http://localhost:port/path/to/geoext/coverage`
+### How to package GeoExt using Sencha CMD
 
-If you want to remove the generated artifacts (instrumented source code and
-coverage), run:
-
-```shell
-$ npm run clean-coverage
-```
-
-## sencha command
-
-### How to package GeoExt using sencha command
-
-To generate a package you usually first create a sencha `workspace` by issuing
+To generate a package you usually first create a Sencha `workspace` by issuing
 
 ```
 $ sencha -sdk /path/to/ext-n.n.n generate workspace /path/to/workspace
 ```
 
-Inside of the workspace clone the `geoext3` repository into the `packages` subfolder:
+Inside of the workspace clone the `geoext3` repository into the `packages`
+subfolder:
 
 ```
 $ cd /path/to/workspace/packages
@@ -172,10 +177,12 @@ Then you can issue
 $ sencha package build
 ```
 
-Alternatively, if your source isn't living inside of a sencha workspace, you can configure the path to a workspace and then build:
+Alternatively, if your source isn't living inside of a Sencha workspace, you can
+ configure the path to a workspace and then build:
 
 ```
-$ sencha config --prop workspace.config.dir=/path/to/workspace/.sencha/workspace then package build
+$ sencha config --prop workspace.config.dir=/path/to/workspace/.sencha/workspace
+then package build
 ```
 
 ### Adding GeoExt to a local sencha repository
@@ -192,7 +199,7 @@ Add the package to this repository:
 $ sencha package add /path/to/workspace/build/GeoExt/GeoExt.pkg
 ```
 
-To use this package in a sencha app just add "GeoExt" to the "requires"-array
+To use this package in a Sencha app just add "GeoExt" to the "requires"-array
 in your app.json:
 
 ```javascript
@@ -218,7 +225,7 @@ that you can do:
 sencha package repo add GeoExt http://geoext.github.io/geoext3/cmd/pkgs
 ```
 
-### Update the geoext package on geoext.github.io
+### Update the `geoext` package on geoext.github.io
 
 *Untested*: First add GeoExt to your local repository, then find the repo on
 your machine, it is usually located near the `sencha` executable, e.g.
@@ -244,8 +251,3 @@ Update the `cmd/pkgs/GeoExt` folder with the contents of the
 Prior to accepting substantial changes, we need you to sign the [Contributor
 Agreement](http://trac.geoext.org/browser/docs/contributor_agreements/geoext_agreement.pdf?format=raw)
 of the project.
-
-
-
-
-

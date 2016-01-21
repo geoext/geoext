@@ -1,4 +1,3 @@
-
 {
   "name": "GeoExt",
   "type": "code",
@@ -27,28 +26,32 @@
     "url": "https://github.com/geoext/geoext3.git"
   },
   "scripts": {
-    "pretest": "npm run-script lint-js",
-    "test": "mocha-phantomjs --ssl-protocol=any --ignore-ssl-errors=true test/index.html",
-    "test:watch": "watch 'npm test' src/ test/",
-    "lint-js": "eslint src/ examples/ && eslint -c test/.eslintrc test/spec/",
-    "livereload": "live-reload --port 9091 src/ examples/ test/",
-    "save-coverage": "mocha-phantomjs --ssl-protocol=any --ignore-ssl-errors=true --hooks ./test/phantom_hooks.js test/index.html",
-    "clean-coverage": "rm -rf src_instrumented src_old coverage",
-    "ci-coverage": "npm run lint-js && npm run clean-coverage && istanbul instrument src -o src_instrumented && mv src src_old && mv src_instrumented src && istanbul cover npm run save-coverage && mv src src_instrumented && mv src_old src && istanbul report --root ./coverage lcovonly && cat ./coverage/lcov.info | coveralls",
-    "html-coverage": "npm run lint-js && npm run clean-coverage && istanbul instrument src -o src_instrumented && mv src src_old && mv src_instrumented src && istanbul cover npm run save-coverage && mv src src_instrumented && mv src_old src && istanbul report --root ./coverage html",
-    "generate-example": "node bin/example-generator/index.js",
-    "apidoc": "jsduck --config jsduck-cfg.json"
+    "clean": "rm -rf coverage apidoc",
+    "lint": "eslint src/ examples/ && eslint -c test/.eslintrc test/",
+    "pretest": "npm run-script lint",
+    "test": "karma start test/karma.conf.js --single-run",
+    "test:coverage": "karma start test/karma.conf.js --single-run --reporters coverage",
+    "test:watch": "karma start test/karma.conf.js",
+    "start": "browser-sync start --server --directory --files 'src, test, examples'",
+    "coveralls": "cat coverage/lcov.info | coveralls",
+    "generate:example": "node bin/example-generator/index.js",
+    "generate:doc": "jsduck --config jsduck-cfg.json"
   },
   "dependencies": {},
   "devDependencies": {
+    "browser-sync": "2.11.1",
     "coveralls": "2.11.4",
     "eslint": "1.7.3",
     "expect.js": "0.3.1",
-    "istanbul": "0.3.18",
-    "live-reload": "1.1.0",
+    "karma-coverage": "0.5.3",
+    "karma-eslint": "2.0.1",
+    "karma-expect": "1.1.1",
+    "karma-mocha": "0.2.1",
+    "karma-phantomjs-launcher": "0.2.3",
+    "karma-sinon": "1.0.4",
+    "karma": "0.13.19",
     "mocha": "2.3.3",
-    "mocha-phantomjs": "4.0.1",
-    "sinon": "1.17.2",
-    "watch": "0.16.0"
+    "phantomjs": "1.9.19",
+    "sinon": "1.17.2"
   }
 }

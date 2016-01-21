@@ -8,10 +8,10 @@ GeoExt is Open Source and enables building desktop-like GIS applications through
 
 Version 3 of GeoExt is the successor to the GeoExt 2.x-series and is built atop the newest official installments of its base libraries; OpenLayers 3 and ExtJS 6.
 
-Geoext 3 is not released yet, and we are actively developing it. Right now it is neither feature complete, nor fully tested. Everybody is invited to help us create the next version of GeoExt. 
+Geoext 3 is not released yet, and we are actively developing it. Right now it is neither feature complete, nor fully tested. Everybody is invited to help us create the next version of GeoExt.
 
-The goal is to implement upcoming GeoExt releases as an 
-[ExtJS-Package](http://docs.sencha.com/cmd/5.x/cmd_packages/cmd_packages.html).
+The goal is to implement upcoming GeoExt releases as an
+[ExtJS-Package](https://docs.sencha.com/cmd/6.x/cmd_packages/cmd_packages.html).
 
 ##More information on GeoExt 3
 
@@ -53,4 +53,3 @@ To help with your first GeoExt 3 project, follow the instructions provided to bu
 
 Read the [hints for developers](development.md) to get started. We look forward
 to your contributions!
-
