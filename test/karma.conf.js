@@ -22,7 +22,13 @@ module.exports = function(config) {
             'http://openlayers.org/en/master/build/ol.js',
             'http://cdnjs.cloudflare.com/ajax/libs/extjs/6.0.0/ext-all.js',
             'test/loader.js',
-            'src/**/*.js',
+            {
+                pattern: 'src/**/*.js',
+                served: true,
+                included: false,
+                watched: true,
+                nocache: true
+            },
             'test/spec/GeoExt/**/*.test.js'
         ],
 
