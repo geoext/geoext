@@ -2,6 +2,8 @@
 // Generated on Mon Jan 18 2016 19:06:38 GMT+0100 (CET)
 
 module.exports = function(config) {
+    var suffix = (config.debug ? '-debug' : '');
+
     config.set({
 
         // base path that will be used to resolve all patterns (eg. files,
@@ -18,9 +20,10 @@ module.exports = function(config) {
         files: [
             'http://openlayers.org/en/master/css/ol.css',
             'https://cdnjs.cloudflare.com/ajax/libs/extjs/6.0.0/classic/'
-                + 'theme-crisp/resources/theme-crisp-all.css',
-            'http://openlayers.org/en/master/build/ol.js',
-            'http://cdnjs.cloudflare.com/ajax/libs/extjs/6.0.0/ext-all.js',
+                + 'theme-crisp/resources/theme-crisp-all' + suffix + '.css',
+            'http://openlayers.org/en/master/build/ol' + suffix + '.js',
+            'http://cdnjs.cloudflare.com/ajax/libs/extjs/6.0.0/ext-all'
+                + suffix + '.js',
             'test/loader.js',
             {
                 pattern: 'src/**/*.js',
