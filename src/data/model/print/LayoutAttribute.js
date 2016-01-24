@@ -23,17 +23,15 @@
 Ext.define('GeoExt.data.model.print.LayoutAttribute', {
     extend: 'GeoExt.data.model.Base',
     fields: [
+        { name: 'name', type: 'string' },
+        { name: 'type', type: 'string' },
+        { name: 'clientInfo', type: 'auto' },
         {
-            name: 'name',
-            type: 'string'
-        },
-        {
-            name: 'type',
-            type: 'string'
-        },
-        {
-            name: 'clientInfo',
-            type: 'auto'
+            name: 'layoutId',
+            reference: {
+                type: 'print.Layout',
+                inverse: 'attributes'
+            }
         }
     ]
 });

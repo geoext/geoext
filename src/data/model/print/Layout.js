@@ -25,17 +25,14 @@ Ext.define('GeoExt.data.model.print.Layout', {
     requires: [
         'GeoExt.data.model.print.LayoutAttribute'
     ],
-    hasMany: [
-        {
-            name: 'attributes',
-            associationKey: 'attributes',
-            model: 'print.LayoutAttribute'
-        }
-    ],
     fields: [
+        { name: 'name', type: 'string' },
         {
-            name: 'name',
-            type: 'string'
+            name: 'capabilityId',
+            reference: {
+                type: 'print.Capability',
+                inverse: 'layouts'
+            }
         }
     ]
 });

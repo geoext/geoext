@@ -24,13 +24,6 @@ Ext.define('GeoExt.data.model.print.Capability', {
     requires: [
         'GeoExt.data.model.print.Layout'
     ],
-    hasMany: [
-        {
-            name: 'layouts',
-            associationKey: 'layouts',
-            model: 'print.Layout'
-        }
-    ],
     fields: [
         { name: 'app', type: 'string' },
         { name: 'formats', type: 'auto', defaultValue: [] }
