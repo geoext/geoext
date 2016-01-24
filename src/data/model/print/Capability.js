@@ -32,12 +32,7 @@ Ext.define('GeoExt.data.model.print.Capability', {
         }
     ],
     fields: [
-        {
-            name: 'app',
-            type: 'string'
-        },
-        {
-            name: 'formats'
-        }
+        { name: 'app', type: 'string' },
+        { name: 'formats', type: 'auto', defaultValue: [] }
     ]
 });
