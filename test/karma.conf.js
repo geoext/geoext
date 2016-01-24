@@ -18,6 +18,11 @@ module.exports = function(config) {
 
         // list of files / patterns to load in the browser
         files: [
+            // test data
+            {
+                pattern: 'test/data/**',
+                included: false
+            },
             // CSS files
             'http://openlayers.org/en/master/css/ol.css',
             'https://cdnjs.cloudflare.com/ajax/libs/extjs/6.0.0/classic/'

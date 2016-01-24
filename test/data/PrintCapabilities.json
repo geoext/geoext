@@ -1,0 +1,122 @@
+{
+    "app": "geoext",
+    "layouts": [
+        {
+            "name": "A4 portrait",
+            "attributes": [
+                {
+                    "name": "map",
+                    "type": "MapAttributeValues",
+                    "clientParams": {
+                        "center": {
+                            "type": "double",
+                            "isArray": true
+                        },
+                        "bbox": {
+                            "type": "double",
+                            "isArray": true
+                        },
+                        "layers": {
+                            "type": "array"
+                        },
+                        "dpi": {
+                            "type": "double"
+                        },
+                        "areaOfInterest": {
+                            "type": "AreaOfInterest",
+                            "embeddedType": {
+                                "area": {
+                                    "type": "String"
+                                },
+                                "renderAsSvg": {
+                                    "type": "boolean",
+                                    "default": null
+                                },
+                                "display": {
+                                    "type": "AoiDisplay",
+                                    "embeddedType": {},
+                                    "default": "RENDER"
+                                },
+                                "style": {
+                                    "type": "String",
+                                    "default": null
+                                }
+                            }
+                        },
+                        "scale": {
+                            "type": "double",
+                            "default": null
+                        },
+                        "rotation": {
+                            "type": "double",
+                            "default": null
+                        },
+                        "projection": {
+                            "type": "String",
+                            "default": null
+                        },
+                        "dpiSensitiveStyle": {
+                            "type": "boolean",
+                            "default": true
+                        },
+                        "zoomToFeatures": {
+                            "type": "ZoomToFeatures",
+                            "embeddedType": {
+                                "zoomType": {
+                                    "type": "ZoomType",
+                                    "embeddedType": {},
+                                    "default": "EXTENT"
+                                },
+                                "minMargin": {
+                                    "type": "int",
+                                    "default": 10
+                                },
+                                "minScale": {
+                                    "type": "double",
+                                    "default": null
+                                },
+                                "layer": {
+                                    "type": "String",
+                                    "default": null
+                                }
+                            },
+                            "default": null
+                        },
+                        "useNearestScale": {
+                            "type": "boolean",
+                            "default": null
+                        },
+                        "longitudeFirst": {
+                            "type": "boolean",
+                            "default": null
+                        },
+                        "useAdjustBounds": {
+                            "type": "boolean",
+                            "default": null
+                        }
+                    },
+                    "clientInfo": {
+                        "height": 330,
+                        "width": 780,
+                        "dpiSuggestions": [
+                            72,
+                            120,
+                            200,
+                            254,
+                            300
+                        ],
+                        "maxDPI": 400
+                    }
+                }
+            ]
+        }
+    ],
+    "formats": [
+        "bmp",
+        "gif",
+        "pdf",
+        "png",
+        "tif",
+        "tiff"
+    ]
+}
