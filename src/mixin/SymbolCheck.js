@@ -115,8 +115,8 @@ Ext.define('GeoExt.mixin.SymbolCheck', {
          */
         normalizeSymbol: (function() {
             // <debug>
-            var hashRegEx = /#/g;
-            var colonRegEx = /::/g;
+            var hashRegEx = /#/;
+            var colonRegEx = /::/;
             // </debug>
             var normalizeFunction = function(symbolStr){
                 // <debug>
