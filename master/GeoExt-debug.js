@@ -108,8 +108,8 @@ Ext.define('GeoExt.mixin.SymbolCheck', {
          * @private
          */
         normalizeSymbol: (function() {
-            var hashRegEx = /#/g;
-            var colonRegEx = /::/g;
+            var hashRegEx = /#/;
+            var colonRegEx = /::/;
             var normalizeFunction = function(symbolStr) {
                     if (hashRegEx.test(symbolStr)) {
                         symbolStr = symbolStr.replace(hashRegEx, '.prototype.');
