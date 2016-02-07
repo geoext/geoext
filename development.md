@@ -33,9 +33,11 @@ There are a number of preconfigured scripts that can be executed via
 * `clean` removes generated files and folders.
 * `lint` checks code for linting errors.
 * `test` runs the headless test suite.
+* `test:debug` runs the headless test suite with ExtJS in debug mode.
 * `test:coverage` runs the headless test suite only outputting coverage files.
 * `test:watch` runs the test suite when changes in the `src` or `test`
 directories are detected (end via `CTRL+C`).
+* `test:watch:debug` is the same as `test:watch` but loads ExtJS in debug mode.
 * `start` starts a web server for local development on port 3000. When changes
 to the source code are detected, the browser page is reloaded (end via
   `CTRL+C`).
