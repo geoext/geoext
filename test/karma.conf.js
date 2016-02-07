@@ -18,20 +18,26 @@ module.exports = function(config) {
 
         // list of files / patterns to load in the browser
         files: [
+            // CSS files
             'http://openlayers.org/en/master/css/ol.css',
             'https://cdnjs.cloudflare.com/ajax/libs/extjs/6.0.0/classic/'
                 + 'theme-crisp/resources/theme-crisp-all' + suffix + '.css',
+            // requestAnimationFrame shim
+            'https://cdn.rawgit.com/paulirish/1579671/raw/'
+                + '682e5c880c92b445650c4880a6bf9f3897ec1c5b/rAF.js',
+            // OpenLayers 3
             'http://openlayers.org/en/master/build/ol' + suffix + '.js',
+            // ExtJS 6
             'http://cdnjs.cloudflare.com/ajax/libs/extjs/6.0.0/ext-all'
                 + suffix + '.js',
+            // Ext.Loader configuration
             'test/loader.js',
+            // GeoExt source files
             {
                 pattern: 'src/**/*.js',
-                served: true,
-                included: false,
-                watched: true,
-                nocache: true
+                included: false
             },
+            // GeoExt tests specs
             'test/spec/GeoExt/**/*.test.js'
         ],
 
