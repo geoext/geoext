@@ -22,18 +22,24 @@
  */
 Ext.define('GeoExt.data.model.print.LayoutAttribute', {
     extend: 'GeoExt.data.model.Base',
+
+    /**
+     * @method getLayout
+     * Returns the attribute parent layout model. May be null if
+     * LayoutAttribute is instantiated directly.
+     * @return {GeoExt.data.model.print.Layout} The attributes layout
+     */
+
     fields: [
+        { name: 'name', type: 'string' },
+        { name: 'type', type: 'string' },
+        { name: 'clientInfo', type: 'auto' },
         {
-            name: 'name',
-            type: 'string'
-        },
-        {
-            name: 'type',
-            type: 'string'
-        },
-        {
-            name: 'clientInfo',
-            type: 'auto'
+            name: 'layoutId',
+            reference: {
+                type: 'print.Layout',
+                inverse: 'attributes'
+            }
         }
     ]
 });
