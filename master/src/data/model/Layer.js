@@ -32,20 +32,6 @@ Ext.define('GeoExt.data.model.Layer', {
     ],
     // </debug>
 
-    statics: {
-        /**
-         * Convenience function for creating new layer model instance object
-         * using a layer object.
-         *
-         * @param {ol.layer.Base} layer The layer to create the model instance
-         *     for.
-         * @return {GeoExt.data.model.Layer} The created model instance.
-         * @static
-         */
-        createFromLayer: function(layer) {
-            return this.getProxy().getReader().readRecords([layer]).records[0];
-        }
-    },
     fields: [
         {
             name: 'isLayerGroup',

@@ -24,20 +24,16 @@ Ext.define('GeoExt.data.model.print.Capability', {
     requires: [
         'GeoExt.data.model.print.Layout'
     ],
-    hasMany: [
-        {
-            name: 'layouts',
-            associationKey: 'layouts',
-            model: 'print.Layout'
-        }
-    ],
+
+    /**
+     * @method layouts
+     * Returns an Ext.data.Store of referenced
+     * {@link GeoExt.data.model.print.Layout}s.
+     * @return {Ext.data.Store} The store
+     */
+
     fields: [
-        {
-            name: 'app',
-            type: 'string'
-        },
-        {
-            name: 'formats'
-        }
+        { name: 'app', type: 'string' },
+        { name: 'formats', type: 'auto', defaultValue: [] }
     ]
 });

@@ -25,17 +25,29 @@ Ext.define('GeoExt.data.model.print.Layout', {
     requires: [
         'GeoExt.data.model.print.LayoutAttribute'
     ],
-    hasMany: [
-        {
-            name: 'attributes',
-            associationKey: 'attributes',
-            model: 'print.LayoutAttribute'
-        }
-    ],
+
+    /**
+     * @method getCapability
+     * Returns the layouts parent print capabilities. May be null if Layout is
+     * instantiated directly.
+     * @return {GeoExt.data.model.print.Capability} The print capabilities
+     */
+
+    /**
+     * @method attributes
+     * Returns an Ext.data.Store of referenced
+     * {@link GeoExt.data.model.print.LayoutAttribute}s.
+     * @return {Ext.data.Store} The store
+     */
+
     fields: [
+        { name: 'name', type: 'string' },
         {
-            name: 'name',
-            type: 'string'
+            name: 'capabilityId',
+            reference: {
+                type: 'print.Capability',
+                inverse: 'layouts'
+            }
         }
     ]
 });

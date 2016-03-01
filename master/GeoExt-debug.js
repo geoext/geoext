@@ -663,11 +663,35 @@ Ext.define('GeoExt.data.model.Base', {
     requires: [
         'Ext.data.identifier.Uuid'
     ],
+    identifier: 'uuid',
     schema: {
         id: 'geoext-schema',
         namespace: 'GeoExt.data.model'
     },
-    identifier: 'uuid'
+    inheritableStatics: {
+        /**
+         * Loads a record from a provided data structure initializing the models
+         * associations. Simply calling Ext.create will not utilize the models
+         * configured reader and effectivly sidetrack associations configs.
+         * This static helper method makes sure associations are initialized
+         * properly and are available with the returned record.
+         *
+         * Be aware that the provided data may be modified by the models reader
+         * initializing associations.
+         *
+         * @param  {Object} data The data the record will be created with.
+         * @return {GeoExt.data.model.Base} The record.
+         */
+        loadRawData: function(data) {
+            var me = this,
+                result = me.getProxy().getReader().readRecords(data || {}),
+                records = result.getRecords(),
+                success = result.getSuccess();
+            if (success && records.length) {
+                return records[0];
+            }
+        }
+    }
 });
 
 /* Copyright (c) 2015-2016 The Open Source Geospatial Foundation
@@ -700,22 +724,6 @@ Ext.define('GeoExt.data.model.Layer', {
         'ol.layer.Base',
         'ol.layer.Base#get'
     ],
-    statics: {
-        /**
-         * Convenience function for creating new layer model instance object
-         * using a layer object.
-         *
-         * @param {ol.layer.Base} layer The layer to create the model instance
-         *     for.
-         * @return {GeoExt.data.model.Layer} The created model instance.
-         * @static
-         */
-        createFromLayer: function(layer) {
-            return this.getProxy().getReader().readRecords([
-                layer
-            ]).records[0];
-        }
-    },
     fields: [
         {
             name: 'isLayerGroup',
@@ -2314,6 +2322,12 @@ Ext.define('GeoExt.component.Popup', {
  */
 Ext.define('GeoExt.data.model.print.LayoutAttribute', {
     extend: 'GeoExt.data.model.Base',
+    /**
+     * @method getLayout
+     * Returns the attribute parent layout model. May be null if
+     * LayoutAttribute is instantiated directly.
+     * @return {GeoExt.data.model.print.Layout} The attributes layout
+     */
     fields: [
         {
             name: 'name',
@@ -2326,6 +2340,13 @@ Ext.define('GeoExt.data.model.print.LayoutAttribute', {
         {
             name: 'clientInfo',
             type: 'auto'
+        },
+        {
+            name: 'layoutId',
+            reference: {
+                type: 'print.Layout',
+                inverse: 'attributes'
+            }
         }
     ]
 });
@@ -2357,17 +2378,29 @@ Ext.define('GeoExt.data.model.print.Layout', {
     requires: [
         'GeoExt.data.model.print.LayoutAttribute'
     ],
-    hasMany: [
-        {
-            name: 'attributes',
-            associationKey: 'attributes',
-            model: 'print.LayoutAttribute'
-        }
-    ],
+    /**
+     * @method getCapability
+     * Returns the layouts parent print capabilities. May be null if Layout is
+     * instantiated directly.
+     * @return {GeoExt.data.model.print.Capability} The print capabilities
+     */
+    /**
+     * @method attributes
+     * Returns an Ext.data.Store of referenced
+     * {@link GeoExt.data.model.print.LayoutAttribute}s.
+     * @return {Ext.data.Store} The store
+     */
     fields: [
         {
             name: 'name',
             type: 'string'
+        },
+        {
+            name: 'capabilityId',
+            reference: {
+                type: 'print.Capability',
+                inverse: 'layouts'
+            }
         }
     ]
 });
@@ -2398,20 +2431,21 @@ Ext.define('GeoExt.data.model.print.Capability', {
     requires: [
         'GeoExt.data.model.print.Layout'
     ],
-    hasMany: [
-        {
-            name: 'layouts',
-            associationKey: 'layouts',
-            model: 'print.Layout'
-        }
-    ],
+    /**
+     * @method layouts
+     * Returns an Ext.data.Store of referenced
+     * {@link GeoExt.data.model.print.Layout}s.
+     * @return {Ext.data.Store} The store
+     */
     fields: [
         {
             name: 'app',
             type: 'string'
         },
         {
-            name: 'formats'
+            name: 'formats',
+            type: 'auto',
+            defaultValue: []
         }
     ]
 });

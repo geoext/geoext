@@ -9,11 +9,11 @@
   "signatures": [
     {
       "name": "GeoExt Contributors",
-      "uuid": "c2ec9b7b-751e-4f89-bd72-f20d48b8ab0c",
-      "created": "2016-01-25T15:14:01Z",
+      "uuid": "2808f978-feb3-44f9-81cf-993d63d3b961",
+      "created": "2016-03-01T12:53:56Z",
       "algorithm": "SHA1withRSA",
-      "nonce": "IGdlFp3M/UM\u003d",
-      "signature": "y+GzT4jqqGWBAg4XTkwRqNqRgHjExiB9BvTncGCZ32pbBZMwMTKHX827QbIJETZzaBg/1vhOq9OmB7XSnpXo5cg3QWvw6lsArzNj5E9/z4SPjHCQn2Pui6sGS6cRcqQ4mUsiYd6IPSYfO3CnX7ijlWwv02WNw87k0Yykph8toPWmwbLaQnUPexESZ+WMgRjk1FGz6sxW3FKTni6uwYQXRHX5nt+1pu61B3DlywpXcgN9jnLURHpaSW8QQOa6TF2B1A3Y2oZME7nZcWkI3vTjRz7WxjYjdBzc1lRWJZA+l+k6V0K9BijWCUrMMzAHXPSSMDhPsRy8wcAdVxDKp1FBCQ\u003d\u003d"
+      "nonce": "heQ6enFrFhA\u003d",
+      "signature": "oyh7Do7ATz6UPIjE7dKaLwhFK1/ko31EkQwLCgDGcdEpABC0rnbT8W/dNURmGwy6uwXY879Jb8VotCCZbmHA2mf2Jh0S9UXxIi2DGl+uZ4helhcc4QbuT1GJakg5W9vGVp0RShLsv7FaTpCoLHDSzUjYuJkvvbOR3f6Dfo9pghBvNOZNj20PlRpi3Qpo0LzxYeoWRIvmuXXVB4/MBWmcUjjTHqAwFp4bSSu8agk+bve6eO+QYfGohL33FRh1Vf//3Kg+AFr855xGAHE72gYD7bTbXjZOUSgkybE1BCzHJX8GHW2pAe9qr5N79M7fV5I8SjGhnfRPeU5mnZfBghGOPw\u003d\u003d"
     }
   ],
   "slicer": {
@@ -37,8 +37,10 @@
     "lint": "eslint src/ examples/ \u0026\u0026 eslint -c test/.eslintrc test/",
     "pretest": "npm run-script lint",
     "test": "karma start test/karma.conf.js --single-run",
+    "test:debug": "karma start test/karma.conf.js --single-run --debug",
     "test:coverage": "karma start test/karma.conf.js --single-run --reporters coverage",
     "test:watch": "karma start test/karma.conf.js",
+    "test:watch:debug": "karma start test/karma.conf.js --debug",
     "start": "browser-sync start --server --directory --files \u0027src, test, examples\u0027",
     "coveralls": "cat coverage/lcov.info | coveralls",
     "generate:example": "node bin/example-generator/index.js",

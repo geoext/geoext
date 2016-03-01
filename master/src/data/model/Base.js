@@ -21,9 +21,37 @@ Ext.define('GeoExt.data.model.Base', {
     requires: [
         'Ext.data.identifier.Uuid'
     ],
+
+    identifier: 'uuid',
+
     schema: {
         id: 'geoext-schema',
         namespace: 'GeoExt.data.model'
     },
-    identifier: 'uuid'
+
+    inheritableStatics: {
+        /**
+         * Loads a record from a provided data structure initializing the models
+         * associations. Simply calling Ext.create will not utilize the models
+         * configured reader and effectivly sidetrack associations configs.
+         * This static helper method makes sure associations are initialized
+         * properly and are available with the returned record.
+         *
+         * Be aware that the provided data may be modified by the models reader
+         * initializing associations.
+         *
+         * @param  {Object} data The data the record will be created with.
+         * @return {GeoExt.data.model.Base} The record.
+         */
+        loadRawData: function (data) {
+            var me = this,
+                result = me.getProxy().getReader().readRecords(data || {}),
+                records = result.getRecords(),
+                success = result.getSuccess();
+
+            if (success && records.length) {
+                return records[0];
+            }
+        }
+    }
 });
