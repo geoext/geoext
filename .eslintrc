@@ -62,7 +62,7 @@
 
         "brace-style": [1, "1tbs"],
         "eol-last": 1,
-        "indent": 1,       
+        "indent": 1,
         "no-mixed-spaces-and-tabs": 2,
         "no-nested-ternary": 2,
         "no-trailing-spaces": 2,
