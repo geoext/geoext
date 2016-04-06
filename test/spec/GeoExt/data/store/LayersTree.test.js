@@ -118,6 +118,28 @@ describe('GeoExt.data.store.LayersTree', function() {
             expect(treeNode.isFirst()).to.be(true);
             expect(treeNode.isLast()).to.be(true);
         });
+
+        it('does properly remove nested layer', function() {
+            var layer2 = new ol.layer.Tile({
+                source: new ol.source.MapQuest({
+                    layer: 'hyb'
+                }),
+                name: 'LAYERZWO'
+            });
+
+            var group = new ol.layer.Group({
+                layers:[layer2]
+            });
+
+            mapComponent.addLayer(group);
+
+            group.getLayers().remove(layer2);
+
+            var rootNode = treeStore.getRootNode();
+            var groupNode = rootNode.getChildAt(0);
+            expect(groupNode.childNodes.length).to.be(0);
+        });
+
     });
 
     describe('Filterable store', function(){
