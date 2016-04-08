@@ -4893,7 +4893,7 @@ Ext.define('GeoExt.data.store.LayersTree', {
         // 1. find the node that existed for that layer
         var node = me.getRootNode().findChildBy(function(candidate) {
                 return candidate.getOlLayer() === layerOrGroup;
-            });
+            }, me, true);
         if (!node) {
             return;
         }
