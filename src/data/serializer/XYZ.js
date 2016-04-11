@@ -36,6 +36,13 @@ Ext.define('GeoExt.data.serializer.XYZ', {
 
     inheritableStatics: {
         /**
+         * An array of allowed image Extensions for the mapfish print OSM Layer.
+         * @type {Array[String]}
+         * @protected
+         */
+        allowedImageExtensions: ['png','jpg','gif'],
+
+        /**
          * @inheritdoc
          */
         sourceCls: ol.source.XYZ,
@@ -62,13 +69,33 @@ Ext.define('GeoExt.data.serializer.XYZ', {
             var serialized = {
                 baseURL: source.getUrls()[0],
                 opacity: layer.getOpacity(),
+                imageExtension: this._getImageExtensionFromURL(
+                    source.getUrls()[0]) || 'png',
                 resolutions: tileGrid.getResolutions(),
                 tileSize: ol.size.toSize(tileGrid.getTileSize()),
                 type: "OSM"
             };
             return serialized;
+        },
+
+        /**
+         * Returns the file extension from the url and compares it to whitelist.
+         *
+         * @private
+         * @param {String} url The first url from the urls array of
+         *    ol.Source.XYZ.
+         * @return {String} The fileExtension or false if no one is found.
+         */
+        _getImageExtensionFromURL: function(url){
+            var lastThree = url.substr(url.length - 3);
+            if(Ext.Array.contains(this.allowedImageExtensions, lastThree)){
+                return lastThree;
+            } else {
+                return false;
+            }
         }
     }
+
 }, function(cls) {
     // Register this serializer via the inherited method `register`.
     cls.register(cls);
