@@ -15,6 +15,7 @@
  */
  /**
   * A serializer for layers that have an `ol.source.XYZ` source.
+  * Sources with an tileUrlFunction are currently not supported.
   *
   * @class GeoExt.data.serializer.XYZ
   */
@@ -36,9 +37,7 @@ Ext.define('GeoExt.data.serializer.XYZ', {
 
     inheritableStatics: {
         /**
-         * An array of allowed image Extensions for the mapfish print OSM Layer.
-         * @type {Array[String]}
-         * @protected
+         *
          */
         allowedImageExtensions: ['png','jpg','gif'],
 
@@ -69,8 +68,8 @@ Ext.define('GeoExt.data.serializer.XYZ', {
             var serialized = {
                 baseURL: source.getUrls()[0],
                 opacity: layer.getOpacity(),
-                imageExtension: this._getImageExtensionFromURL(
-                    source.getUrls()[0]) || 'png',
+                imageExtension: this._getImageExtensionFromSource(source)
+                    || 'png',
                 resolutions: tileGrid.getResolutions(),
                 tileSize: ol.size.toSize(tileGrid.getTileSize()),
                 type: "OSM"
@@ -80,15 +79,18 @@ Ext.define('GeoExt.data.serializer.XYZ', {
 
         /**
          * Returns the file extension from the url and compares it to whitelist.
+         * Sources with an tileUrlFunction are currently not supported.
          *
          * @private
-         * @param {String} url The first url from the urls array of
-         *    ol.Source.XYZ.
+         * @param {ol.Source} source An ol.Source.XYZ.
          * @return {String} The fileExtension or false if no one is found.
          */
-        _getImageExtensionFromURL: function(url){
+        _getImageExtensionFromSource: function(source){
+            var url = source.getUrls()[0];
             var lastThree = url.substr(url.length - 3);
-            if(Ext.Array.contains(this.allowedImageExtensions, lastThree)){
+
+            if(Ext.isDefined(url) &&
+                Ext.Array.contains(this.allowedImageExtensions, lastThree)){
                 return lastThree;
             } else {
                 return false;
