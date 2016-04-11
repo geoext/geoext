@@ -4805,7 +4805,8 @@ Ext.define('GeoExt.data.store.LayersTree', {
         if (layerOrGroup instanceof ol.layer.Group) {
             // See onBeforeGroupNodeCollapse for an explanation why we have this
             layerNode.on('beforecollapse', me.onBeforeGroupNodeCollapse, me);
-            layerOrGroup.getLayers().forEach(me.addLayerNode, me);
+            var childLayers = layerOrGroup.getLayers().getArray();
+            Ext.each(childLayers, me.addLayerNode, me, me.inverseLayerOrder);
         }
     },
     /**
