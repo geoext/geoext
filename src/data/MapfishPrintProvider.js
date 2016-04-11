@@ -144,8 +144,9 @@ Ext.define('GeoExt.data.MapfishPrintProvider', {
          * @return {Array} The flat layers array.
          */
         getLayerArray: function(coll) {
+            var me = this;
             var inputLayers = [];
-            var extractingLayerGroups = true;
+            var outputLayers = [];
 
             if(coll instanceof GeoExt.data.store.Layers){
                 coll.each(function(layerRec) {
@@ -158,29 +159,17 @@ Ext.define('GeoExt.data.MapfishPrintProvider', {
                 inputLayers = Ext.clone(coll);
             }
 
-            while (extractingLayerGroups) {
-                var groups = [];
-                var groupLayers = [];
-                for (var i = 0; i < inputLayers.length; i++) {
-                    if (inputLayers[i] instanceof ol.layer.Group) {
-                        groups.push(inputLayers[i]);
-                        var subLayerArr = inputLayers[i].getLayers().getArray();
-                        var subLayerLen = subLayerArr.length;
-                        for (var j = 0; j < subLayerLen; j++) {
-                            groupLayers.push(subLayerArr[j]);
-                        }
-                    }
-                }
-                if (groups.length > 0) {
-                    for (var k = 0; k < groups.length; k++) {
-                        inputLayers = Ext.Array.remove(inputLayers, groups[k]);
-                    }
-                    inputLayers = Ext.Array.merge(inputLayers, groupLayers);
+            inputLayers.forEach(function(layer){
+                if(layer instanceof ol.layer.Group){
+                    Ext.each(me.getLayerArray(layer.getLayers()),
+                    function(subLayer){
+                        outputLayers.push(subLayer);
+                    });
                 } else {
-                    extractingLayerGroups = false;
+                    outputLayers.push(layer);
                 }
-            }
-            return inputLayers;
+            });
+            return outputLayers;
         },
 
         /**
