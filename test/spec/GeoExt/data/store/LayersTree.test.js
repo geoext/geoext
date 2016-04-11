@@ -137,6 +137,130 @@ describe('GeoExt.data.store.LayersTree', function() {
 
     });
 
+    describe('ordering', function() {
+        var layers = [], group;
+
+        beforeEach(function() {
+            for (var i = 0; i < 6; i++) {
+                var vector = new ol.layer.Vector({name:'layer' + i});
+                layers.push(vector);
+            }
+
+            group = new ol.layer.Group({
+                layers:layers,
+                name:'group'
+            });
+        });
+
+        describe('with non inverseLayerOrder', function() {
+            var mapComponent2, groupNode;
+
+            beforeEach(function() {
+                var olMap2 = new ol.Map({
+                    view: new ol.View({
+                        center: [0, 0],
+                        zoom: 2
+                    })
+                });
+
+                mapComponent2 = Ext.create('GeoExt.component.Map', {
+                    map: olMap2
+                });
+
+                mapComponent2.addLayer(group);
+
+                var store = Ext.create('GeoExt.data.store.LayersTree', {
+                    layerGroup: olMap2.getLayerGroup(),
+                    inverseLayerOrder:false
+                });
+
+                var rootNode = store.getRootNode();
+                groupNode = rootNode.getChildAt(rootNode.childNodes.length-1);
+            });
+
+            it('does properly order nested nodes', function() {
+
+                expect(groupNode.get('text')).to.be(group.get('name'));
+
+                for (var i = 0; i < 6; i++) {
+                    var layerNode = groupNode.getChildAt(i);
+                    var vector = layers[i];
+                    expect(layerNode.get('text')).to.be(vector.get('name'));
+                }
+            });
+
+            it('does properly order inserted node', function() {
+                var indexes = [0, 3, 5];
+
+                for (var i = 0; i < indexes.length; i++) {
+                    var vector = new ol.layer.Vector({
+                        name:'insertedLayer' + i
+                    });
+                    group.getLayers().insertAt(indexes[i], vector);
+                    var layerNode = groupNode.getChildAt(indexes[i]);
+                    expect(layerNode.get('text')).to.be(vector.get('name'));
+                }
+
+            });
+
+            it('does properly order appended node', function() {
+
+                var vector = new ol.layer.Vector({name:'appendedLayer'});
+
+                group.getLayers().push(vector);
+                var groupSize = groupNode.childNodes.length;
+                var layerNode = groupNode.getChildAt(groupSize-1);
+                expect(layerNode.get('text')).to.be(vector.get('name'));
+            });
+        });
+
+        describe('with inverseLayerOrder', function() {
+            var groupNode;
+
+            beforeEach(function() {
+                mapComponent.addLayer(group);
+                var rootNode = treeStore.getRootNode();
+                groupNode = rootNode.getChildAt(0);
+            });
+
+            it('does properly order nested nodes', function() {
+
+                expect(groupNode.get('text')).to.be(group.get('name'));
+
+                for (var i = 0; i < 6; i++) {
+                    var layerNode = groupNode.getChildAt(i);
+                    var vector = layers[5-i];
+                    expect(layerNode.get('text')).to.be(vector.get('name'));
+                }
+            });
+
+            it('does properly order inserted node', function() {
+                var indexes = [0, 3, 5];
+
+                for (var i = 0; i < indexes.length; i++) {
+                    var vector = new ol.layer.Vector({
+                        name:'insertedLayer' + i
+                    });
+                    group.getLayers().insertAt(indexes[i], vector);
+                    var groupSize = groupNode.childNodes.length;
+                    var idx = groupSize - indexes[i] - 1;
+                    var layerNode = groupNode.getChildAt(idx);
+                    expect(layerNode.get('text')).to.be(vector.get('name'));
+                }
+
+            });
+
+            it('does properly order appended node', function() {
+                var vector = new ol.layer.Vector({name:'appendedLayer'});
+
+                group.getLayers().push(vector);
+
+                var layerNode = groupNode.getChildAt(0);
+                expect(layerNode.get('text')).to.be(vector.get('name'));
+            });
+        });
+    });
+
     describe('Filterable store', function(){
         var noVectorTreeStore;
         var noVectorTreePanel;
