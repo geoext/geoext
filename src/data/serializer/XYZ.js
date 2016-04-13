@@ -68,7 +68,7 @@ Ext.define('GeoExt.data.serializer.XYZ', {
             var serialized = {
                 baseURL: source.getUrls()[0],
                 opacity: layer.getOpacity(),
-                imageExtension: this._getImageExtensionFromSource(source)
+                imageExtension: this.getImageExtensionFromSource(source)
                     || 'png',
                 resolutions: tileGrid.getResolutions(),
                 tileSize: ol.size.toSize(tileGrid.getTileSize()),
@@ -82,17 +82,19 @@ Ext.define('GeoExt.data.serializer.XYZ', {
          * Sources with an tileUrlFunction are currently not supported.
          *
          * @private
-         * @param {ol.Source} source An ol.Source.XYZ.
-         * @return {String} The fileExtension or false if no one is found.
+         * @param {ol.Source} source An ol.source.XYZ.
+         * @return {String} The fileExtension or `false` if none is found.
          */
-        _getImageExtensionFromSource: function(source){
-            var url = source.getUrls()[0];
+        getImageExtensionFromSource: function(source){
+            var urls = source.getUrls();
+            var url = urls ? urls[0] : "";
             var lastThree = url.substr(url.length - 3);
 
             if(Ext.isDefined(url) &&
-                Ext.Array.contains(this.allowedImageExtensions, lastThree)){
+                    Ext.Array.contains(this.allowedImageExtensions, lastThree)){
                 return lastThree;
             } else {
+                Ext.raise("No url(s) supplied for ", source);
                 return false;
             }
         }
