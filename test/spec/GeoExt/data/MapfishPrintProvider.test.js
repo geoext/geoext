@@ -140,6 +140,7 @@ describe('GeoExt.data.MapfishPrintProvider', function() {
             mapPanel,
             layer,
             group,
+            groupInGroup,
             firstgrouplayer,
             secondgrouplayer,
             olMap;
@@ -157,11 +158,8 @@ describe('GeoExt.data.MapfishPrintProvider', function() {
             div.style.height = "256px";
             document.body.appendChild(div);
 
-            extentLayer = new ol.layer.Vector({
-                source: new ol.source.Vector()
-            });
-
             layer = new ol.layer.Tile({
+                name:"1",
                 source: new ol.source.TileWMS({
                     url: 'http://ows.terrestris.de/osm-gray/service',
                     params: {
@@ -170,21 +168,46 @@ describe('GeoExt.data.MapfishPrintProvider', function() {
                 })
             });
 
+            extentLayer = new ol.layer.Vector({
+                name:"2",
+                source: new ol.source.Vector()
+            });
+
             firstgrouplayer = new ol.layer.Tile({
+                name:"3",
                 source: new ol.source.Stamen({
                     layer: 'watercolor'
                 })
             });
 
             secondgrouplayer = new ol.layer.Tile({
+                name:"4",
                 source: new ol.source.Stamen({
                     layer: 'terrain-labels'
                 })
             });
 
-            group = new ol.layer.Group({
-                layers: [firstgrouplayer, secondgrouplayer]
+            groupInGroup = new ol.layer.Group({
+                layers: [
+                    new ol.layer.Vector({
+                        name: "5",
+                        source: new ol.source.Vector()
+                    }),
+                    new ol.layer.Vector({
+                        name: "6",
+                        source: new ol.source.Vector()
+                    }),
+                    new ol.layer.Vector({
+                        name: "7",
+                        source: new ol.source.Vector()
+                    })
+                ]
             });
+
+            group = new ol.layer.Group({
+                layers: [groupInGroup, firstgrouplayer, secondgrouplayer]
+            });
+
 
             olMap = new ol.Map({
                 layers: [layer, extentLayer, group],
@@ -271,10 +294,52 @@ describe('GeoExt.data.MapfishPrintProvider', function() {
                         groupSize++;
                     }
                 });
-
-                expect(layerArray.length).to.eql(4);
+                expect(layerArray.length).to.eql(7);
                 expect(groupSize).to.eql(0);
                 expect(mapComponent.getLayers().getArray().length).to.eql(3);
+            }
+        );
+
+        it('getLayerArray returns the correct order within subfolders for Array',
+            function(){
+
+                var layerArray = GeoExt.data.MapfishPrintProvider.getLayerArray(
+                    mapComponent.getLayers().getArray()
+                );
+                var layerOrder = "";
+                Ext.each(layerArray, function(l) {
+                    layerOrder += l.get('name');
+                });
+                expect(layerOrder).to.eql("1256734");
+            }
+        );
+
+        it('getLayerArray returns the correct order within subfolders for Store',
+            function(){
+
+                var layerArray = GeoExt.data.MapfishPrintProvider.getLayerArray(
+                    mapComponent.getLayers()
+                );
+                var layerOrder = "";
+                Ext.each(layerArray, function(l) {
+                    layerOrder += l.get('name');
+                });
+                expect(layerOrder).to.eql("1256734");
+            }
+        );
+
+        it('getLayerArray returns the correct order within subfolders for ' +
+           ' Collection',
+            function(){
+
+                var layerArray = GeoExt.data.MapfishPrintProvider.getLayerArray(
+                    mapComponent.getMap().getLayers()
+                );
+                var layerOrder = "";
+                Ext.each(layerArray, function(l) {
+                    layerOrder += l.get('name');
+                });
+                expect(layerOrder).to.eql("1256734");
             }
         );
 
