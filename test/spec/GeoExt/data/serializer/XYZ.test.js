@@ -79,6 +79,7 @@ describe('GeoExt.data.serializer.XYZ', function() {
                     1.42375059957013e-7, 7.11875299785065e-8,
                     3.559376498925325e-8
                 ],
+                imageExtension: 'png',
                 tileSize: [256, 256],
                 type: 'OSM'
             };
