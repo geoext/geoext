@@ -15,6 +15,7 @@
  */
  /**
   * A serializer for layers that have an `ol.source.XYZ` source.
+  * Sources with an tileUrlFunction are currently not supported.
   *
   * @class GeoExt.data.serializer.XYZ
   */
@@ -35,6 +36,11 @@ Ext.define('GeoExt.data.serializer.XYZ', {
     ],
 
     inheritableStatics: {
+        /**
+         *
+         */
+        allowedImageExtensions: ['png','jpg','gif'],
+
         /**
          * @inheritdoc
          */
@@ -62,13 +68,38 @@ Ext.define('GeoExt.data.serializer.XYZ', {
             var serialized = {
                 baseURL: source.getUrls()[0],
                 opacity: layer.getOpacity(),
+                imageExtension: this.getImageExtensionFromSource(source)
+                    || 'png',
                 resolutions: tileGrid.getResolutions(),
                 tileSize: ol.size.toSize(tileGrid.getTileSize()),
                 type: "OSM"
             };
             return serialized;
+        },
+
+        /**
+         * Returns the file extension from the url and compares it to whitelist.
+         * Sources with an tileUrlFunction are currently not supported.
+         *
+         * @private
+         * @param {ol.Source} source An ol.source.XYZ.
+         * @return {String} The fileExtension or `false` if none is found.
+         */
+        getImageExtensionFromSource: function(source){
+            var urls = source.getUrls();
+            var url = urls ? urls[0] : "";
+            var lastThree = url.substr(url.length - 3);
+
+            if(Ext.isDefined(url) &&
+                    Ext.Array.contains(this.allowedImageExtensions, lastThree)){
+                return lastThree;
+            } else {
+                Ext.raise("No url(s) supplied for ", source);
+                return false;
+            }
         }
     }
+
 }, function(cls) {
     // Register this serializer via the inherited method `register`.
     cls.register(cls);
