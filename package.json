@@ -28,6 +28,7 @@
   "scripts": {
     "clean": "rm -rf coverage apidoc",
     "lint": "eslint src/ examples/ && eslint -c test/.eslintrc test/",
+    "lint:fix": "eslint --fix src/ examples/ && eslint --fix -c test/.eslintrc test/",
     "pretest": "npm run-script lint",
     "test": "karma start test/karma.conf.js --single-run",
     "test:debug": "karma start test/karma.conf.js --single-run --debug",
@@ -44,6 +45,7 @@
     "browser-sync": "2.11.2",
     "coveralls": "2.11.9",
     "eslint": "2.7.0",
+    "eslint-config-openlayers": "4.1.0",
     "expect.js": "0.3.1",
     "karma": "0.13.20",
     "karma-coverage": "0.5.3",
