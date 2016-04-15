@@ -342,7 +342,7 @@ Ext.define('GeoExt.data.store.LayersTree', {
         }
 
         // 5. insert a new layer node at the specified index to that node
-        var layerNode = Ext.create('GeoExt.data.model.LayerTreeNode',
+        var layerNode = Ext.create(me.model,
             layerOrGroup
         );
         layerNode.set('text', layerOrGroup.get(me.getTextProperty()));
