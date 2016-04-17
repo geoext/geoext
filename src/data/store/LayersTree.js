@@ -58,13 +58,6 @@ Ext.define('GeoExt.data.store.LayersTree', {
         layerGroup: null,
 
         /**
-         * The layer property that will be used to label tree nodes.
-         *
-         * @cfg {String}
-         */
-        textProperty: 'name',
-
-        /**
          * Configures the behaviour of the checkbox of an `ol.layer.Group`
          * (folder). Possible values are `'classic'` or `'ol3'`.
          *
@@ -342,13 +335,7 @@ Ext.define('GeoExt.data.store.LayersTree', {
         }
 
         // 5. insert a new layer node at the specified index to that node
-        var layerNode = Ext.create('GeoExt.data.model.LayerTreeNode',
-            layerOrGroup
-        );
-        layerNode.set('text', layerOrGroup.get(me.getTextProperty()));
-        layerNode.commit();
-
-        parentNode.insertChild(layerIdx, layerNode);
+        var layerNode = parentNode.insertChild(layerIdx, layerOrGroup);
 
         if (layerOrGroup instanceof ol.layer.Group) {
             // See onBeforeGroupNodeCollapse for an explanation why we have this
