@@ -760,3 +760,43 @@ describe('GeoExt.data.store.LayersTree', function() {
         });
     });
 });
+
+describe('A GeoExt.data.store.LayersTree', function () {
+
+    it('can be extended with custom LayerTreeNodes', function() {
+        var layer = new ol.layer.Group({name: 'any'});
+        var store;
+        var record;
+
+        // custom LayerTreeNode
+        Ext.define('GeoExt.CustomTreeNode',{
+            extend:'GeoExt.data.model.LayerTreeNode',
+            fields: [{
+                name: 'text',
+                type: 'string',
+                convert: function () {
+                    return 'test';
+                }
+            }]
+        });
+        expect(GeoExt.CustomTreeNode).to.not.be(undefined);
+
+        // custom LayersTree
+        Ext.define('GeoExt.CustomLayersTree', {
+            extend: 'GeoExt.data.store.LayersTree',
+            model: 'GeoExt.CustomTreeNode'
+        });
+        expect(GeoExt.CustomLayersTree).to.not.be(undefined);
+
+        store = Ext.create('GeoExt.CustomLayersTree', {
+            layerGroup: new ol.layer.Group({
+                layers: [layer]
+            })
+        });
+        record = store.getRootNode().getChildAt(0);
+
+        expect(store.getTotalCount()).to.be(1);
+        expect(record).to.be.a(GeoExt.CustomTreeNode);
+        expect(record.get('text')).to.be('test');
+    });
+});
