@@ -13,7 +13,7 @@ describe('GeoExt.grid.column.Symbolizer', function() {
             afterEach(function() {
                 column.destroy();
             });
-            it('can be called without arguments', function(){
+            it('can be called without arguments', function() {
                 column = Ext.create('GeoExt.grid.column.Symbolizer');
                 expect(column).to.be.an(GeoExt.grid.column.Symbolizer);
             });
@@ -22,19 +22,19 @@ describe('GeoExt.grid.column.Symbolizer', function() {
 
 
     describe('column', function() {
-        var meta = {},
-            column;
+        var meta = {};
+        var column;
 
-        beforeEach(function(){
+        beforeEach(function() {
             column = Ext.create('GeoExt.grid.column.Symbolizer');
         });
-        afterEach(function(){
+        afterEach(function() {
             column.destroy();
         });
 
         it('has the correct CSS class', function() {
             column.renderer(null, meta);
-            expect(meta.css).equal("gx-grid-symbolizercol");
+            expect(meta.css).equal('gx-grid-symbolizercol');
         });
         it('has the correct amount of symbolizer instances', function() {
             var num = Ext.ComponentQuery.query('gx_symbolizercolumn').length;
@@ -44,15 +44,20 @@ describe('GeoExt.grid.column.Symbolizer', function() {
     });
 
     describe('feature style', function() {
-        var column, detectedStyle, feat, rec,
-            style = new ol.style.Style({
-                fill: new ol.style.Fill({color: 'red'})
-            });
+        var column;
+        var detectedStyle;
+        var feat;
+        var rec;
+        var style = new ol.style.Style({
+            fill: new ol.style.Fill({color: 'red'})
+        });
+
         beforeEach(function() {
             feat = new ol.Feature();
             column = Ext.create('GeoExt.grid.column.Symbolizer');
             rec = Ext.create('GeoExt.data.model.Feature', feat);
         });
+
         afterEach(function() {
             column.destroy();
             rec = null;

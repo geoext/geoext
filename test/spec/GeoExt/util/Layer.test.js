@@ -2,23 +2,23 @@ Ext.Loader.syncRequire(['GeoExt.util.Layer']);
 
 describe('GeoExt.util.Layer', function() {
 
-    describe('basics', function(){
+    describe('basics', function() {
 
-        it('is defined', function(){
+        it('is defined', function() {
             expect(GeoExt.util.Layer).not.to.be(undefined);
         });
 
     });
 
-    describe('static methods', function(){
+    describe('static methods', function() {
 
-        describe('#findParentGroup', function(){
+        describe('#findParentGroup', function() {
 
-            it('is defined', function(){
+            it('is defined', function() {
                 expect(GeoExt.util.Layer.findParentGroup).to.be.a('function');
             });
 
-            it('returns the correct group (no nesting)', function(){
+            it('returns the correct group (no nesting)', function() {
                 var layer = new ol.layer.Vector();
                 var parentGroup = new ol.layer.Group({layers: [layer]});
 
@@ -26,7 +26,7 @@ describe('GeoExt.util.Layer', function() {
                 expect(got).to.be(parentGroup);
             });
 
-            it('returns the correct group (deep nesting)', function(){
+            it('returns the correct group (deep nesting)', function() {
                 var layer = new ol.layer.Vector();
                 var parentGroup = new ol.layer.Group({layers: [layer]});
                 var outerGroup1 = new ol.layer.Group({layers: [parentGroup]});
@@ -40,7 +40,7 @@ describe('GeoExt.util.Layer', function() {
             });
 
             it('returns the correct group (deep nesting, many layers)',
-                function(){
+                function() {
                     var layer0 = new ol.layer.Vector();
                     var layer1 = new ol.layer.Vector();
                     var layer2 = new ol.layer.Vector();
@@ -78,7 +78,7 @@ describe('GeoExt.util.Layer', function() {
                 }
             );
 
-            it('returns undefined if not found', function(){
+            it('returns undefined if not found', function() {
                 var layer = new ol.layer.Vector();
                 var parentGroup = new ol.layer.Group({layers: []});
 
@@ -88,13 +88,13 @@ describe('GeoExt.util.Layer', function() {
 
         });
 
-        describe('#getLayerIndex', function(){
+        describe('#getLayerIndex', function() {
 
-            it('is defined', function(){
+            it('is defined', function() {
                 expect(GeoExt.util.Layer.getLayerIndex).to.be.a('function');
             });
 
-            it('returns the correct index (single layer)', function(){
+            it('returns the correct index (single layer)', function() {
                 var layer = new ol.layer.Vector();
                 var parentGroup = new ol.layer.Group({layers: [layer]});
 
@@ -102,7 +102,7 @@ describe('GeoExt.util.Layer', function() {
                 expect(got).to.be(0);
             });
 
-            it('returns the correct index (many layers)', function(){
+            it('returns the correct index (many layers)', function() {
                 var layer0 = new ol.layer.Vector();
                 var layer1 = new ol.layer.Vector();
                 var layer2 = new ol.layer.Vector();
@@ -126,7 +126,7 @@ describe('GeoExt.util.Layer', function() {
                 expect(got).to.be(7);
             });
 
-            it('returns -1 if not found', function(){
+            it('returns -1 if not found', function() {
                 var layer = new ol.layer.Vector();
                 var parentGroup = new ol.layer.Group({layers: []});
 

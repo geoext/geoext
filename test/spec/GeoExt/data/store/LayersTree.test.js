@@ -11,21 +11,21 @@ describe('GeoExt.data.store.LayersTree', function() {
     var treeStore;
     var treePanel;
 
-    beforeEach(function(){
+    beforeEach(function() {
         div = document.createElement('div');
-        div.style.position = "absolute";
-        div.style.top = "0";
-        div.style.left = "-1000px";
-        div.style.width = "512px";
-        div.style.height = "256px";
+        div.style.position = 'absolute';
+        div.style.top = '0';
+        div.style.left = '-1000px';
+        div.style.width = '512px';
+        div.style.height = '256px';
         document.body.appendChild(div);
 
         treeDiv = document.createElement('div');
-        treeDiv.style.position = "absolute";
-        treeDiv.style.top = "0";
-        treeDiv.style.left = "-1000px";
-        treeDiv.style.width = "512px";
-        treeDiv.style.height = "256px";
+        treeDiv.style.position = 'absolute';
+        treeDiv.style.top = '0';
+        treeDiv.style.left = '-1000px';
+        treeDiv.style.width = '512px';
+        treeDiv.style.height = '256px';
         document.body.appendChild(treeDiv);
 
         source = new ol.source.MapQuest({layer: 'sat'});
@@ -58,12 +58,12 @@ describe('GeoExt.data.store.LayersTree', function() {
             flex: 1,
             border: false,
             viewConfig: {
-                plugins: { ptype: 'treeviewdragdrop' }
+                plugins: {ptype: 'treeviewdragdrop'}
             }
         });
     });
 
-    afterEach(function(){
+    afterEach(function() {
         treePanel.destroy();
         treeStore.removeAll();
         mapComponent.destroy();
@@ -72,8 +72,8 @@ describe('GeoExt.data.store.LayersTree', function() {
         document.body.removeChild(div);
     });
 
-    describe('basics', function(){
-        it('is defined', function(){
+    describe('basics', function() {
+        it('is defined', function() {
             expect(GeoExt.data.store.LayersTree).not.to.be(undefined);
         });
     });
@@ -138,7 +138,8 @@ describe('GeoExt.data.store.LayersTree', function() {
     });
 
     describe('ordering', function() {
-        var layers = [], group;
+        var layers = [];
+        var group;
 
         beforeEach(function() {
             for (var i = 0; i < 6; i++) {
@@ -153,7 +154,8 @@ describe('GeoExt.data.store.LayersTree', function() {
         });
 
         describe('with non inverseLayerOrder', function() {
-            var mapComponent2, groupNode;
+            var mapComponent2;
+            var groupNode;
 
             beforeEach(function() {
                 var olMap2 = new ol.Map({
@@ -175,7 +177,7 @@ describe('GeoExt.data.store.LayersTree', function() {
                 });
 
                 var rootNode = store.getRootNode();
-                groupNode = rootNode.getChildAt(rootNode.childNodes.length-1);
+                groupNode = rootNode.getChildAt(rootNode.childNodes.length - 1);
             });
 
             it('does properly order nested nodes', function() {
@@ -209,7 +211,7 @@ describe('GeoExt.data.store.LayersTree', function() {
 
                 group.getLayers().push(vector);
                 var groupSize = groupNode.childNodes.length;
-                var layerNode = groupNode.getChildAt(groupSize-1);
+                var layerNode = groupNode.getChildAt(groupSize - 1);
                 expect(layerNode.get('text')).to.be(vector.get('name'));
             });
         });
@@ -229,7 +231,7 @@ describe('GeoExt.data.store.LayersTree', function() {
 
                 for (var i = 0; i < 6; i++) {
                     var layerNode = groupNode.getChildAt(i);
-                    var vector = layers[5-i];
+                    var vector = layers[5 - i];
                     expect(layerNode.get('text')).to.be(vector.get('name'));
                 }
             });
@@ -261,15 +263,15 @@ describe('GeoExt.data.store.LayersTree', function() {
         });
     });
 
-    describe('Filterable store', function(){
+    describe('Filterable store', function() {
         var noVectorTreeStore;
         var noVectorTreePanel;
 
-        beforeEach(function(){
+        beforeEach(function() {
             noVectorTreeStore = Ext.create('GeoExt.data.store.LayersTree', {
                 layerGroup: olMap.getLayerGroup(),
                 filters: [
-                    function(rec){
+                    function(rec) {
                         return !(rec.data instanceof ol.layer.Vector);
                     }
                 ]
@@ -282,12 +284,12 @@ describe('GeoExt.data.store.LayersTree', function() {
             });
         });
 
-        afterEach(function(){
+        afterEach(function() {
             noVectorTreeStore.destroy();
             noVectorTreePanel.destroy();
         });
 
-        it('works when the root is collapsed', function(){
+        it('works when the root is collapsed', function() {
             expect(noVectorTreeStore.getCount()).to.be(1);
             expect(olMap.getLayers().getLength()).to.be(1);
 
@@ -298,7 +300,7 @@ describe('GeoExt.data.store.LayersTree', function() {
             expect(olMap.getLayers().getLength()).to.be(2);
         });
 
-        it('works when the root is expanded', function(){
+        it('works when the root is expanded', function() {
             expect(noVectorTreeStore.getCount()).to.be(1);
             expect(olMap.getLayers().getLength()).to.be(1);
 
@@ -311,7 +313,7 @@ describe('GeoExt.data.store.LayersTree', function() {
             expect(olMap.getLayers().getLength()).to.be(2);
         });
 
-        it('works when the filter is removed', function(){
+        it('works when the filter is removed', function() {
             expect(noVectorTreeStore.getCount()).to.be(1);
             expect(olMap.getLayers().getLength()).to.be(1);
 
@@ -323,7 +325,7 @@ describe('GeoExt.data.store.LayersTree', function() {
 
             // remove all filters
             var filters = noVectorTreeStore.getFilters();
-            filters.each(function(filter){
+            filters.each(function(filter) {
                 noVectorTreeStore.removeFilter(filter);
             });
 
@@ -331,7 +333,7 @@ describe('GeoExt.data.store.LayersTree', function() {
             expect(olMap.getLayers().getLength()).to.be(2);
         });
 
-        it('works when the filter is added later', function(){
+        it('works when the filter is added later', function() {
             // treeStore does not have a filter yet
             expect(treeStore.getCount()).to.be(1);
             expect(olMap.getLayers().getLength()).to.be(1);
@@ -344,7 +346,7 @@ describe('GeoExt.data.store.LayersTree', function() {
 
             // now add the filter to the stzre
             treeStore.addFilter([
-                function(rec){
+                function(rec) {
                     return !(rec.data instanceof ol.layer.Vector);
                 }
             ]);
@@ -359,7 +361,7 @@ describe('GeoExt.data.store.LayersTree', function() {
 
         var layerGroup;
 
-        beforeEach(function(){
+        beforeEach(function() {
             layerGroup = new ol.layer.Group({
                 visible: false,
                 name: 'LAYERGRUBBE',
@@ -368,7 +370,7 @@ describe('GeoExt.data.store.LayersTree', function() {
                         visible: false,
                         name: 'LAYERGEOGRAPHYCLASS',
                         source: new ol.source.TileJSON({
-                            url: 'http://api.tiles.mapbox.com/v3/'+
+                            url: 'http://api.tiles.mapbox.com/v3/' +
                                 'mapbox.geography-class.json',
                             crossOrigin: 'anonymous'
                         })
@@ -377,7 +379,7 @@ describe('GeoExt.data.store.LayersTree', function() {
                         visible: false,
                         name: 'LAYERLIGHT',
                         source: new ol.source.TileJSON({
-                            url: 'http://api.tiles.mapbox.com/v3/'+
+                            url: 'http://api.tiles.mapbox.com/v3/' +
                                 'mapbox.world-borders-light.json',
                             crossOrigin: 'anonymous'
                         })
@@ -388,55 +390,55 @@ describe('GeoExt.data.store.LayersTree', function() {
             mapComponent.addLayer(layerGroup);
         });
 
-        describe('basics', function(){
-            it('sets the "classic" folderToggleMode as default',function(){
+        describe('basics', function() {
+            it('sets the "classic" folderToggleMode as default',function() {
                 expect(treeStore.getFolderToggleMode()).to.be('classic');
             });
 
-            it("can't set values else then 'ol3' or 'classic'",function(){
-                expect(function(){
+            it('can\'t set values else then \'ol3\' or \'classic\'',function() {
+                expect(function() {
                     treeStore.setFolderToggleMode('ol3');
                 }).to.not.throwException();
 
-                expect(function(){
+                expect(function() {
                     treeStore.setFolderToggleMode('classic');
                 }).to.not.throwException();
 
-                expect(function(){
+                expect(function() {
                     treeStore.setFolderToggleMode('peter');
                 }).to.throwException();
 
                 expect(treeStore.getFolderToggleMode()).to.be('classic');
             });
 
-            it('sets the toggleMode on all nodes',function(){
-                treeStore.each(function(child){
+            it('sets the toggleMode on all nodes',function() {
+                treeStore.each(function(child) {
                     expect(child.get('__toggleMode')).to.be('classic');
                 });
             });
         });
 
-        describe('classic', function(){
+        describe('classic', function() {
 
-            it('checks all children if a folder is checked',function(){
+            it('checks all children if a folder is checked',function() {
                 var layerGroupNode = treePanel.getRootNode().getChildAt(0);
                 layerGroupNode.set('checked', true);
 
-                layerGroupNode.eachChild(function(child){
+                layerGroupNode.eachChild(function(child) {
                     expect(child.get('checked')).to.be(true);
                 });
             });
 
-            it('unchecks all children if a folder is unchecked',function(){
+            it('unchecks all children if a folder is unchecked',function() {
                 var layerGroupNode = treePanel.getRootNode().getChildAt(0);
                 layerGroupNode.set('checked', false);
 
-                layerGroupNode.eachChild(function(child){
+                layerGroupNode.eachChild(function(child) {
                     expect(child.get('checked')).to.be(false);
                 });
             });
 
-            it('checks all parent nodes if a leaf is checked',function(){
+            it('checks all parent nodes if a leaf is checked',function() {
                 var layerGroupNode = treePanel.getRootNode().getChildAt(0);
                 var childNode = layerGroupNode.getChildAt(0);
 
@@ -445,15 +447,15 @@ describe('GeoExt.data.store.LayersTree', function() {
             });
 
             it('unchecks all parent nodes if a leaf and all his siblings' +
-                'are unchecked',function(){
+                'are unchecked',function() {
                 var layerGroupNode = treePanel.getRootNode().getChildAt(0);
 
-                layerGroupNode.eachChild(function(child){
+                layerGroupNode.eachChild(function(child) {
                     child.set('checked', true);
                 });
                 expect(layerGroupNode.get('checked')).to.be(true);
 
-                layerGroupNode.eachChild(function(child){
+                layerGroupNode.eachChild(function(child) {
                     child.set('checked', false);
                 });
                 expect(layerGroupNode.get('checked')).to.be(false);
@@ -461,18 +463,18 @@ describe('GeoExt.data.store.LayersTree', function() {
 
         });
 
-        describe('ol3', function(){
-            beforeEach(function(){
+        describe('ol3', function() {
+            beforeEach(function() {
                 treeStore.setFolderToggleMode('ol3');
             });
 
-            it('sets the toggleMode on all nodes',function(){
-                treeStore.each(function(child){
+            it('sets the toggleMode on all nodes',function() {
+                treeStore.each(function(child) {
                     expect(child.get('__toggleMode')).to.be('ol3');
                 });
             });
 
-            it('folderNode does not react to leafchanges',function(){
+            it('folderNode does not react to leafchanges',function() {
                 var layerGroupNode = treePanel.getRootNode().getChildAt(0);
                 var childNode = layerGroupNode.getChildAt(0);
 
@@ -481,7 +483,7 @@ describe('GeoExt.data.store.LayersTree', function() {
                 expect(layerGroupNode.get('checked')).to.be(false);
             });
 
-            it("leafNodes don't not react to folderchanges",function(){
+            it('leafNodes don\'t not react to folderchanges',function() {
                 var layerGroupNode = treePanel.getRootNode().getChildAt(0);
                 var childNode = layerGroupNode.getChildAt(0);
 
@@ -493,7 +495,7 @@ describe('GeoExt.data.store.LayersTree', function() {
         });
     });
 
-    describe('Drag behaviour', function(){
+    describe('Drag behaviour', function() {
         var dragTreeDiv;
         var layer1;
         var layer2;
@@ -505,9 +507,9 @@ describe('GeoExt.data.store.LayersTree', function() {
         var rootNode;
         var innerGroupNode;
 
-        beforeEach(function(){
+        beforeEach(function() {
             dragTreeDiv = document.createElement('div');
-            dragTreeDiv.style.height = "500px";
+            dragTreeDiv.style.height = '500px';
             document.body.appendChild(dragTreeDiv);
 
             layer1 = new ol.layer.Vector({name: 'one'});
@@ -529,21 +531,21 @@ describe('GeoExt.data.store.LayersTree', function() {
                 store: store,
                 renderTo: dragTreeDiv,
                 viewConfig: {
-                    plugins: { ptype: 'treeviewdragdrop' }
+                    plugins: {ptype: 'treeviewdragdrop'}
                 },
                 height: 300
             });
             rootNode = store.getRootNode();
             innerGroupNode = rootNode.getChildAt(1);
         });
-        afterEach(function(){
+        afterEach(function() {
             store.destroy();
             tree.destroy();
             document.body.removeChild(dragTreeDiv);
             dragTreeDiv = null;
         });
 
-        it('changes the layer order', function(done){
+        it('changes the layer order', function(done) {
             tree.expandAll(function() {
                 // Before we do anything
                 //   0 => layer2
@@ -575,7 +577,7 @@ describe('GeoExt.data.store.LayersTree', function() {
             });
         });
 
-        it('can move layers to different folders', function(done){
+        it('can move layers to different folders', function(done) {
             tree.expandAll(function() {
                 // Before we do anything
                 //   0 => layer2
@@ -603,7 +605,7 @@ describe('GeoExt.data.store.LayersTree', function() {
             });
         });
 
-        it('can move folders around', function(done){
+        it('can move folders around', function(done) {
             tree.expandAll(function() {
                 // Before we do anything
                 //   0 => layer1
@@ -635,7 +637,7 @@ describe('GeoExt.data.store.LayersTree', function() {
         });
     });
 
-    describe('Collapse behaviour', function(){
+    describe('Collapse behaviour', function() {
         var dragTreeDiv;
         var layer1;
         var layer2;
@@ -649,9 +651,9 @@ describe('GeoExt.data.store.LayersTree', function() {
         var store;
         var tree;
 
-        beforeEach(function(){
+        beforeEach(function() {
             dragTreeDiv = document.createElement('div');
-            dragTreeDiv.style.height = "500px";
+            dragTreeDiv.style.height = '500px';
             document.body.appendChild(dragTreeDiv);
 
             layer1 = new ol.layer.Vector({name: 'one'});
@@ -687,20 +689,20 @@ describe('GeoExt.data.store.LayersTree', function() {
                 store: store,
                 renderTo: dragTreeDiv,
                 viewConfig: {
-                    plugins: { ptype: 'treeviewdragdrop' }
+                    plugins: {ptype: 'treeviewdragdrop'}
                 },
                 height: 300
             });
             rootNode = store.getRootNode();
         });
-        afterEach(function(){
+        afterEach(function() {
             store.destroy();
             tree.destroy();
             document.body.removeChild(dragTreeDiv);
             dragTreeDiv = null;
         });
 
-        it('does not remove sublayers if folder is collapsed', function(done){
+        it('does not remove sublayers if folder is collapsed', function(done) {
             tree.expandAll(function() {
                 // before collapse
                 var numInInnerGroup = innerGroup2.getLayers().getLength();
@@ -708,7 +710,7 @@ describe('GeoExt.data.store.LayersTree', function() {
 
                 // collapse innergroup node
                 var innerGroupNode = rootNode.getChildAt(1);
-                innerGroupNode.collapse(true, function(){
+                innerGroupNode.collapse(true, function() {
                     numInInnerGroup = innerGroup2.getLayers().getLength();
 
                     // count must still be the same
@@ -719,14 +721,14 @@ describe('GeoExt.data.store.LayersTree', function() {
         });
 
         it('does not remove any folders or layers if topfolder is ' +
-           'collapsed', function(done){
+           'collapsed', function(done) {
             tree.expandAll(function() {
-                function getAllLayers(map){
+                function getAllLayers(map) {
                     var layers = map.getLayers();
                     var allLayers = [];
-                    layers.forEach(function(l){
-                        if(l instanceof ol.layer.Group){
-                            Ext.each(getAllLayers(l), function(layeri){
+                    layers.forEach(function(l) {
+                        if (l instanceof ol.layer.Group) {
+                            Ext.each(getAllLayers(l), function(layeri) {
                                 allLayers.push(layeri);
                             });
                         }
@@ -744,7 +746,7 @@ describe('GeoExt.data.store.LayersTree', function() {
                 expect(expandedAllLayersAndGroupsCount).to.be(7);
 
                 // collapse topgroup node
-                rootNode.collapseChildren(true, function(){
+                rootNode.collapseChildren(true, function() {
                     var collapsedNumtopMostGroup = store.getTotalCount();
                     // expecting ExtJs rootNode + two folder of topMostGroup
                     // this is due to the strange behaviour that ExtJs removes
@@ -761,7 +763,7 @@ describe('GeoExt.data.store.LayersTree', function() {
     });
 });
 
-describe('A GeoExt.data.store.LayersTree', function () {
+describe('A GeoExt.data.store.LayersTree', function() {
 
     it('can be extended with custom LayerTreeNodes', function() {
         var layer = new ol.layer.Group({name: 'any'});
@@ -774,7 +776,7 @@ describe('A GeoExt.data.store.LayersTree', function () {
             fields: [{
                 name: 'text',
                 type: 'string',
-                convert: function () {
+                convert: function() {
                     return 'test';
                 }
             }]

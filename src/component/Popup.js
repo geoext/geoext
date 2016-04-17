@@ -110,12 +110,12 @@ Ext.define('GeoExt.component.Popup', {
      * @param {Object} config The configuration object.
      */
     constructor: function(config) {
-        var me = this,
-            cfg = config || {},
-            overlayElement;
+        var me = this;
+        var cfg = config || {};
+        var overlayElement;
 
         if (!Ext.isDefined(cfg.map)) {
-            Ext.Error.raise("Required configuration 'map' not passed");
+            Ext.Error.raise('Required configuration \'map\' not passed');
         }
         if (Ext.isDefined(cfg.renderTo)) {
             // use the passed element/string
@@ -150,7 +150,7 @@ Ext.define('GeoExt.component.Popup', {
     /**
      * @private
      */
-    setupOverlay: function(){
+    setupOverlay: function() {
         var me = this;
         var overlay = new ol.Overlay({
             autoPan: true,
@@ -189,7 +189,7 @@ Ext.define('GeoExt.component.Popup', {
     /**
      * @private
      */
-    onBeforeDestroy: function(){
+    onBeforeDestroy: function() {
         var me = this;
         if (me.overlayElementCreated && me.overlayElement) {
             var parent = me.overlayElement.parentNode;

@@ -2,9 +2,9 @@ Ext.Loader.syncRequire(['GeoExt.data.serializer.XYZ']);
 
 describe('GeoExt.data.serializer.XYZ', function() {
 
-    describe('basics', function(){
+    describe('basics', function() {
 
-        it('is defined', function(){
+        it('is defined', function() {
             expect(GeoExt.data.serializer.XYZ).not.to.be(undefined);
         });
 
@@ -15,7 +15,7 @@ describe('GeoExt.data.serializer.XYZ', function() {
         var layer = null;
         var viewResolution = 38.21851414258813;
 
-        beforeEach(function(){
+        beforeEach(function() {
             source = new ol.source.XYZ({
                 url: 'http://geo.nls.uk/maps/towns/glasgow1857/{z}/{x}/{-y}.png'
             });
@@ -23,34 +23,34 @@ describe('GeoExt.data.serializer.XYZ', function() {
                 source: source
             });
         });
-        afterEach(function(){
+        afterEach(function() {
             source = null;
             layer = null;
         });
 
-        it('doesn\'t throw on expected source', function(){
-            expect(function(){
+        it('doesn\'t throw on expected source', function() {
+            expect(function() {
                 GeoExt.data.serializer.XYZ.serialize(
                     layer, source
                 );
             }).to.not.throwException();
         });
 
-        it('correctly throws on unexpected source', function(){
+        it('correctly throws on unexpected source', function() {
             var wrongSource = new ol.source.ImageWMS({
                 url: 'http://demo.boundlessgeo.com/geoserver/wms',
                 params: {'LAYERS': 'ne:ne'},
                 serverType: 'geoserver',
                 crossOrigin: ''
             });
-            expect(function(){
+            expect(function() {
                 GeoExt.data.serializer.XYZ.serialize(
                     layer, wrongSource, viewResolution
                 );
             }).to.throwException();
         });
 
-        it('serializes as expected', function(){
+        it('serializes as expected', function() {
             var serialized = GeoExt.data.serializer.XYZ.serialize(
                 layer, source, viewResolution
             );
@@ -86,13 +86,13 @@ describe('GeoExt.data.serializer.XYZ', function() {
             expect(serialized).to.eql(expected);
         });
 
-        it('throws if it cannot get an URL', function(){
+        it('throws if it cannot get an URL', function() {
             var sourceNoUrl = new ol.source.XYZ({});
             var layerNoUrlSource = new ol.layer.Tile({
                 source: sourceNoUrl
             });
 
-            expect(function(){
+            expect(function() {
                 GeoExt.data.serializer.XYZ.serialize(
                     layerNoUrlSource, sourceNoUrl, viewResolution
                 );

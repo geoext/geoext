@@ -31,9 +31,9 @@ Ext.define('GeoExt.data.model.print.LayoutAttribute', {
      */
 
     fields: [
-        { name: 'name', type: 'string' },
-        { name: 'type', type: 'string' },
-        { name: 'clientInfo', type: 'auto' },
+        {name: 'name', type: 'string'},
+        {name: 'type', type: 'string'},
+        {name: 'clientInfo', type: 'auto'},
         {
             name: 'layoutId',
             reference: {

@@ -105,8 +105,8 @@ Ext.define('GeoExt.data.store.Features', {
      * @param {Object} config The configuration object.
      */
     constructor: function(config) {
-        var me = this,
-            cfg = config || {};
+        var me = this;
+        var cfg = config || {};
 
         if (me.style === null) {
             me.style = new ol.style.Style({
@@ -123,15 +123,15 @@ Ext.define('GeoExt.data.store.Features', {
             });
         }
 
-        if(cfg.features) {
+        if (cfg.features) {
             cfg.data = cfg.features;
-        } else if(cfg.layer && cfg.layer instanceof ol.layer.Vector) {
-            if(cfg.layer.getSource()) {
+        } else if (cfg.layer && cfg.layer instanceof ol.layer.Vector) {
+            if (cfg.layer.getSource()) {
                 cfg.data = cfg.layer.getSource().getFeatures();
             }
         }
 
-        if(!cfg.data) {
+        if (!cfg.data) {
             cfg.data = new ol.Collection();
         }
 
@@ -203,7 +203,7 @@ Ext.define('GeoExt.data.store.Features', {
             style: me.style
         });
         // add layer to connected map, if available
-        if(me.map) {
+        if (me.map) {
             me.map.addLayer(me.layer);
         }
 
@@ -216,9 +216,9 @@ Ext.define('GeoExt.data.store.Features', {
      *
      * @private
      */
-    bindLayerEvents: function () {
+    bindLayerEvents: function() {
         var me = this;
-        if(me.layer && me.layer.getSource() instanceof ol.source.Vector) {
+        if (me.layer && me.layer.getSource() instanceof ol.source.Vector) {
             // bind feature add / remove events of the layer
             me.layer.getSource().on('addfeature', me.onFeaturesAdded, me);
             me.layer.getSource().on('removefeature', me.onFeaturesRemoved, me);
@@ -230,9 +230,9 @@ Ext.define('GeoExt.data.store.Features', {
      *
      * @private
      */
-    unbindLayerEvents: function () {
+    unbindLayerEvents: function() {
         var me = this;
-        if(me.layer && me.layer.getSource() instanceof ol.source.Vector) {
+        if (me.layer && me.layer.getSource() instanceof ol.source.Vector) {
             // unbind feature add / remove events of the layer
             me.layer.getSource().un('addfeature', me.onFeaturesAdded, me);
             me.layer.getSource().un('removefeature', me.onFeaturesRemoved, me);
@@ -245,7 +245,7 @@ Ext.define('GeoExt.data.store.Features', {
      * @param {Object} evt The event object of OpenLayers.
      * @private
      */
-    onFeaturesAdded: function (evt) {
+    onFeaturesAdded: function(evt) {
         this.add(evt.feature);
     },
 
@@ -255,7 +255,7 @@ Ext.define('GeoExt.data.store.Features', {
      * @param {Object} evt The event object of OpenLayers.
      * @private
      */
-    onFeaturesRemoved: function (evt) {
+    onFeaturesRemoved: function(evt) {
         var me = this;
         if (!me._removing) {
             var record = me.getByFeature(evt.feature);

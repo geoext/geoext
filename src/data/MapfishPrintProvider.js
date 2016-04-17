@@ -127,8 +127,8 @@ Ext.define('GeoExt.data.MapfishPrintProvider', {
                 }
             });
             if (!serializer) {
-                Ext.log.warn("Couldn't find a suitable serializer for source." +
-                    " Did you require() an appropriate serializer class?");
+                Ext.log.warn('Couldn\'t find a suitable serializer for source.'
+                    + ' Did you require() an appropriate serializer class?');
             }
             return serializer;
         },
@@ -148,21 +148,21 @@ Ext.define('GeoExt.data.MapfishPrintProvider', {
             var inputLayers = [];
             var outputLayers = [];
 
-            if(coll instanceof GeoExt.data.store.Layers){
+            if (coll instanceof GeoExt.data.store.Layers) {
                 coll.each(function(layerRec) {
                     var layer = layerRec.getOlLayer();
                     inputLayers.push(layer);
                 });
-            } else if (coll instanceof ol.Collection){
+            } else if (coll instanceof ol.Collection) {
                 inputLayers = Ext.clone(coll.getArray());
             } else {
                 inputLayers = Ext.clone(coll);
             }
 
-            inputLayers.forEach(function(layer){
-                if(layer instanceof ol.layer.Group){
+            inputLayers.forEach(function(layer) {
+                if (layer instanceof ol.layer.Group) {
                     Ext.each(me.getLayerArray(layer.getLayers()),
-                    function(subLayer){
+                    function(subLayer) {
                         outputLayers.push(subLayer);
                     });
                 } else {
@@ -192,7 +192,7 @@ Ext.define('GeoExt.data.MapfishPrintProvider', {
          * @return {Object[]} An array of serialized layers.
          * @static
          */
-        getSerializedLayers: function(mapComponent, filterFn, filterScope){
+        getSerializedLayers: function(mapComponent, filterFn, filterScope) {
             var layers = mapComponent.getLayers();
             var viewRes = mapComponent.getView().getResolution();
             var serializedLayers = [];
@@ -204,7 +204,7 @@ Ext.define('GeoExt.data.MapfishPrintProvider', {
                 );
             }
 
-            Ext.each(inputLayers, function(layer){
+            Ext.each(inputLayers, function(layer) {
                 var source = layer.getSource();
                 var serialized = {};
 
@@ -233,7 +233,7 @@ Ext.define('GeoExt.data.MapfishPrintProvider', {
          * @param {Number} clientInfo.height The target height.
          * @return {ol.Feature} The feature representing the print extent.
          */
-        renderPrintExtent: function(mapComponent, extentLayer, clientInfo){
+        renderPrintExtent: function(mapComponent, extentLayer, clientInfo) {
             var mapComponentWidth = mapComponent.getWidth();
             var mapComponentHeight = mapComponent.getHeight();
             var currentMapRatio = mapComponentWidth / mapComponentHeight;
@@ -244,7 +244,7 @@ Ext.define('GeoExt.data.MapfishPrintProvider', {
             var geomExtent;
             var feat;
 
-            if (desiredPrintRatio >= currentMapRatio){
+            if (desiredPrintRatio >= currentMapRatio) {
                 targetWidth = mapComponentWidth * scaleFactor;
                 targetHeight = targetWidth / desiredPrintRatio;
             } else {
@@ -271,7 +271,7 @@ Ext.define('GeoExt.data.MapfishPrintProvider', {
      */
     capabilityRec: null,
 
-    constructor: function(cfg){
+    constructor: function(cfg) {
         this.mixins.observable.constructor.call(this, cfg);
         if (!cfg.capabilities && !cfg.url) {
             Ext.Error.raise('Print capabilities or Url required');
@@ -285,12 +285,12 @@ Ext.define('GeoExt.data.MapfishPrintProvider', {
      *
      * @private
      */
-    fillCapabilityRec: function(){
+    fillCapabilityRec: function() {
         // enhance checks
         var store;
         var capabilities = this.getCapabilities();
         var url = this.getUrl();
-        var fillRecordAndFireEvent = function(){
+        var fillRecordAndFireEvent = function() {
             this.capabilityRec = store.getAt(0);
             this.fireEvent('ready', this);
         };
@@ -303,7 +303,7 @@ Ext.define('GeoExt.data.MapfishPrintProvider', {
                 }
             });
             store.loadRawData(capabilities);
-        } else if (url){ // if servlet url is passed
+        } else if (url) { // if servlet url is passed
             store = Ext.create('Ext.data.Store', {
                 autoLoad: true,
                 model: 'GeoExt.data.model.print.Capability',

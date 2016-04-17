@@ -1,11 +1,11 @@
 describe('A GeoExt.data.model.print.Layout', function() {
 
     var data = {
-        "name": "layoutName",
-        "attributes": [{
-            "name": "attributeName",
-            "type": "anAttribute",
-            "clientParams": {}
+        'name': 'layoutName',
+        'attributes': [{
+            'name': 'attributeName',
+            'type': 'anAttribute',
+            'clientParams': {}
         }]
     };
 

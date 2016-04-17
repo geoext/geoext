@@ -7,181 +7,181 @@ Ext.Loader.syncRequire([
 describe('GeoExt.data.MapfishPrintProvider', function() {
 
     var printCapabilities = {
-        "app": "geoext",
-        "layouts": [ {
-            "name": "A4 portrait",
-            "attributes": [ {
-                "name": "map",
-                "type": "MapAttributeValues",
-                "clientParams": {
-                    "center": {
-                        "type": "double",
-                        "isArray": true
+        'app': 'geoext',
+        'layouts': [{
+            'name': 'A4 portrait',
+            'attributes': [{
+                'name': 'map',
+                'type': 'MapAttributeValues',
+                'clientParams': {
+                    'center': {
+                        'type': 'double',
+                        'isArray': true
                     },
-                    "bbox": {
-                        "type": "double",
-                        "isArray": true
+                    'bbox': {
+                        'type': 'double',
+                        'isArray': true
                     },
-                    "layers": {
-                        "type": "array"
+                    'layers': {
+                        'type': 'array'
                     },
-                    "dpi": {
-                        "type": "double"
+                    'dpi': {
+                        'type': 'double'
                     },
-                    "areaOfInterest": {
-                        "type": "AreaOfInterest",
-                        "embeddedType": {
-                            "area": {
-                                "type": "String"
+                    'areaOfInterest': {
+                        'type': 'AreaOfInterest',
+                        'embeddedType': {
+                            'area': {
+                                'type': 'String'
                             },
-                            "renderAsSvg": {
-                                "type": "boolean",
-                                "default": null
+                            'renderAsSvg': {
+                                'type': 'boolean',
+                                'default': null
                             },
-                            "display": {
-                                "type": "AoiDisplay",
-                                "embeddedType": {},
-                                "default": "RENDER"
+                            'display': {
+                                'type': 'AoiDisplay',
+                                'embeddedType': {},
+                                'default': 'RENDER'
                             },
-                            "style": {
-                                "type": "String",
-                                "default": null
+                            'style': {
+                                'type': 'String',
+                                'default': null
                             }
                         }
                     },
-                    "scale": {
-                        "type": "double",
-                        "default": null
+                    'scale': {
+                        'type': 'double',
+                        'default': null
                     },
-                    "rotation": {
-                        "type": "double",
-                        "default": null
+                    'rotation': {
+                        'type': 'double',
+                        'default': null
                     },
-                    "projection": {
-                        "type": "String",
-                        "default": null
+                    'projection': {
+                        'type': 'String',
+                        'default': null
                     },
-                    "dpiSensitiveStyle": {
-                        "type": "boolean",
-                        "default": true
+                    'dpiSensitiveStyle': {
+                        'type': 'boolean',
+                        'default': true
                     },
-                    "zoomToFeatures": {
-                        "type": "ZoomToFeatures",
-                        "embeddedType": {
-                            "zoomType": {
-                                "type": "ZoomType",
-                                "embeddedType": {},
-                                "default": "EXTENT"
+                    'zoomToFeatures': {
+                        'type': 'ZoomToFeatures',
+                        'embeddedType': {
+                            'zoomType': {
+                                'type': 'ZoomType',
+                                'embeddedType': {},
+                                'default': 'EXTENT'
                             },
-                            "minMargin": {
-                                "type": "int",
-                                "default": 10
+                            'minMargin': {
+                                'type': 'int',
+                                'default': 10
                             },
-                            "minScale": {
-                                "type": "double",
-                                "default": null
+                            'minScale': {
+                                'type': 'double',
+                                'default': null
                             },
-                            "layer": {
-                                "type": "String",
-                                "default": null
+                            'layer': {
+                                'type': 'String',
+                                'default': null
                             }
                         },
-                        "default": null
+                        'default': null
                     },
-                    "useNearestScale": {
-                        "type": "boolean",
-                        "default": null
+                    'useNearestScale': {
+                        'type': 'boolean',
+                        'default': null
                     },
-                    "longitudeFirst": {
-                        "type": "boolean",
-                        "default": null
+                    'longitudeFirst': {
+                        'type': 'boolean',
+                        'default': null
                     },
-                    "useAdjustBounds": {
-                        "type": "boolean",
-                        "default": null
+                    'useAdjustBounds': {
+                        'type': 'boolean',
+                        'default': null
                     }
                 },
-                "clientInfo": {
-                    "height": 330,
-                    "width": 780,
-                    "dpiSuggestions": [ 72, 120, 200, 254, 300 ],
-                    "maxDPI": 400
+                'clientInfo': {
+                    'height': 330,
+                    'width': 780,
+                    'dpiSuggestions': [72, 120, 200, 254, 300],
+                    'maxDPI': 400
                 }
-            } ]
-        } ],
-        "formats": [ "bmp", "gif", "pdf", "png", "tif", "tiff" ]
+            }]
+        }],
+        'formats': ['bmp', 'gif', 'pdf', 'png', 'tif', 'tiff']
     };
 
-    describe('basics', function() {
-        it('is defined', function() {
-            expect(GeoExt.data.MapfishPrintProvider).not.to.be(undefined);
-        });
-        it('throws if instanciated without capabilities or url', function() {
-            expect(function() {
-                Ext.create('GeoExt.data.MapfishPrintProvider');
-            }).to.throwException();
-        });
-        it('can be instanciated with capabilities', function() {
-            var instance = null;
-            expect(function() {
-                instance = Ext.create('GeoExt.data.MapfishPrintProvider', {
-                    capabilities: printCapabilities
-                });
-            }).to.not.throwException();
-            expect(instance).to.be.a(GeoExt.data.MapfishPrintProvider);
-        });
+    it('is defined', function() {
+        expect(GeoExt.data.MapfishPrintProvider).not.to.be(undefined);
     });
 
-    describe('statics', function() {
-        var savedSerializers,
-            div,
-            extentLayer,
-            mapComponent,
-            mapPanel,
-            layer,
-            group,
-            groupInGroup,
-            firstgrouplayer,
-            secondgrouplayer,
-            olMap;
+    it('throws if instanciated without capabilities or url', function() {
+        expect(function() {
+            Ext.create('GeoExt.data.MapfishPrintProvider');
+        }).to.throwException();
+    });
 
-        beforeEach(function(){
+    it('can be instanciated with capabilities', function() {
+        var instance = null;
+        expect(function() {
+            instance = Ext.create('GeoExt.data.MapfishPrintProvider', {
+                capabilities: printCapabilities
+            });
+        }).to.not.throwException();
+        expect(instance).to.be.a(GeoExt.data.MapfishPrintProvider);
+    });
+
+    describe('has static functions', function() {
+        var savedSerializers;
+        var div;
+        var extentLayer;
+        var mapComponent;
+        var mapPanel;
+        var layer;
+        var group;
+        var groupInGroup;
+        var firstgrouplayer;
+        var secondgrouplayer;
+        var olMap;
+
+        beforeEach(function() {
             savedSerializers = Ext.Array.clone(
                 GeoExt.data.MapfishPrintProvider._serializers
             );
 
             div = document.createElement('div');
-            div.style.position = "absolute";
-            div.style.top = "0";
-            div.style.left = "-1000px";
-            div.style.width = "512px";
-            div.style.height = "256px";
+            div.style.position = 'absolute';
+            div.style.top = '0';
+            div.style.left = '-1000px';
+            div.style.width = '512px';
+            div.style.height = '256px';
             document.body.appendChild(div);
 
             layer = new ol.layer.Tile({
-                name:"1",
+                name:'1',
                 source: new ol.source.TileWMS({
                     url: 'http://ows.terrestris.de/osm-gray/service',
                     params: {
-                        LAYERS: "OSM-WMS"
+                        LAYERS: 'OSM-WMS'
                     }
                 })
             });
 
             extentLayer = new ol.layer.Vector({
-                name:"2",
+                name:'2',
                 source: new ol.source.Vector()
             });
 
             firstgrouplayer = new ol.layer.Tile({
-                name:"3",
+                name:'3',
                 source: new ol.source.Stamen({
                     layer: 'watercolor'
                 })
             });
 
             secondgrouplayer = new ol.layer.Tile({
-                name:"4",
+                name:'4',
                 source: new ol.source.Stamen({
                     layer: 'terrain-labels'
                 })
@@ -190,15 +190,15 @@ describe('GeoExt.data.MapfishPrintProvider', function() {
             groupInGroup = new ol.layer.Group({
                 layers: [
                     new ol.layer.Vector({
-                        name: "5",
+                        name: '5',
                         source: new ol.source.Vector()
                     }),
                     new ol.layer.Vector({
-                        name: "6",
+                        name: '6',
                         source: new ol.source.Vector()
                     }),
                     new ol.layer.Vector({
-                        name: "7",
+                        name: '7',
                         source: new ol.source.Vector()
                     })
                 ]
@@ -229,16 +229,16 @@ describe('GeoExt.data.MapfishPrintProvider', function() {
             });
         });
 
-        afterEach(function(){
+        afterEach(function() {
             GeoExt.data.MapfishPrintProvider._serializers = savedSerializers;
             mapPanel.destroy();
             document.body.removeChild(div);
         });
 
-        it('registerSerializer registers a new serializer', function(){
+        it('to registers a new serializer', function() {
             var ProviderCls = GeoExt.data.MapfishPrintProvider;
             var available = ProviderCls._serializers;
-            var MockupSerializer = function(){};
+            var MockupSerializer = function() {};
 
             var cntBefore = available.length;
             ProviderCls.registerSerializer(null, MockupSerializer);
@@ -247,10 +247,10 @@ describe('GeoExt.data.MapfishPrintProvider', function() {
             expect(cntBefore + 1 === cntAfter).to.be(true);
         });
 
-        it('unregisterSerializer unregisters a serializer', function(){
+        it('to unregisters a serializer', function() {
             var ProviderCls = GeoExt.data.MapfishPrintProvider;
             var available = ProviderCls._serializers;
-            var MockupSerializer = function(){};
+            var MockupSerializer = function() {};
             // so that it is removable, let's register first.
             ProviderCls.registerSerializer(null, MockupSerializer);
 
@@ -261,11 +261,11 @@ describe('GeoExt.data.MapfishPrintProvider', function() {
             expect(cntBefore - 1 === cntAfter).to.be(true);
         });
 
-        it('findSerializerBySource can be used to find serializers', function(){
+        it('to find serializers', function() {
             var ProviderCls = GeoExt.data.MapfishPrintProvider;
-            var MockupSource = function(){};
-            var MockupSourceUnregistered = function(){};
-            var MockupSerializer = function(){};
+            var MockupSource = function() {};
+            var MockupSourceUnregistered = function() {};
+            var MockupSerializer = function() {};
 
             ProviderCls.registerSerializer(MockupSource, MockupSerializer);
             var foundSerializer = ProviderCls.findSerializerBySource(
@@ -279,71 +279,69 @@ describe('GeoExt.data.MapfishPrintProvider', function() {
             expect(notFoundSerializer).to.be(undefined);
         });
 
-        it('getLayerArray returns a flat Array of Layers by given collection',
-            function(){
-                expect(
-                    GeoExt.data.MapfishPrintProvider.getLayerArray
-                ).to.be.a('function');
+        it('to return a flat Array of Layers by given collection', function() {
+            expect(
+                GeoExt.data.MapfishPrintProvider.getLayerArray
+            ).to.be.a('function');
+
+            var layerArray = GeoExt.data.MapfishPrintProvider.getLayerArray(
+                mapComponent.getLayers().getArray()
+            );
+            var groupSize = 0;
+            Ext.each(layerArray, function(l) {
+                if (l instanceof ol.layer.Group) {
+                    groupSize++;
+                }
+            });
+            expect(layerArray.length).to.eql(7);
+            expect(groupSize).to.eql(0);
+            expect(mapComponent.getLayers().getArray().length).to.eql(3);
+        });
+
+        it('in the correct order within subfolders for Array',
+            function() {
 
                 var layerArray = GeoExt.data.MapfishPrintProvider.getLayerArray(
                     mapComponent.getLayers().getArray()
                 );
-                var groupSize = 0;
-                Ext.each(layerArray, function(l) {
-                    if (l instanceof ol.layer.Group) {
-                        groupSize++;
-                    }
-                });
-                expect(layerArray.length).to.eql(7);
-                expect(groupSize).to.eql(0);
-                expect(mapComponent.getLayers().getArray().length).to.eql(3);
-            }
-        );
-
-        it('getLayerArray returns the correct order within subfolders for Array',
-            function(){
-
-                var layerArray = GeoExt.data.MapfishPrintProvider.getLayerArray(
-                    mapComponent.getLayers().getArray()
-                );
-                var layerOrder = "";
+                var layerOrder = '';
                 Ext.each(layerArray, function(l) {
                     layerOrder += l.get('name');
                 });
-                expect(layerOrder).to.eql("1256734");
+                expect(layerOrder).to.eql('1256734');
             }
         );
 
-        it('getLayerArray returns the correct order within subfolders for Store',
-            function(){
+        it('in the correct order within subfolders for Store',
+            function() {
 
                 var layerArray = GeoExt.data.MapfishPrintProvider.getLayerArray(
                     mapComponent.getLayers()
                 );
-                var layerOrder = "";
+                var layerOrder = '';
                 Ext.each(layerArray, function(l) {
                     layerOrder += l.get('name');
                 });
-                expect(layerOrder).to.eql("1256734");
+                expect(layerOrder).to.eql('1256734');
             }
         );
 
         it('getLayerArray returns the correct order within subfolders for ' +
            ' Collection',
-            function(){
+            function() {
 
                 var layerArray = GeoExt.data.MapfishPrintProvider.getLayerArray(
                     mapComponent.getMap().getLayers()
                 );
-                var layerOrder = "";
+                var layerOrder = '';
                 Ext.each(layerArray, function(l) {
                     layerOrder += l.get('name');
                 });
-                expect(layerOrder).to.eql("1256734");
+                expect(layerOrder).to.eql('1256734');
             }
         );
 
-        it('getSerializedLayers returns the serialized Layers', function(){
+        it('getSerializedLayers returns the serialized Layers', function() {
             var cls = GeoExt.data.MapfishPrintProvider;
             expect(cls.getSerializedLayers).to.be.a('function');
             var serializedLayers = cls.getSerializedLayers(mapComponent);
@@ -364,7 +362,7 @@ describe('GeoExt.data.MapfishPrintProvider', function() {
         });
 
         // Could be improved
-        it('renderPrintExtent returns a printExtent Feature', function(){
+        it('renderPrintExtent returns a printExtent Feature', function() {
             var cls = GeoExt.data.MapfishPrintProvider;
             expect(cls.renderPrintExtent).to.be.a('function');
             var attr = printCapabilities.layouts[0].attributes[0];
@@ -379,7 +377,7 @@ describe('GeoExt.data.MapfishPrintProvider', function() {
 
     describe('creates stores from capabilities (directly available)',
         function() {
-            it('directly uses passed capabilities data', function(){
+            it('directly uses passed capabilities data', function() {
                 var provider = Ext.create('GeoExt.data.MapfishPrintProvider', {
                     capabilities: printCapabilities
                 });
@@ -396,7 +394,7 @@ describe('GeoExt.data.MapfishPrintProvider', function() {
                 Ext.create('GeoExt.data.MapfishPrintProvider', {
                     capabilities: printCapabilities,
                     listeners: {
-                        'ready': function(){
+                        'ready': function() {
                             var layoutStore = this.capabilityRec.layouts();
                             expect(layoutStore).to.be.an(Ext.data.Store);
                             expect(layoutStore.getCount()).to.be(1);
@@ -415,7 +413,7 @@ describe('GeoExt.data.MapfishPrintProvider', function() {
                 Ext.create('GeoExt.data.MapfishPrintProvider', {
                     capabilities: printCapabilities,
                     listeners: {
-                        'ready': function(){
+                        'ready': function() {
                             var formats = this.capabilityRec.get('formats');
                             expect(formats).to.be.an(Array);
                             expect(formats.length).to.be(6);
@@ -432,7 +430,7 @@ describe('GeoExt.data.MapfishPrintProvider', function() {
                 Ext.create('GeoExt.data.MapfishPrintProvider', {
                     capabilities: printCapabilities,
                     listeners: {
-                        'ready': function(){
+                        'ready': function() {
                             var layoutStore = this.capabilityRec.layouts();
                             var firstLayout = layoutStore.getAt(0);
                             var attributesStore = firstLayout.attributes();
@@ -459,10 +457,10 @@ describe('GeoExt.data.MapfishPrintProvider', function() {
         describe('layouts', function() {
             it('creates a store for layouts', function(done) {
                 var provider = Ext.create('GeoExt.data.MapfishPrintProvider', {
-                    url: "http://webmapcenter.de/print-servlet-3.1.2/" +
-                        "print/geoext/capabilities.json",
+                    url: 'http://webmapcenter.de/print-servlet-3.1.2/' +
+                        'print/geoext/capabilities.json',
                     listeners: {
-                        ready: function(){
+                        ready: function() {
                             var layoutStore = provider.capabilityRec.layouts();
                             expect(layoutStore).to.be.an(Ext.data.Store);
                             expect(layoutStore.getCount()).to.be(1);
@@ -479,10 +477,10 @@ describe('GeoExt.data.MapfishPrintProvider', function() {
         describe('formats', function() {
             it('creates a store for formats', function(done) {
                 Ext.create('GeoExt.data.MapfishPrintProvider', {
-                    url: "http://webmapcenter.de/print-servlet-3.1.2/" +
-                        "print/geoext/capabilities.json",
+                    url: 'http://webmapcenter.de/print-servlet-3.1.2/' +
+                        'print/geoext/capabilities.json',
                     listeners: {
-                        ready: function(){
+                        ready: function() {
                             var formats = this.capabilityRec.get('formats');
                             expect(formats).to.be.an(Array);
                             expect(formats.length).to.be(6);
@@ -498,10 +496,10 @@ describe('GeoExt.data.MapfishPrintProvider', function() {
         describe('attributes', function() {
             it('creates a store for attributes', function(done) {
                 Ext.create('GeoExt.data.MapfishPrintProvider', {
-                    url: "http://webmapcenter.de/print-servlet-3.1.2/" +
-                        "print/geoext/capabilities.json",
+                    url: 'http://webmapcenter.de/print-servlet-3.1.2/' +
+                        'print/geoext/capabilities.json',
                     listeners: {
-                        ready: function(){
+                        ready: function() {
                             var layoutStore = this.capabilityRec.layouts();
                             var firstLayout = layoutStore.getAt(0);
                             var attributesStore = firstLayout.attributes();

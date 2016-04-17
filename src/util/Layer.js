@@ -32,15 +32,15 @@ Ext.define('GeoExt.util.Layer', {
          * @return {ol.layer.Group} The direct parent group or undefined if the
          *     group cannot be determined.
          */
-        findParentGroup: function(childLayer, startGroup){
-            var parentGroup,
-                findParentGroup = GeoExt.util.Layer.findParentGroup,
-                getLayerIndex = GeoExt.util.Layer.getLayerIndex;
+        findParentGroup: function(childLayer, startGroup) {
+            var parentGroup;
+            var findParentGroup = GeoExt.util.Layer.findParentGroup;
+            var getLayerIndex = GeoExt.util.Layer.getLayerIndex;
 
             if (getLayerIndex(childLayer, startGroup) !== -1) {
                 parentGroup = startGroup;
             } else {
-                startGroup.getLayers().forEach(function(layer){
+                startGroup.getLayers().forEach(function(layer) {
                     if (!parentGroup && layer instanceof ol.layer.Group) {
                         parentGroup = findParentGroup(childLayer, layer);
                         // sadly we cannot abort the forEach-iteration here
@@ -61,10 +61,10 @@ Ext.define('GeoExt.util.Layer', {
          * @return {Number} The index or `-1` if the layer isn't a direct child
          *     of the group.
          */
-        getLayerIndex: function(layer, group){
+        getLayerIndex: function(layer, group) {
             var index = -1;
 
-            group.getLayers().forEach(function(candidate, idx){
+            group.getLayers().forEach(function(candidate, idx) {
                 if (index === -1 && candidate === layer) {
                     index = idx;
                     // sadly we cannot abort the forEach-iteration here

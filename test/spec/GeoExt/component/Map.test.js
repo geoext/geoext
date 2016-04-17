@@ -2,13 +2,13 @@ Ext.Loader.syncRequire(['GeoExt.component.Map']);
 
 describe('GeoExt.component.Map', function() {
 
-    describe('basics', function(){
-        it('GeoExt.component.Map is defined', function(){
+    describe('basics', function() {
+        it('GeoExt.component.Map is defined', function() {
             expect(GeoExt.component.Map).not.to.be(undefined);
         });
 
-        describe('constructor', function(){
-            it('can be constructed wo/ arguments via Ext.create()', function(){
+        describe('constructor', function() {
+            it('can be constructed wo/ arguments via Ext.create()', function() {
                 var mapComponent = Ext.create('GeoExt.component.Map');
                 expect(mapComponent).to.be.an(GeoExt.component.Map);
             });
@@ -16,20 +16,20 @@ describe('GeoExt.component.Map', function() {
     });
 
     describe('public functions', function() {
-        var div,
-            mapComponent,
-            mapPanel,
-            source,
-            layer,
-            olMap;
+        var div;
+        var mapComponent;
+        var mapPanel;
+        var source;
+        var layer;
+        var olMap;
 
-        beforeEach(function(){
+        beforeEach(function() {
             div = document.createElement('div');
-            div.style.position = "absolute";
-            div.style.top = "0";
-            div.style.left = "-1000px";
-            div.style.width = "512px";
-            div.style.height = "256px";
+            div.style.position = 'absolute';
+            div.style.top = '0';
+            div.style.left = '-1000px';
+            div.style.width = '512px';
+            div.style.height = '256px';
             document.body.appendChild(div);
 
             source = new ol.source.MapQuest({layer: 'sat'});
@@ -57,14 +57,14 @@ describe('GeoExt.component.Map', function() {
             });
         });
 
-        afterEach(function(){
+        afterEach(function() {
             mapPanel.destroy();
             document.body.removeChild(div);
         });
-        describe('getters and setters', function(){
+        describe('getters and setters', function() {
 
-            it('mapComponent.getCenter() returns an array with 2 numbers',
-                function(){
+            it('getCenter() returns an array with 2 numbers',
+                function() {
                     expect(mapComponent.getCenter()).to.be.an(Array);
                     expect(mapComponent.getCenter()).to.have.length(2);
                     expect(mapComponent.getCenter()[0]).to.be.a('number');
@@ -72,8 +72,8 @@ describe('GeoExt.component.Map', function() {
                 }
             );
 
-            it('mapComponent.getExtent() returns an array with 4 numbers',
-                function(){
+            it('getExtent() returns an array with 4 numbers',
+                function() {
                     expect(mapComponent.getExtent()).to.be.an(Array);
                     expect(mapComponent.getExtent()).to.have.length(4);
                     expect(mapComponent.getExtent()[0]).to.be.a('number');
@@ -83,33 +83,33 @@ describe('GeoExt.component.Map', function() {
                 }
             );
 
-            it('mapComponent.getLayers() returns an ol.Collection containing' +
+            it('getLayers() returns an ol.Collection containing' +
                 ' instances of ol.layers.Base',
-                function(){
+                function() {
                     var layers = mapComponent.getLayers();
                     expect(layers).to.be.an(ol.Collection);
-                    layers.forEach(function(l){
+                    layers.forEach(function(l) {
                         expect(l).to.be.an(ol.layer.Base);
                     });
                 }
             );
 
-            it('mapComponent.getView() returns an ol.View instance', function(){
+            it('getView() returns an ol.View instance', function() {
                 expect(mapComponent.getView()).to.be.an(ol.View);
             });
 
-            it('mapComponent.setCenter() sets the correct center', function(){
+            it('setCenter() sets the correct center', function() {
                 var center = [1183893.8882437304, 7914041.721258021];
                 mapComponent.setCenter(center);
                 expect(olMap.getView().getCenter()).to.be(center);
             });
 
-            it('mapComponent.setExtent() sets the correct center', function(){
+            it('setExtent() sets the correct center', function() {
                 for (var i = 0; i < 10; i++) {
-                    var x1 = Math.random() * 100,
-                        x2 = Math.random() * 100,
-                        y1 = x1 + Math.random() * 100,
-                        y2 = x2 + Math.random() * 100;
+                    var x1 = Math.random() * 100;
+                    var x2 = Math.random() * 100;
+                    var y1 = x1 + Math.random() * 100;
+                    var y2 = x2 + Math.random() * 100;
                     var extent = [x1, x2, y1, y2];
                     var expectedCenter = [
                         (extent[2] - (extent[2] - extent[0]) / 2).toFixed(3),
@@ -128,8 +128,8 @@ describe('GeoExt.component.Map', function() {
                 }
             });
 
-            it('mapComponent.setView() sets the correct ol.View to the ol.Map',
-                function(){
+            it('setView() sets the correct ol.View to the ol.Map',
+                function() {
                     var view = new ol.View({
                         center: [0.8, 15],
                         zoom: 4
@@ -140,9 +140,9 @@ describe('GeoExt.component.Map', function() {
             );
         });
 
-        describe('layer handling', function(){
-            it('mapComponent.addLayer() adds an ol.layer.Base to the ol.Map',
-                function(){
+        describe('layer handling', function() {
+            it('addLayer() adds an ol.layer.Base to the ol.Map',
+                function() {
                     var source2 = new ol.source.MapQuest({layer: 'osm'});
                     var layer2 = new ol.layer.Tile({
                         source: source2
@@ -152,7 +152,7 @@ describe('GeoExt.component.Map', function() {
                 }
             );
 
-            it('removeLayer() removes an ol.layer.Base', function(){
+            it('removeLayer() removes an ol.layer.Base', function() {
                 expect(olMap.getLayers().getArray()).to.contain(layer);
                 mapComponent.removeLayer(layer);
                 expect(olMap.getLayers().getArray()).to.not.contain(layer);

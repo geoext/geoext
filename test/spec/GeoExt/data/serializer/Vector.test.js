@@ -2,20 +2,20 @@ Ext.Loader.syncRequire(['GeoExt.data.serializer.Vector']);
 
 describe('GeoExt.data.serializer.Vector', function() {
 
-    describe('basics', function(){
+    describe('basics', function() {
 
-        it('is defined', function(){
+        it('is defined', function() {
             expect(GeoExt.data.serializer.Vector).not.to.be(undefined);
         });
 
     });
 
-    describe('static methods and properties', function(){
+    describe('static methods and properties', function() {
 
         describe('#GEOMETRY_TYPE_TO_PRINTSTYLE_TYPE', function() {
 
             it('assigns a valid printstyle-type for 6 geometry types',
-                function(){
+                function() {
                     var olGeomTypes = [
                         'Point', 'LineString', 'Polygon',
                         'MultiPoint', 'MultiLineString', 'MultiPolygon'
@@ -25,7 +25,7 @@ describe('GeoExt.data.serializer.Vector', function() {
                             cls.Vector.PRINTSTYLE_TYPES
                         );
                     var lookUp = cls.Vector.GEOMETRY_TYPE_TO_PRINTSTYLE_TYPE;
-                    Ext.each(olGeomTypes, function(olGeomType){
+                    Ext.each(olGeomTypes, function(olGeomType) {
                         var printstyle = lookUp[olGeomType];
                         expect(printstyle).to.not.be(undefined);
                         var contained = Ext.Array.contains(
@@ -38,39 +38,39 @@ describe('GeoExt.data.serializer.Vector', function() {
 
         });
 
-        describe('#getUid', function(){
+        describe('#getUid', function() {
 
             it('throws when called on a non-object', function() {
-                expect(function(){
+                expect(function() {
                     GeoExt.data.serializer.Vector.getUid(null);
                 }).to.throwException();
-                expect(function(){
+                expect(function() {
                     GeoExt.data.serializer.Vector.getUid(undefined);
                 }).to.throwException();
-                expect(function(){
+                expect(function() {
                     GeoExt.data.serializer.Vector.getUid(-1);
                 }).to.throwException();
-                expect(function(){
+                expect(function() {
                     GeoExt.data.serializer.Vector.getUid(12.345);
                 }).to.throwException();
-                expect(function(){
+                expect(function() {
                     GeoExt.data.serializer.Vector.getUid('Humpty');
                 }).to.throwException();
-                expect(function(){
+                expect(function() {
                     GeoExt.data.serializer.Vector.getUid(/abc/);
                 }).to.throwException();
-                expect(function(){
+                expect(function() {
                     GeoExt.data.serializer.Vector.getUid([]);
                 }).to.throwException();
-                expect(function(){
-                    GeoExt.data.serializer.Vector.getUid(function(){});
+                expect(function() {
+                    GeoExt.data.serializer.Vector.getUid(function() {});
                 }).to.throwException();
-                expect(function(){
+                expect(function() {
                     GeoExt.data.serializer.Vector.getUid(true);
                 }).to.throwException();
             });
 
-            it('assigns once, reads out for subsequent calls', function(){
+            it('assigns once, reads out for subsequent calls', function() {
                 var obj = {};
                 var got = GeoExt.data.serializer.Vector.getUid(obj);
                 expect(got).to.not.be(undefined);
@@ -80,7 +80,7 @@ describe('GeoExt.data.serializer.Vector', function() {
                 expect(got).to.be(got3);
             });
 
-            it('assigns a new property to the passed object', function(){
+            it('assigns a new property to the passed object', function() {
                 var obj = {};
                 GeoExt.data.serializer.Vector.getUid(obj);
                 var key = GeoExt.data.serializer.Vector.GX_UID_PROPERTY;
@@ -102,7 +102,7 @@ describe('GeoExt.data.serializer.Vector', function() {
         var style3 = null;
         var style4 = null;
 
-        beforeEach(function(){
+        beforeEach(function() {
             var feature0 = new ol.Feature({
                 geometry: new ol.geom.Point([0, 0]),
                 foo: '0'
@@ -220,28 +220,28 @@ describe('GeoExt.data.serializer.Vector', function() {
             });
         });
 
-        afterEach(function(){
+        afterEach(function() {
             source = null;
             layer = null;
             style0 = style1 = style2 = style3 = style4 = null;
         });
 
-        it('doesn\'t throw on expected source', function(){
-            expect(function(){
+        it('doesn\'t throw on expected source', function() {
+            expect(function() {
                 GeoExt.data.serializer.Vector.serialize(
                     layer, source, viewResolution
                 );
             }).to.not.throwException();
         });
 
-        it('correctly throws on unexpected source', function(){
+        it('correctly throws on unexpected source', function() {
             var wrongSource = new ol.source.ImageWMS({
                 url: 'http://demo.boundlessgeo.com/geoserver/wms',
                 params: {'LAYERS': 'ne:ne'},
                 serverType: 'geoserver',
                 crossOrigin: ''
             });
-            expect(function(){
+            expect(function() {
                 GeoExt.data.serializer.Vector.serialize(
                     layer, wrongSource, viewResolution
                 );
@@ -252,7 +252,7 @@ describe('GeoExt.data.serializer.Vector', function() {
         // that is used in camptocamp/ngeo
         // see e.g. https://github.com/camptocamp/ngeo/blob/master/test/
         // spec/services/print.spec.js
-        it('serializes as expected', function(){
+        it('serializes as expected', function() {
             var vecSerializer = GeoExt.data.serializer.Vector;
 
             var styleId0 = vecSerializer.getUid(style0);
@@ -317,26 +317,26 @@ describe('GeoExt.data.serializer.Vector', function() {
 
             // the expected properties of feature0
             var properties0 = {
-                foo: '0',
+                'foo': '0',
                 '_gx3_style_0': styleId0
             };
 
             // the expected properties of feature1
             var properties1 = {
-                foo: '1',
+                'foo': '1',
                 '_gx3_style_0': styleId0,
                 '_gx3_style_1': styleId1
             };
 
             // the expected properties of feature2
             var properties2 = {
-                foo: '2',
+                'foo': '2',
                 '_gx3_style_0': styleId2
             };
 
             // the expected properties of feature3
             var properties3 = {
-                foo: '3',
+                'foo': '3',
                 '_gx3_style_0': styleId3,
                 '_gx3_style_1': styleId4
             };
@@ -387,7 +387,7 @@ describe('GeoExt.data.serializer.Vector', function() {
         });
 
         it('serializes an empty source with the fallback serialization',
-            function(){
+            function() {
                 layer = new ol.layer.Vector({
                     source: new ol.source.Vector()
                 });
@@ -400,7 +400,7 @@ describe('GeoExt.data.serializer.Vector', function() {
             }
         );
 
-        it('skips features without geometry', function(){
+        it('skips features without geometry', function() {
             layer = new ol.layer.Vector({
                 source: new ol.source.Vector({
                     features: [
@@ -435,12 +435,12 @@ describe('GeoExt.data.serializer.Vector', function() {
             });
             var styleUid = GeoExt.data.serializer.Vector.getUid(style);
             feat.setStyle(function() {
-                return [ style ];
+                return [style];
             });
 
             layer = new ol.layer.Vector({
                 source: new ol.source.Vector({
-                    features: [ feat ]
+                    features: [feat]
                 })
             });
 
@@ -448,15 +448,15 @@ describe('GeoExt.data.serializer.Vector', function() {
                 layer, layer.getSource(), viewResolution
             );
 
-            var cql = "[_gx3_style_0 = '" + styleUid + "']";
+            var cql = '[_gx3_style_0 = \'' + styleUid + '\']';
             var symbolizer = serialized.style[cql].symbolizers[0];
 
             expect(symbolizer).to.eql({
                 pointRadius: 84,
-                strokeColor: "#ff0000",
+                strokeColor: '#ff0000',
                 strokeOpacity: 0.5,
                 strokeWidth: 42,
-                type: "point"
+                type: 'point'
             });
         });
 

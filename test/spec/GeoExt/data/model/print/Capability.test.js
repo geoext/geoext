@@ -1,8 +1,8 @@
-describe("A GeoExt.data.model.print.Capability model", function() {
+describe('A GeoExt.data.model.print.Capability model', function() {
 
-    var dataBasePath = (typeof __karma__ === "undefined" ? "" : "base/test/"),
-        url = dataBasePath + "data/PrintCapabilities.json",
-        data;
+    var dataBasePath = (typeof __karma__ === 'undefined' ? '' : 'base/test/');
+    var url = dataBasePath + 'data/PrintCapabilities.json';
+    var data;
 
     function createFromRawData(props) {
         return Ext.create('GeoExt.data.model.print.Capability', props);
@@ -14,14 +14,14 @@ describe("A GeoExt.data.model.print.Capability model", function() {
     }
 
     before(function(done) {
-        Ext.syncRequire("GeoExt.data.model.print.Capability");
+        Ext.syncRequire('GeoExt.data.model.print.Capability');
         Ext.Ajax.request({
             url: url,
             success: function(response) {
                 data = Ext.decode(response.responseText);
             },
             failure: function(response) {
-                Ext.raise("Could not retrieve test data. Code "
+                Ext.raise('Could not retrieve test data. Code '
                     + response.status);
             },
             callback: function() {
@@ -72,7 +72,7 @@ describe("A GeoExt.data.model.print.Capability model", function() {
         });
     });
 
-    describe("can be initialized with static #loadRawData", function() {
+    describe('can be initialized with static #loadRawData', function() {
         var record;
 
         it('from no properties at all', function() {
@@ -91,7 +91,7 @@ describe("A GeoExt.data.model.print.Capability model", function() {
         });
     });
 
-    describe("can be initialized with static #loadRawData", function() {
+    describe('can be initialized with static #loadRawData', function() {
         var record;
 
         it('from a property map', function() {
@@ -109,8 +109,10 @@ describe("A GeoExt.data.model.print.Capability model", function() {
         });
 
         it('and allows access to deeply nested assosciations data', function() {
-            var layouts = record.layouts(),
-                layout, attributes, attribute;
+            var layouts = record.layouts();
+            var layout;
+            var attributes;
+            var attribute;
 
             expect(layouts.getAt(0))
                 .to.be.a(GeoExt.data.model.print.Layout);
@@ -125,7 +127,7 @@ describe("A GeoExt.data.model.print.Capability model", function() {
         });
     });
 
-    describe("can be loaded from a remote ressource", function() {
+    describe('can be loaded from a remote ressource', function() {
         var record;
 
         it('configuring the proxy on the Capability model', function(done) {
@@ -148,8 +150,10 @@ describe("A GeoExt.data.model.print.Capability model", function() {
         });
 
         it('and allows access to deeply nested assosciations data', function() {
-            var layouts = record.layouts(),
-                layout, attributes, attribute;
+            var layouts = record.layouts();
+            var layout;
+            var attributes;
+            var attribute;
 
             expect(layouts.getAt(0))
                 .to.be.a(GeoExt.data.model.print.Layout);

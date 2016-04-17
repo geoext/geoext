@@ -103,15 +103,17 @@ Ext.define('GeoExt.data.model.LayerTreeNode', {
      */
     set: function(key, newValue) {
         var me = this;
+        var classicMode = (me.get('__toggleMode') === 'classic');
+
         me.callParent(arguments);
 
         // forward changes to ol object
         if (key === 'checked') {
             me.__updating = true;
-            if(me.get('isLayerGroup') && me.get('__toggleMode') === 'classic'){
+            if (me.get('isLayerGroup') && classicMode) {
                 me.getOlLayer().set('visible', newValue);
-                if(me.childNodes){
-                    me.eachChild(function(child){
+                if (me.childNodes) {
+                    me.eachChild(function(child) {
                         child.getOlLayer().set('visible', newValue);
                     });
                 }
@@ -120,7 +122,7 @@ Ext.define('GeoExt.data.model.LayerTreeNode', {
             }
             me.__updating = false;
 
-            if(me.get('__toggleMode') === 'classic'){
+            if (classicMode) {
                 me.toggleParentNodes(newValue);
             }
         }
@@ -134,13 +136,13 @@ Ext.define('GeoExt.data.model.LayerTreeNode', {
      * @param {Boolean} newValue The newValue to pass through to the parent.
      * @private
      */
-    toggleParentNodes: function(newValue){
+    toggleParentNodes: function(newValue) {
         var me = this;
         // Checks parent Nodes if node is checked.
-        if(newValue === true){
+        if (newValue === true) {
             me.__updating = true;
-            me.bubble(function(parent){
-                if(!parent.isRoot()){
+            me.bubble(function(parent) {
+                if (!parent.isRoot()) {
                     parent.set('__toggleMode', 'ol3'); // prevents recursion
                     parent.set('checked', true);
                     parent.set('__toggleMode', 'classic');
@@ -151,17 +153,17 @@ Ext.define('GeoExt.data.model.LayerTreeNode', {
 
         // Unchecks parent Nodes if the node is unchecked and no sibling is
         // checked.
-        if(newValue === false){
+        if (newValue === false) {
             me.__updating = true;
-            me.bubble(function(parent){
-                if(!parent.isRoot()){
+            me.bubble(function(parent) {
+                if (!parent.isRoot()) {
                     var allUnchecked = true;
-                    parent.eachChild(function(child){
-                        if(child.get('checked')){
+                    parent.eachChild(function(child) {
+                        if (child.get('checked')) {
                             allUnchecked = false;
                         }
                     });
-                    if (allUnchecked){
+                    if (allUnchecked) {
                         parent.set('__toggleMode', 'ol3'); // prevents recursion
                         parent.set('checked', false);
                         parent.set('__toggleMode', 'classic');
@@ -186,7 +188,7 @@ Ext.define('GeoExt.data.model.LayerTreeNode', {
         return this.parentNode;
     }
 
-}, function () {
+}, function() {
     // make this an Ext.data.TreeModel
     Ext.data.NodeInterface.decorate(this);
 });
