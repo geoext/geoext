@@ -2,9 +2,9 @@ Ext.require([
     'GeoExt.component.Map'
 ]);
 
-var olMap,
-    mapComp,
-    popup;
+var olMap;
+var mapComp;
+var popup;
 
 Ext.application({
     name: 'Popup',
@@ -26,7 +26,7 @@ Ext.application({
                 })
             ],
             view: new ol.View({
-                center: ol.proj.fromLonLat( [-122.416667, 37.783333] ),
+                center: ol.proj.fromLonLat([-122.416667, 37.783333]),
                 zoom: 12
             })
         });
@@ -47,9 +47,10 @@ Ext.application({
 
         // Add a pointerrest handler to the map component to render the popup.
         mapComp.on('pointerrest', function(evt) {
-            var coordinate = evt.coordinate,
-                hdms = ol.coordinate.toStringHDMS(ol.proj.transform(
-                        coordinate, 'EPSG:3857', 'EPSG:4326'));
+            var coordinate = evt.coordinate;
+            var hdms = ol.coordinate.toStringHDMS(ol.proj.transform(
+                coordinate, 'EPSG:3857', 'EPSG:4326')
+            );
             // Insert a linebreak after either N or S in hdms
             hdms = hdms.replace(/([NS])/, '$1<br>');
 
@@ -73,7 +74,7 @@ Ext.application({
         });
 
         Ext.create('Ext.Viewport', {
-            layout: "border",
+            layout: 'border',
             items: [
                 mapComp,
                 description

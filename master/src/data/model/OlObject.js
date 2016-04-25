@@ -43,8 +43,8 @@ Ext.define('GeoExt.data.model.OlObject', {
          * @static
          */
         getOlCLassRef: function(str) {
-            var ref = ol,
-                members;
+            var ref = ol;
+            var members;
 
             if (Ext.isString(str)) {
                 members = str.split('.');
@@ -85,9 +85,9 @@ Ext.define('GeoExt.data.model.OlObject', {
      * @inheritdoc
      */
     constructor: function(data) {
-        var me = this,
-            statics = this.statics(),
-            OlClass = statics.getOlCLassRef(this.olClass);
+        var me = this;
+        var statics = this.statics();
+        var OlClass = statics.getOlCLassRef(this.olClass);
 
         data = data || {};
 
@@ -112,8 +112,8 @@ Ext.define('GeoExt.data.model.OlObject', {
      * @private
      */
     onPropertychange: function(evt) {
-        var target = evt.target,
-            key = evt.key;
+        var target = evt.target;
+        var key = evt.key;
 
         if (!this.__updating) {
             this.set(key, target.get(key));

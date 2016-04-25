@@ -83,7 +83,7 @@ Ext.define('GeoExt.mixin.SymbolCheck', {
          */
         check: function(cls) {
             // <debug>
-            var staticMe = this;
+            var me = this;
             var proto = cls.prototype;
             var olSymbols = proto && proto.symbols;
             var clsName = proto && proto['$className'];
@@ -91,8 +91,8 @@ Ext.define('GeoExt.mixin.SymbolCheck', {
                 return;
             }
             Ext.each(olSymbols, function(olSymbol) {
-                olSymbol = staticMe.normalizeSymbol(olSymbol);
-                staticMe.checkSymbol(olSymbol, clsName);
+                olSymbol = me.normalizeSymbol(olSymbol);
+                me.checkSymbol(olSymbol, clsName);
             });
             // </debug>
         },
@@ -118,7 +118,7 @@ Ext.define('GeoExt.mixin.SymbolCheck', {
             var hashRegEx = /#/;
             var colonRegEx = /::/;
             // </debug>
-            var normalizeFunction = function(symbolStr){
+            var normalizeFunction = function(symbolStr) {
                 // <debug>
                 if (hashRegEx.test(symbolStr)) {
                     symbolStr = symbolStr.replace(hashRegEx, '.prototype.');
@@ -141,7 +141,7 @@ Ext.define('GeoExt.mixin.SymbolCheck', {
          *     requires the passed openlayers symbol.
          * @private
          */
-        checkSymbol: function(symbolStr, clsName){
+        checkSymbol: function(symbolStr, clsName) {
             // <debug>
             var isDefined = this.isDefinedSymbol(symbolStr);
             if (!isDefined) {
@@ -162,7 +162,7 @@ Ext.define('GeoExt.mixin.SymbolCheck', {
          * @return {Boolean} Whether the symbol is defined or not.
          * @private
          */
-        isDefinedSymbol: function(symbolStr){
+        isDefinedSymbol: function(symbolStr) {
             // <debug>
             var checkedCache = this._checked;
             if (Ext.isDefined(checkedCache[symbolStr])) {
@@ -173,12 +173,12 @@ Ext.define('GeoExt.mixin.SymbolCheck', {
             var curSymbol = Ext.getWin().dom;
             var isDefined = false;
             var intermediateSymb = '';
-            Ext.each(parts, function(part, idx){
+            Ext.each(parts, function(part, idx) {
                 if (intermediateSymb !== '') {
                     intermediateSymb += '.';
                 }
                 intermediateSymb += part;
-                if(curSymbol[part]) {
+                if (curSymbol[part]) {
                     checkedCache[intermediateSymb] = true;
                     curSymbol = curSymbol[part];
                     if (lastIdx === idx) {

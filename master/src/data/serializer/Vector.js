@@ -102,24 +102,24 @@ Ext.define('GeoExt.data.serializer.Vector', {
          */
         FALLBACK_SERIALIZATION: {
             geoJson: {
-                type: "FeatureCollection",
+                type: 'FeatureCollection',
                 features: []
             },
             opacity: 1,
             style: {
-                version: "2",
-                "*": {
+                'version': '2',
+                '*': {
                     symbolizers: [{
-                        type: "point",
-                        strokeColor: "white",
+                        type: 'point',
+                        strokeColor: 'white',
                         strokeOpacity: 1,
                         strokeWidth: 4,
-                        strokeDashstyle: "solid",
-                        fillColor: "red"
+                        strokeDashstyle: 'solid',
+                        fillColor: 'red'
                     }]
                 }
             },
-            type: "geojson"
+            type: 'geojson'
         },
 
         /**
@@ -182,10 +182,10 @@ Ext.define('GeoExt.data.serializer.Vector', {
          * @inheritdoc
          */
         serialize: function(layer, source, viewRes) {
-            var staticMe = this;
-            staticMe.validateSource(source);
+            var me = this;
+            me.validateSource(source);
             var features = source.getFeatures();
-            var format = staticMe.format;
+            var format = me.format;
             var geoJsonFeatures = [];
             var mapfishStyleObject = {
                 version: 2
@@ -215,10 +215,10 @@ Ext.define('GeoExt.data.serializer.Vector', {
                     if (Ext.isEmpty(geojsonFeature.properties)) {
                         geojsonFeature.properties = {};
                     }
-                    Ext.each(styles, function(style, j){
-                        var styleId = staticMe.getUid(style);
-                        var featureStyleProp = staticMe.FEAT_STYLE_PREFIX + j;
-                        staticMe.encodeVectorStyle(
+                    Ext.each(styles, function(style, j) {
+                        var styleId = me.getUid(style);
+                        var featureStyleProp = me.FEAT_STYLE_PREFIX + j;
+                        me.encodeVectorStyle(
                             mapfishStyleObject,
                             geometryType,
                             style,
@@ -327,7 +327,8 @@ Ext.define('GeoExt.data.serializer.Vector', {
          * @param {ol.style.Stroke} strokeStyle Stroke style. May be null.
          * @private
          */
-        encodeVectorStylePolygon: function(symbolizers, fillStyle, strokeStyle){
+        encodeVectorStylePolygon: function(symbolizers, fillStyle,
+              strokeStyle) {
             var symbolizer = {
                 type: 'polygon'
             };
@@ -346,7 +347,7 @@ Ext.define('GeoExt.data.serializer.Vector', {
          * @param {ol.style.Stroke} strokeStyle Stroke style.
          * @private
          */
-        encodeVectorStyleLine: function(symbolizers, strokeStyle){
+        encodeVectorStyleLine: function(symbolizers, strokeStyle) {
             var symbolizer = {
                 type: 'line'
             };
@@ -362,7 +363,7 @@ Ext.define('GeoExt.data.serializer.Vector', {
          * @param {ol.style.Image} imageStyle Image style.
          * @private
          */
-        encodeVectorStylePoint: function(symbolizers, imageStyle){
+        encodeVectorStylePoint: function(symbolizers, imageStyle) {
             var symbolizer;
             if (imageStyle instanceof ol.style.Circle) {
                 symbolizer = {
@@ -491,7 +492,7 @@ Ext.define('GeoExt.data.serializer.Vector', {
          * @param {ol.style.Stroke} strokeStyle Stroke style.
          * @private
          */
-        encodeVectorStyleStroke: function(symbolizer, strokeStyle){
+        encodeVectorStyleStroke: function(symbolizer, strokeStyle) {
             var strokeColor = strokeStyle.getColor();
             if (strokeColor !== null) {
                 var strokeColorRgba = ol.color.asArray(strokeColor);
@@ -514,7 +515,7 @@ Ext.define('GeoExt.data.serializer.Vector', {
          *     digit, otherwise the same value that was passed in.
          * @private
          */
-        padHexValue: function(hex){
+        padHexValue: function(hex) {
             return hex.length === 1 ? '0' + hex : hex;
         },
 
@@ -528,7 +529,7 @@ Ext.define('GeoExt.data.serializer.Vector', {
          * @return {String} The passed color in hex representation.
          * @private
          */
-        rgbToHex: function(r, g, b){
+        rgbToHex: function(r, g, b) {
             r = Number(r);
             g = Number(g);
             b = Number(b);
@@ -553,7 +554,7 @@ Ext.define('GeoExt.data.serializer.Vector', {
          * @return {String} The passed color in hex representation.
          * @private
          */
-        rgbArrayToHex: function(rgbArr){
+        rgbArrayToHex: function(rgbArr) {
             return this.rgbToHex(rgbArr[0], rgbArr[1], rgbArr[2]);
         },
 

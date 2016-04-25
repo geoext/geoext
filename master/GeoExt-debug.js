@@ -79,7 +79,7 @@ Ext.define('GeoExt.mixin.SymbolCheck', {
          *     that this method will check.
          */
         check: function(cls) {
-            var staticMe = this;
+            var me = this;
             var proto = cls.prototype;
             var olSymbols = proto && proto.symbols;
             var clsName = proto && proto['$className'];
@@ -87,8 +87,8 @@ Ext.define('GeoExt.mixin.SymbolCheck', {
                 return;
             }
             Ext.each(olSymbols, function(olSymbol) {
-                olSymbol = staticMe.normalizeSymbol(olSymbol);
-                staticMe.checkSymbol(olSymbol, clsName);
+                olSymbol = me.normalizeSymbol(olSymbol);
+                me.checkSymbol(olSymbol, clsName);
             });
         },
         /**
@@ -295,7 +295,7 @@ Ext.define('GeoExt.component.FeatureRenderer', {
          *
          * @cfg {String}
          */
-        imgCls: "",
+        imgCls: '',
         /**
          * The minimum width.
          *
@@ -358,7 +358,7 @@ Ext.define('GeoExt.component.FeatureRenderer', {
          *
          * @cfg {String}
          */
-        symbolType: "Polygon"
+        symbolType: 'Polygon'
     },
     /**
      * Initialize the GeoExt.component.FeatureRenderer.
@@ -367,9 +367,9 @@ Ext.define('GeoExt.component.FeatureRenderer', {
         var me = this;
         var id = this.getId();
         this.autoEl = {
-            tag: "div",
-            "class": this.getImgCls(),
-            id: id
+            'id': id,
+            'tag': 'div',
+            'class': this.getImgCls()
         };
         if (!this.getLineFeature()) {
             this.setLineFeature(new ol.Feature({
@@ -491,7 +491,7 @@ Ext.define('GeoExt.component.FeatureRenderer', {
      */
     initCustomEvents: function() {
         this.clearCustomEvents();
-        this.el.on("click", this.onClick, this);
+        this.el.on('click', this.onClick, this);
     },
     /**
      * Unbinds previously bound listeners on #el.
@@ -509,7 +509,7 @@ Ext.define('GeoExt.component.FeatureRenderer', {
      * @private
      */
     onClick: function() {
-        this.fireEvent("click", this);
+        this.fireEvent('click', this);
     },
     /**
      * Private method called during the destroy sequence.
@@ -683,10 +683,10 @@ Ext.define('GeoExt.data.model.Base', {
          * @return {GeoExt.data.model.Base} The record.
          */
         loadRawData: function(data) {
-            var me = this,
-                result = me.getProxy().getReader().readRecords(data || {}),
-                records = result.getRecords(),
-                success = result.getSuccess();
+            var me = this;
+            var result = me.getProxy().getReader().readRecords(data || {});
+            var records = result.getRecords();
+            var success = result.getSuccess();
             if (success && records.length) {
                 return records[0];
             }
@@ -946,18 +946,18 @@ Ext.define('GeoExt.data.store.Layers', {
             mapLayers.on('remove', me.onRemoveLayer, me);
         }
         me.on({
-            "load": me.onLoad,
-            "clear": me.onClear,
-            "add": me.onAdd,
-            "remove": me.onRemove,
-            "update": me.onStoreUpdate,
-            scope: me
+            'load': me.onLoad,
+            'clear': me.onClear,
+            'add': me.onAdd,
+            'remove': me.onRemove,
+            'update': me.onStoreUpdate,
+            'scope': me
         });
         me.data.on({
-            "replace": me.onReplace,
-            scope: me
+            'replace': me.onReplace,
+            'scope': me
         });
-        me.fireEvent("bind", me, map);
+        me.fireEvent('bind', me, map);
     },
     /**
      * Unbind this store from the map it is currently bound.
@@ -968,12 +968,12 @@ Ext.define('GeoExt.data.store.Layers', {
             me.map.getLayers().un('add', me.onAddLayer, me);
             me.map.getLayers().un('remove', me.onRemoveLayer, me);
         }
-        me.un("load", me.onLoad, me);
-        me.un("clear", me.onClear, me);
-        me.un("add", me.onAdd, me);
-        me.un("remove", me.onRemove, me);
-        me.un("update", me.onStoreUpdate, me);
-        me.data.un("replace", me.onReplace, me);
+        me.un('load', me.onLoad, me);
+        me.un('clear', me.onClear, me);
+        me.un('add', me.onAdd, me);
+        me.un('remove', me.onRemove, me);
+        me.un('update', me.onStoreUpdate, me);
+        me.data.un('replace', me.onReplace, me);
         me.map = null;
     },
     /**
@@ -990,10 +990,10 @@ Ext.define('GeoExt.data.store.Layers', {
             });
         if (recordIndex > -1) {
             var record = this.getAt(recordIndex);
-            if (evt.key === "title") {
-                record.set("title", layer.get('title'));
+            if (evt.key === 'title') {
+                record.set('title', layer.get('title'));
             } else {
-                this.fireEvent("update", this, record, Ext.data.Record.EDIT);
+                this.fireEvent('update', this, record, Ext.data.Record.EDIT);
             }
         }
     },
@@ -1024,8 +1024,8 @@ Ext.define('GeoExt.data.store.Layers', {
     onRemoveLayer: function(evt) {
         var me = this;
         if (!me._removing) {
-            var layer = evt.element,
-                rec = me.getByLayer(layer);
+            var layer = evt.element;
+            var rec = me.getByLayer(layer);
             if (rec) {
                 me._removing = true;
                 layer.un('propertychange', me.onChangeLayer, me);
@@ -1128,7 +1128,8 @@ Ext.define('GeoExt.data.store.Layers', {
         var record;
         var layer;
         var found;
-        var i, ii;
+        var i;
+        var ii;
         if (!me._removing) {
             var compareFunc = function(el) {
                     if (el === layer) {
@@ -1161,7 +1162,7 @@ Ext.define('GeoExt.data.store.Layers', {
         if (operation === Ext.data.Record.EDIT) {
             if (record.modified && record.modified.title) {
                 var layer = record.getOlLayer();
-                var title = record.get("title");
+                var title = record.get('title');
                 if (title !== layer.get('title')) {
                     layer.set('title', title);
                 }
@@ -1238,9 +1239,9 @@ Ext.define('GeoExt.data.store.Layers', {
      * showthread.php?253596-beforeload-is-not-fired-by-loadRawData).
      */
     loadRawData: function(data, append) {
-        var me = this,
-            result = me.proxy.reader.read(data),
-            records = result.records;
+        var me = this;
+        var result = me.proxy.reader.read(data);
+        var records = result.records;
         if (result.success) {
             me.totalCount = result.total;
             me.loadRecords(records, append ? me.addRecordsOptions : undefined);
@@ -1293,11 +1294,11 @@ Ext.define('GeoExt.data.store.Layers', {
  *
  * @class GeoExt.component.Map
  */
-Ext.define("GeoExt.component.Map", {
-    extend: "Ext.Component",
+Ext.define('GeoExt.component.Map', {
+    extend: 'Ext.Component',
     alias: [
-        "widget.gx_map",
-        "widget.gx_component_map"
+        'widget.gx_map',
+        'widget.gx_component_map'
     ],
     requires: [
         'GeoExt.data.store.Layers'
@@ -1433,7 +1434,7 @@ Ext.define("GeoExt.component.Map", {
             me.setMap(olMap);
         }
         me.layerStore = Ext.create('GeoExt.data.store.Layers', {
-            storeId: me.getId() + "-store",
+            storeId: me.getId() + '-store',
             map: me.getMap()
         });
         me.on('resize', me.onResize, me);
@@ -1744,7 +1745,7 @@ Ext.define("GeoExt.component.Map", {
  *
  * @class GeoExt.component.OverviewMap
  */
-Ext.define("GeoExt.component.OverviewMap", {
+Ext.define('GeoExt.component.OverviewMap', {
     extend: 'Ext.Component',
     alias: [
         'widget.gx_overview',
@@ -1968,9 +1969,9 @@ Ext.define("GeoExt.component.OverviewMap", {
      * @private
      */
     initOverviewMap: function() {
-        var me = this,
-            parentMap = me.getParentMap(),
-            parentLayers;
+        var me = this;
+        var parentMap = me.getParentMap();
+        var parentLayers;
         if (me.getLayers().length < 1) {
             parentLayers = me.getParentMap().getLayers();
             parentLayers.forEach(function(layer) {
@@ -2049,12 +2050,12 @@ Ext.define("GeoExt.component.OverviewMap", {
      * Updates the Geometry of the extentLayer.
      */
     updateBox: function() {
-        var me = this,
-            parentMapView = me.getParentMap().getView(),
-            parentExtent = parentMapView.calculateExtent(me.getParentMap().getSize()),
-            parentRotation = parentMapView.getRotation(),
-            parentCenter = parentMapView.getCenter(),
-            geom = ol.geom.Polygon.fromExtent(parentExtent);
+        var me = this;
+        var parentMapView = me.getParentMap().getView();
+        var parentExtent = parentMapView.calculateExtent(me.getParentMap().getSize());
+        var parentRotation = parentMapView.getRotation();
+        var parentCenter = parentMapView.getCenter();
+        var geom = ol.geom.Polygon.fromExtent(parentExtent);
         geom = me.self.rotateGeomAroundCoord(geom, parentCenter, parentRotation);
         me.boxFeature.setGeometry(geom);
         var anchor = new ol.geom.Point(ol.extent.getTopLeft(parentExtent));
@@ -2068,9 +2069,9 @@ Ext.define("GeoExt.component.OverviewMap", {
      *     `'resolution'`
      */
     setOverviewMapProperty: function(key) {
-        var me = this,
-            parentView = me.getParentMap().getView(),
-            overviewView = me.getMap().getView();
+        var me = this;
+        var parentView = me.getParentMap().getView();
+        var overviewView = me.getMap().getView();
         if (key === 'center') {
             overviewView.set('center', parentView.getCenter());
         }
@@ -2087,8 +2088,8 @@ Ext.define("GeoExt.component.OverviewMap", {
      *     set.
      */
     applyRecenterOnClick: function(shallRecenter) {
-        var me = this,
-            map = me.getMap();
+        var me = this;
+        var map = me.getMap();
         if (!map) {
             // TODO or shall we have our own event, once we have a map?
             me.addListener('afterrender', function() {
@@ -2109,10 +2110,10 @@ Ext.define("GeoExt.component.OverviewMap", {
      * Cleanup any listeners we may have bound.
      */
     onBeforeDestroy: function() {
-        var me = this,
-            map = me.getMap(),
-            parentMap = me.getParentMap(),
-            parentView = parentMap && parentMap.getView();
+        var me = this;
+        var map = me.getMap();
+        var parentMap = me.getParentMap();
+        var parentView = parentMap && parentMap.getView();
         if (map) {
             // unbind recenter listener, if any
             map.un('click', me.overviewMapClicked, me);
@@ -2132,9 +2133,9 @@ Ext.define("GeoExt.component.OverviewMap", {
      */
     onResize: function() {
         // Get the corresponding view of the controller (the mapPanel).
-        var me = this,
-            div = me.getEl().dom,
-            map = me.getMap();
+        var me = this;
+        var div = me.getEl().dom;
+        var map = me.getMap();
         if (!me.mapRendered) {
             map.setTarget(div);
             me.mapRendered = true;
@@ -2270,11 +2271,11 @@ Ext.define('GeoExt.component.Popup', {
      * @param {Object} config The configuration object.
      */
     constructor: function(config) {
-        var me = this,
-            cfg = config || {},
-            overlayElement;
+        var me = this;
+        var cfg = config || {};
+        var overlayElement;
         if (!Ext.isDefined(cfg.map)) {
-            Ext.Error.raise("Required configuration 'map' not passed");
+            Ext.Error.raise('Required configuration \'map\' not passed');
         }
         if (Ext.isDefined(cfg.renderTo)) {
             // use the passed element/string
@@ -2626,7 +2627,7 @@ Ext.define('GeoExt.data.MapfishPrintProvider', {
             });
             // break early
             if (!serializer) {
-                Ext.log.warn("Couldn't find a suitable serializer for source." + " Did you require() an appropriate serializer class?");
+                Ext.log.warn('Couldn\'t find a suitable serializer for source.' + ' Did you require() an appropriate serializer class?');
             }
             return serializer;
         },
@@ -2845,8 +2846,8 @@ Ext.define('GeoExt.data.model.OlObject', {
          * @static
          */
         getOlCLassRef: function(str) {
-            var ref = ol,
-                members;
+            var ref = ol;
+            var members;
             if (Ext.isString(str)) {
                 members = str.split('.');
                 // shift if description contains namespace
@@ -2881,9 +2882,9 @@ Ext.define('GeoExt.data.model.OlObject', {
      * @inheritdoc
      */
     constructor: function(data) {
-        var me = this,
-            statics = this.statics(),
-            OlClass = statics.getOlCLassRef(this.olClass);
+        var me = this;
+        var statics = this.statics();
+        var OlClass = statics.getOlCLassRef(this.olClass);
         data = data || {};
         // init ol object if plain data is handed over
         if (!(data instanceof OlClass)) {
@@ -2904,8 +2905,8 @@ Ext.define('GeoExt.data.model.OlObject', {
      * @private
      */
     onPropertychange: function(evt) {
-        var target = evt.target,
-            key = evt.key;
+        var target = evt.target;
+        var key = evt.key;
         if (!this.__updating) {
             this.set(key, target.get(key));
         }
@@ -3076,11 +3077,12 @@ Ext.define('GeoExt.data.model.LayerTreeNode', {
      */
     set: function(key, newValue) {
         var me = this;
+        var classicMode = (me.get('__toggleMode') === 'classic');
         me.callParent(arguments);
         // forward changes to ol object
         if (key === 'checked') {
             me.__updating = true;
-            if (me.get('isLayerGroup') && me.get('__toggleMode') === 'classic') {
+            if (me.get('isLayerGroup') && classicMode) {
                 me.getOlLayer().set('visible', newValue);
                 if (me.childNodes) {
                     me.eachChild(function(child) {
@@ -3091,7 +3093,7 @@ Ext.define('GeoExt.data.model.LayerTreeNode', {
                 me.getOlLayer().set('visible', newValue);
             }
             me.__updating = false;
-            if (me.get('__toggleMode') === 'classic') {
+            if (classicMode) {
                 me.toggleParentNodes(newValue);
             }
         }
@@ -3235,7 +3237,7 @@ Ext.define('GeoExt.data.serializer.Base', {
          */
         validateSource: function(source) {
             if (!(source instanceof this.sourceCls)) {
-                Ext.raise("Cannot serialize this source with this serializer");
+                Ext.raise('Cannot serialize this source with this serializer');
             }
         }
     }
@@ -3290,9 +3292,9 @@ Ext.define('GeoExt.data.serializer.ImageWMS', {
                     ],
                     opacity: layer.getOpacity(),
                     styles: [
-                        ""
+                        ''
                     ],
-                    type: "WMS"
+                    type: 'WMS'
                 };
             return serialized;
         }
@@ -3351,9 +3353,9 @@ Ext.define('GeoExt.data.serializer.TileWMS', {
                     ],
                     opacity: layer.getOpacity(),
                     styles: [
-                        ""
+                        ''
                     ],
-                    type: "WMS"
+                    type: 'WMS'
                 };
             return serialized;
         }
@@ -3462,26 +3464,26 @@ Ext.define('GeoExt.data.serializer.Vector', {
          */
         FALLBACK_SERIALIZATION: {
             geoJson: {
-                type: "FeatureCollection",
+                type: 'FeatureCollection',
                 features: []
             },
             opacity: 1,
             style: {
-                version: "2",
-                "*": {
+                'version': '2',
+                '*': {
                     symbolizers: [
                         {
-                            type: "point",
-                            strokeColor: "white",
+                            type: 'point',
+                            strokeColor: 'white',
                             strokeOpacity: 1,
                             strokeWidth: 4,
-                            strokeDashstyle: "solid",
-                            fillColor: "red"
+                            strokeDashstyle: 'solid',
+                            fillColor: 'red'
                         }
                     ]
                 }
             },
-            type: "geojson"
+            type: 'geojson'
         },
         /**
          * The prefix we will give to the generated styles. Every feature will
@@ -3539,10 +3541,10 @@ Ext.define('GeoExt.data.serializer.Vector', {
          * @inheritdoc
          */
         serialize: function(layer, source, viewRes) {
-            var staticMe = this;
-            staticMe.validateSource(source);
+            var me = this;
+            me.validateSource(source);
             var features = source.getFeatures();
-            var format = staticMe.format;
+            var format = me.format;
             var geoJsonFeatures = [];
             var mapfishStyleObject = {
                     version: 2
@@ -3571,9 +3573,9 @@ Ext.define('GeoExt.data.serializer.Vector', {
                         geojsonFeature.properties = {};
                     }
                     Ext.each(styles, function(style, j) {
-                        var styleId = staticMe.getUid(style);
-                        var featureStyleProp = staticMe.FEAT_STYLE_PREFIX + j;
-                        staticMe.encodeVectorStyle(mapfishStyleObject, geometryType, style, styleId, featureStyleProp);
+                        var styleId = me.getUid(style);
+                        var featureStyleProp = me.FEAT_STYLE_PREFIX + j;
+                        me.encodeVectorStyle(mapfishStyleObject, geometryType, style, styleId, featureStyleProp);
                         geojsonFeature.properties[featureStyleProp] = styleId;
                     });
                 }
@@ -4006,7 +4008,7 @@ Ext.define('GeoExt.data.serializer.WMTS', {
                     opacity: layer.getOpacity(),
                     requestEncoding: source.getRequestEncoding(),
                     style: source.getStyle(),
-                    type: "WMTS",
+                    type: 'WMTS',
                     version: source.getVersion()
                 };
             return serialized;
@@ -4070,10 +4072,10 @@ Ext.define('GeoExt.data.serializer.XYZ', {
          */
         validateSource: function(source) {
             if (!(source instanceof this.sourceCls)) {
-                Ext.raise("Cannot serialize this source with this serializer");
+                Ext.raise('Cannot serialize this source with this serializer');
             }
             if (source.getUrls() === null) {
-                Ext.raise("Cannot serialize this source without an URL. " + "Usage of tileUrlFunction is not yet supported");
+                Ext.raise('Cannot serialize this source without an URL. ' + 'Usage of tileUrlFunction is not yet supported');
             }
         },
         /**
@@ -4088,7 +4090,7 @@ Ext.define('GeoExt.data.serializer.XYZ', {
                     imageExtension: this.getImageExtensionFromSource(source) || 'png',
                     resolutions: tileGrid.getResolutions(),
                     tileSize: ol.size.toSize(tileGrid.getTileSize()),
-                    type: "OSM"
+                    type: 'OSM'
                 };
             return serialized;
         },
@@ -4102,12 +4104,12 @@ Ext.define('GeoExt.data.serializer.XYZ', {
          */
         getImageExtensionFromSource: function(source) {
             var urls = source.getUrls();
-            var url = urls ? urls[0] : "";
-            var lastThree = url.substr(url.length - 3);
-            if (Ext.isDefined(url) && Ext.Array.contains(this.allowedImageExtensions, lastThree)) {
-                return lastThree;
+            var url = urls ? urls[0] : '';
+            var extension = url.substr(url.length - 3);
+            if (Ext.isDefined(url) && Ext.Array.contains(this.allowedImageExtensions, extension)) {
+                return extension;
             } else {
-                Ext.raise("No url(s) supplied for ", source);
+                Ext.raise('No url(s) supplied for ', source);
                 return false;
             }
         }
@@ -4169,9 +4171,9 @@ Ext.define('GeoExt.data.store.OlObjects', {
          * @inheritdoc
          */
         add: function(store, records, index) {
-            var coll = store.olCollection,
-                length = records.length,
-                i;
+            var coll = store.olCollection;
+            var length = records.length;
+            var i;
             store.__updating = true;
             for (i = 0; i < length; i++) {
                 coll.insertAt(index + i, records[i].olObject);
@@ -4184,9 +4186,9 @@ Ext.define('GeoExt.data.store.OlObjects', {
          * @inheritdoc
          */
         remove: function(store, records, index) {
-            var coll = store.olCollection,
-                length = records.length,
-                i;
+            var coll = store.olCollection;
+            var length = records.length;
+            var i;
             store.__updating = true;
             for (i = 0; i < length; i++) {
                 coll.removeAt(index);
@@ -4222,9 +4224,9 @@ Ext.define('GeoExt.data.store.OlObjects', {
      * @param {ol.CollectionEvent} evt The event emitted by the `ol.Collection`.
      */
     onOlCollectionAdd: function(evt) {
-        var target = evt.target,
-            element = evt.element,
-            idx = Ext.Array.indexOf(target.getArray(), element);
+        var target = evt.target;
+        var element = evt.element;
+        var idx = Ext.Array.indexOf(target.getArray(), element);
         if (!this.__updating) {
             this.insert(idx, element);
         }
@@ -4235,8 +4237,8 @@ Ext.define('GeoExt.data.store.OlObjects', {
      * @param {ol.CollectionEvent} evt The event emitted by the `ol.Collection`.
      */
     onOlCollectionRemove: function(evt) {
-        var element = evt.element,
-            idx = this.findBy(function(rec) {
+        var element = evt.element;
+        var idx = this.findBy(function(rec) {
                 return rec.olObject === element;
             });
         if (idx !== -1) {
@@ -4350,8 +4352,8 @@ Ext.define('GeoExt.data.store.Features', {
      * @param {Object} config The configuration object.
      */
     constructor: function(config) {
-        var me = this,
-            cfg = config || {};
+        var me = this;
+        var cfg = config || {};
         if (me.style === null) {
             me.style = new ol.style.Style({
                 image: new ol.style.Circle({
@@ -4531,9 +4533,9 @@ Ext.define('GeoExt.util.Layer', {
          *     group cannot be determined.
          */
         findParentGroup: function(childLayer, startGroup) {
-            var parentGroup,
-                findParentGroup = GeoExt.util.Layer.findParentGroup,
-                getLayerIndex = GeoExt.util.Layer.getLayerIndex;
+            var parentGroup;
+            var findParentGroup = GeoExt.util.Layer.findParentGroup;
+            var getLayerIndex = GeoExt.util.Layer.getLayerIndex;
             if (getLayerIndex(childLayer, startGroup) !== -1) {
                 parentGroup = startGroup;
             } else {
@@ -4713,10 +4715,9 @@ Ext.define('GeoExt.data.store.LayersTree', {
                     }
                 });
             }
-        } else {
-            Ext.raise("Invalid folderToggleMode set in " + this.self.getName() + ": " + folderToggleMode + "; 'classic' or 'ol3' are valid.");
+            return folderToggleMode;
         }
-        return folderToggleMode;
+        Ext.raise('Invalid folderToggleMode set in ' + this.self.getName() + ': ' + folderToggleMode + '; \'classic\' or \'ol3\' are valid.');
     },
     /**
      * Listens to the `remove` event and syncs the attached layergroup.
@@ -5030,16 +5031,16 @@ Ext.define('GeoExt.grid.column.Symbolizer', {
      * @return {String} The HTML-fragment to render as string.
      */
     defaultRenderer: function(value, meta, record) {
-        var me = this,
-            id = Ext.id();
+        var me = this;
+        var id = Ext.id();
         if (record) {
-            var feature = record.olObject,
-                symbolType = "Line",
-                geometry = feature.getGeometry();
+            var feature = record.olObject;
+            var symbolType = 'Line';
+            var geometry = feature.getGeometry();
             if (geometry instanceof ol.geom.Point || geometry instanceof ol.geom.MultiPoint) {
-                symbolType = "Point";
+                symbolType = 'Point';
             } else if (geometry instanceof ol.geom.Polygon || geometry instanceof ol.geom.MultiPolygon) {
-                symbolType = "Polygon";
+                symbolType = 'Polygon';
             }
             var task = new Ext.util.DelayedTask(function() {
                     var ct = Ext.get(id);
@@ -5054,7 +5055,7 @@ Ext.define('GeoExt.grid.column.Symbolizer', {
                 });
             task.delay(0);
         }
-        meta.css = "gx-grid-symbolizercol";
+        meta.css = 'gx-grid-symbolizercol';
         return Ext.String.format('<div id="{0}"></div>', id);
     },
     /**

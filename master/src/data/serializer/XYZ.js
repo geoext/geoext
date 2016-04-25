@@ -51,11 +51,11 @@ Ext.define('GeoExt.data.serializer.XYZ', {
          */
         validateSource: function(source) {
             if (!(source instanceof this.sourceCls)) {
-                Ext.raise("Cannot serialize this source with this serializer");
+                Ext.raise('Cannot serialize this source with this serializer');
             }
             if (source.getUrls() === null) {
-                Ext.raise("Cannot serialize this source without an URL. " +
-                    "Usage of tileUrlFunction is not yet supported");
+                Ext.raise('Cannot serialize this source without an URL. ' +
+                    'Usage of tileUrlFunction is not yet supported');
             }
         },
 
@@ -72,7 +72,7 @@ Ext.define('GeoExt.data.serializer.XYZ', {
                     || 'png',
                 resolutions: tileGrid.getResolutions(),
                 tileSize: ol.size.toSize(tileGrid.getTileSize()),
-                type: "OSM"
+                type: 'OSM'
             };
             return serialized;
         },
@@ -85,16 +85,16 @@ Ext.define('GeoExt.data.serializer.XYZ', {
          * @param {ol.source.XYZ} source An ol.source.XYZ.
          * @return {String} The fileExtension or `false` if none is found.
          */
-        getImageExtensionFromSource: function(source){
+        getImageExtensionFromSource: function(source) {
             var urls = source.getUrls();
-            var url = urls ? urls[0] : "";
-            var lastThree = url.substr(url.length - 3);
+            var url = urls ? urls[0] : '';
+            var extension = url.substr(url.length - 3);
 
-            if(Ext.isDefined(url) &&
-                    Ext.Array.contains(this.allowedImageExtensions, lastThree)){
-                return lastThree;
+            if (Ext.isDefined(url)
+                && Ext.Array.contains(this.allowedImageExtensions, extension)) {
+                return extension;
             } else {
-                Ext.raise("No url(s) supplied for ", source);
+                Ext.raise('No url(s) supplied for ', source);
                 return false;
             }
         }

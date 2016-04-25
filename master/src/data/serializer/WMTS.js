@@ -92,7 +92,7 @@ Ext.define('GeoExt.data.serializer.WMTS', {
                 opacity: layer.getOpacity(),
                 requestEncoding: source.getRequestEncoding(),
                 style: source.getStyle(),
-                type: "WMTS",
+                type: 'WMTS',
                 version: source.getVersion()
             };
             return serialized;

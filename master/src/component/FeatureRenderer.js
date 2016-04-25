@@ -108,7 +108,7 @@ Ext.define('GeoExt.component.FeatureRenderer', {
          *
          * @cfg {String}
          */
-        imgCls: "",
+        imgCls: '',
 
         /**
          * The minimum width.
@@ -181,19 +181,19 @@ Ext.define('GeoExt.component.FeatureRenderer', {
          *
          * @cfg {String}
          */
-        symbolType: "Polygon"
+        symbolType: 'Polygon'
     },
 
     /**
      * Initialize the GeoExt.component.FeatureRenderer.
      */
-    initComponent: function(){
+    initComponent: function() {
         var me = this;
         var id = this.getId();
         this.autoEl = {
-            tag: "div",
-            "class": this.getImgCls(),
-            id: id
+            'id': id,
+            'tag': 'div',
+            'class': this.getImgCls()
         };
         if (!this.getLineFeature()) {
             this.setLineFeature(new ol.Feature({
@@ -271,7 +271,7 @@ Ext.define('GeoExt.component.FeatureRenderer', {
      */
     initCustomEvents: function() {
         this.clearCustomEvents();
-        this.el.on("click", this.onClick, this);
+        this.el.on('click', this.onClick, this);
     },
     /**
      * Unbinds previously bound listeners on #el.
@@ -289,7 +289,7 @@ Ext.define('GeoExt.component.FeatureRenderer', {
      * @private
      */
     onClick: function() {
-        this.fireEvent("click", this);
+        this.fireEvent('click', this);
     },
     /**
      * Private method called during the destroy sequence.
@@ -337,7 +337,7 @@ Ext.define('GeoExt.component.FeatureRenderer', {
          * 3) if no width or height, assume a resolution of 1
          */
         var resolution = this.initialConfig.resolution;
-        if(!resolution) {
+        if (!resolution) {
             resolution = Math.max(
                 gw / this.width || 0,
                 gh / this.height || 0

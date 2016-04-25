@@ -7,65 +7,69 @@ Ext.require([
     'GeoExt.grid.column.Symbolizer'
 ]);
 
-var olMap, gridWest, gridEast, featStore1, featStore2;
+var olMap;
+var gridWest;
+var gridEast;
+var featStore1;
+var featStore2;
 
 Ext.application({
     name: 'FeatureGrids',
     launch: function() {
         var geojson1 = {
-            "type": "FeatureCollection",
-            "features": [
+            'type': 'FeatureCollection',
+            'features': [
                 {
-                    "type": "Feature",
-                    "properties": {
-                        "city": "Hamburg",
-                        "pop": 1700000
+                    'type': 'Feature',
+                    'properties': {
+                        'city': 'Hamburg',
+                        'pop': 1700000
                     },
-                    "geometry": {
-                        "type": "Point",
-                        "coordinates": [
+                    'geometry': {
+                        'type': 'Point',
+                        'coordinates': [
                             10.107421874999998,
                             53.527247970102465
                         ]
                     }
                 },
                 {
-                    "type": "Feature",
-                    "properties": {
-                        "city": "Frankfurt / Main",
-                        "pop": 700000
+                    'type': 'Feature',
+                    'properties': {
+                        'city': 'Frankfurt / Main',
+                        'pop': 700000
                     },
-                    "geometry": {
-                        "type": "Point",
-                        "coordinates": [
+                    'geometry': {
+                        'type': 'Point',
+                        'coordinates': [
                             8.76708984375,
                             50.064191736659104
                         ]
                     }
                 },
                 {
-                    "type": "Feature",
-                    "properties": {
-                        "city": "Berlin",
-                        "pop": 3500000
+                    'type': 'Feature',
+                    'properties': {
+                        'city': 'Berlin',
+                        'pop': 3500000
                     },
-                    "geometry": {
-                        "type": "Point",
-                        "coordinates": [
+                    'geometry': {
+                        'type': 'Point',
+                        'coordinates': [
                             13.447265624999998,
                             52.53627304145948
                         ]
                     }
                 },
                 {
-                    "type": "Feature",
-                    "properties": {
-                        "city": "München",
-                        "pop": 1400000
+                    'type': 'Feature',
+                    'properties': {
+                        'city': 'München',
+                        'pop': 1400000
                     },
-                    "geometry": {
-                        "type": "Point",
-                        "coordinates": [
+                    'geometry': {
+                        'type': 'Point',
+                        'coordinates': [
                             11.6455078125,
                             48.1367666796927
                         ]
@@ -75,68 +79,68 @@ Ext.application({
         };
 
         var geojson2 = {
-            "type": "FeatureCollection",
-            "features": [
+            'type': 'FeatureCollection',
+            'features': [
                 {
-                    "type": "Feature",
-                    "properties": {
-                        "city": "Dortmund"
+                    'type': 'Feature',
+                    'properties': {
+                        'city': 'Dortmund'
                     },
-                    "geometry": {
-                        "type": "Point",
-                        "coordinates": [
+                    'geometry': {
+                        'type': 'Point',
+                        'coordinates': [
                             7.481689453125,
                             51.49506473014368
                         ]
                     }
                 },
                 {
-                    "type": "Feature",
-                    "properties": {
-                        "city": "Köln"
+                    'type': 'Feature',
+                    'properties': {
+                        'city': 'Köln'
                     },
-                    "geometry": {
-                        "type": "Point",
-                        "coordinates": [
+                    'geometry': {
+                        'type': 'Point',
+                        'coordinates': [
                             6.976318359375,
                             50.93073802371819
                         ]
                     }
                 },
                 {
-                    "type": "Feature",
-                    "properties": {
-                        "city": "Kaiserslautern"
+                    'type': 'Feature',
+                    'properties': {
+                        'city': 'Kaiserslautern'
                     },
-                    "geometry": {
-                        "type": "Point",
-                        "coordinates": [
+                    'geometry': {
+                        'type': 'Point',
+                        'coordinates': [
                             7.7838134765625,
                             49.44670029695474
                         ]
                     }
                 },
                 {
-                    "type": "Feature",
-                    "properties": {
-                        "city": "Bonn"
+                    'type': 'Feature',
+                    'properties': {
+                        'city': 'Bonn'
                     },
-                    "geometry": {
-                        "type": "Point",
-                        "coordinates": [
+                    'geometry': {
+                        'type': 'Point',
+                        'coordinates': [
                             7.102661132812499,
                             50.74688365485319
                         ]
                     }
                 },
                 {
-                    "type": "Feature",
-                    "properties": {
-                        "city": "Stuttgart"
+                    'type': 'Feature',
+                    'properties': {
+                        'city': 'Stuttgart'
                     },
-                    "geometry": {
-                        "type": "Point",
-                        "coordinates": [
+                    'geometry': {
+                        'type': 'Point',
+                        'coordinates': [
                             9.1461181640625,
                             48.77429274267509
                         ]

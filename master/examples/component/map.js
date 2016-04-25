@@ -4,13 +4,13 @@ Ext.require([
     'Ext.Viewport'
 ]);
 
-var olMap,
-    mapComponent,
-    mapPanel;
+var olMap;
+var mapComponent;
+var mapPanel;
 
 Ext.application({
     name: 'MapComponent',
-    launch: function(){
+    launch: function() {
         var description;
 
         olMap = new ol.Map({
@@ -27,7 +27,7 @@ Ext.application({
                 })
             ],
             view: new ol.View({
-                center: ol.proj.fromLonLat( [-122.416667, 37.783333] ),
+                center: ol.proj.fromLonLat([-122.416667, 37.783333]),
                 zoom: 12
             })
         });
@@ -53,7 +53,7 @@ Ext.application({
         });
 
         Ext.create('Ext.Viewport', {
-            layout: "border",
+            layout: 'border',
             items: [
                 mapPanel,
                 description

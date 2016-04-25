@@ -41,7 +41,7 @@ Ext.define('GeoExt.data.model.print.Layout', {
      */
 
     fields: [
-        { name: 'name', type: 'string' },
+        {name: 'name', type: 'string'},
         {
             name: 'capabilityId',
             reference: {
