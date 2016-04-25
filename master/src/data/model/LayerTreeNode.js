@@ -36,27 +36,25 @@ Ext.define('GeoExt.data.model.LayerTreeNode', {
     ],
     // </debug>
 
-    fields: [
-        {
-            name: 'leaf',
-            type: 'boolean',
-            convert: function(v, record) {
-                var isGroup = record.get('isLayerGroup');
-                if (isGroup === undefined || isGroup) {
-                    return false;
-                } else {
-                    return true;
-                }
+    fields: [{
+        name: 'leaf',
+        type: 'boolean',
+        convert: function(v, record) {
+            var isGroup = record.get('isLayerGroup');
+            if (isGroup === undefined || isGroup) {
+                return false;
+            } else {
+                return true;
             }
-        }, {
-            /**
-             * This should be set via tree panel.
-             */
-            name: '__toggleMode',
-            type: 'string',
-            defaultValue: 'classic'
         }
-    ],
+    }, {
+        /**
+         * This should be set via tree panel.
+         */
+        name: '__toggleMode',
+        type: 'string',
+        defaultValue: 'classic'
+    }],
 
     proxy: {
         type: 'memory',

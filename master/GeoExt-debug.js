@@ -724,59 +724,100 @@ Ext.define('GeoExt.data.model.Layer', {
         'ol.layer.Base',
         'ol.layer.Base#get'
     ],
+    /**
+     * The layer property that will be used to label the model in views.
+     *
+     * @cfg {String}
+     */
+    textProperty: 'name',
+    /**
+     * The layer property that will be used to describe the model in views.
+     *
+     * @cfg {String}
+     */
+    descriptionProperty: 'description',
+    /**
+     * The text label that will be shown in model views representing unnamed
+     * layers.
+     *
+     * @cfg {String}
+     */
+    unnamedLayerText: 'Unnamed Layer',
+    /**
+     * The text label that will be shown in model views representing unnamed
+     * group layers.
+     *
+     * @cfg {String}
+     */
+    unnamedGroupLayerText: 'Unnamed Group Layer',
     fields: [
         {
             name: 'isLayerGroup',
             type: 'boolean',
+            persist: false,
             convert: function(v, record) {
                 var layer = record.getOlLayer();
                 if (layer) {
                     return (layer instanceof ol.layer.Group);
+                } else {
+                    return undefined;
                 }
             }
         },
         {
             name: 'text',
             type: 'string',
+            persist: false,
             convert: function(v, record) {
-                if (!v && record.get('isLayerGroup')) {
-                    return 'ol.layer.Group';
-                } else {
-                    return v;
+                var name = v;
+                var defaultName;
+                var textProp;
+                if (!name) {
+                    textProp = record.textProperty;
+                    defaultName = (record.get('isLayerGroup') ? record.unnamedGroupLayerText : record.unnamedLayerText);
+                    name = record.getOlLayerProp(textProp, defaultName);
                 }
+                return name;
             }
         },
         {
             name: 'opacity',
             type: 'number',
+            persist: false,
             convert: function(v, record) {
-                var layer;
-                if (record.data instanceof ol.layer.Base) {
-                    layer = record.getOlLayer();
-                    return layer.get('opacity');
-                }
+                return record.getOlLayerProp('opacity');
             }
         },
         {
             name: 'minResolution',
             type: 'number',
+            persist: false,
             convert: function(v, record) {
-                var layer;
-                if (record.data instanceof ol.layer.Base) {
-                    layer = record.getOlLayer();
-                    return layer.get('minResolution');
-                }
+                return record.getOlLayerProp('minResolution');
             }
         },
         {
             name: 'maxResolution',
             type: 'number',
+            persist: false,
             convert: function(v, record) {
-                var layer;
-                if (record.data instanceof ol.layer.Base) {
-                    layer = record.getOlLayer();
-                    return layer.get('maxResolution');
-                }
+                return record.getOlLayerProp('maxResolution');
+            }
+        },
+        {
+            name: 'qtip',
+            type: 'string',
+            persist: false,
+            convert: function(v, record) {
+                return record.getOlLayerProp(record.descriptionProperty, '');
+            }
+        },
+        {
+            name: 'qtitle',
+            type: 'string',
+            persist: false,
+            convert: function(v, record) {
+                return record.get('text');
             }
         }
     ],
@@ -795,6 +836,20 @@ Ext.define('GeoExt.data.model.Layer', {
         if (this.data instanceof ol.layer.Base) {
             return this.data;
         }
+    },
+    /**
+     * Returns a property value of the `ol.layer.Base` object used in this model
+     * instance. If the property is null, the optional default value will  be
+     * returned.
+     *
+     * @param  {string} prop         The property key.
+     * @param  {object} defaultValue The optional default value.
+     * @return {object}              The returned property.
+     */
+    getOlLayerProp: function(prop, defaultValue) {
+        var layer = this.getOlLayer();
+        var value = (layer ? layer.get(prop) : undefined);
+        return (value !== undefined ? value : defaultValue);
     }
 });
 
@@ -2973,8 +3028,8 @@ Ext.define('GeoExt.data.model.LayerTreeNode', {
         },
         {
             /**
-             * This should be set via tree panel.
-             */
+         * This should be set via tree panel.
+         */
             name: '__toggleMode',
             type: 'string',
             defaultValue: 'classic'
@@ -4566,12 +4621,6 @@ Ext.define('GeoExt.data.store.LayersTree', {
          */
         layerGroup: null,
         /**
-         * The layer property that will be used to label tree nodes.
-         *
-         * @cfg {String}
-         */
-        textProperty: 'name',
-        /**
          * Configures the behaviour of the checkbox of an `ol.layer.Group`
          * (folder). Possible values are `'classic'` or `'ol3'`.
          *
@@ -4815,10 +4864,7 @@ Ext.define('GeoExt.data.store.LayersTree', {
             return;
         }
         // 5. insert a new layer node at the specified index to that node
-        var layerNode = Ext.create('GeoExt.data.model.LayerTreeNode', layerOrGroup);
-        layerNode.set('text', layerOrGroup.get(me.getTextProperty()));
-        layerNode.commit();
-        parentNode.insertChild(layerIdx, layerNode);
+        var layerNode = parentNode.insertChild(layerIdx, layerOrGroup);
         if (layerOrGroup instanceof ol.layer.Group) {
             // See onBeforeGroupNodeCollapse for an explanation why we have this
             layerNode.on('beforecollapse', me.onBeforeGroupNodeCollapse, me);

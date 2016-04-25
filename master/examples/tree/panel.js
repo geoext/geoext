@@ -32,10 +32,13 @@ Ext.application({
         layer3 = new ol.layer.Tile({
             source: source3,
             name: 'MapQuest Hybrid',
+            description: 'This is a layer description that will be visible '
+                + 'as a tooltip.',
             visible: false
         });
 
         group = new ol.layer.Group({
+            // name: 'Other Mapquest Layers',
             layers: [layer1, layer2],
             visible: true
         });
