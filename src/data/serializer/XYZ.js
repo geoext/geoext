@@ -82,7 +82,7 @@ Ext.define('GeoExt.data.serializer.XYZ', {
          * Sources with an tileUrlFunction are currently not supported.
          *
          * @private
-         * @param {ol.Source} source An ol.source.XYZ.
+         * @param {ol.source.XYZ} source An ol.source.XYZ.
          * @return {String} The fileExtension or `false` if none is found.
          */
         getImageExtensionFromSource: function(source){

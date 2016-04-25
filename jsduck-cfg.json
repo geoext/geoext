@@ -21,6 +21,7 @@
         "ol.layer.Group",
         "ol.layer.Layer",
         "ol.source.Source",
+        "ol.source.XYZ",
         "ol.style.Fill",
         "ol.style.Image",
         "ol.style.Stroke",
