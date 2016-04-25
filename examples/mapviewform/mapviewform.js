@@ -121,7 +121,7 @@ Ext.application({
         });
 
         Ext.create('Ext.Viewport', {
-            layout: "border",
+            layout: 'border',
             items: [{
                 region: 'center',
                 layout: 'fit',

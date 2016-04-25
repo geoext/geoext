@@ -3,18 +3,22 @@ Ext.require([
     'GeoExt.data.store.LayersTree'
 ]);
 
-var mapComponent,
-    mapPanel,
-    treePanel;
+var mapComponent;
+var mapPanel;
+var treePanel;
 
 Ext.application({
     name: 'BasicTree',
-    launch: function(){
-        var source1, source2, source3,
-            layer1, layer2, layer3,
-            group,
-            olMap,
-            treeStore;
+    launch: function() {
+        var source1;
+        var source2;
+        var source3;
+        var layer1;
+        var layer2;
+        var layer3;
+        var group;
+        var olMap;
+        var treeStore;
 
         source1 = new ol.source.MapQuest({layer: 'sat'});
         layer1 = new ol.layer.Tile({
@@ -70,7 +74,7 @@ Ext.application({
         treePanel = Ext.create('Ext.tree.Panel', {
             title: 'Tree Example',
             viewConfig: {
-                plugins: { ptype: 'treeviewdragdrop' }
+                plugins: {ptype: 'treeviewdragdrop'}
             },
             store: treeStore,
             rootVisible: false,
@@ -87,7 +91,7 @@ Ext.application({
         });
 
         Ext.create('Ext.Viewport', {
-            layout: "border",
+            layout: 'border',
             items: [
                 mapPanel,
                 {

@@ -83,7 +83,7 @@ Ext.define('GeoExt.data.serializer.Base', {
          */
         validateSource: function(source) {
             if (!(source instanceof this.sourceCls)) {
-                Ext.raise("Cannot serialize this source with this serializer");
+                Ext.raise('Cannot serialize this source with this serializer');
             }
         }
     }

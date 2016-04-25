@@ -4,10 +4,10 @@ describe('GeoExt.component.FeatureRenderer', function() {
 
     describe('#constructor', function() {
         var renderer;
-        beforeEach(function(){
+        beforeEach(function() {
             renderer = Ext.create('GeoExt.component.FeatureRenderer');
         });
-        afterEach(function(){
+        afterEach(function() {
             renderer.destroy();
         });
         it('should be a component', function() {
@@ -23,7 +23,7 @@ describe('GeoExt.component.FeatureRenderer', function() {
 
     describe('#drawFeature', function() {
         var renderer;
-        beforeEach(function(){
+        beforeEach(function() {
             renderer = Ext.create('GeoExt.component.FeatureRenderer', {
                 renderTo: document.body,
                 symbolizers: new ol.style.Style({
@@ -31,7 +31,7 @@ describe('GeoExt.component.FeatureRenderer', function() {
                 })
             });
         });
-        afterEach(function(){
+        afterEach(function() {
             renderer.destroy();
         });
         it('should have the symbolizer set on the feature', function() {

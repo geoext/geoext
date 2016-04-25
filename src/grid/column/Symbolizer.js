@@ -37,18 +37,20 @@ Ext.define('GeoExt.grid.column.Symbolizer', {
      * @return {String} The HTML-fragment to render as string.
      */
     defaultRenderer: function(value, meta, record) {
-        var me = this,
-            id = Ext.id();
+        var me = this;
+        var id = Ext.id();
+
         if (record) {
-            var feature = record.olObject,
-                symbolType = "Line",
-                geometry = feature.getGeometry();
+            var feature = record.olObject;
+            var symbolType = 'Line';
+            var geometry = feature.getGeometry();
+
             if (geometry instanceof ol.geom.Point ||
                     geometry instanceof ol.geom.MultiPoint) {
-                symbolType = "Point";
+                symbolType = 'Point';
             } else if (geometry instanceof ol.geom.Polygon ||
                        geometry instanceof ol.geom.MultiPolygon) {
-                symbolType = "Polygon";
+                symbolType = 'Polygon';
             }
 
             var task = new Ext.util.DelayedTask(function() {
@@ -64,7 +66,7 @@ Ext.define('GeoExt.grid.column.Symbolizer', {
             });
             task.delay(0);
         }
-        meta.css = "gx-grid-symbolizercol";
+        meta.css = 'gx-grid-symbolizercol';
         return Ext.String.format('<div id="{0}"></div>', id);
     },
 

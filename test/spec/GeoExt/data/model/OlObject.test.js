@@ -19,16 +19,16 @@ describe('GeoExt.data.model.OlObject', function() {
         };
     });
 
-    describe('basics', function(){
-        it('is defined', function(){
+    describe('basics', function() {
+        it('is defined', function() {
             expect(GeoExt.data.model.OlObject).not.to.be(undefined);
         });
     });
 
     describe('init record from simple javascript object', function() {
-        var records = [],
-            objs = [],
-            types = ['plain obj', 'ol.Object'];
+        var records = [];
+        var objs = [];
+        var types = ['plain obj', 'ol.Object'];
 
         beforeEach(function() {
             var record1 = Ext.create('Test.data.model.Object', props);

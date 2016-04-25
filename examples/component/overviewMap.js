@@ -3,19 +3,22 @@ Ext.require([
     'GeoExt.component.OverviewMap'
 ]);
 
-var mapComponent,
-    mapPanel,
-    overviewMap1,
-    overviewMap2;
+var mapComponent;
+var mapPanel;
+var overviewMap1;
+var overviewMap2;
 
 Ext.application({
     name: 'OverviewMaps',
-    launch: function(){
-        var source, source2,
-            layer, layer2,
-            olMap,
-            description,
-            ovMapPanel1, ovMapPanel2;
+    launch: function() {
+        var source;
+        var source2;
+        var layer;
+        var layer2;
+        var olMap;
+        var description;
+        var ovMapPanel1;
+        var ovMapPanel2;
 
         source = new ol.source.MapQuest({layer: 'sat'});
         layer = new ol.layer.Tile({
@@ -101,7 +104,7 @@ Ext.application({
         });
 
         Ext.create('Ext.Viewport', {
-            layout: "border",
+            layout: 'border',
             items: [
                 mapPanel,
                 {

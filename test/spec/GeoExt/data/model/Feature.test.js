@@ -9,7 +9,8 @@ describe('GeoExt.data.model.Feature', function() {
     });
 
     describe('constructor', function() {
-        var feat, rec;
+        var feat;
+        var rec;
         beforeEach(function() {
             feat = new ol.Feature();
             rec = Ext.create('GeoExt.data.model.Feature', feat);
@@ -24,7 +25,8 @@ describe('GeoExt.data.model.Feature', function() {
     });
 
     describe('#getFeature', function() {
-        var feat, rec;
+        var feat;
+        var  rec;
         beforeEach(function() {
             feat = new ol.Feature();
             rec = Ext.create('GeoExt.data.model.Feature', feat);

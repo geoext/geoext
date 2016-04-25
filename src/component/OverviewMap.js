@@ -62,7 +62,7 @@
  *
  * @class GeoExt.component.OverviewMap
  */
-Ext.define("GeoExt.component.OverviewMap", {
+Ext.define('GeoExt.component.OverviewMap', {
     extend: 'Ext.Component',
     alias: [
         'widget.gx_overview',
@@ -194,7 +194,7 @@ Ext.define("GeoExt.component.OverviewMap", {
          * @param {Number} rotation The rotation in radians.
          * @return {Number[]} The rotate coordinate as array with `[x, y]`.
          */
-        rotateCoordAroundCoord: function(coord, center, rotation){
+        rotateCoordAroundCoord: function(coord, center, rotation) {
             var cosTheta = Math.cos(rotation);
             var sinTheta = Math.sin(rotation);
 
@@ -218,21 +218,21 @@ Ext.define("GeoExt.component.OverviewMap", {
          * @param {Number} rotation The rotation in radians.
          * @return {Number[]} The rotate coordinate as array with `[x, y]`.
          */
-        rotateGeomAroundCoord: function(geom, centerCoord, rotation){
+        rotateGeomAroundCoord: function(geom, centerCoord, rotation) {
             var me = this;
             var ar = [];
             var coords;
 
-            if(geom instanceof ol.geom.Point){
+            if (geom instanceof ol.geom.Point) {
                 ar.push(
                     me.rotateCoordAroundCoord(
                         geom.getCoordinates(), centerCoord, rotation
                     )
                 );
                 geom.setCoordinates(ar[0]);
-            } else if (geom instanceof ol.geom.Polygon){
+            } else if (geom instanceof ol.geom.Polygon) {
                 coords = geom.getCoordinates()[0];
-                coords.forEach(function(coord){
+                coords.forEach(function(coord) {
                     ar.push(
                         me.rotateCoordAroundCoord(
                             coord, centerCoord, rotation
@@ -271,7 +271,7 @@ Ext.define("GeoExt.component.OverviewMap", {
      */
     mapRendered: false,
 
-    constructor: function(){
+    constructor: function() {
         this.initOverviewFeatures();
         this.callParent(arguments);
     },
@@ -282,9 +282,9 @@ Ext.define("GeoExt.component.OverviewMap", {
     initComponent: function() {
         var me = this;
 
-        if (!me.getParentMap()){
+        if (!me.getParentMap()) {
             Ext.Error.raise('No parentMap defined for overviewMap');
-        } else if (!(me.getParentMap() instanceof ol.Map)){
+        } else if (!(me.getParentMap() instanceof ol.Map)) {
             Ext.Error.raise('parentMap is not an instance of ol.Map');
         }
 
@@ -302,7 +302,7 @@ Ext.define("GeoExt.component.OverviewMap", {
      *
      * @private
      */
-    initOverviewFeatures: function(){
+    initOverviewFeatures: function() {
         var me = this;
         me.boxFeature = new ol.Feature();
         me.anchorFeature = new ol.Feature();
@@ -316,23 +316,23 @@ Ext.define("GeoExt.component.OverviewMap", {
      *
      * @private
      */
-    initOverviewMap: function(){
-        var me = this,
-            parentMap = me.getParentMap(),
-            parentLayers;
+    initOverviewMap: function() {
+        var me = this;
+        var parentMap = me.getParentMap();
+        var parentLayers;
 
-        if(me.getLayers().length < 1){
+        if (me.getLayers().length < 1) {
             parentLayers = me.getParentMap().getLayers();
-            parentLayers.forEach(function(layer){
-                if(layer instanceof ol.layer.Tile ||
-                   layer instanceof ol.layer.Image){
+            parentLayers.forEach(function(layer) {
+                if (layer instanceof ol.layer.Tile ||
+                   layer instanceof ol.layer.Image) {
                     me.getLayers().push(layer);
                 }
             });
         }
         me.getLayers().push(me.extentLayer);
 
-        if(!me.getMap()){
+        if (!me.getMap()) {
             var parentView = parentMap.getView();
             var olMap = new ol.Map({
                 controls: new ol.Collection(),
@@ -346,7 +346,7 @@ Ext.define("GeoExt.component.OverviewMap", {
             me.setMap(olMap);
         }
 
-        Ext.each(me.getLayers(), function(layer){
+        Ext.each(me.getLayers(), function(layer) {
             me.getMap().addLayer(layer);
         });
 
@@ -379,8 +379,8 @@ Ext.define("GeoExt.component.OverviewMap", {
      * @param {ol.ObjectEvent} evt The event emitted by the `ol.Object`.
      * @private
      */
-    onParentViewPropChange: function(evt){
-        if (evt.key === 'center' || evt.key === 'resolution'){
+    onParentViewPropChange: function(evt) {
+        if (evt.key === 'center' || evt.key === 'resolution') {
             this.setOverviewMapProperty(evt.key);
         }
     },
@@ -392,7 +392,7 @@ Ext.define("GeoExt.component.OverviewMap", {
      * @param {ol.MapBrowserEvent} evt The click event on the map.
      * @private
      */
-    overviewMapClicked: function(evt){
+    overviewMapClicked: function(evt) {
         var me = this;
         var parentMap = me.getParentMap();
         var parentView = parentMap.getView();
@@ -408,15 +408,15 @@ Ext.define("GeoExt.component.OverviewMap", {
     /**
      * Updates the Geometry of the extentLayer.
      */
-    updateBox: function(){
-        var me = this,
-            parentMapView = me.getParentMap().getView(),
-            parentExtent = parentMapView.calculateExtent(
-                me.getParentMap().getSize()
-            ),
-            parentRotation = parentMapView.getRotation(),
-            parentCenter = parentMapView.getCenter(),
-            geom = ol.geom.Polygon.fromExtent(parentExtent);
+    updateBox: function() {
+        var me = this;
+        var parentMapView = me.getParentMap().getView();
+        var parentExtent = parentMapView.calculateExtent(
+            me.getParentMap().getSize()
+        );
+        var parentRotation = parentMapView.getRotation();
+        var parentCenter = parentMapView.getCenter();
+        var geom = ol.geom.Polygon.fromExtent(parentExtent);
 
         geom = me.self.rotateGeomAroundCoord(
             geom, parentCenter, parentRotation
@@ -436,15 +436,15 @@ Ext.define("GeoExt.component.OverviewMap", {
      * @param {String} key The name of the property, either `'center'` or
      *     `'resolution'`
      */
-    setOverviewMapProperty: function(key){
-        var me = this,
-            parentView = me.getParentMap().getView(),
-            overviewView = me.getMap().getView();
+    setOverviewMapProperty: function(key) {
+        var me = this;
+        var parentView = me.getParentMap().getView();
+        var overviewView = me.getMap().getView();
 
-        if(key === 'center'){
+        if (key === 'center') {
             overviewView.set('center', parentView.getCenter());
         }
-        if(key === 'resolution'){
+        if (key === 'resolution') {
             overviewView.set('resolution',
                    me.getMagnification() * parentView.getResolution());
         }
@@ -458,9 +458,10 @@ Ext.define("GeoExt.component.OverviewMap", {
      * @param {Boolean} shallRecenter The value for #recenterOnClick that was
      *     set.
      */
-    applyRecenterOnClick: function(shallRecenter){
-        var me = this,
-            map = me.getMap();
+    applyRecenterOnClick: function(shallRecenter) {
+        var me = this;
+        var map = me.getMap();
+
         if (!map) {
             // TODO or shall we have our own event, once we have a map?
             me.addListener('afterrender', function() {
@@ -479,11 +480,12 @@ Ext.define("GeoExt.component.OverviewMap", {
     /**
      * Cleanup any listeners we may have bound.
      */
-    onBeforeDestroy: function(){
-        var me = this,
-            map = me.getMap(),
-            parentMap = me.getParentMap(),
-            parentView = parentMap && parentMap.getView();
+    onBeforeDestroy: function() {
+        var me = this;
+        var map = me.getMap();
+        var parentMap = me.getParentMap();
+        var parentView = parentMap && parentMap.getView();
+
         if (map) {
             // unbind recenter listener, if any
             map.un('click', me.overviewMapClicked, me);
@@ -502,12 +504,13 @@ Ext.define("GeoExt.component.OverviewMap", {
      *     class???
      * @private
      */
-    onResize: function(){
+    onResize: function() {
         // Get the corresponding view of the controller (the mapPanel).
-        var me = this,
-            div = me.getEl().dom,
-            map = me.getMap();
-        if(!me.mapRendered){
+        var me = this;
+        var div = me.getEl().dom;
+        var map = me.getMap();
+
+        if (!me.mapRendered) {
             map.setTarget(div);
             me.mapRendered = true;
         } else {
@@ -522,7 +525,7 @@ Ext.define("GeoExt.component.OverviewMap", {
      *     set.
      * @return {ol.Style} The new style for the anchor feature.
      */
-    applyAnchorStyle: function(style){
+    applyAnchorStyle: function(style) {
         this.anchorFeature.setStyle(style);
         return style;
     },
@@ -533,7 +536,7 @@ Ext.define("GeoExt.component.OverviewMap", {
      * @param {ol.Style} style The new style for the box feature that was set.
      * @return {ol.Style} The new style for the box feature.
      */
-    applyBoxStyle: function(style){
+    applyBoxStyle: function(style) {
         this.boxFeature.setStyle(style);
         return style;
     }

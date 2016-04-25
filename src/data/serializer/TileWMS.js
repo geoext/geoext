@@ -51,8 +51,8 @@ Ext.define('GeoExt.data.serializer.TileWMS', {
                     source.getParams().LAYERS
                 ],
                 opacity: layer.getOpacity(),
-                styles: [ "" ],
-                type: "WMS"
+                styles: [''],
+                type: 'WMS'
             };
             return serialized;
         }

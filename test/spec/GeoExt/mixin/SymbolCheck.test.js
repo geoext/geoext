@@ -2,13 +2,13 @@ Ext.Loader.syncRequire(['GeoExt.mixin.SymbolCheck']);
 
 describe('GeoExt.mixin.SymbolCheck', function() {
 
-    describe('Basics', function(){
-        it('is defined', function(){
+    describe('Basics', function() {
+        it('is defined', function() {
             expect(GeoExt.mixin.SymbolCheck).not.to.be(undefined);
         });
     });
 
-    function cleanupTestClass(className){
+    function cleanupTestClass(className) {
         Ext.getWin().dom[className] = null;
         delete Ext.getWin().dom[className];
         delete Ext.ClassManager['$namespaceCache'][className];
@@ -43,7 +43,7 @@ describe('GeoExt.mixin.SymbolCheck', function() {
             ]
         });
     });
-    afterEach(function(){
+    afterEach(function() {
         cleanupTestClass(className);
         // restore the old method 'Ext.log.warn'
         Ext.log.warn.restore();
@@ -135,7 +135,7 @@ describe('GeoExt.mixin.SymbolCheck', function() {
                 cleanupTestClass('NoMember_symbols');
             });
 
-            it('takes a shortcut for checked symbols', function(){
+            it('takes a shortcut for checked symbols', function() {
                 GeoExt.mixin.SymbolCheck.isDefinedSymbol(
                     'Shub.Niggurath.Lord.Of.The.Wood'
                 );

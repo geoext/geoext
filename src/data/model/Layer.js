@@ -108,7 +108,7 @@ Ext.define('GeoExt.data.model.Layer', {
             name: 'minResolution',
             type: 'number',
             persist: false,
-            convert: function(v, record){
+            convert: function(v, record) {
                 return record.getOlLayerProp('minResolution');
             }
         },
@@ -132,7 +132,7 @@ Ext.define('GeoExt.data.model.Layer', {
             name : 'qtitle',
             type : 'string',
             persist : false,
-            convert: function (v, record) {
+            convert: function(v, record) {
                 return record.get('text');
             }
         }

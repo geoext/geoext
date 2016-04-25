@@ -43,11 +43,11 @@ Ext.define('GeoExt.data.model.Base', {
          * @param  {Object} data The data the record will be created with.
          * @return {GeoExt.data.model.Base} The record.
          */
-        loadRawData: function (data) {
-            var me = this,
-                result = me.getProxy().getReader().readRecords(data || {}),
-                records = result.getRecords(),
-                success = result.getSuccess();
+        loadRawData: function(data) {
+            var me = this;
+            var result = me.getProxy().getReader().readRecords(data || {});
+            var records = result.getRecords();
+            var success = result.getSuccess();
 
             if (success && records.length) {
                 return records[0];

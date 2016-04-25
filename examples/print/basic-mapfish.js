@@ -5,13 +5,13 @@ Ext.require([
     'GeoExt.data.serializer.Vector'
 ]);
 
-var olMap,
-    mapComponent,
-    mapPanel;
+var olMap;
+var mapComponent;
+var mapPanel;
 
 Ext.application({
     name: 'MapPanel',
-    launch: function(){
+    launch: function() {
         var description;
 
         var extentLayer = new ol.layer.Vector({
@@ -37,7 +37,7 @@ Ext.application({
             source: new ol.source.TileWMS({
                 url: 'http://ows.terrestris.de/osm-gray/service',
                 params: {
-                    LAYERS: "OSM-WMS"
+                    LAYERS: 'OSM-WMS'
                 }
             })
         });
@@ -49,7 +49,7 @@ Ext.application({
                 extentLayer
             ],
             view: new ol.View({
-                center: ol.proj.fromLonLat( [-122.416667, 37.783333] ),
+                center: ol.proj.fromLonLat([-122.416667, 37.783333]),
                 zoom: 12
             })
         });
@@ -93,14 +93,14 @@ Ext.application({
             var clientInfo = attr.get('clientInfo');
             var render = GeoExt.data.MapfishPrintProvider.renderPrintExtent;
             render(mapComponent, extentLayer, clientInfo);
-            mapComponent.getView().on('propertychange', function(){
+            mapComponent.getView().on('propertychange', function() {
                 extentLayer.getSource().clear();
                 render(mapComponent, extentLayer, clientInfo);
             });
             description.add({
                 xtype: 'button',
                 text: 'Print',
-                handler: function(){
+                handler: function() {
                     var spec = {
                         layout: layout.get('name'),
                         attributes: {}
@@ -144,15 +144,15 @@ Ext.application({
         };
 
         Ext.create('GeoExt.data.MapfishPrintProvider', {
-            url: "http://webmapcenter.de/print-servlet-3.1.2/" +
-                    "print/geoext/capabilities.json",
+            url: 'http://webmapcenter.de/print-servlet-3.1.2/' +
+                    'print/geoext/capabilities.json',
             listeners: {
                 ready: onPrintProviderReady
             }
         });
 
         Ext.create('Ext.Viewport', {
-            layout: "border",
+            layout: 'border',
             items: [
                 mapPanel,
                 description

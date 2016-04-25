@@ -31,13 +31,15 @@ describe('GeoExt.data.store.Features', function() {
     });
 
     describe('constructor (with features)', function() {
-        var coll,
-            store;
+        var coll;
+        var store;
+
         beforeEach(function() {
             coll = new ol.Collection();
             coll.push(new ol.Feature());
             store = Ext.create('GeoExt.data.store.Features', {features: coll});
         });
+
         afterEach(function() {
             if (store.destroy) {
                 store.destroy();
@@ -59,10 +61,11 @@ describe('GeoExt.data.store.Features', function() {
     });
 
     describe('constructor (with layer)', function() {
-        var div,
-            map,
-            layer,
-            store;
+        var div;
+        var map;
+        var layer;
+        var store;
+
         beforeEach(function() {
             div = document.createElement('div');
             document.body.appendChild(div);
@@ -110,13 +113,15 @@ describe('GeoExt.data.store.Features', function() {
     });
 
     describe('#getFeatures', function() {
-        var coll,
-            store;
+        var coll;
+        var store;
+
         beforeEach(function() {
             coll = new ol.Collection();
             coll.push(new ol.Feature());
             store = Ext.create('GeoExt.data.store.Features', {features: coll});
         });
+
         afterEach(function() {
             if (store.destroy) {
                 store.destroy();
@@ -134,15 +139,17 @@ describe('GeoExt.data.store.Features', function() {
     });
 
     describe('#getByFeature', function() {
-        var coll,
-            store,
-            feature;
+        var coll;
+        var store;
+        var feature;
+
         beforeEach(function() {
             feature = new ol.Feature();
             coll = new ol.Collection();
             coll.push(feature);
             store = Ext.create('GeoExt.data.store.Features', {features: coll});
         });
+
         afterEach(function() {
             if (store.destroy) {
                 store.destroy();
@@ -155,21 +162,24 @@ describe('GeoExt.data.store.Features', function() {
         it('is defined', function() {
             expect(store.getByFeature).not.to.be(undefined);
         });
+
         it('returns the right feature record', function() {
             expect(store.getByFeature(feature).getFeature()).to.be.equal(
                 feature
             );
         });
+
         it('returns null in case of passing a non-managed feature', function() {
             expect(store.getByFeature(new ol.Feature())).to.be(null);
         });
     });
 
     describe('config option "createLayer" without a map', function() {
-        var coll,
-            store,
-            map,
-            div;
+        var coll;
+        var store;
+        var map;
+        var div;
+
         beforeEach(function() {
             div = document.createElement('div');
             document.body.appendChild(div);
@@ -193,6 +203,7 @@ describe('GeoExt.data.store.Features', function() {
                 createLayer: true
             });
         });
+
         afterEach(function() {
             if (store.destroy) {
                 store.destroy();
@@ -215,10 +226,11 @@ describe('GeoExt.data.store.Features', function() {
     });
 
     describe('config option "createLayer"', function() {
-        var coll,
-            store,
-            map,
-            div;
+        var coll;
+        var store;
+        var map;
+        var div;
+
         beforeEach(function() {
             div = document.createElement('div');
             document.body.appendChild(div);
@@ -242,6 +254,7 @@ describe('GeoExt.data.store.Features', function() {
                 createLayer: true
             });
         });
+
         afterEach(function() {
             if (store.destroy) {
                 store.destroy();
@@ -256,9 +269,11 @@ describe('GeoExt.data.store.Features', function() {
         it('creates a new layer on the given map', function() {
             expect(map.getLayers().getLength()).to.be(2);
         });
+
         it('creates the layer which is retrievable via #getLayer', function() {
             expect(store.getLayer()).to.be(map.getLayers().item(1));
         });
+
         it('removes the autocreated layer once the store is destroyed',
             function() {
                 // before
@@ -271,9 +286,10 @@ describe('GeoExt.data.store.Features', function() {
     });
 
     describe('Event binding on vector layer', function() {
-        var layer,
-            store,
-            feature;
+        var layer;
+        var store;
+        var feature;
+
         beforeEach(function() {
             feature = new ol.Feature({id: 'foo'});
             layer = new ol.layer.Vector({
@@ -285,6 +301,7 @@ describe('GeoExt.data.store.Features', function() {
                 layer: layer
             });
         });
+
         afterEach(function() {
             if (store.destroy) {
                 store.destroy();
@@ -300,6 +317,7 @@ describe('GeoExt.data.store.Features', function() {
                 layer.getSource().getFeatures().length
             );
         });
+
         it('is done correctly for "removefeature"', function() {
             layer.getSource().removeFeature(layer.getSource().getFeatures()[0]);
             expect(store.getCount()).to.be(
@@ -309,8 +327,9 @@ describe('GeoExt.data.store.Features', function() {
     });
 
     describe('Unbinding events on vector layer', function() {
-        var layer,
-            store;
+        var layer;
+        var store;
+
         beforeEach(function() {
             layer = new ol.layer.Vector({
                 source: new ol.source.Vector({
@@ -321,6 +340,7 @@ describe('GeoExt.data.store.Features', function() {
                 layer: layer
             });
         });
+
         afterEach(function() {
             if (store.destroy) {
                 store.destroy();
@@ -336,12 +356,13 @@ describe('GeoExt.data.store.Features', function() {
             layer.getSource().removeFeature(layer.getSource().getFeatures()[0]);
             expect(store.getCount()).to.be(1);
         });
+
         it('function "unbindLayerEvents" is called before store is destroyed',
             function() {
                 var i = 0;
                 // overwrite to see if the function is called on store
                 // destruction
-                store.unbindLayerEvents = function () {
+                store.unbindLayerEvents = function() {
                     i++;
                 };
                 store.destroy();

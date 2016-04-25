@@ -2,9 +2,9 @@ Ext.Loader.syncRequire(['GeoExt.data.serializer.TileWMS']);
 
 describe('GeoExt.data.serializer.TileWMS', function() {
 
-    describe('basics', function(){
+    describe('basics', function() {
 
-        it('is defined', function(){
+        it('is defined', function() {
             expect(GeoExt.data.serializer.TileWMS).not.to.be(undefined);
         });
 
@@ -15,7 +15,7 @@ describe('GeoExt.data.serializer.TileWMS', function() {
         var layer = null;
         var viewResolution = 38.21851414258813;
 
-        beforeEach(function(){
+        beforeEach(function() {
             source = new ol.source.TileWMS({
                 url: 'http://demo.boundlessgeo.com/geoserver/wms',
                 params: {'LAYERS': 'ne:ne'},
@@ -26,43 +26,43 @@ describe('GeoExt.data.serializer.TileWMS', function() {
                 source: source
             });
         });
-        afterEach(function(){
+        afterEach(function() {
             source = null;
             layer = null;
         });
 
-        it('doesn\'t throw on expected source', function(){
-            expect(function(){
+        it('doesn\'t throw on expected source', function() {
+            expect(function() {
                 GeoExt.data.serializer.TileWMS.serialize(
                     layer, source, viewResolution
                 );
             }).to.not.throwException();
         });
 
-        it('correctly throws on unexpected source', function(){
+        it('correctly throws on unexpected source', function() {
             var wrongSource = new ol.source.ImageWMS({
                 url: 'http://demo.boundlessgeo.com/geoserver/wms',
                 params: {'LAYERS': 'ne:ne'},
                 serverType: 'geoserver',
                 crossOrigin: ''
             });
-            expect(function(){
+            expect(function() {
                 GeoExt.data.serializer.TileWMS.serialize(
                     layer, wrongSource, viewResolution
                 );
             }).to.throwException();
         });
 
-        it('serializes as expected', function(){
+        it('serializes as expected', function() {
             var serialized = GeoExt.data.serializer.TileWMS.serialize(
                 layer, source, viewResolution
             );
             var expected = {
                 baseURL: 'http://demo.boundlessgeo.com/geoserver/wms',
-                customParams: { LAYERS: 'ne:ne' },
-                layers: [ 'ne:ne' ],
+                customParams: {LAYERS: 'ne:ne'},
+                layers: ['ne:ne'],
                 opacity: 1,
-                styles: [ '' ],
+                styles: [''],
                 type: 'WMS'
             };
             expect(serialized).to.eql(expected);

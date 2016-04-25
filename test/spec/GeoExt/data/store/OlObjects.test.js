@@ -3,9 +3,11 @@ Ext.Loader.syncRequire(['GeoExt.data.store.OlObjects']);
 describe('GeoExt.data.store.OlObjects', function() {
 
     var props = {
-            key1: 'value1',
-            key2: 'value2'
-        }, coll, obj;
+        key1: 'value1',
+        key2: 'value2'
+    };
+    var coll;
+    var obj;
 
     beforeEach(function() {
         obj = new ol.Object(props);
@@ -14,8 +16,8 @@ describe('GeoExt.data.store.OlObjects', function() {
         coll.push(obj);
     });
 
-    describe('basics', function(){
-        it('is defined', function(){
+    describe('basics', function() {
+        it('is defined', function() {
             expect(GeoExt.data.store.OlObjects).not.to.be(undefined);
         });
 
@@ -48,7 +50,8 @@ describe('GeoExt.data.store.OlObjects', function() {
     });
 
     describe('adding and removing items', function() {
-        var store, collection;
+        var store;
+        var collection;
 
         beforeEach(function() {
             collection = new ol.Collection();
