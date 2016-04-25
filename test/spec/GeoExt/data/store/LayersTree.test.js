@@ -502,6 +502,8 @@ describe('GeoExt.data.store.LayersTree', function() {
         var topMostGroup;
         var store;
         var tree;
+        var rootNode;
+        var innerGroupNode;
 
         beforeEach(function(){
             dragTreeDiv = document.createElement('div');
@@ -531,6 +533,8 @@ describe('GeoExt.data.store.LayersTree', function() {
                 },
                 height: 300
             });
+            rootNode = store.getRootNode();
+            innerGroupNode = rootNode.getChildAt(1);
         });
         afterEach(function(){
             store.destroy();
@@ -548,8 +552,7 @@ describe('GeoExt.data.store.LayersTree', function() {
                 expect(innerGroup.getLayers().item(1)).to.be(layer3);
 
                 // Let's emulate drag
-                var innerGroupNode = store.getAt(2);
-                var threeNode = store.getAt(4);
+                var threeNode = innerGroupNode.getChildAt(1);
                 innerGroupNode.insertChild(0, threeNode);
 
                 // Now
@@ -559,8 +562,7 @@ describe('GeoExt.data.store.LayersTree', function() {
                 expect(innerGroup.getLayers().item(1)).to.be(layer2);
 
                 // Let's emulate a drag that reverts the previous one
-                innerGroupNode = store.getAt(2);
-                var twoNode = store.getAt(4);
+                var twoNode = innerGroupNode.getChildAt(1);
                 innerGroupNode.insertChild(0, twoNode);
 
                 // Now the order is again just like we started
@@ -582,8 +584,7 @@ describe('GeoExt.data.store.LayersTree', function() {
                 expect(innerGroup.getLayers().item(1)).to.be(layer3);
 
                 // Let's emulate drag
-                var innerGroupNode = store.getAt(2);
-                var oneNode = store.getAt(1);
+                var oneNode = rootNode.getChildAt(0);
                 innerGroupNode.appendChild(oneNode);
 
                 // Now
@@ -591,9 +592,8 @@ describe('GeoExt.data.store.LayersTree', function() {
                 expect(innerGroup.getLayers().getLength()).to.be(3);
 
                 // Let's emulate a drag that reverts the previous one
-                var root = store.getAt(0);
-                oneNode = store.getAt(4);
-                root.appendChild(oneNode);
+                oneNode = innerGroupNode.getChildAt(2);
+                rootNode.appendChild(oneNode);
 
                 // Now the length is again just like we started
                 //   length = 2
@@ -612,9 +612,7 @@ describe('GeoExt.data.store.LayersTree', function() {
                 expect(topMostGroup.getLayers().item(1)).to.be(innerGroup);
 
                 // Let's emulate drag
-                var innerGroupNode = store.getAt(2);
-                var root = store.getAt(0);
-                root.insertChild(0, innerGroupNode);
+                rootNode.insertChild(0, innerGroupNode);
 
                 // Now
                 //   0 => innerGroup
@@ -623,9 +621,8 @@ describe('GeoExt.data.store.LayersTree', function() {
                 expect(topMostGroup.getLayers().item(1)).to.be(layer1);
 
                 // Let's emulate a drag that reverts the previous one
-                var oneNode = store.getAt(4);
-                root = store.getAt(0);
-                root.insertChild(0, oneNode);
+                var oneNode = rootNode.getChildAt(1);
+                rootNode.insertChild(0, oneNode);
 
                 // Now the order is again just like we started
                 //   0 => layer1
@@ -676,17 +673,16 @@ describe('GeoExt.data.store.LayersTree', function() {
             });
             olMap = new ol.Map({
                 target: div,
-                layers: [topMostGroup],
+                layers: topMostGroup,
                 view: new ol.View({
                     center: [0, 0],
                     zoom: 2
                 })
             });
             store = Ext.create('GeoExt.data.store.LayersTree', {
-                layerGroup: olMap.getLayerGroup(),
+                layerGroup: topMostGroup,
                 inverseLayerOrder: false
             });
-            rootNode = store.getRootNode();
             tree = Ext.create('Ext.tree.Panel', {
                 store: store,
                 renderTo: dragTreeDiv,
@@ -695,6 +691,7 @@ describe('GeoExt.data.store.LayersTree', function() {
                 },
                 height: 300
             });
+            rootNode = store.getRootNode();
         });
         afterEach(function(){
             store.destroy();
@@ -710,7 +707,7 @@ describe('GeoExt.data.store.LayersTree', function() {
                 expect(numInInnerGroup).to.be(3);
 
                 // collapse innergroup node
-                var innerGroupNode = store.getAt(2);
+                var innerGroupNode = rootNode.getChildAt(1);
                 innerGroupNode.collapse(true, function(){
                     numInInnerGroup = innerGroup2.getLayers().getLength();
 
@@ -739,27 +736,67 @@ describe('GeoExt.data.store.LayersTree', function() {
                 }
                 // before collapse
                 var expandedNumtopMostGroup = store.getTotalCount();
-                // expecting all groups + layers + ExtJs rootNode = 9 items
-                expect(expandedNumtopMostGroup).to.be(9);
+                // expecting all groups + layers + ExtJs rootNode = 8 items
+                expect(expandedNumtopMostGroup).to.be(8);
                 var expandedAllLayersAndGroupsCount =
                     getAllLayers(olMap).length;
-                // expecting all groups + layers = 8 items
-                expect(expandedAllLayersAndGroupsCount).to.be(8);
+                // expecting all groups + layers = 7 items
+                expect(expandedAllLayersAndGroupsCount).to.be(7);
 
                 // collapse topgroup node
                 rootNode.collapseChildren(true, function(){
                     var collapsedNumtopMostGroup = store.getTotalCount();
-                    // expecting ExtJs rootNode + first folder = 2 items
+                    // expecting ExtJs rootNode + two folder of topMostGroup
                     // this is due to the strange behaviour that ExtJs removes
                     // all children from first visible node on collapsing
-                    expect(collapsedNumtopMostGroup).to.be(2);
+                    expect(collapsedNumtopMostGroup).to.be(3);
                     var collapsedAllLayersAndGroupsCount =
                         getAllLayers(olMap).length;
                     // still expecting all groups + layers = 8 items
-                    expect(collapsedAllLayersAndGroupsCount).to.be(8);
+                    expect(collapsedAllLayersAndGroupsCount).to.be(7);
                     done();
                 });
             });
         });
+    });
+});
+
+describe('A GeoExt.data.store.LayersTree', function () {
+
+    it('can be extended with custom LayerTreeNodes', function() {
+        var layer = new ol.layer.Group({name: 'any'});
+        var store;
+        var record;
+
+        // custom LayerTreeNode
+        Ext.define('GeoExt.CustomTreeNode',{
+            extend:'GeoExt.data.model.LayerTreeNode',
+            fields: [{
+                name: 'text',
+                type: 'string',
+                convert: function () {
+                    return 'test';
+                }
+            }]
+        });
+        expect(GeoExt.CustomTreeNode).to.not.be(undefined);
+
+        // custom LayersTree
+        Ext.define('GeoExt.CustomLayersTree', {
+            extend: 'GeoExt.data.store.LayersTree',
+            model: 'GeoExt.CustomTreeNode'
+        });
+        expect(GeoExt.CustomLayersTree).to.not.be(undefined);
+
+        store = Ext.create('GeoExt.CustomLayersTree', {
+            layerGroup: new ol.layer.Group({
+                layers: [layer]
+            })
+        });
+        record = store.getRootNode().getChildAt(0);
+
+        expect(store.getTotalCount()).to.be(1);
+        expect(record).to.be.a(GeoExt.CustomTreeNode);
+        expect(record.get('text')).to.be('test');
     });
 });
