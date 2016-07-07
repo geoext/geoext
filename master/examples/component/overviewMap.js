@@ -20,12 +20,16 @@ Ext.application({
         var ovMapPanel1;
         var ovMapPanel2;
 
-        source = new ol.source.MapQuest({layer: 'sat'});
+        source = new ol.source.OSM();
         layer = new ol.layer.Tile({
             source: source
         });
 
-        source2 = new ol.source.MapQuest({layer: 'osm'});
+
+        source2 = new ol.source.TileWMS({
+            url: 'http://ows.terrestris.de/osm-gray/service',
+            params: {'LAYERS': 'OSM-WMS', 'TILED': true}
+        });
         layer2 = new ol.layer.Tile({
             source: source2
         });
