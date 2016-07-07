@@ -32,7 +32,7 @@ describe('GeoExt.component.Map', function() {
             div.style.height = '256px';
             document.body.appendChild(div);
 
-            source = new ol.source.MapQuest({layer: 'sat'});
+            source = new ol.source.OSM();
             layer = new ol.layer.Tile({
                 source: source
             });
@@ -143,7 +143,7 @@ describe('GeoExt.component.Map', function() {
         describe('layer handling', function() {
             it('addLayer() adds an ol.layer.Base to the ol.Map',
                 function() {
-                    var source2 = new ol.source.MapQuest({layer: 'osm'});
+                    var source2 = new ol.source.OSM();
                     var layer2 = new ol.layer.Tile({
                         source: source2
                     });

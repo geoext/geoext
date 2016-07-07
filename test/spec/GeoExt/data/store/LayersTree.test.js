@@ -28,7 +28,7 @@ describe('GeoExt.data.store.LayersTree', function() {
         treeDiv.style.height = '256px';
         document.body.appendChild(treeDiv);
 
-        source = new ol.source.MapQuest({layer: 'sat'});
+        source = new ol.source.OSM();
         layer = new ol.layer.Tile({
             source: source,
             name: 'LAYERONE'
@@ -96,7 +96,7 @@ describe('GeoExt.data.store.LayersTree', function() {
 
         it('adds/removes listeners for ol.Collections', function() {
             var layer2 = new ol.layer.Tile({
-                source: new ol.source.MapQuest({
+                source: new ol.source.OSM({
                     layer: 'hyb'
                 }),
                 name: 'LAYERZWO'

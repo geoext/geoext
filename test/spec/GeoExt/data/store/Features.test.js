@@ -183,7 +183,7 @@ describe('GeoExt.data.store.Features', function() {
         beforeEach(function() {
             div = document.createElement('div');
             document.body.appendChild(div);
-            var source = new ol.source.MapQuest({layer: 'sat'});
+            var source = new ol.source.OSM();
             var layer = new ol.layer.Tile({
                 source: source
             });
@@ -234,7 +234,7 @@ describe('GeoExt.data.store.Features', function() {
         beforeEach(function() {
             div = document.createElement('div');
             document.body.appendChild(div);
-            var source = new ol.source.MapQuest({layer: 'sat'});
+            var source = new ol.source.OSM();
             var layer = new ol.layer.Tile({
                 source: source
             });
