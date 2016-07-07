@@ -20,29 +20,32 @@ Ext.application({
         var olMap;
         var treeStore;
 
-        source1 = new ol.source.MapQuest({layer: 'sat'});
+        source1 = new ol.source.Stamen({layer: 'watercolor'});
         layer1 = new ol.layer.Tile({
             source: source1,
-            name: 'MapQuest Satellite'
+            name: 'Stamen Watercolor'
         });
 
-        source2 = new ol.source.MapQuest({layer: 'osm'});
+        source2 = new ol.source.Stamen({layer: 'terrain-labels'});
         layer2 = new ol.layer.Tile({
             source: source2,
-            name: 'MapQuest OSM'
+            name: 'Stamen Terrain Labels'
         });
 
-        source3 = new ol.source.MapQuest({layer: 'hyb'});
+        source3 = new ol.source.TileWMS({
+            url: 'http://ows.terrestris.de/osm-gray/service',
+            params: {'LAYERS': 'OSM-WMS', 'TILED': true}
+        });
         layer3 = new ol.layer.Tile({
             source: source3,
-            name: 'MapQuest Hybrid',
-            description: 'This is a layer description that will be visible '
-                + 'as a tooltip.',
+            name: 'terrestris OSM WMS',
+            description: 'This is a layer description that will be visible ' +
+                'as a tooltip.',
             visible: false
         });
 
         group = new ol.layer.Group({
-            // name: 'Other Mapquest Layers',
+            name: 'Some Stamen Layers',
             layers: [layer1, layer2],
             visible: true
         });

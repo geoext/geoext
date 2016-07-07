@@ -96,25 +96,36 @@ Ext.application({
         var treeStore;
         var treeStore2;
 
-        source1 = new ol.source.MapQuest({layer: 'sat'});
+
+        source1 = new ol.source.Stamen({layer: 'watercolor'});
         layer1 = new ol.layer.Tile({
-            legendUrl: 'https://otile4-s.mqcdn.com/tiles/1.0.0/sat/4/4/7.jpg',
+            legendUrl: 'https://stamen-tiles-d.a.ssl.fastly.net/' +
+                'watercolor/2/1/0.jpg',
             source: source1,
-            name: 'MapQuest Satellite'
+            name: 'Stamen Watercolor'
         });
 
-        source2 = new ol.source.MapQuest({layer: 'osm'});
+        source2 = new ol.source.Stamen({layer: 'terrain-labels'});
         layer2 = new ol.layer.Tile({
-            legendUrl: 'https://otile4-s.mqcdn.com/tiles/1.0.0/osm/4/4/7.jpg',
+            legendUrl: 'https://stamen-tiles-b.a.ssl.fastly.net/' +
+                'terrain-labels/4/4/6.png',
             source: source2,
-            name: 'MapQuest OSM'
+            name: 'Stamen Terrain Labels'
         });
 
-        source3 = new ol.source.MapQuest({layer: 'hyb'});
+        source3 = new ol.source.TileWMS({
+            url: 'http://ows.terrestris.de/osm-gray/service',
+            params: {'LAYERS': 'OSM-WMS', 'TILED': true}
+        });
         layer3 = new ol.layer.Tile({
-            legendUrl: 'https://otile4-s.mqcdn.com/tiles/1.0.0/hyb/4/4/7.jpg',
+            legendUrl: 'http://ows.terrestris.de/osm-gray/service?' +
+                'SERVICE=WMS&VERSION=1.3.0&REQUEST=GetMap&FORMAT=image%2Fpng&' +
+                'TRANSPARENT=true&LAYERS=OSM-WMS&TILED=true&WIDTH=256&' +
+                'HEIGHT=256&CRS=EPSG%3A3857&STYLES=&' +
+                'BBOX=0%2C0%2C10018754.171394622%2C10018754.171394622',
             source: source3,
-            name: 'MapQuest Hybrid'
+            name: 'terrestris OSM WMS',
+            visible: false
         });
 
         layer4 = new ol.layer.Vector({
@@ -123,7 +134,8 @@ Ext.application({
         });
 
         group = new ol.layer.Group({
-            layers: [layer1, layer2]
+            layers: [layer1, layer2],
+            name: 'Some Stamen Layers'
         });
 
         olMap = new ol.Map({
