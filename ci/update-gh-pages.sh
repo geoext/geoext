@@ -8,9 +8,6 @@ set -ex
 # in the previous step
 # ------------------------------------------------------------------------------
 
-# Load variables and the 'running-on-travis'-check
-. $TRAVIS_BUILD_DIR/ci/shared.sh
-
 if [ $TRAVIS_PULL_REQUEST != "false" ]; then
     # Dont build anything for PR requests, only for merges
     return 0;
@@ -20,6 +17,9 @@ if [ $TRAVIS_BRANCH != "master" ]; then
     # only update when the target branch is master
     return 0;
 fi
+
+# Load variables and the 'running-on-travis'-check
+. $TRAVIS_BUILD_DIR/ci/shared.sh
 
 # default is master…
 SUB_FOLDER_NAME=$TRAVIS_BRANCH;
