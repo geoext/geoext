@@ -8,12 +8,12 @@ set -e
 # in the previous step
 # ------------------------------------------------------------------------------
 
-if [ $TRAVIS_PULL_REQUEST != "false" ]; then
+if [ "$TRAVIS_PULL_REQUEST" != "false" ]; then
     # Dont build anything for PRs, only for merges
     exit 1;
 fi
 
-if [ $TRAVIS_BRANCH != "master" ]; then
+if [ "$TRAVIS_BRANCH" != "master" ]; then
     # only update when the target branch is master
     exit 1;
 fi
@@ -25,7 +25,7 @@ fi
 SUB_FOLDER_NAME=$TRAVIS_BRANCH;
 DOC_SUFFIX="-dev"
 
-if [ $TRAVIS_TAG != "" ]; then
+if [ "$TRAVIS_TAG" != "" ]; then
     # … but if we are building for a tag, let's use this as folder name
     SUB_FOLDER_NAME=$TRAVIS_TAG
     DOC_SUFFIX=""
