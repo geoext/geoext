@@ -86,24 +86,24 @@ cp $GEOEXT_IN_SENCHA_WS_FOLDER/build/$GEOEXT_PACKAGE_NAME-debug.js $SUB_FOLDER_N
 
 # 3. Update the API docs
 # 3.1 … without ExtJS
-# mkdir -p $DOCS_DIR # for the API-docs without ExtJS classes
-# rm -Rf $DOCS_DIR/* # remove any content from previous runs
-# jsduck \
-#     --title="$GEOEXT_PACKAGE_NAME $GEOEXT_PACKAGE_VERSION$DOC_SUFFIX Documentation" \
-#     --output="$DOCS_DIR/" \
-#     --eg-iframe=$TRAVIS_BUILD_DIR/docresources/eg-iframe.html \
-#     $TRAVIS_BUILD_DIR/src/
+mkdir -p $DOCS_DIR # for the API-docs without ExtJS classes
+rm -Rf $DOCS_DIR/* # remove any content from previous runs
+jsduck \
+     --title="$GEOEXT_PACKAGE_NAME $GEOEXT_PACKAGE_VERSION$DOC_SUFFIX Documentation" \
+     --output="$DOCS_DIR/" \
+     --eg-iframe=$TRAVIS_BUILD_DIR/docresources/eg-iframe.html \
+     $TRAVIS_BUILD_DIR/src/
 
 # 3.2 … with ExtJS
-# mkdir -p $DOCS_W_EXT_DIR # for the API-docs without ExtJS classes
-# rm -Rf $DOCS_W_EXT_DIR/* # remove any content from previous runs
-# jsduck \
-#     --title="$GEOEXT_PACKAGE_NAME $GEOEXT_PACKAGE_VERSION$DOC_SUFFIX Documentation (incl. ExtJS classes)" \
-#     --output="$DOCS_W_EXT_DIR/" \
-#     --eg-iframe=$TRAVIS_BUILD_DIR/docresources/eg-iframe.html \
-#     "$DOWN_DIR/ext-$SENCHA_EXTJS_VERSION/packages/core/src" \
-#     "$DOWN_DIR/ext-$SENCHA_EXTJS_VERSION/classic/classic/src" \
-#     $TRAVIS_BUILD_DIR/src/
+mkdir -p $DOCS_W_EXT_DIR # for the API-docs without ExtJS classes
+rm -Rf $DOCS_W_EXT_DIR/* # remove any content from previous runs
+jsduck \
+     --title="$GEOEXT_PACKAGE_NAME $GEOEXT_PACKAGE_VERSION$DOC_SUFFIX Documentation (incl. ExtJS classes)" \
+     --output="$DOCS_W_EXT_DIR/" \
+     --eg-iframe=$TRAVIS_BUILD_DIR/docresources/eg-iframe.html \
+     "$DOWN_DIR/ext-$SENCHA_EXTJS_VERSION/packages/core/src" \
+     "$DOWN_DIR/ext-$SENCHA_EXTJS_VERSION/classic/classic/src" \
+     $TRAVIS_BUILD_DIR/src/
 
 
 # 4. done.
