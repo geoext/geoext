@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-set -ex
+set -e
 
 # ------------------------------------------------------------------------------
 # This script is supposed to be called from Travis continuous integration server
