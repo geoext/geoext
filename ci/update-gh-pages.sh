@@ -17,12 +17,12 @@ else
 fi
 
 if [ "$TRAVIS_PULL_REQUEST" != "false" ]; then
-    # Dont build anything for PRs, only for merges
+    echo "This looks like a pull request, not doing anything."
     exit 1;
 fi
 
 if [ "$TRAVIS_BRANCH" != "master" ]; then
-    # only update when the target branch is master
+    echo "Pull requests target branch is not 'master', not doing anything."
     exit 1;
 fi
 
