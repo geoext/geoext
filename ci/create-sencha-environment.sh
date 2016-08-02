@@ -68,4 +68,4 @@ $SENCHA_CMD package repo init -name "$GEOEXT_REPO_NAME" -email "$GEOEXT_REPO_EMA
 # Back to the original working directory
 cd $TRAVIS_BUILD_DIR
 
-return 0
+exit 0

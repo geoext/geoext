@@ -13,7 +13,7 @@ set -e
 # Only do something on travis
 if [ "$TRAVIS" != "true" ]; then
     echo "This script is supposed to be run inside the travis environment."
-    return 1
+    exit 1
 fi
 
 # Where we will downloaded fils go? Cached between builds via travis

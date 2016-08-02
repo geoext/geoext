@@ -9,13 +9,13 @@ set -e
 # ------------------------------------------------------------------------------
 
 if [ $TRAVIS_PULL_REQUEST != "false" ]; then
-    # Dont build anything for PR requests, only for merges
-    return 0;
+    # Dont build anything for PRs, only for merges
+    exit 1;
 fi
 
 if [ $TRAVIS_BRANCH != "master" ]; then
     # only update when the target branch is master
-    return 0;
+    exit 1;
 fi
 
 # Load variables and the 'running-on-travis'-check
