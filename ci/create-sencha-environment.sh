@@ -12,8 +12,13 @@ set -e
 # the script `ci/shared.sh`.
 # ------------------------------------------------------------------------------
 
-# Load variables and the 'running-on-travis'-check
-. $TRAVIS_BUILD_DIR/ci/shared.sh
+if [ -f "$TRAVIS_BUILD_DIR/ci/shared.sh" ]; then
+    # Load variables and the 'running-on-travis'-check
+    source $TRAVIS_BUILD_DIR/ci/shared.sh
+else
+    echo "Failed to find shared.sh."
+    exit 1;
+fi
 
 # create directories (if needed), will not fail if they are there already
 mkdir -p $DOWN_DIR

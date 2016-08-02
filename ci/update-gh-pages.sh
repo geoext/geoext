@@ -7,6 +7,14 @@ set -e
 # It will update the gh.pages branch of GeoExt with various artifacts created
 # in the previous step
 # ------------------------------------------------------------------------------
+echo "$TRAVIS_BUILD_DIR/ci/shared.sh"
+if [ -f "$TRAVIS_BUILD_DIR/ci/shared.sh" ]; then
+    # Load variables and the 'running-on-travis'-check
+    source $TRAVIS_BUILD_DIR/ci/shared.sh
+else
+    echo "Failed to find shared.sh."
+    exit 1;
+fi
 
 if [ "$TRAVIS_PULL_REQUEST" != "false" ]; then
     # Dont build anything for PRs, only for merges
@@ -17,9 +25,6 @@ if [ "$TRAVIS_BRANCH" != "master" ]; then
     # only update when the target branch is master
     exit 1;
 fi
-
-# Load variables and the 'running-on-travis'-check
-. $TRAVIS_BUILD_DIR/ci/shared.sh
 
 # default is master…
 SUB_FOLDER_NAME=$TRAVIS_BRANCH;
