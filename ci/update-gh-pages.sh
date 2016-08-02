@@ -61,6 +61,8 @@ EOF
 git config --global user.name "$ORIGINAL_AUTHOR_NAME"
 git config --global user.email "$ORIGINAL_AUTHOR_EMAIL"
 
+# Cleanup
+rm -Rf $GH_PAGES_DIR
 
 git clone --branch $GH_PAGES_BRANCH $GH_PAGES_REPO $GH_PAGES_DIR
 
