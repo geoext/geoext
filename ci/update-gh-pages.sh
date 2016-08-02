@@ -1,5 +1,5 @@
-#!/bin/sh
-set -ex
+#!/usr/bin/env bash
+set -e
 
 # ------------------------------------------------------------------------------
 # This script is supposed to be called from Travis continuous integration server
@@ -7,25 +7,30 @@ set -ex
 # It will update the gh.pages branch of GeoExt with various artifacts created
 # in the previous step
 # ------------------------------------------------------------------------------
-
-# Load variables and the 'running-on-travis'-check
-. $TRAVIS_BUILD_DIR/ci/shared.sh
-
-if [ $TRAVIS_PULL_REQUEST != "false" ]; then
-    # Dont build anything for PR requests, only for merges
-    return 0;
+echo "$TRAVIS_BUILD_DIR/ci/shared.sh"
+if [ -f "$TRAVIS_BUILD_DIR/ci/shared.sh" ]; then
+    # Load variables and the 'running-on-travis'-check
+    source $TRAVIS_BUILD_DIR/ci/shared.sh
+else
+    echo "Failed to find shared.sh."
+    exit 1;
 fi
 
-if [ $TRAVIS_BRANCH != "master" ]; then
-    # only update when the target branch is master
-    return 0;
+if [ "$TRAVIS_PULL_REQUEST" != "false" ]; then
+    echo "This looks like a pull request, not doing anything."
+    exit 1;
+fi
+
+if [ "$TRAVIS_BRANCH" != "master" ]; then
+    echo "Pull requests target branch is not 'master', not doing anything."
+    exit 1;
 fi
 
 # default is master…
 SUB_FOLDER_NAME=$TRAVIS_BRANCH;
 DOC_SUFFIX="-dev"
 
-if [ $TRAVIS_TAG != "" ]; then
+if [ "$TRAVIS_TAG" != "" ]; then
     # … but if we are building for a tag, let's use this as folder name
     SUB_FOLDER_NAME=$TRAVIS_TAG
     DOC_SUFFIX=""
@@ -56,6 +61,8 @@ EOF
 git config --global user.name "$ORIGINAL_AUTHOR_NAME"
 git config --global user.email "$ORIGINAL_AUTHOR_EMAIL"
 
+# Cleanup
+rm -Rf $GH_PAGES_DIR
 
 git clone --branch $GH_PAGES_BRANCH $GH_PAGES_REPO $GH_PAGES_DIR
 
@@ -105,11 +112,10 @@ jsduck \
      "$DOWN_DIR/ext-$SENCHA_EXTJS_VERSION/classic/classic/src" \
      $TRAVIS_BUILD_DIR/src/
 
-
 # 4. done.
 
 # Next: add, commit and push
-git add .
+git add --all
 git commit -m "$GH_PAGES_COMMIT_MSG"
 git push --quiet $GH_PAGES_REPO_AUTHENTICATED $GH_PAGES_BRANCH
 

@@ -1,5 +1,5 @@
-#!/bin/sh
-set -ex
+#!/usr/bin/env bash
+set -e
 
 # ------------------------------------------------------------------------------
 # This script is supposed to be called from Travis continuous integration server
@@ -12,8 +12,13 @@ set -ex
 # the script `ci/shared.sh`.
 # ------------------------------------------------------------------------------
 
-# Load variables and the 'running-on-travis'-check
-. $TRAVIS_BUILD_DIR/ci/shared.sh
+if [ -f "$TRAVIS_BUILD_DIR/ci/shared.sh" ]; then
+    # Load variables and the 'running-on-travis'-check
+    source $TRAVIS_BUILD_DIR/ci/shared.sh
+else
+    echo "Failed to find shared.sh."
+    exit 1;
+fi
 
 # create directories (if needed), will not fail if they are there already
 mkdir -p $DOWN_DIR
@@ -68,4 +73,4 @@ $SENCHA_CMD package repo init -name "$GEOEXT_REPO_NAME" -email "$GEOEXT_REPO_EMA
 # Back to the original working directory
 cd $TRAVIS_BUILD_DIR
 
-return 0
+exit 0
