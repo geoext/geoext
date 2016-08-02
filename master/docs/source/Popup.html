@@ -39,7 +39,7 @@
  *     var olMap = new ol.Map({
  *         layers: [
  *             new ol.layer.Tile({
- *                source: new ol.source.MapQuest({layer: 'osm'})
+ *                source: new ol.source.OSM()
  *             })
  *         ],
  *         view: new ol.View({
@@ -127,12 +127,12 @@ Ext.define('GeoExt.component.Popup', {
      * @param {Object} config The configuration object.
      */
     constructor: function(config) {
-        var me = this,
-            cfg = config || {},
-            overlayElement;
+        var me = this;
+        var cfg = config || {};
+        var overlayElement;
 
         if (!Ext.isDefined(cfg.map)) {
-            Ext.Error.raise(&quot;Required configuration 'map' not passed&quot;);
+            Ext.Error.raise('Required configuration \'map\' not passed');
         }
         if (Ext.isDefined(cfg.renderTo)) {
             // use the passed element/string
@@ -167,7 +167,7 @@ Ext.define('GeoExt.component.Popup', {
 <span id='GeoExt-component-Popup-method-setupOverlay'>    /**
 </span>     * @private
      */
-    setupOverlay: function(){
+    setupOverlay: function() {
         var me = this;
         var overlay = new ol.Overlay({
             autoPan: true,
@@ -206,7 +206,7 @@ Ext.define('GeoExt.component.Popup', {
 <span id='GeoExt-component-Popup-method-onBeforeDestroy'>    /**
 </span>     * @private
      */
-    onBeforeDestroy: function(){
+    onBeforeDestroy: function() {
         var me = this;
         if (me.overlayElementCreated &amp;&amp; me.overlayElement) {
             var parent = me.overlayElement.parentNode;

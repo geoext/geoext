@@ -125,7 +125,7 @@ Ext.define('GeoExt.component.FeatureRenderer', {
          *
          * @cfg {String}
          */
-        imgCls: &quot;&quot;,
+        imgCls: '',
 
 <span id='GeoExt-component-FeatureRenderer-cfg-minWidth'>        /**
 </span>         * The minimum width.
@@ -198,19 +198,19 @@ Ext.define('GeoExt.component.FeatureRenderer', {
          *
          * @cfg {String}
          */
-        symbolType: &quot;Polygon&quot;
+        symbolType: 'Polygon'
     },
 
 <span id='GeoExt-component-FeatureRenderer-method-initComponent'>    /**
 </span>     * Initialize the GeoExt.component.FeatureRenderer.
      */
-    initComponent: function(){
+    initComponent: function() {
         var me = this;
         var id = this.getId();
         this.autoEl = {
-            tag: &quot;div&quot;,
-            &quot;class&quot;: this.getImgCls(),
-            id: id
+            'id': id,
+            'tag': 'div',
+            'class': this.getImgCls()
         };
         if (!this.getLineFeature()) {
             this.setLineFeature(new ol.Feature({
@@ -288,7 +288,7 @@ Ext.define('GeoExt.component.FeatureRenderer', {
      */
     initCustomEvents: function() {
         this.clearCustomEvents();
-        this.el.on(&quot;click&quot;, this.onClick, this);
+        this.el.on('click', this.onClick, this);
     },
 <span id='GeoExt-component-FeatureRenderer-method-clearCustomEvents'>    /**
 </span>     * Unbinds previously bound listeners on #el.
@@ -306,7 +306,7 @@ Ext.define('GeoExt.component.FeatureRenderer', {
      * @private
      */
     onClick: function() {
-        this.fireEvent(&quot;click&quot;, this);
+        this.fireEvent('click', this);
     },
 <span id='GeoExt-component-FeatureRenderer-method-beforeDestroy'>    /**
 </span>     * Private method called during the destroy sequence.
@@ -354,7 +354,7 @@ Ext.define('GeoExt.component.FeatureRenderer', {
          * 3) if no width or height, assume a resolution of 1
          */
         var resolution = this.initialConfig.resolution;
-        if(!resolution) {
+        if (!resolution) {
             resolution = Math.max(
                 gw / this.width || 0,
                 gh / this.height || 0

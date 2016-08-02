@@ -74,13 +74,6 @@ Ext.define('GeoExt.data.store.LayersTree', {
          */
         layerGroup: null,
 
-<span id='GeoExt-data-store-LayersTree-cfg-textProperty'>        /**
-</span>         * The layer property that will be used to label tree nodes.
-         *
-         * @cfg {String}
-         */
-        textProperty: 'name',
-
 <span id='GeoExt-data-store-LayersTree-cfg-folderToggleMode'>        /**
 </span>         * Configures the behaviour of the checkbox of an `ol.layer.Group`
          * (folder). Possible values are `'classic'` or `'ol3'`.
@@ -147,7 +140,7 @@ Ext.define('GeoExt.data.store.LayersTree', {
 <span id='GeoExt-data-store-LayersTree-method-constructor'>    /**
 </span>     * Constructs a LayersTree store.
      */
-    constructor: function(){
+    constructor: function() {
         var me = this;
         me.callParent(arguments);
 
@@ -174,21 +167,21 @@ Ext.define('GeoExt.data.store.LayersTree', {
      * @return {String} The folderToggleMode that was set.
      * @private
      */
-    applyFolderToggleMode: function(folderToggleMode){
-        if(folderToggleMode === 'classic' || folderToggleMode === 'ol3'){
+    applyFolderToggleMode: function(folderToggleMode) {
+        if (folderToggleMode === 'classic' || folderToggleMode === 'ol3') {
             var rootNode = this.getRootNode();
-            if(rootNode){
+            if (rootNode) {
                 rootNode.cascadeBy({
-                    before: function(child){
+                    before: function(child) {
                         child.set('__toggleMode', folderToggleMode);
                     }
                 });
             }
-        } else {
-            Ext.raise(&quot;Invalid folderToggleMode set in &quot; + this.self.getName()
-                + &quot;: &quot; + folderToggleMode + &quot;; 'classic' or 'ol3' are valid.&quot;);
+            return folderToggleMode;
         }
-        return folderToggleMode;
+
+        Ext.raise('Invalid folderToggleMode set in ' + this.self.getName()
+            + ': ' + folderToggleMode + '; \'classic\' or \'ol3\' are valid.');
     },
 
 <span id='GeoExt-data-store-LayersTree-method-handleRemove'>    /**
@@ -199,7 +192,7 @@ Ext.define('GeoExt.data.store.LayersTree', {
      *     removed nodes.
      * @private
      */
-    handleRemove: function(store, records){
+    handleRemove: function(store, records) {
         var me = this;
         var keyRemoveOptOut = me.self.KEY_COLLAPSE_REMOVE_OPT_OUT;
         me.suspendCollectionEvents();
@@ -209,7 +202,7 @@ Ext.define('GeoExt.data.store.LayersTree', {
                 return;
             }
             var layerOrGroup = record.getOlLayer();
-            if(layerOrGroup instanceof ol.layer.Group){
+            if (layerOrGroup instanceof ol.layer.Group) {
                 me.unbindGroupLayerCollectionEvents(layerOrGroup);
             }
             var group = GeoExt.util.Layer.findParentGroup(
@@ -233,13 +226,13 @@ Ext.define('GeoExt.data.store.LayersTree', {
      * @param {GeoExt.data.model.LayerTreeNode} removedNode The removed node.
      * @private
      */
-    handleNodeRemove: function(parentNode, removedNode){
+    handleNodeRemove: function(parentNode, removedNode) {
         var me = this;
         var layerOrGroup = removedNode.getOlLayer();
         if (!layerOrGroup) {
             layerOrGroup = me.getLayerGroup();
         }
-        if(layerOrGroup instanceof ol.layer.Group){
+        if (layerOrGroup instanceof ol.layer.Group) {
             removedNode.un('beforecollapse', me.onBeforeGroupNodeCollapse);
             me.unbindGroupLayerCollectionEvents(layerOrGroup);
         }
@@ -262,7 +255,7 @@ Ext.define('GeoExt.data.store.LayersTree', {
      * @param {GeoExt.data.model.LayerTreeNode} appendedNode The appended node.
      * @private
      */
-    handleNodeAppend: function(parentNode, appendedNode){
+    handleNodeAppend: function(parentNode, appendedNode) {
         var me = this;
         var group = parentNode.getOlLayer();
         var layer = appendedNode.getOlLayer();
@@ -296,7 +289,7 @@ Ext.define('GeoExt.data.store.LayersTree', {
      *     inserted before.
      * @private
      */
-    handleNodeInsert: function(parentNode, insertedNode, insertedBefore){
+    handleNodeInsert: function(parentNode, insertedNode, insertedBefore) {
         var me = this;
         var group = parentNode.getOlLayer();
         if (!group) {
@@ -328,7 +321,7 @@ Ext.define('GeoExt.data.store.LayersTree', {
      *
      * @param {ol.layer.Base} layerOrGroup The layer or layer group to add.
      */
-    addLayerNode: function(layerOrGroup){
+    addLayerNode: function(layerOrGroup) {
         var me = this;
         // 2. get group to which the layer was added
         var group = GeoExt.util.Layer.findParentGroup(
@@ -350,7 +343,7 @@ Ext.define('GeoExt.data.store.LayersTree', {
         if (group === me.getLayerGroup()) {
             parentNode = me.getRootNode();
         } else {
-            parentNode = me.getRootNode().findChildBy(function(candidate){
+            parentNode = me.getRootNode().findChildBy(function(candidate) {
                 return candidate.getOlLayer() === group;
             }, me, true);
         }
@@ -359,18 +352,14 @@ Ext.define('GeoExt.data.store.LayersTree', {
         }
 
         // 5. insert a new layer node at the specified index to that node
-        var layerNode = Ext.create('GeoExt.data.model.LayerTreeNode',
-            layerOrGroup
-        );
-        layerNode.set('text', layerOrGroup.get(me.getTextProperty()));
-        layerNode.commit();
-
-        parentNode.insertChild(layerIdx, layerNode);
+        var layerNode = parentNode.insertChild(layerIdx, layerOrGroup);
 
         if (layerOrGroup instanceof ol.layer.Group) {
             // See onBeforeGroupNodeCollapse for an explanation why we have this
             layerNode.on('beforecollapse', me.onBeforeGroupNodeCollapse, me);
-            layerOrGroup.getLayers().forEach(me.addLayerNode, me);
+
+            var childLayers = layerOrGroup.getLayers().getArray();
+            Ext.each(childLayers, me.addLayerNode, me, me.inverseLayerOrder);
         }
     },
 
@@ -385,9 +374,9 @@ Ext.define('GeoExt.data.store.LayersTree', {
      * @param {Ext.data.NodeInterface} node The collapsible folder node.
      * @private
      */
-    onBeforeGroupNodeCollapse: function(node){
+    onBeforeGroupNodeCollapse: function(node) {
         var keyRemoveOptOut = this.self.KEY_COLLAPSE_REMOVE_OPT_OUT;
-        node.cascadeBy(function(child){
+        node.cascadeBy(function(child) {
             child[keyRemoveOptOut] = true;
         });
     },
@@ -436,7 +425,7 @@ Ext.define('GeoExt.data.store.LayersTree', {
      *     the relevant `ol.layer.Base`.
      * @private
      */
-    onLayerCollectionAdd: function(evt){
+    onLayerCollectionAdd: function(evt) {
         var me = this;
         if (me.collectionEventsSuspended) {
             return;
@@ -454,7 +443,7 @@ Ext.define('GeoExt.data.store.LayersTree', {
      *     the relevant `ol.layer.Base`.
      * @private
      */
-    onLayerCollectionRemove: function(evt){
+    onLayerCollectionRemove: function(evt) {
         var me = this;
         if (me.collectionEventsSuspended) {
             return;
@@ -463,7 +452,7 @@ Ext.define('GeoExt.data.store.LayersTree', {
         // 1. find the node that existed for that layer
         var node = me.getRootNode().findChildBy(function(candidate) {
             return candidate.getOlLayer() === layerOrGroup;
-        });
+        }, me, true);
         if (!node) {
             return;
         }
@@ -482,7 +471,7 @@ Ext.define('GeoExt.data.store.LayersTree', {
      * OpenLayers collections. Use #resumeCollectionEvents to start listening
      * again.
      */
-    suspendCollectionEvents: function(){
+    suspendCollectionEvents: function() {
         this.collectionEventsSuspended = true;
     },
 
@@ -491,7 +480,7 @@ Ext.define('GeoExt.data.store.LayersTree', {
      * listening to change events on the underlying OpenLayers collections
      * again.
      */
-    resumeCollectionEvents: function(){
+    resumeCollectionEvents: function() {
         this.collectionEventsSuspended = false;
     }
 });

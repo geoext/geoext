@@ -41,21 +41,17 @@ Ext.define('GeoExt.data.model.print.Capability', {
     requires: [
         'GeoExt.data.model.print.Layout'
     ],
-<span id='GeoExt-data-model-print-Capability-cfg-hasMany'>    hasMany: [
-</span>        {
-            name: 'layouts',
-            associationKey: 'layouts',
-            model: 'print.Layout'
-        }
-    ],
-<span id='GeoExt-data-model-print-Capability-property-fields'>    fields: [
-</span>        {
-            name: 'app',
-            type: 'string'
-        },
-        {
-            name: 'formats'
-        }
+
+<span id='GeoExt-data-model-print-Capability-method-layouts'>    /**
+</span>     * @method layouts
+     * Returns an Ext.data.Store of referenced
+     * {@link GeoExt.data.model.print.Layout}s.
+     * @return {Ext.data.Store} The store
+     */
+
+    fields: [
+        {name: 'app', type: 'string'},
+        {name: 'formats', type: 'auto', defaultValue: []}
     ]
 });
 </pre>

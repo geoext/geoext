@@ -15,61 +15,97 @@
   </script>
 </head>
 <body onload="prettyPrint(); highlight();">
-  <pre class="prettyprint lang-js"><span id='Ext-fx-layout-card-Flip'>/**
+  <pre class="prettyprint lang-js"><span id='Ext-fx-animation-Flip'>/**
 </span> * @private
  */
-Ext.define('Ext.fx.layout.card.Flip', {
-    extend: 'Ext.fx.layout.card.Style',
+Ext.define('Ext.fx.animation.Flip', {
+    extend: 'Ext.fx.animation.Abstract',
 
-    alias: 'fx.layout.card.flip',
+    alias: 'animation.flip',
 
     config: {
-<span id='Ext-fx-layout-card-Flip-cfg-duration'>        duration: 500,
+<span id='Ext-fx-animation-Flip-cfg-easing'>        easing: 'ease-in',
 </span>
-<span id='Ext-fx-layout-card-Flip-cfg-inAnimation'>        inAnimation: {
-</span>            type: 'flip',
-            half: true,
-            easing: 'ease-out',
-            before: {
-                'backface-visibility': 'hidden'
-            },
-            after: {
-                'backface-visibility': null
-            }
-        },
-<span id='Ext-fx-layout-card-Flip-cfg-outAnimation'>        outAnimation: {
-</span>            type: 'flip',
-            half: true,
-            easing: 'ease-in',
-            before: {
-                'backface-visibility': 'hidden'
-            },
-            after: {
-                'backface-visibility': null
-            },
-            out: true
+<span id='Ext-fx-animation-Flip-cfg-direction'>        /**
+</span>         * @cfg {String} direction The direction of which the slide animates
+         * @accessor
+         */
+        direction: 'right',
+
+<span id='Ext-fx-animation-Flip-cfg-half'>        half: false,
+</span>
+<span id='Ext-fx-animation-Flip-cfg-out'>        out: null
+</span>    },
+
+<span id='Ext-fx-animation-Flip-method-getData'>    getData: function() {
+</span>        var me = this,
+            from = me.getFrom(),
+            to = me.getTo(),
+            direction = me.getDirection(),
+            out = me.getOut(),
+            half = me.getHalf(),
+            rotate = half ? 90 : 180,
+            fromScale = 1,
+            toScale = 1,
+            fromRotateX = 0,
+            fromRotateY = 0,
+            toRotateX = 0,
+            toRotateY = 0;
+
+
+        if (out) {
+            toScale = 0.8;
+        } else {
+            fromScale = 0.8;
         }
-    },
 
-<span id='Ext-fx-layout-card-Flip-method-onActiveItemChange'>    onActiveItemChange: function(cardLayout, newItem, oldItem, controller) {
-</span>        var parent = newItem.element.getParent();
-        parent.addCls(Ext.baseCSSPrefix + 'layout-card-perspective');
+        switch (direction) {
+            case this.DIRECTION_UP:
+                if (out) {
+                    toRotateX = rotate;
+                } else {
+                    fromRotateX = -rotate;
+                }
+                break;
 
-        this.on('animationend', function() {
-            parent.removeCls(Ext.baseCSSPrefix + 'layout-card-perspective');
-        }, this, {single: true});
+            case this.DIRECTION_DOWN:
+                if (out) {
+                    toRotateX = -rotate;
+                } else {
+                    fromRotateX = rotate;
+                }
+                break;
 
-        this.callParent(arguments);
-    },
+            case this.DIRECTION_RIGHT:
+                if (out) {
+                    toRotateY = rotate;
+                } else {
+                    fromRotateY = -rotate;
+                }
+                break;
 
-<span id='Ext-fx-layout-card-Flip-method-updateDuration'>    updateDuration: function(duration) {
-</span>        var halfDuration = duration / 2,
-            inAnimation = this.getInAnimation(),
-            outAnimation = this.getOutAnimation();
+            case this.DIRECTION_LEFT:
+                if (out) {
+                    toRotateY = -rotate;
+                } else {
+                    fromRotateY = rotate;
+                }
+                break;
+        }
 
-        inAnimation.setDelay(halfDuration);
-        inAnimation.setDuration(halfDuration);
-        outAnimation.setDuration(halfDuration);
+        from.setTransform({
+            rotateX: fromRotateX,
+            rotateY: fromRotateY,
+            scale: fromScale
+        });
+
+        to.setTransform({
+            rotateX: toRotateX,
+            rotateY: toRotateY,
+            scale: toScale
+        });
+
+        return this.callParent();
     }
 });
 </pre>

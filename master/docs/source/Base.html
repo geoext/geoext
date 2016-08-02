@@ -38,12 +38,40 @@ Ext.define('GeoExt.data.model.Base', {
     requires: [
         'Ext.data.identifier.Uuid'
     ],
+
+<span id='GeoExt-data-model-Base-property-identifier'>    identifier: 'uuid',
+</span>
 <span id='GeoExt-data-model-Base-property-schema'>    schema: {
 </span>        id: 'geoext-schema',
         namespace: 'GeoExt.data.model'
     },
-<span id='GeoExt-data-model-Base-property-identifier'>    identifier: 'uuid'
-</span>});
+
+    inheritableStatics: {
+<span id='GeoExt-data-model-Base-static-method-loadRawData'>        /**
+</span>         * Loads a record from a provided data structure initializing the models
+         * associations. Simply calling Ext.create will not utilize the models
+         * configured reader and effectivly sidetrack associations configs.
+         * This static helper method makes sure associations are initialized
+         * properly and are available with the returned record.
+         *
+         * Be aware that the provided data may be modified by the models reader
+         * initializing associations.
+         *
+         * @param  {Object} data The data the record will be created with.
+         * @return {GeoExt.data.model.Base} The record.
+         */
+        loadRawData: function(data) {
+            var me = this;
+            var result = me.getProxy().getReader().readRecords(data || {});
+            var records = result.getRecords();
+            var success = result.getSuccess();
+
+            if (success &amp;&amp; records.length) {
+                return records[0];
+            }
+        }
+    }
+});
 </pre>
 </body>
 </html>
