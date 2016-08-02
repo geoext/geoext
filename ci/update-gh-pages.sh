@@ -112,11 +112,10 @@ jsduck \
      "$DOWN_DIR/ext-$SENCHA_EXTJS_VERSION/classic/classic/src" \
      $TRAVIS_BUILD_DIR/src/
 
-
 # 4. done.
 
 # Next: add, commit and push
-git add .
+git add --all
 git commit -m "$GH_PAGES_COMMIT_MSG"
 git push --quiet $GH_PAGES_REPO_AUTHENTICATED $GH_PAGES_BRANCH
 
