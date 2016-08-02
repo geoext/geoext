@@ -34,7 +34,7 @@
  *     });
  *
  * Since this sort of checking usually only makes sense in debug mode, you can
- * additionally wrap the `symbols`-configuration in these &lt;debug&gt;-line
+ * additionally wrap the `symbols`-configuration in these `&lt;debug&gt;`-line
  * comments:
  *
  *     Ext.define('MyNewClass.DependingOnOpenLayersClasses', {
