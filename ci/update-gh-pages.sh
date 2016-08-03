@@ -117,7 +117,7 @@ jsduck \
 # Next: add, commit and push
 git add --all
 git commit -m "$GH_PAGES_COMMIT_MSG"
-git push --quiet $GH_PAGES_REPO_AUTHENTICATED $GH_PAGES_BRANCH
+git push $GH_PAGES_REPO_AUTHENTICATED $GH_PAGES_BRANCH
 
 # Cleanup
 rm -Rf $GH_PAGES_DIR
