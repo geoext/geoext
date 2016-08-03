@@ -2,7 +2,7 @@ language: node_js
 node_js: "0.12"
 env:
   global:
-    secure: "GHK4yb1Xb9rjV9pK9NtrA9ckRv7cz98w6Ihc20MlEwUK3zaQw7l1fvQ8GjrkG4nYY3trhZQn1bmsQ5Raip+o3PQ/tUasa3nEiAKYHnzrgCoNhPOBTGDCwpllstpM75P5jpY7Ap0Dt/QBm1joOyznLDJ91oKe3Vra5UYwMHFAqhA="
+    secure: "HmOAYGJuHc1PmqTSoGsmC3RLgLCKGkz4+by7ZN0YkX2CmWlc3G2jtiJ5VIq40YVtzlo0oi+nphFMOdWdiyjXG6zezbPwVIxlijg7xcGvmXDVYe75mWNqW3sVnF4M8YLMMMyfyMcrlkOJdV9rV67aqFM1bE0z8PLgELwqgmcVw/A="
 before_install:
   - ./ci/create-sencha-environment.sh
 install:
