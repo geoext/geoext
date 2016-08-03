@@ -15,132 +15,221 @@
   </script>
 </head>
 <body onload="prettyPrint(); highlight();">
-  <pre class="prettyprint lang-js"><span id='Ext-plugin-Abstract'>/**
-</span> * The AbstractPlugin class is the base class from which user-implemented plugins should inherit.
- *
- * This class defines the essential API of plugins as used by Components by defining the following methods:
- *
- *   - `init` : The plugin initialization method which the owning Component calls at Component initialization time.
- *
- *     The Component passes itself as the sole parameter.
- *
- *     Subclasses should set up bidirectional links between the plugin and its client Component here.
- *
- *   - `destroy` : The plugin cleanup method which the owning Component calls at Component destruction time.
- *
- *     Use this method to break links between the plugin and the Component and to free any allocated resources.
+  <pre class="prettyprint lang-js"><span id='Ext-fx-animation-Abstract'>/**
+</span> * @private
  */
-Ext.define('Ext.plugin.Abstract', {
-    alternateClassName: 'Ext.AbstractPlugin',
+Ext.define('Ext.fx.animation.Abstract', {
 
-<span id='Ext-plugin-Abstract-property-isPlugin'>    /**
-</span>     * @property {Boolean} isPlugin
-     * `true` in this class to identify an object as an instantiated Plugin, or subclass thereof.
-     */
-    isPlugin: true,
+    extend: 'Ext.Evented',
 
-<span id='Ext-plugin-Abstract-method-constructor'>    /**
-</span>     * Instantiates the plugin.
-     * @param {Object} [config] Configuration object.
-     */
-    constructor: function(config) {
-        if (config) {
-            this.pluginConfig = config;
-            this.initConfig(config);
+<span id='Ext-fx-animation-Abstract-property-isAnimation'>    isAnimation: true,
+</span>
+    requires: [
+        'Ext.fx.State'
+    ],
+
+    config: {
+<span id='Ext-fx-animation-Abstract-cfg-name'>        name: '',
+</span>
+<span id='Ext-fx-animation-Abstract-cfg-element'>        element: null,
+</span>
+<span id='Ext-fx-animation-Abstract-cfg-before'>        /**
+</span>         * @cfg
+         * Before configuration.
+         */
+        before: null,
+
+<span id='Ext-fx-animation-Abstract-cfg-from'>        from: {},
+</span>
+<span id='Ext-fx-animation-Abstract-cfg-to'>        to: {},
+</span>
+<span id='Ext-fx-animation-Abstract-cfg-after'>        after: null,
+</span>
+<span id='Ext-fx-animation-Abstract-cfg-states'>        states: {},
+</span>
+<span id='Ext-fx-animation-Abstract-cfg-duration'>        duration:  300,
+</span>
+<span id='Ext-fx-animation-Abstract-cfg-easing'>        /**
+</span>         * @cfg
+         * Easing type.
+         */
+        easing: 'linear',
+
+<span id='Ext-fx-animation-Abstract-cfg-iteration'>        iteration: 1,
+</span>
+<span id='Ext-fx-animation-Abstract-cfg-direction'>        direction: 'normal',
+</span>
+<span id='Ext-fx-animation-Abstract-cfg-delay'>        delay: 0,
+</span>
+<span id='Ext-fx-animation-Abstract-cfg-onBeforeStart'>        onBeforeStart: null,
+</span>
+<span id='Ext-fx-animation-Abstract-cfg-callback'>        callback: null,
+</span>
+<span id='Ext-fx-animation-Abstract-cfg-onEnd'>        onEnd: null,
+</span>
+<span id='Ext-fx-animation-Abstract-cfg-onBeforeEnd'>        onBeforeEnd: null,
+</span>
+<span id='Ext-fx-animation-Abstract-cfg-scope'>        scope: null,
+</span>
+<span id='Ext-fx-animation-Abstract-cfg-reverse'>        reverse: null,
+</span>
+<span id='Ext-fx-animation-Abstract-cfg-preserveEndState'>        preserveEndState: false,
+</span>
+<span id='Ext-fx-animation-Abstract-cfg-replacePrevious'>        replacePrevious: true
+</span>    },
+
+<span id='Ext-fx-animation-Abstract-property-STATE_FROM'>    STATE_FROM: '0%',
+</span>
+<span id='Ext-fx-animation-Abstract-property-STATE_TO'>    STATE_TO: '100%',
+</span>
+<span id='Ext-fx-animation-Abstract-property-DIRECTION_UP'>    DIRECTION_UP: 'up',
+</span>
+<span id='Ext-fx-animation-Abstract-property-DIRECTION_DOWN'>    DIRECTION_DOWN: 'down',
+</span>
+<span id='Ext-fx-animation-Abstract-property-DIRECTION_LEFT'>    DIRECTION_LEFT: 'left',
+</span>
+<span id='Ext-fx-animation-Abstract-property-DIRECTION_RIGHT'>    DIRECTION_RIGHT: 'right',
+</span>
+<span id='Ext-fx-animation-Abstract-property-stateNameRegex'>    stateNameRegex: /^(?:[\d\.]+)%$/,
+</span>
+<span id='Ext-fx-animation-Abstract-method-constructor'>    constructor: function() {
+</span>        this.states = {};
+
+        this.callParent(arguments);
+
+        return this;
+    },
+
+<span id='Ext-fx-animation-Abstract-method-applyElement'>    applyElement: function(element) {
+</span>        return Ext.get(element);
+    },
+
+<span id='Ext-fx-animation-Abstract-method-applyBefore'>    applyBefore: function(before, current) {
+</span>        if (before) {
+            return Ext.factory(before, Ext.fx.State, current);
         }
     },
 
-<span id='Ext-plugin-Abstract-method-clonePlugin'>    /**
-</span>     * Creates clone of the plugin.
-     * @param {Object} [overrideCfg] Additional config for the derived plugin.
-     */
-    clonePlugin: function(overrideCfg) {
-        return new this.self(Ext.apply({}, overrideCfg, this.pluginConfig));
+<span id='Ext-fx-animation-Abstract-method-applyAfter'>    applyAfter: function(after, current) {
+</span>        if (after) {
+            return Ext.factory(after, Ext.fx.State, current);
+        }
     },
 
-<span id='Ext-plugin-Abstract-method-setCmp'>    /**
-</span>     * Sets the component to which this plugin is attached.
-     * @param {Ext.Component} cmp Owner component.
-     */
-    setCmp: function(cmp) {
-        this.cmp = cmp;
+<span id='Ext-fx-animation-Abstract-method-setFrom'>    setFrom: function(from) {
+</span>        return this.setState(this.STATE_FROM, from);
     },
 
-<span id='Ext-plugin-Abstract-method-getCmp'>    /**
-</span>     * Returns the component to which this plugin is attached.
-     * @return {Ext.Component} Owner component.
-     */
-    getCmp: function() {
-        return this.cmp;
+<span id='Ext-fx-animation-Abstract-method-setTo'>    setTo: function(to) {
+</span>        return this.setState(this.STATE_TO, to);
     },
 
-<span id='Ext-plugin-Abstract-cfg-pluginId'>    /**
-</span>     * @cfg {String} pluginId
-     * A name for the plugin that can be set at creation time to then retrieve the plugin
-     * through {@link Ext.Component#getPlugin getPlugin} method.  For example:
-     *
-     *     var grid = Ext.create('Ext.grid.Panel', {
-     *         plugins: [{
-     *             ptype: 'cellediting',
-     *             clicksToEdit: 2,
-     *             pluginId: 'cellplugin'
-     *         }]
-     *     });
-     *
-     *     // later on:
-     *     var plugin = grid.getPlugin('cellplugin');
-     */
+<span id='Ext-fx-animation-Abstract-method-getFrom'>    getFrom: function() {
+</span>        return this.getState(this.STATE_FROM);
+    },
 
-<span id='Ext-plugin-Abstract-method-init'>    /**
-</span>     * @method
-     * The init method is invoked after initComponent method has been run for the client Component.
-     *
-     * The supplied implementation is empty. Subclasses should perform plugin initialization, and set up bidirectional
-     * links between the plugin and its client Component in their own implementation of this method.
-     * @param {Ext.Component} client The client Component which owns this plugin.
-     */
-    init: Ext.emptyFn,
+<span id='Ext-fx-animation-Abstract-method-getTo'>    getTo: function() {
+</span>        return this.getState(this.STATE_TO);
+    },
 
-<span id='Ext-plugin-Abstract-method-destroy'>    /**
-</span>     * The destroy method is invoked by the owning Component at the time the Component is
-     * being destroyed.
-     *
-     * @method destroy
-     */
-    destroy: function() {
-        this.cmp = this.pluginConfig = null;
-        
+<span id='Ext-fx-animation-Abstract-method-setStates'>    setStates: function(states) {
+</span>        var validNameRegex = this.stateNameRegex,
+            name;
+
+        for (name in states) {
+            if (validNameRegex.test(name)) {
+                this.setState(name, states[name]);
+            }
+        }
+
+        return this;
+    },
+
+<span id='Ext-fx-animation-Abstract-method-getStates'>    getStates: function() {
+</span>        return this.states;
+    },
+
+<span id='Ext-fx-animation-Abstract-method-updateCallback'>    updateCallback: function(callback) {
+</span>        if (callback) {
+            this.setOnEnd(callback);
+        }
+    },
+
+<span id='Ext-fx-animation-Abstract-method-end'>    end: function() {
+</span>        // alias for stop so that the following api is the same between ext/touch:
+        // element.getActiveAnimation().end()
+        this.stop();
+    },
+
+<span id='Ext-fx-animation-Abstract-method-stop'>    stop: function() {
+</span>        this.fireEvent('stop', this);
+    },
+
+<span id='Ext-fx-animation-Abstract-method-destroy'>    destroy: function() {
+</span>        this.stop();
         this.callParent();
     },
 
-<span id='Ext-plugin-Abstract-method-onClassExtended'>    // Private.
-</span>    // Inject a ptype property so that Component.findPlugin(ptype) works.
-    onClassExtended: function(cls, data, hooks) {
-        var alias = data.alias;
+<span id='Ext-fx-animation-Abstract-method-setState'>    setState: function(name, state) {
+</span>        var states = this.getStates(),
+            stateInstance;
 
-        // No ptype built into the class
-        if (alias &amp;&amp; !data.ptype) {
-            if (Ext.isArray(alias)) {
-                alias = alias[0];
-            }
-            cls.prototype.ptype = alias.split('plugin.')[1];
+        stateInstance = Ext.factory(state, Ext.fx.State, states[name]);
+
+        if (stateInstance) {
+            states[name] = stateInstance;
         }
+        //&lt;debug&gt;
+        else if (name === this.STATE_TO) {
+            Ext.Logger.error(&quot;Setting and invalid '100%' / 'to' state of: &quot; + state);
+        }
+        //&lt;/debug&gt;
+
+        return this;
     },
 
-<span id='Ext-plugin-Abstract-method-resolveListenerScope'>    resolveListenerScope: function(defaultScope) {
-</span>        var me = this,
-            cmp = me.getCmp(),
-            scope;
+<span id='Ext-fx-animation-Abstract-method-getState'>    getState: function(name) {
+</span>        return this.getStates()[name];
+    },
 
-        if (cmp) {
-            scope = cmp.resolveSatelliteListenerScope(me, defaultScope);
+<span id='Ext-fx-animation-Abstract-method-getData'>    getData: function() {
+</span>        var me = this,
+            states = me.getStates(),
+            statesData = {},
+            before = me.getBefore(),
+            after = me.getAfter(),
+            from = states[me.STATE_FROM],
+            to = states[me.STATE_TO],
+            fromData = from.getData(),
+            toData = to.getData(),
+            data, name, state;
+
+        for (name in states) {
+            if (states.hasOwnProperty(name)) {
+                state = states[name];
+                data = state.getData();
+                statesData[name] = data;
+            }
         }
 
-        // If this method was called, it means the plugin subclass must
-        // have mixed in Observable, so we can rely on there being
-        // a &quot;this.mixins.observable&quot; even though Ext.plugin.Abstract
-        // does not mix it in directly
-        return scope || me.mixins.observable.resolveListenerScope.call(me, defaultScope);
+        return {
+            before: before ? before.getData() : {},
+            after: after ? after.getData() : {},
+            states: statesData,
+            from: fromData,
+            to: toData,
+            duration: me.getDuration(),
+            iteration: me.getIteration(),
+            direction: me.getDirection(),
+            easing: me.getEasing(),
+            delay: me.getDelay(),
+            onEnd: me.getOnEnd(),
+            onBeforeEnd: me.getOnBeforeEnd(),
+            onBeforeStart: me.getOnBeforeStart(),
+            scope: me.getScope(),
+            preserveEndState: me.getPreserveEndState(),
+            replacePrevious: me.getReplacePrevious()
+        };
     }
 });
 </pre>
