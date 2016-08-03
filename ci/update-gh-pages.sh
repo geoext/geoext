@@ -99,6 +99,7 @@ jsduck \
      --title="$GEOEXT_PACKAGE_NAME $GEOEXT_PACKAGE_VERSION$DOC_SUFFIX Documentation" \
      --output="$DOCS_DIR/" \
      --eg-iframe=$TRAVIS_BUILD_DIR/docresources/eg-iframe.html \
+     --processes=0 \
      $TRAVIS_BUILD_DIR/src/
 
 # 3.2 … with ExtJS
@@ -110,6 +111,7 @@ jsduck \
      --eg-iframe=$TRAVIS_BUILD_DIR/docresources/eg-iframe.html \
      "$DOWN_DIR/ext-$SENCHA_EXTJS_VERSION/packages/core/src" \
      "$DOWN_DIR/ext-$SENCHA_EXTJS_VERSION/classic/classic/src" \
+     --processes=0 \
      $TRAVIS_BUILD_DIR/src/
 
 # 4. done.
