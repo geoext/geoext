@@ -1,26 +1,20 @@
 # GeoExt 3 Universal App
 
-Follow these instructions to build your first GeoExt 3 application, using Sencha cmd. These instructions were initially prepared using:
+Follow these instructions to build your first GeoExt 3 application, using Sencha `cmd`. Supported versions:
 
-* Sencha Cmd v6.0.1.76 and Sencha Cmd v6.0.2.14
-* ExtJS GPL 6.0.0 (ext.version.number=6.0.0.640) and ExtJS GPL 6.0.1 ()
-* GeoExt 3 (from 2015-10-03) and GeoExt 3 (from 2016-08-22)
-
-These instructions were validated and updated on 2016-08-22 with the following versions:
-
-* Sencha Cmd v6.0.2.14
-* ExtJS GPL 6.0.1
-* GeoExt 3 (from 2016-08-22)
+* Sencha Cmd v6.0.1.76 and v6.0.2.14
+* ExtJS GPL 6.0.0 (ext.version.number=6.0.0.640) and ExtJS GPL 6.0.1 (ext.version.number=6.0.1.250)
+* GeoExt 3 (from 2015-10-03 and from 2016-08-22)
 
 We will create a basic GeoExt 3 based universal app. A universal app should use both the classic and modern toolkit to work on desktop and mobile browsers. At the end of this exercise, you should have an application displaying a OL3 map on a panel, both on the desktop and mobile browser.
 
 ## ExtJS Universal App
 
-Let's review the Sencha cmd used to create a basic universal app.
+Let's review the Sencha `cmd` used to create a basic universal app.
 
-Installing [Sencha Cmd](https://www.sencha.com/products/extjs/cmd-download/)
+Install [Sencha Cmd](https://www.sencha.com/products/extjs/cmd-download/).
 
-Download ExtJS 6 GPL ([version ext-6.0.1](https://www.sencha.com/legal/gpl/)). Unzip it, and store it somewhere on your file system, like `/somewhere/ExtJS 6/ext-6.0.1/`
+Download ExtJS 6 GPL ([version ext-6.0.1](https://www.sencha.com/legal/gpl/)). Unzip it, and store it somewhere on your file system, like `/somewhere/ExtJS 6/ext-6.0.1/`.
 
 To create a universal ExtJS 6 based app, do:
 
@@ -33,7 +27,7 @@ sencha app watch
 
 ## Preview the ExtJS Universal App
 
-The last sencha command `sencha app watch` will start a local service at port 1841 to serve your application.
+The last Sencha command `sencha app watch` will start a local service at port 1841 to serve your application.
 
 ```
 (...)
@@ -103,7 +97,7 @@ app/view/main/MapController.js
 app/view/main/MapModel.js
 ```
 
-### Changing the new view, to extend GeoExt.component.Map
+### Changing the newly created view
 
 We need to change the view created by `sencha generate view main.Map` in the previous step.
 
@@ -287,7 +281,7 @@ sencha app watch
 
 Open the browser using [http://localhost:1841/](http://localhost:1841/) and [http://localhost:1841/?profile=modern](http://localhost:1841/?profile=modern) to test the app.
 
-To open the application on a mobile device connected to the same local network, find out your computer's IP address and open that IP on the mobile browser, followed by the por number 1841, like [http://10.0.36.126:1841](http://10.0.36.126:1841). The mobile will open the mobile version automatically.
+To open the application on a mobile device connected to the same local network, find out your computer's IP address and open that IP on the mobile browser, followed by the port number 1841, like [http://192.168.1.94:1841](http://192.168.1.94:1841). The mobile will open the mobile version automatically.
 
 The following screenshots shows the result, for the classic (running on desktop browser) and modern toolkit (running on mobile).
 
@@ -312,4 +306,7 @@ The sources are also available on [Github](https://github.com/jgrocha/MyGeoExtAp
 
 You can add more and more components to the newly created application, but keep in mind that some GeoExt 3 components might not able to run properly on both toolkits (classic and modern).
 
-Check [GeoExt 3 Issue #65](https://github.com/geoext/geoext3/issues/65) for further details.
+Check [GeoExt 3 Issue #65](https://github.com/geoext/geoext3/issues/65) for further details regarding issues converning both toolkits.
+
+If you are just interested in applications running on the traditional desktop environment, 
+you can check the [GeoDashboard](http://geodashboard.geomaster.pt/#map) example.
