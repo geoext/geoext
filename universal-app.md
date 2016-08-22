@@ -1,10 +1,16 @@
 # GeoExt 3 Universal App
 
-Follow these instructions to build your first GeoExt 3 application, using Sencha cmd. These instructions were prepared using:
+Follow these instructions to build your first GeoExt 3 application, using Sencha cmd. These instructions were initially prepared using:
 
-* Sencha Cmd v6.0.1.76
-* ExtJS GPL 6.0.0 (ext.version.number=6.0.0.640)
-* GeoExt 3 (from 2015-10-03)
+* Sencha Cmd v6.0.1.76 and Sencha Cmd v6.0.2.14
+* ExtJS GPL 6.0.0 (ext.version.number=6.0.0.640) and ExtJS GPL 6.0.1 ()
+* GeoExt 3 (from 2015-10-03) and GeoExt 3 (from 2016-08-22)
+
+These instructions were validated and updated on 2016-08-22 with the following versions:
+
+* Sencha Cmd v6.0.2.14
+* ExtJS GPL 6.0.1
+* GeoExt 3 (from 2016-08-22)
 
 We will create a basic GeoExt 3 based universal app. A universal app should use both the classic and modern toolkit to work on desktop and mobile browsers. At the end of this exercise, you should have an application displaying a OL3 map on a panel, both on the desktop and mobile browser.
 
@@ -14,19 +20,20 @@ Let's review the Sencha cmd used to create a basic universal app.
 
 Installing [Sencha Cmd](https://www.sencha.com/products/extjs/cmd-download/)
 
-Download ExtJS 6 GPL ([version ext-6.0.0](https://www.sencha.com/legal/gpl/)). Unzip it, and store it somewhere on your file system, like `/somewhere/ExtJS 6/ext-6.0.0/`
+Download ExtJS 6 GPL ([version ext-6.0.1](https://www.sencha.com/legal/gpl/)). Unzip it, and store it somewhere on your file system, like `/somewhere/ExtJS 6/ext-6.0.1/`
 
 To create a universal ExtJS 6 based app, do:
 
 ```
-sencha -sdk "/somewhere/ExtJS 6/ext-6.0.0/" generate app MyApp MyApp
+cd ~/WebstormProjects
+sencha -sdk "/somewhere/ExtJS 6/ext-6.0.1/" generate app MyApp MyApp
 cd MyApp
 sencha app watch
 ```
 
 ## Preview the ExtJS Universal App
 
-The last sencha command `sencha app watch` will start a service at port 1841 to serve your application.
+The last sencha command `sencha app watch` will start a local service at port 1841 to serve your application.
 
 ```
 (...)
@@ -36,21 +43,24 @@ The last sencha command `sencha app watch` will start a service at port 1841 to 
 
 When you see `Waiting for changes...`, open the browser using [http://localhost:1841/](http://localhost:1841/) or [http://localhost:1841/?profile=modern](http://localhost:1841/?profile=modern) to see the mobile enabled version.
 
+Press `CONTROL-C` to end the local server.
+
 ## GeoExt 3 Universal App
 
-Let's do it! Please make sure that you are able to create the ExtJS Universal App as described. The process to create our first GeoExt 3 is quite similar.
+Let's do it! Please make sure that you are able to create the ExtJS Universal App as described. The process to create our first GeoExt 3 is quite similar. The previous app was created to make sure you have all the ExtJS setup up and running.
 
-You already have Sencha cmd and Sencha 6. Let's start with a basic ExtJS application.
+You already have Sencha cmd and ExtJS 6 working. Let's start with a basic ExtJS application.
 
 ```
-sencha -sdk "/somewhere/ExtJS 6/ext-6.0.0/" generate app MyGeoExtApp MyGeoExtApp
+cd ~/WebstormProjects
+sencha -sdk "/somewhere/ExtJS 6/ext-6.0.1/" generate app MyGeoExtApp MyGeoExtApp
 cd MyGeoExtApp/
 sencha app watch
 ```
 
 When you see `Waiting for changes...`, open the browser using [http://localhost:1841/](http://localhost:1841/) and [http://localhost:1841/?profile=modern](http://localhost:1841/?profile=modern) to make sure the basic app is running.
 
-If the application is running properly, you can stop the web server with `^C` and move on.
+If the application is running properly, you can stop the web server with `CONTROL-C` and move on.
 
 ### GeoExt 3 package repository
 
@@ -69,7 +79,7 @@ sencha repository list
 You should get something like:
 
 ```
-Sencha Cmd v6.0.1.76
+Sencha Cmd v6.0.2.14
 [INF] Remote repository connections (3):
 [INF] 
 [INF]     sencha - http://cdn.sencha.com/cmd/packages/
@@ -95,14 +105,20 @@ app/view/main/MapModel.js
 
 ### Changing the new view, to extend GeoExt.component.Map
 
-We need to change the view created by `sencha generate view main.Map`. 
+We need to change the view created by `sencha generate view main.Map` in the previous step.
 
-Three modifications are necessary. The view should extend `GeoExt.component.Map`, have an xtype `mappanel` assigned for future reference and needs an additional property `map`.
+Four modifications are necessary. 
+The view should:
+ - extend `GeoExt.component.Map` instead of `Ext.panel.Panel`
+ - have an `xtype: 'mappanel'` assigned, needed for future reference
+ - needs an additional `map` properly initialized
+ - discard the default `html` property 
 
-The entire `app/view/main/Map.js` is:
+The entire `app/view/main/Map.js` should be:
 
-```
+```js
 Ext.define("MyGeoExtApp.view.main.Map",{
+    // extend: "Ext.panel.Panel",
     extend: "GeoExt.component.Map",
     xtype: 'mappanel',
     requires: [
@@ -113,6 +129,7 @@ Ext.define("MyGeoExtApp.view.main.Map",{
     viewModel: {
         type: "main-map"
     },
+    // html: "Hello, World!!"
     map: new ol.Map({
         layers: [
             new ol.layer.Tile({
@@ -140,52 +157,68 @@ The base application display a tab panel, both on the classic and modern based t
 
 To display our new map, we need to change both `classic/src/view/main/Main.js` and `modern/src/view/main/Main.js`.
 
-Add a new tab to `classic/src/view/main/Main.js`:
+Add a new tab to `classic/src/view/main/Main.js` to the `items` property, after the tab with `title: 'Users'`. It will become:
 
-```
-{
+```js
+    }, {
+        title: 'Users',
+        iconCls: 'fa-user',
+        bind: {
+            html: '{loremIpsum}'
+        }
+    }, {
         title: 'GeoExt3 OL3 Map',
         iconCls: 'fa-map-marker',
         layout: 'fit',
         items: [{
             xtype: 'mappanel'
         }]
-},
+    }, {
 ```
 
-Add a new tab to `modern/src/view/main/Main.js`:
+Add the same new tab to `modern/src/view/main/Main.js`. It will become:
 
+```js
+        }, {
+            title: 'Users',
+            iconCls: 'fa-user',
+            bind: {
+                html: '{loremIpsum}'
+            }
+        }, {
+            title: 'GeoExt3 OL3 Map',
+            iconCls: 'fa-map-marker',
+            layout: 'fit',
+            items: [{
+                xtype: 'mappanel'
+            }]
+        }, {
 ```
-{
-        title: 'GeoExt3 OL3 Map',
-        iconCls: 'x-fa fa-map-marker',
-        layout: 'fit',
-        items: [{
-            xtype: 'mappanel'
-        }]
-},
-```
+
+These are all the changes to the code. 
+Now we need to tell how to build our application with the GeoExt package and load the necessary OpenLayers library.
 
 ### Adjust app.json
 
 The file `app.json` must be adjusted before we can build the application.
 
-Two small changes are necessary.
+Three small changes are necessary.
 
-Add the following GeoExt 3 paths to `classpath`:
+#### Add GeoExt sources to the classpath
+
+Add the following GeoExt 3 path `"packages/remote/GeoExt/src"` to the `classpath`:
 
 ```
-    "classpath": [
-        "app",
-        "${toolkit.name}/src",
-        "packages/remote/GeoExt/src/component",
-        "packages/remote/GeoExt/src/data",
-        "packages/remote/GeoExt/src/mixin",
-        "packages/remote/GeoExt/src/util"
-    ],
+  "classpath": [
+    "app",
+    "${toolkit.name}/src",
+    "packages/remote/GeoExt/src"
+  ],
 ```
 
-Change the ```builds``` section, adding `requires`:
+#### Add GeoExt to the requires section
+
+Change the ```builds``` section, adding `requires` to the `"classic"` build:
 
 ```
     "builds": {
@@ -217,13 +250,18 @@ Note: Do not change the global `requires`:
         // "GeoExt" // not here, put it under builds/classic/requires
     ],
 ```
-### Add OpenLayers 3 library to index.html
+#### Add the OpenLayers 3 library
 
-Edit `index.html`, to include the OpenLayers 3 library. Add these two lines, after the existing `<title>MyGeoExtApp</title>`.
+The application needs the OpenLayers library to work. Add this dependency to the `js` property.
 
 ```
-    <link rel="stylesheet" type="text/css" href="http://openlayers.org/en/master/css/ol.css">
-    <script src="http://openlayers.org/en/master/build/ol.js"></script>
+  "js": [{
+      "path": "http://openlayers.org/en/master/build/ol.js",
+      "remote": true
+    }, {
+      "path": "app.js",
+      "bundle": true
+    }],
 ```
 
 This includes all OpenLayers 3 functionality. After this exercise, you can consider [creating a custom build](http://openlayers.org/en/v3.9.0/doc/tutorials/custom-builds.html) to create a smaller OL3 library, adjusted to only what you need.
@@ -239,6 +277,8 @@ sencha app refresh
 Since we need the GeoExt package (added to the "requires" in `app.json`), the previous command will download the package and installs it under `packages/remote/GeoExt`.
 Make sure you have this folder added to your local application.
 
+If you have some error reported, double check the changes you made. Confirm that you do not have syntax errors in `app.json`.
+
 If everything went fine, you can start the application with:
 
 ```
@@ -246,6 +286,8 @@ sencha app watch
 ```
 
 Open the browser using [http://localhost:1841/](http://localhost:1841/) and [http://localhost:1841/?profile=modern](http://localhost:1841/?profile=modern) to test the app.
+
+To open the application on a mobile device connected to the same local network, find out your computer's IP address and open that IP on the mobile browser, followed by the por number 1841, like [http://10.0.36.126:1841](http://10.0.36.126:1841). The mobile will open the mobile version automatically.
 
 The following screenshots shows the result, for the classic (running on desktop browser) and modern toolkit (running on mobile).
 
@@ -260,6 +302,11 @@ Congratulations! Celebrate and share your accomplishment!
 ### What Went Wrong?
 
 If you are unable to get this GeoExt 3 app up and running, check the Sencha cmd output for errors. Also check the browser inspector/development tools to find any errors if don't see the map.
+
+There is a Github repository with the source of this application. 
+
+Check the [demo](http://mygeoextapp.geomaster.pt/) of this application running both on the desktop and on your mobile to discover any differences. 
+The sources are also available on [Github](https://github.com/jgrocha/MyGeoExtApp).
 
 ### Further development
 
