@@ -4,7 +4,7 @@ Ext.require([
     'Ext.grid.Panel',
     'GeoExt.component.Map',
     'GeoExt.data.store.Features',
-    'GeoExt.grid.column.Symbolizer'
+    'GeoExt.component.FeatureRenderer'
 ]);
 
 var olMap;
@@ -16,6 +16,8 @@ var featStore2;
 Ext.application({
     name: 'FeatureGrids',
     launch: function() {
+        // Create a local alias
+        var featRenderer = GeoExt.component.FeatureRenderer;
         var geojson1 = {
             'type': 'FeatureCollection',
             'features': [
@@ -244,7 +246,21 @@ Ext.application({
             region: 'west',
             store: featStore1,
             columns: [
-                {xtype: 'gx_symbolizercolumn', width: 40},
+                {
+                    xtype: 'widgetcolumn',
+                    width: 40,
+                    widget: {
+                        xtype: 'gx_renderer'
+                    },
+                    onWidgetAttach: function(column, gxRenderer, record) {
+                        // update the symbolizer with the related feature
+                        var feature = record.olObject;
+                        gxRenderer.update({
+                            feature: feature,
+                            symbolizers: featRenderer.determineStyle(record)
+                        });
+                    }
+                },
                 {text: 'Name', dataIndex: 'city', flex: 1},
                 {
                     text: 'Population',
@@ -264,7 +280,21 @@ Ext.application({
             region: 'east',
             store: featStore2,
             columns: [
-                {xtype: 'gx_symbolizercolumn', width: 40},
+                {
+                    xtype: 'widgetcolumn',
+                    width: 40,
+                    widget: {
+                        xtype: 'gx_renderer'
+                    },
+                    onWidgetAttach: function(column, gxRenderer, record) {
+                        // update the symbolizer with the related feature
+                        var feature = record.olObject;
+                        gxRenderer.update({
+                            feature: feature,
+                            symbolizers: featRenderer.determineStyle(record)
+                        });
+                    }
+                },
                 {text: 'Name', dataIndex: 'city', flex: 2}
             ],
             width: 250,
