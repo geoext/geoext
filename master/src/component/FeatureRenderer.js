@@ -184,6 +184,25 @@ Ext.define('GeoExt.component.FeatureRenderer', {
         symbolType: 'Polygon'
     },
 
+    statics: {
+
+        /**
+         * Determines the style for the given feature record.
+         *
+         * @param {GeoExt.data.model.Feature} record A feature record to get the
+         *     styler for.
+         * @return {ol.style.Style[]|ol.style.Style} The style(s) applied to the
+         *     given feature record.
+         * @public
+         */
+        determineStyle: function(record) {
+            var feature = record.getFeature();
+            return feature.getStyle() || feature.getStyleFunction() ||
+                (record.store ? record.store.layer.getStyle() : null);
+        }
+
+    },
+
     /**
      * Initialize the GeoExt.component.FeatureRenderer.
      */
