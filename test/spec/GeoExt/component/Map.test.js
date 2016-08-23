@@ -98,6 +98,14 @@ describe('GeoExt.component.Map', function() {
                 expect(mapComponent.getView()).to.be.an(ol.View);
             });
 
+            it('getStore() returns a GeoExt.data.store.Layers instance',
+                function() {
+                    expect(
+                        mapComponent.getStore()
+                    ).to.be.an(GeoExt.data.store.Layers);
+                }
+            );
+
             it('setCenter() sets the correct center', function() {
                 var center = [1183893.8882437304, 7914041.721258021];
                 mapComponent.setCenter(center);
@@ -152,11 +160,49 @@ describe('GeoExt.component.Map', function() {
                 }
             );
 
+            it('addLayer() throws error if no layer is passed',
+                function() {
+                    var nolayer = [
+                        null,
+                        undefined,
+                        new ol.source.OSM(),
+                        '',
+                        olMap
+                    ];
+
+                    nolayer.forEach(function(oneLayer) {
+                        expect(
+                            mapComponent.addLayer
+                        ).withArgs(oneLayer).to.throwException();
+                    });
+
+                }
+            );
+
             it('removeLayer() removes an ol.layer.Base', function() {
                 expect(olMap.getLayers().getArray()).to.contain(layer);
                 mapComponent.removeLayer(layer);
                 expect(olMap.getLayers().getArray()).to.not.contain(layer);
             });
+
+            it('removeLayer() throws error if no layer is passed',
+                function() {
+                    var nolayer = [
+                        null,
+                        undefined,
+                        new ol.source.OSM(),
+                        '',
+                        olMap
+                    ];
+
+                    nolayer.forEach(function(oneLayer) {
+                        expect(
+                            mapComponent.removeLayer
+                        ).withArgs(oneLayer).to.throwException();
+                    });
+
+                }
+            );
         });
 
         describe('listening to size changes', function() {
