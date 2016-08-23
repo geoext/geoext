@@ -1653,7 +1653,7 @@ Ext.define('GeoExt.component.Map', {
                 this.getMap().removeLayer(layer);
             }
         } else {
-            Ext.Error.raise('Can not add layer ' + layer + ' as it is not ' + 'an instance of ol.layer.Base');
+            Ext.Error.raise('Can not remove layer ' + layer + ' as it is not ' + 'an instance of ol.layer.Base');
         }
     },
     /**
