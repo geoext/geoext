@@ -145,6 +145,14 @@ Ext.define('GeoExt.data.store.Features', {
         me.bindLayerEvents();
     },
 
+    applyFields: function(fields) {
+        if (fields) {
+            this.setModel(
+                Ext.data.schema.Schema.lookupEntity('GeoExt.data.model.Feature')
+            );
+        }
+    },
+
     /**
      * Returns the FeatureCollection which is in sync with this store.
      *

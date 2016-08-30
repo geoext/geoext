@@ -228,6 +228,8 @@ Ext.application({
 
         // create feature store by passing a feature collection
         featStore1 = Ext.create('GeoExt.data.store.Features', {
+            fields: ['city', 'pop'],
+            model: 'GeoExt.data.model.Feature',
             features: featColl,
             map: olMap,
             createLayer: true,
@@ -254,7 +256,7 @@ Ext.application({
                     },
                     onWidgetAttach: function(column, gxRenderer, record) {
                         // update the symbolizer with the related feature
-                        var feature = record.olObject;
+                        var feature = record.getFeature();
                         gxRenderer.update({
                             feature: feature,
                             symbolizers: featRenderer.determineStyle(record)
