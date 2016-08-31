@@ -60,6 +60,77 @@ describe('GeoExt.data.store.Features', function() {
 
     });
 
+    describe('constructor (with fields)', function() {
+        var feat;
+        var store;
+
+        beforeEach(function() {
+            var coll = new ol.Collection();
+            feat = new ol.Feature({foo: 'bar'});
+            coll.push(feat);
+            store = Ext.create('GeoExt.data.store.Features', {
+                features: coll,
+                fields: ['foo']
+            });
+        });
+
+        afterEach(function() {
+            if (store.destroy) {
+                store.destroy();
+            }
+            store = null;
+            feat = null;
+        });
+
+        it('constructs an instance of GeoExt.data.store.Features', function() {
+            expect(store).to.be.an(GeoExt.data.store.Features);
+        });
+        it('constructs records with an olObject reference', function() {
+            expect(store.getAt(0).getFeature()).to.be(feat);
+        });
+        it('constructs records with the right fields', function() {
+            expect(store.getAt(0).get('foo')).to.be('bar');
+            expect(store.getAt(0).get('xyz')).to.be(undefined);
+        });
+
+    });
+
+    describe('constructor (with fields and model)', function() {
+        var feat;
+        var store;
+
+        beforeEach(function() {
+            var coll = new ol.Collection();
+            feat = new ol.Feature({foo: 'bar'});
+            coll.push(feat);
+            store = Ext.create('GeoExt.data.store.Features', {
+                features: coll,
+                fields: ['foo'],
+                model: 'GeoExt.data.model.Feature'
+            });
+        });
+
+        afterEach(function() {
+            if (store.destroy) {
+                store.destroy();
+            }
+            store = null;
+            feat = null;
+        });
+
+        it('constructs an instance of GeoExt.data.store.Features', function() {
+            expect(store).to.be.an(GeoExt.data.store.Features);
+        });
+        it('constructs records with an olObject reference', function() {
+            expect(store.getAt(0).getFeature()).to.be(feat);
+        });
+        it('constructs records with the right fields', function() {
+            expect(store.getAt(0).get('foo')).to.be('bar');
+            expect(store.getAt(0).get('xyz')).to.be(undefined);
+        });
+
+    });
+
     describe('constructor (with layer)', function() {
         var div;
         var map;
