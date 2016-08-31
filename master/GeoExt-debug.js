@@ -4402,6 +4402,12 @@ Ext.define('GeoExt.data.store.Features', {
         }
         me.bindLayerEvents();
     },
+    applyFields: function(fields) {
+        var me = this;
+        if (fields) {
+            this.setModel(Ext.data.schema.Schema.lookupEntity(me.config.model));
+        }
+    },
     /**
      * Returns the FeatureCollection which is in sync with this store.
      *
