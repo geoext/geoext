@@ -146,9 +146,10 @@ Ext.define('GeoExt.data.store.Features', {
     },
 
     applyFields: function(fields) {
+        var me = this;
         if (fields) {
             this.setModel(
-                Ext.data.schema.Schema.lookupEntity('GeoExt.data.model.Feature')
+                Ext.data.schema.Schema.lookupEntity(me.config.model)
             );
         }
     },
