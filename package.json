@@ -43,7 +43,7 @@
   "dependencies": {},
   "devDependencies": {
     "browser-sync": "2.15.0",
-    "coveralls": "2.11.9",
+    "coveralls": "2.11.12",
     "eslint": "2.8.0",
     "eslint-config-openlayers": "4.1.0",
     "expect.js": "0.3.1",
