@@ -9,11 +9,11 @@
   "signatures": [
     {
       "name": "GeoExt Contributors",
-      "uuid": "b4fefc3d-7621-47ab-92c5-2fdc0e0984e8",
-      "created": "2016-09-10T11:12:55Z",
+      "uuid": "9762dc3f-04d1-4385-851b-7e765f10d622",
+      "created": "2016-09-13T15:07:01Z",
       "algorithm": "SHA1withRSA",
-      "nonce": "IlCV87/ywks\u003d",
-      "signature": "b7DyxVDz1+Nts/EEmexhCMebNJDtuuplwZ0NgrP6R0djoq+wGR5fWoSMc0zhqIbM+Vq2/DXdjub7NTdoa7EggD30VeeRkIjkvr0976ELjvm4GgLZDFb5iETbIHjdSHfFI9K74K5Usdi94EHBAx1TTcAjfcHIrzcgkr0uYO6t3byiEOJxiTJSU504jU2SFVe1vDcB/1qo/quG9XqEUMgLcmDITd3TyvTtwH/ZvbFePE9n8KJb4F5N6GXB9Fr/ZIN0bRLy5wnwnUe84jSdt7JJvFJjz/4bVzfGEG+fw0unF7d0/SuaPL7USBb2wjtdcfQ/+GPVPB5rY2nHt2Ca1xXJSg\u003d\u003d"
+      "nonce": "EkGjfV9JhxA\u003d",
+      "signature": "Jx+3+60YWcPOsDCRUA4sE/ErIigHeYoK+Fq0m09hV69ZvCoaoAhTrauWwMWy8hSDPtuHPb6smkySoSjMH/ncIdCCFDMAQyQ6mlDD1uwelvD8mB7LiSj+tN53LBbDSheMEZEdCAZgdZXRUAXBYvQcvpiUPgCEblIH66jD35UV3t7o8Kn+Vcm5PAGDtr9yDKvt9bq11OLBtWiqKR14ONVs1eOttfTLxK9RH9e7tKnfVVO8GvrUyi2Ev+uYvPnLHEzw/swlybPxKeS0mNo+wuFhJR/PF/6p/VUKgjuqn2xvyOb0GHiZUFKeFJRbaluiWxFPevtqUoOTV/Mn1Xywu0sDlg\u003d\u003d"
     }
   ],
   "slicer": {
@@ -49,20 +49,20 @@
   },
   "dependencies": {},
   "devDependencies": {
-    "browser-sync": "2.12.5",
-    "coveralls": "2.11.9",
-    "eslint": "2.8.0",
-    "eslint-config-openlayers": "4.1.0",
+    "browser-sync": "2.15.0",
+    "coveralls": "2.11.12",
+    "eslint": "3.5.0",
+    "eslint-config-openlayers": "5.0.0",
     "expect.js": "0.3.1",
-    "karma": "0.13.22",
-    "karma-coverage": "0.5.5",
+    "karma": "1.3.0",
+    "karma-coverage": "1.1.1",
     "karma-eslint": "2.1.0",
     "karma-expect": "1.1.2",
-    "karma-mocha": "0.2.2",
-    "karma-phantomjs-launcher": "1.0.0",
-    "karma-sinon": "1.0.4",
-    "mocha": "2.4.5",
-    "phantomjs-prebuilt": "2.1.7",
-    "sinon": "1.17.3"
+    "karma-mocha": "1.1.1",
+    "karma-phantomjs-launcher": "1.0.2",
+    "karma-sinon": "1.0.5",
+    "mocha": "3.0.2",
+    "phantomjs-prebuilt": "2.1.12",
+    "sinon": "1.17.5"
   }
 }
