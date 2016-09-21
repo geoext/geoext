@@ -100,7 +100,10 @@ jsduck \
      --output="$DOCS_DIR/" \
      --eg-iframe=$TRAVIS_BUILD_DIR/docresources/eg-iframe.html \
      --processes=0 \
-     $TRAVIS_BUILD_DIR/src/
+     --ignore-html=debug\
+     --warnings=-extend,-link,-inheritdoc \
+     --external='ol.*' \
+     "$TRAVIS_BUILD_DIR/src/"
 
 # 3.2 … with ExtJS
 mkdir -p $DOCS_W_EXT_DIR # for the API-docs without ExtJS classes
@@ -109,10 +112,13 @@ jsduck \
      --title="$GEOEXT_PACKAGE_NAME $GEOEXT_PACKAGE_VERSION$DOC_SUFFIX Documentation (incl. ExtJS classes)" \
      --output="$DOCS_W_EXT_DIR/" \
      --eg-iframe=$TRAVIS_BUILD_DIR/docresources/eg-iframe.html \
+     --processes=0 \
+     --ignore-html=debug\
+     --warnings=-extend,-link \
+     --external='ol.*' \
      "$DOWN_DIR/ext-$SENCHA_EXTJS_VERSION/packages/core/src" \
      "$DOWN_DIR/ext-$SENCHA_EXTJS_VERSION/classic/classic/src" \
-     --processes=0 \
-     $TRAVIS_BUILD_DIR/src/
+     "$TRAVIS_BUILD_DIR/src/"
 
 # 4. done.
 
