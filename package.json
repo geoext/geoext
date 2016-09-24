@@ -38,7 +38,7 @@
     "start": "browser-sync start --server --directory --files 'src, test, examples'",
     "coveralls": "cat coverage/lcov.info | coveralls",
     "generate:example": "node bin/example-generator/index.js",
-    "generate:doc": "jsduck --config jsduck-cfg.json"
+    "generate:docs": "jsduck --config jsduck.json"
   },
   "dependencies": {},
   "devDependencies": {

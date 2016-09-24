@@ -96,23 +96,21 @@ cp $GEOEXT_IN_SENCHA_WS_FOLDER/build/$GEOEXT_PACKAGE_NAME-debug.js $SUB_FOLDER_N
 mkdir -p $DOCS_DIR # for the API-docs without ExtJS classes
 rm -Rf $DOCS_DIR/* # remove any content from previous runs
 jsduck \
-     --title="$GEOEXT_PACKAGE_NAME $GEOEXT_PACKAGE_VERSION$DOC_SUFFIX Documentation" \
+     --config="$TRAVIS_BUILD_DIR/jsduck.json" \
      --output="$DOCS_DIR/" \
-     --eg-iframe=$TRAVIS_BUILD_DIR/docresources/eg-iframe.html \
-     --processes=0 \
-     $TRAVIS_BUILD_DIR/src/
+     --title="$GEOEXT_PACKAGE_NAME $GEOEXT_PACKAGE_VERSION$DOC_SUFFIX Documentation" \
+     --warnings="-inheritdoc"
 
 # 3.2 … with ExtJS
 mkdir -p $DOCS_W_EXT_DIR # for the API-docs without ExtJS classes
 rm -Rf $DOCS_W_EXT_DIR/* # remove any content from previous runs
 jsduck \
-     --title="$GEOEXT_PACKAGE_NAME $GEOEXT_PACKAGE_VERSION$DOC_SUFFIX Documentation (incl. ExtJS classes)" \
+     --config="$TRAVIS_BUILD_DIR/jsduck.json" \
      --output="$DOCS_W_EXT_DIR/" \
-     --eg-iframe=$TRAVIS_BUILD_DIR/docresources/eg-iframe.html \
-     "$DOWN_DIR/ext-$SENCHA_EXTJS_VERSION/packages/core/src" \
-     "$DOWN_DIR/ext-$SENCHA_EXTJS_VERSION/classic/classic/src" \
-     --processes=0 \
-     $TRAVIS_BUILD_DIR/src/
+     --title="$GEOEXT_PACKAGE_NAME $GEOEXT_PACKAGE_VERSION$DOC_SUFFIX Documentation (incl. ExtJS classes)" \
+     --warnings="-all:$DOWN_DIR/ext-$SENCHA_EXTJS_VERSION"
+     "$DOWN_DIR/ext-$SENCHA_EXTJS_VERSION/packages/core/src/" \
+     "$DOWN_DIR/ext-$SENCHA_EXTJS_VERSION/classic/classic/src/"
 
 # 4. done.
 

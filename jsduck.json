@@ -1,0 +1,17 @@
+{
+    "--eg-iframe": "docresources/eg-iframe.html",
+    "--external": [
+        "ol.*"
+    ],
+    "--ignore-html": "debug",
+    "--output": "docs",
+    "--processes": 0,
+    "--title": "GeoExt 3",
+    "--warnings": [
+      "-extend",
+      "-link"
+    ],
+    "--": [
+        "src/"
+    ]
+}
