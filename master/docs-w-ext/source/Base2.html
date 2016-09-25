@@ -15,183 +15,93 @@
   </script>
 </head>
 <body onload="prettyPrint(); highlight();">
-  <pre class="prettyprint lang-js"><span id='Ext-data-request-Base'>/**
-</span> * This class manages a pending Ajax request. Instances of this type are created by the
- * `{@link Ext.data.Connection#request}` method.
- * @since 6.0.0
+  <pre class="prettyprint lang-js">/* Copyright (c) 2015-2016 The Open Source Geospatial Foundation
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see &lt;http://www.gnu.org/licenses/&gt;.
  */
-Ext.define('Ext.data.request.Base', {
+<span id='GeoExt-data-serializer-Base'>/**
+</span> * The base class for all serializers.
+ *
+ * @class GeoExt.data.serializer.Base
+ */
+Ext.define('GeoExt.data.serializer.Base', {
+    extend: 'Ext.Base',
     requires: [
-        'Ext.Deferred'
+        'GeoExt.data.MapfishPrintProvider'
     ],
-
     mixins: [
-        'Ext.mixin.Factoryable'
+        'GeoExt.mixin.SymbolCheck'
     ],
 
-<span id='Ext-data-request-Base-property-factoryConfig'>    // Since this class is abstract, we don't have an alias of our own for Factoryable
-</span>    // to use.
-    factoryConfig: {
-        type: 'request',
-        defaultType: 'ajax'  // this is the default deduced from the alias
-    },
+<span id='GeoExt-data-serializer-Base-property-symbols'>    // &lt;debug&gt;
+</span>    symbols: [
+        'ol.layer.Layer',
+        'ol.source.Source'
+    ],
+    // &lt;/debug&gt;
 
-<span id='Ext-data-request-Base-property-result'>    result: null,
-</span>
-<span id='Ext-data-request-Base-property-success'>    success: null,
-</span>
-<span id='Ext-data-request-Base-property-timer'>    timer: null,
-</span>
-<span id='Ext-data-request-Base-method-constructor'>    constructor: function(config) {
-</span>        var me = this;
-        
-        // ownerConfig contains default values for config options
-        // applicable to every Request spawned by that owner;
-        // however the values can be overridden in the options
-        // object passed to owner's request() method.
-        Ext.apply(me, config.options || {}, config.ownerConfig);
-        
-        me.id = ++Ext.data.Connection.requestId;
-        me.owner = config.owner;
-        me.options = config.options;
-        me.requestOptions = config.requestOptions;
-    },
-    
-<span id='Ext-data-request-Base-method-start'>    /**
-</span>     * Start the request.
-     */
-    start: function() {
-        var me = this,
-            timeout = me.getTimeout();
-        
-        if (timeout &amp;&amp; me.async) {
-            me.timer = Ext.defer(me.onTimeout, timeout, me);
-        }
-    },
-    
-<span id='Ext-data-request-Base-method-abort'>    abort: function() {
-</span>        var me = this;
-
-        me.clearTimer();
-
-        if (!me.timedout) {
-            me.aborted = true;
-        }
-
-        me.abort = Ext.emptyFn;
-    },
-
-<span id='Ext-data-request-Base-method-createDeferred'>    createDeferred: function() {
-</span>        return (this.deferred = new Ext.Deferred());  // deliberate assignment
-    },
-
-<span id='Ext-data-request-Base-method-getDeferred'>    getDeferred: function() {
-</span>        return this.deferred || this.createDeferred();
-    },
-
-<span id='Ext-data-request-Base-method-getPromise'>    getPromise: function() {
-</span>        return this.getDeferred().promise;
-    },
-
-<span id='Ext-data-request-Base-method-then'>    then: function() {
-</span>        var promise = this.getPromise();
-        
-        return promise.then.apply(promise, arguments);
-    },
-
-<span id='Ext-data-request-Base-method-isLoading'>    /**
-</span>     * @method isLoading
-     * Determines whether this request is in progress.
-     *
-     * @return {Boolean} `true` if this request is in progress, `false` if complete.
-     */
-
-    onComplete: function() {
-        var me = this,
-            deferred = me.deferred,
-            result = me.result;
-
-        me.clearTimer();
-
-        if (deferred) {
-            if (me.success) {
-                deferred.resolve(result);
-            }
-            else {
-                deferred.reject(result);
-            }
-        }
-    },
-
-<span id='Ext-data-request-Base-method-onTimeout'>    onTimeout: function() {
-</span>        var me = this;
-
-        me.timedout = true;
-        me.timer = null;
-
-        me.abort(true);
-    },
-    
-<span id='Ext-data-request-Base-method-getTimeout'>    getTimeout: function() {
-</span>        return this.timeout;
-    },
-
-<span id='Ext-data-request-Base-method-clearTimer'>    clearTimer: function() {
-</span>        var timer = this.timer;
-
-        if (timer) {
-            clearTimeout(timer);
-            this.timer = null;
-        }
-    },
-
-<span id='Ext-data-request-Base-method-destroy'>    destroy: function() {
-</span>        var me = this;
-        
-        me.abort();
-        
-        me.owner = me.options = me.requestOptions = me.result = null;
-        
-        me.callParent();
-    },
-    
-<span id='Ext-data-request-Base-property-privates'>    privates: {
-</span><span id='Ext-data-request-Base-method-createException'>        /**
-</span>         * Creates the exception object
-         * @param {Object} request
-         * @private
+    inheritableStatics: {
+<span id='GeoExt-data-serializer-Base-static-property-sourceCls'>        /**
+</span>         * The ol.source.Source class that this serializer will serialize.
+         *
+         * @type {ol.source.Source}
+         * @protected
          */
-        createException: function() {
-            var me = this,
-                result;
-            
-            result = {
-                request: me,
-                requestId: me.id,
-                status: me.aborted ? -1 : 0,
-                statusText: me.aborted ? 'transaction aborted' : 'communication failure',
-                getResponseHeader: me._getHeader,
-                getAllResponseHeaders: me._getHeaders
-            };
-            
-            if (me.aborted) {
-                result.aborted = true;
-            }
-            
-            if (me.timedout) {
-                result.timedout = true;
-            }
-            
-            return result;
+        sourceCls: null,
+
+<span id='GeoExt-data-serializer-Base-static-method-serialize'>        /**
+</span>         * Serializes the passed source and layer into an object that the
+         * Mapfish Print Servlet understands.
+         *
+         * @param {ol.layer.Layer} layer The layer to serialize.
+         * @param {ol.source.Source} source The source of the layer to
+         *    serialize.
+         * @param {Number} viewRes The resolution of the mapview.
+         * @return {Object} A serialized representation of source and layer.
+         */
+        serialize: function() {
+            Ext.raise('This method must be overriden by subclasses.');
+            return null; // so that we can have a shared JSDoc comment.
         },
 
-        _getHeader: function(name) {
-            var headers = this.headers;
-            return headers &amp;&amp; headers[name.toLowerCase()];
+<span id='GeoExt-data-serializer-Base-static-method-register'>        /**
+</span>         * Given a subclass of GeoExt.data.serializer.Base, register the class
+         * with the GeoExt.data.MapfishPrintProvider. This method is ususally
+         * called inside the 'after-create' function of `Ext.class` definitions.
+         *
+         * @param {GeoExt.data.serializer.Base} subCls The class to register.
+         * @protected
+         */
+        register: function(subCls) {
+            GeoExt.data.MapfishPrintProvider.registerSerializer(
+                subCls.sourceCls,
+                subCls
+            );
         },
 
-        _getHeaders: function() {
-            return this.headers;
+<span id='GeoExt-data-serializer-Base-static-method-validateSource'>        /**
+</span>         * Given a concrete `ol.source.Source` instance, this method checks if
+         * the non-abstract subclass is capable of serializing the source. Will
+         * throw an exception if the source isn't valid for the serializer.
+         *
+         * @param {ol.source.Source} source The source to test.
+         * @protected
+         */
+        validateSource: function(source) {
+            if (!(source instanceof this.sourceCls)) {
+                Ext.raise('Cannot serialize this source with this serializer');
+            }
         }
     }
 });
