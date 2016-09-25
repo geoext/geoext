@@ -108,7 +108,7 @@ jsduck \
      --config="$TRAVIS_BUILD_DIR/jsduck.json" \
      --output="$DOCS_W_EXT_DIR/" \
      --title="$GEOEXT_PACKAGE_NAME $GEOEXT_PACKAGE_VERSION$DOC_SUFFIX Documentation (incl. ExtJS classes)" \
-     --warnings="-all:$DOWN_DIR/ext-$SENCHA_EXTJS_VERSION"
+     --warnings="-all:$DOWN_DIR/ext-$SENCHA_EXTJS_VERSION" \
      "$DOWN_DIR/ext-$SENCHA_EXTJS_VERSION/packages/core/src/" \
      "$DOWN_DIR/ext-$SENCHA_EXTJS_VERSION/classic/classic/src/"
 
