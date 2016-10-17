@@ -9,11 +9,11 @@
   "signatures": [
     {
       "name": "GeoExt Contributors",
-      "uuid": "3ad28da7-e7e3-4750-9870-3042afae8fae",
-      "created": "2016-10-15T08:24:20Z",
+      "uuid": "93aefadf-aacc-4fdf-9bea-6ef99dd64800",
+      "created": "2016-10-17T22:10:39Z",
       "algorithm": "SHA1withRSA",
-      "nonce": "dlg8jZzixro\u003d",
-      "signature": "CiYW4C8vTYzww3lILmAfwZ1BMYkzy4xj6FQ1IWvAiBgzWtUz3hJvQ5EL/foAKeT+Wi+ckK6Dv+dBDg0KaaSa1PWC5BlSYtYfhnQAeBrHitgkf6QPm39otSN56fS/AmQSeTezs1AG8ptF5XUjeLF32Kcap4BNThk9QRviRV8kqpOjqjteW2pmcMPhxDlIJzCmvEOLgRefvMhsVZsc/d7gAc12FJcDG4726dCrsKwpwhjRI3lEqiM9RdY0lylVYBWhlrfwyD6QhNvwH+2sfypykWeDVa9eCT+GKl2HupOrn8GDeSpbYtNwQJfgw/tSehUvWcGeZrmBBD99tC2f0mxfnQ\u003d\u003d"
+      "nonce": "vPqiBAnlsWU\u003d",
+      "signature": "vxV11bbmUjWhhGYBndIgndtmN0kr9C/yQJi9havXh1LC1Ph8kU+x14W/53a0qA/u76K6LrIQDtPVJLJpcC3+QIlKDB/MAiAykJGh57jYCJlwfvOnngQVsVSlvP4kb529mzqAa3r0ygQZgycI+fdljhzCK/xczthz79OOIscIhiz+qLsXg0NiZxYm5hDWpeG6gTyVHEsoBn7tr6SLRMKn1/4MVMOMeunDy28/FsZivkIfbGmYX1W79qtu3SgrcdPpWvNxjqlggzeb+DppoYSYc+cB7DbTatbVgAtnP3WIA1ai1giP1hTBayzqhWgeHFopyrH2Fj3wP94ohYyzVqK+hg\u003d\u003d"
     }
   ],
   "slicer": {
@@ -51,7 +51,7 @@
   "devDependencies": {
     "browser-sync": "2.17.3",
     "coveralls": "2.11.14",
-    "eslint": "3.8.0",
+    "eslint": "3.8.1",
     "eslint-config-openlayers": "5.0.0",
     "expect.js": "0.3.1",
     "karma": "1.3.0",
