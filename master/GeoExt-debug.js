@@ -3299,6 +3299,10 @@ Ext.define('GeoExt.data.serializer.ImageWMS', {
          */
         serialize: function(layer, source) {
             this.validateSource(source);
+            var styles = source.getParams().STYLES;
+            var stylesArray = styles ? styles.split(',') : [
+                    ''
+                ];
             var serialized = {
                     baseURL: source.getUrl(),
                     customParams: source.getParams(),
@@ -3306,9 +3310,7 @@ Ext.define('GeoExt.data.serializer.ImageWMS', {
                         source.getParams().LAYERS
                     ],
                     opacity: layer.getOpacity(),
-                    styles: [
-                        ''
-                    ],
+                    styles: stylesArray,
                     type: 'WMS'
                 };
             return serialized;
@@ -3360,6 +3362,10 @@ Ext.define('GeoExt.data.serializer.TileWMS', {
          */
         serialize: function(layer, source) {
             this.validateSource(source);
+            var styles = source.getParams().STYLES;
+            var stylesArray = styles ? styles.split(',') : [
+                    ''
+                ];
             var serialized = {
                     baseURL: source.getUrls()[0],
                     customParams: source.getParams(),
@@ -3367,9 +3373,7 @@ Ext.define('GeoExt.data.serializer.TileWMS', {
                         source.getParams().LAYERS
                     ],
                     opacity: layer.getOpacity(),
-                    styles: [
-                        ''
-                    ],
+                    styles: stylesArray,
                     type: 'WMS'
                 };
             return serialized;
