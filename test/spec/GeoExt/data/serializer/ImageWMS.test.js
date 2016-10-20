@@ -18,7 +18,10 @@ describe('GeoExt.data.serializer.ImageWMS', function() {
         beforeEach(function() {
             source = new ol.source.ImageWMS({
                 url: 'http://demo.boundlessgeo.com/geoserver/wms',
-                params: {'LAYERS': 'ne:ne'},
+                params: {
+                    'LAYERS': 'ne:ne',
+                    'STYLES': 'point'
+                },
                 serverType: 'geoserver',
                 crossOrigin: ''
             });
@@ -57,12 +60,16 @@ describe('GeoExt.data.serializer.ImageWMS', function() {
             var serialized = GeoExt.data.serializer.ImageWMS.serialize(
                 layer, source, viewResolution
             );
+
             var expected = {
                 baseURL: 'http://demo.boundlessgeo.com/geoserver/wms',
-                customParams: {LAYERS: 'ne:ne'},
+                customParams: {
+                    'LAYERS': 'ne:ne',
+                    'STYLES': 'point'
+                },
                 layers: ['ne:ne'],
                 opacity: 1,
-                styles: [''],
+                styles: ['point'],
                 type: 'WMS'
             };
             expect(serialized).to.eql(expected);

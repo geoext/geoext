@@ -18,7 +18,10 @@ describe('GeoExt.data.serializer.TileWMS', function() {
         beforeEach(function() {
             source = new ol.source.TileWMS({
                 url: 'http://demo.boundlessgeo.com/geoserver/wms',
-                params: {'LAYERS': 'ne:ne'},
+                params: {
+                    'LAYERS': 'ne:ne',
+                    'STYLES': 'point,circle'
+                },
                 serverType: 'geoserver',
                 crossOrigin: ''
             });
@@ -59,10 +62,13 @@ describe('GeoExt.data.serializer.TileWMS', function() {
             );
             var expected = {
                 baseURL: 'http://demo.boundlessgeo.com/geoserver/wms',
-                customParams: {LAYERS: 'ne:ne'},
+                customParams: {
+                    'LAYERS': 'ne:ne',
+                    'STYLES': 'point,circle'
+                },
                 layers: ['ne:ne'],
                 opacity: 1,
-                styles: [''],
+                styles: ['point', 'circle'],
                 type: 'WMS'
             };
             expect(serialized).to.eql(expected);
