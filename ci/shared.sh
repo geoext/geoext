@@ -36,10 +36,10 @@ STATS_DIR="/tmp/build-stats"
 SENCHA_CMD="$INSTALL_DIR/sencha"
 
 # The version of sencha command to downlaod and install
-SENCHA_CMD_VERSION="6.0.0.202"
+SENCHA_CMD_VERSION="6.2.0.103"
 
 # The version of ExtJS to download and configure the sencha workspace with
-SENCHA_EXTJS_VERSION="6.0.0"
+SENCHA_EXTJS_VERSION="6.2.0"
 
 # The resource of GeoExt we copy over from the current PR or build over to
 # the $GEOEXT_IN_SENCHA_WS_FOLDER
