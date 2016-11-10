@@ -9,11 +9,11 @@
   "signatures": [
     {
       "name": "GeoExt Contributors",
-      "uuid": "0d9d25f0-964a-4a1f-a547-296e17a94a49",
-      "created": "2016-10-25T12:10:17Z",
+      "uuid": "c6d5c8de-9deb-4788-a4d0-d7c8edea79e5",
+      "created": "2016-11-10T06:24:08Z",
       "algorithm": "SHA1withRSA",
-      "nonce": "qpB/n62M6uI\u003d",
-      "signature": "maViPB+Zcgl/5ibkL/n0uc1IkucbnXdUVahMcQahNMGtYGCQ76dogdJRYB0ujR3G4JZgYa13dHJv/nTuUgToOn3JJMudXHRYQUi1AtGfPsU7AEkYyO4cN1P4pYjn1U9UAEmmh9+x1bw4ii6k+3piKon50Ol44lmmg3cyWPpYLtCopqbXhHf7pknu9PvtzDtR3nbjpA+TPyENE/Tt3O273HWropSaJN9CjqR5k5K2in10yCMLF1+QK3TZOw82/KM5FRIT36SYuOzg/IqUlv1mKvLgwAswFpPgA7fuzJBdXIQWVodNt10AGd/ceyDViNlXglnOA6CJEd7ERIWYjgP8bg\u003d\u003d"
+      "nonce": "VkA+tEMNgCg\u003d",
+      "signature": "Pub0iNn9S2GSgyjImDOuKQXRx4VELicj7aRIqGcf+ANwJ3fIZty4x52BaZEV3m2+0tk3tD87F3nlqs0Va4y75GaRDVBq/ISLXXmc9K7rZzfs/7Shb91cnaa+VX3qCon2DIaszwP6ck1fcvMlu2K/tyIM9fwRUCDtBxX4LXtCurlQ2nS6q8gnKxj4ZRZc3ydi7j+zRFvIDOD9ohDJIKSO6C8WtDkkaj2HVdZ62lM9xMrZvyuiTwO0MdrxlGg6KVcok9A/iXDlf5+xmf5RUIYYcTDj0V/eB07EWPpV0apjMtUXiGAaUll3Gu+XLtzumP+3EQDNNnh0DAZmlpVQ3pnF0g\u003d\u003d"
     }
   ],
   "slicer": {
@@ -58,7 +58,7 @@
     "karma-coverage": "1.1.1",
     "karma-eslint": "2.1.0",
     "karma-expect": "1.1.3",
-    "karma-mocha": "1.2.0",
+    "karma-mocha": "1.3.0",
     "karma-phantomjs-launcher": "1.0.2",
     "karma-sinon": "1.0.5",
     "mocha": "3.1.2",
