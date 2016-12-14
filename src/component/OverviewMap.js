@@ -486,13 +486,25 @@ Ext.define('GeoExt.component.OverviewMap', {
         var me = this;
         var parentMap = me.getParentMap();
         var parentView = parentMap.getView();
+        var parentProjection = parentView.getProjection();
         var currentMapCenter = parentView.getCenter();
+        var overviewMap = me.getMap();
+        var overviewView = overviewMap.getView();
+        var overviewProjection = overviewView.getProjection();
         var panAnimation = ol.animation.pan({
             duration: me.getRecenterDuration(),
             source: currentMapCenter
         });
+        var newCenter = evt.coordinate;
+
+        // transform if necessary
+        if (!ol.proj.equivalent(parentProjection, overviewProjection)) {
+            newCenter = ol.proj.transform(newCenter,
+                    overviewProjection, parentProjection);
+        }
+
         parentMap.beforeRender(panAnimation);
-        parentView.setCenter(evt.coordinate);
+        parentView.setCenter(newCenter);
     },
 
     /**
@@ -501,22 +513,32 @@ Ext.define('GeoExt.component.OverviewMap', {
     updateBox: function() {
         var me = this;
         var parentMapView = me.getParentMap().getView();
+        var parentMapProjection = parentMapView.getProjection();
         var parentExtent = parentMapView.calculateExtent(
             me.getParentMap().getSize()
         );
         var parentRotation = parentMapView.getRotation();
         var parentCenter = parentMapView.getCenter();
         var geom = ol.geom.Polygon.fromExtent(parentExtent);
+        var overviewView = me.getMap().getView();
+        var overviewProjection = overviewView.getProjection();
 
         geom = me.self.rotateGeomAroundCoord(
             geom, parentCenter, parentRotation
         );
-        me.boxFeature.setGeometry(geom);
 
         var anchor = new ol.geom.Point(ol.extent.getTopLeft(parentExtent));
         anchor = me.self.rotateGeomAroundCoord(
             anchor, parentCenter, parentRotation
         );
+
+        // transform if necessary
+        if (!ol.proj.equivalent(parentMapProjection, overviewProjection)) {
+            geom.transform(parentMapProjection, overviewProjection);
+            anchor.transform(parentMapProjection, overviewProjection);
+        }
+
+        me.boxFeature.setGeometry(geom);
         me.anchorFeature.setGeometry(anchor);
     },
 
@@ -528,15 +550,49 @@ Ext.define('GeoExt.component.OverviewMap', {
      */
     setOverviewMapProperty: function(key) {
         var me = this;
+
         var parentView = me.getParentMap().getView();
+        var parentProjection = parentView.getProjection();
         var overviewView = me.getMap().getView();
+        var overviewProjection = overviewView.getProjection();
+
+        var overviewCenter = parentView.getCenter();
 
         if (key === 'center') {
-            overviewView.set('center', parentView.getCenter());
+            // transform if necessary
+            if (!ol.proj.equivalent(parentProjection, overviewProjection)) {
+                overviewCenter = ol.proj.transform(overviewCenter,
+                        parentProjection, overviewProjection);
+            }
+            overviewView.set('center', overviewCenter);
         }
         if (key === 'resolution') {
-            overviewView.set('resolution',
-                   me.getMagnification() * parentView.getResolution());
+            if (ol.proj.equivalent(parentProjection, overviewProjection)) {
+                overviewView.set('resolution',
+                        me.getMagnification() * parentView.getResolution());
+            } else if (me.mapRendered === true) {
+                var parentExtent = parentView.calculateExtent(
+                        me.getParentMap().getSize());
+                var parentExtentProjected = ol.proj.transformExtent(
+                        parentExtent, parentProjection, overviewProjection);
+
+                // call fit to assure that resolutions are available on
+                // overviewView
+                overviewView.fit(
+                    parentExtentProjected,
+                    me.getMap().getSize(),
+                    {constrainResolution: false}
+                );
+                overviewView.set(
+                    'resolution',
+                    me.getMagnification() * overviewView.getResolution()
+                );
+            }
+            // Do nothing when parent and overview projections are not
+            // equivalent and mapRendered is false as me.getMap().getSize()
+            // would not be reliable here.
+            // Note: As soon as mapRendered will be set to true (in onResize())
+            // setOverviewMapProperty('resolution') will be called explicitly
         }
     },
 
@@ -635,6 +691,11 @@ Ext.define('GeoExt.component.OverviewMap', {
         if (!me.mapRendered) {
             map.setTarget(div);
             me.mapRendered = true;
+
+            // explicit call to assure that magnification mechanism will also
+            // work initially if projections of parent and overview are
+            // not equal
+            me.setOverviewMapProperty('resolution');
         } else {
             me.getMap().updateSize();
         }
