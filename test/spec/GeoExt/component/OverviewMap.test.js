@@ -3,15 +3,20 @@ Ext.Loader.syncRequire(['GeoExt.component.OverviewMap']);
 describe('GeoExt.component.OverviewMap', function() {
 
     var div;
+    var ovDiv;
 
     beforeEach(function() {
         div = document.createElement('div');
         document.body.appendChild(div);
+        ovDiv = document.createElement('div');
+        document.body.appendChild(ovDiv);
     });
 
     afterEach(function() {
         document.body.removeChild(div);
         div = null;
+        document.body.removeChild(ovDiv);
+        ovDiv = null;
     });
 
     describe('basics', function() {
@@ -247,6 +252,128 @@ describe('GeoExt.component.OverviewMap', function() {
             expect(anchorFeature.getStyle()).to.be(style1);
             expect(boxFeature.getStyle()).to.be(style2);
 
+        });
+    });
+
+    describe('dragging of extent box to recenter', function() {
+        var olMap;
+        var overviewMap;
+
+        beforeEach(function() {
+            olMap = new ol.Map({
+                view: new ol.View({
+                    center: [0, 0],
+                    zoom: 2
+                }),
+                layers: [new ol.layer.Tile({title: 'moehri'})],
+                target: div
+            });
+            overviewMap = Ext.create('GeoExt.component.OverviewMap', {
+                parentMap: olMap,
+                target: ovDiv
+            });
+        });
+
+        afterEach(function() {
+            overviewMap.destroy();
+            olMap = null;
+            overviewMap = null;
+        });
+
+        it('is enabled by default', function() {
+            expect(overviewMap.getEnableBoxDrag()).to.be(true);
+        });
+
+        it('calls `destroyDragBehaviour` when set to `false`', function() {
+            // setup
+            var spy = sinon.spy(overviewMap, 'destroyDragBehaviour');
+
+            overviewMap.setEnableBoxDrag(false);
+            expect(spy.called).to.be(true);
+
+            // teardown
+            overviewMap.destroyDragBehaviour.restore();
+        });
+
+        it('calls `setupDragBehaviour` when set to `true`', function() {
+            // setup
+            var spy = sinon.spy(overviewMap, 'setupDragBehaviour');
+            overviewMap.setEnableBoxDrag(false); // disable first
+
+            overviewMap.setEnableBoxDrag(true);
+            expect(spy.called).to.be(true);
+
+            // teardown
+            overviewMap.setupDragBehaviour.restore();
+        });
+
+        it('calls `destroyDragBehaviour` when component gets destroyed',
+            function() {
+                // setup
+                var spy = sinon.spy(overviewMap, 'destroyDragBehaviour');
+
+                overviewMap.destroy();
+                expect(spy.called).to.be(true);
+
+                // teardown
+                overviewMap.destroyDragBehaviour.restore();
+            }
+        );
+
+        describe('#setupDragBehaviour', function() {
+            it('creates and adds a Translate interaction', function() {
+                overviewMap.destroyDragBehaviour(); // destroy first
+                var before = overviewMap.getMap().getInteractions().getLength();
+                overviewMap.setupDragBehaviour();  // we test this call
+                var after = overviewMap.getMap().getInteractions().getLength();
+                expect(overviewMap.dragInteraction).to.not.be(null);
+                expect(overviewMap.dragInteraction).to.be.a(
+                    ol.interaction.Translate
+                );
+                expect(before + 1).to.be(after);
+            });
+        });
+
+        describe('#destroyDragBehaviour', function() {
+            it('nullifies and removes the Translate interaction', function() {
+                overviewMap.destroyDragBehaviour(); // destroy first
+                overviewMap.setupDragBehaviour();
+                var before = overviewMap.getMap().getInteractions().getLength();
+                overviewMap.destroyDragBehaviour(); // we test this call
+                var after = overviewMap.getMap().getInteractions().getLength();
+
+                expect(overviewMap.dragInteraction).to.be(null);
+                expect(before - 1).to.be(after);
+            });
+        });
+
+        describe('#repositionAnchorFeature', function() {
+            it('updates the anchor geometry', function() {
+                overviewMap.destroyDragBehaviour(); // destroy first
+                overviewMap.setupDragBehaviour();
+                overviewMap.boxFeature.setGeometry(ol.geom.Polygon.fromExtent(
+                    [0, 0, 2, 2]
+                ));
+                overviewMap.repositionAnchorFeature();
+
+                var anchorGeom = overviewMap.anchorFeature.getGeometry();
+                var anchorCoords = anchorGeom.getCoordinates();
+                expect(anchorCoords).to.eql([0, 2]);
+            });
+        });
+
+        describe('#recenterParentFromBox', function() {
+            it('updates the parent map center', function() {
+                overviewMap.destroyDragBehaviour(); // destroy first
+                overviewMap.setupDragBehaviour();
+                overviewMap.boxFeature.setGeometry(ol.geom.Polygon.fromExtent(
+                    [0, 0, 2, 2]
+                ));
+                overviewMap.recenterParentFromBox();
+
+                var parentCenter = olMap.getView().getCenter();
+                expect(parentCenter).to.eql([1, 1]);
+            });
         });
     });
 
