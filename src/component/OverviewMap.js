@@ -450,8 +450,15 @@ Ext.define('GeoExt.component.OverviewMap', {
      */
     recenterParentFromBox: function() {
         var me = this;
+
         var parentMap = me.getParentMap();
         var parentView = parentMap.getView();
+        var parentProjection = parentView.getProjection();
+
+        var overviewMap = me.getMap();
+        var overviewView = overviewMap.getView();
+        var overviewProjection = overviewView.getProjection();
+
         var currentMapCenter = parentView.getCenter();
         var panAnimation = ol.animation.pan({
             duration: me.getRecenterDuration(),
@@ -459,7 +466,15 @@ Ext.define('GeoExt.component.OverviewMap', {
         });
         var boxExtent = me.boxFeature.getGeometry().getExtent();
         var boxCenter = ol.extent.getCenter(boxExtent);
+
         parentMap.beforeRender(panAnimation);
+
+        // transform if necessary
+        if (!ol.proj.equivalent(parentProjection, overviewProjection)) {
+            boxCenter = ol.proj.transform(boxCenter,
+                    overviewProjection, parentProjection);
+        }
+
         parentView.setCenter(boxCenter);
     },
 
