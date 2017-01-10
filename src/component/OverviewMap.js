@@ -426,7 +426,7 @@ Ext.define('GeoExt.component.OverviewMap', {
     disableBoxUpdate: function() {
         var me = this;
         var parentMap = me.getParentMap();
-        if(parentMap) {
+        if (parentMap) {
             parentMap.un('postrender', me.updateBox, me);
         }
     },
@@ -438,7 +438,7 @@ Ext.define('GeoExt.component.OverviewMap', {
     enableBoxUpdate: function() {
         var me = this;
         var parentMap = me.getParentMap();
-        if(parentMap) {
+        if (parentMap) {
             parentMap.on('postrender', me.updateBox, me);
         }
     },
