@@ -322,6 +322,7 @@ Ext.define('GeoExt.component.OverviewMap', {
 
         me.on('beforedestroy', me.onBeforeDestroy, me);
         me.on('resize', me.onResize, me);
+        me.on('afterrender', me.updateBox, me);
 
         me.callParent();
     },
