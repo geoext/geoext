@@ -31,23 +31,23 @@ mkdir -p $INSTALL_DIR
 cd $DOWN_DIR
 
 # DOWNLOAD (if needed)
-# 1) Sencha cmd (v6.0.0.202)
+# 1) Sencha cmd
 if [ ! -f "SenchaCmd-$SENCHA_CMD_VERSION-linux-amd64.sh.zip" ]; then
     wget "http://cdn.sencha.com/cmd/$SENCHA_CMD_VERSION/no-jre/SenchaCmd-$SENCHA_CMD_VERSION-linux-amd64.sh.zip"
 fi
 
-# 2) Ext JS (v6.0.0.640)
+# 2) Ext JS
 if [ ! -f "ext-$SENCHA_EXTJS_VERSION-gpl.zip" ]; then
     wget "http://cdn.sencha.com/ext/gpl/ext-$SENCHA_EXTJS_VERSION-gpl.zip"
 fi
 
 # EXTRACT (if needed)
-# 1) Sencha cmd (v6.0.0.202)
+# 1) Sencha cmd
 if [ ! -f "SenchaCmd-$SENCHA_CMD_VERSION-linux-amd64.sh" ]; then
     unzip -q "SenchaCmd-$SENCHA_CMD_VERSION-linux-amd64.sh.zip"
 fi
 
-# 2) Ext JS (v6.0.0.640)
+# 2) Ext JS
 if [ ! -d "ext-$SENCHA_EXTJS_VERSION" ]; then
     unzip -q "ext-$SENCHA_EXTJS_VERSION-gpl.zip"
 fi
