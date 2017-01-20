@@ -1,4 +1,13 @@
 {
+    /**
+     * The namespace of this package.
+     *
+     * As a general rule, all classes that belong to this package should be under this namespace
+     * if multiple namespaces are part of this package, set this to "".
+     */
+    "namespace": "GeoExt",
+
+
   "name": "GeoExt",
   "type": "code",
   "creator": "GeoExt Contributors",
