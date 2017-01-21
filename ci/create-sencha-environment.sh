@@ -24,6 +24,8 @@ fi
 mkdir -p $DOWN_DIR
 mkdir -p $INSTALL_DIR
 
+REINSTALL_SENCHA=false
+
 # Many of the commands below check if a resource or directory already exists,
 # this is here because the relevant directories are cached by travis and may
 # already be there from a previous build.
@@ -34,6 +36,7 @@ cd $DOWN_DIR
 # 1) Sencha cmd
 if [ ! -f "SenchaCmd-$SENCHA_CMD_VERSION-linux-amd64.sh.zip" ]; then
     wget "http://cdn.sencha.com/cmd/$SENCHA_CMD_VERSION/no-jre/SenchaCmd-$SENCHA_CMD_VERSION-linux-amd64.sh.zip"
+    REINSTALL_SENCHA=true
 fi
 
 # 2) Ext JS
@@ -45,6 +48,7 @@ fi
 # 1) Sencha cmd
 if [ ! -f "SenchaCmd-$SENCHA_CMD_VERSION-linux-amd64.sh" ]; then
     unzip -q "SenchaCmd-$SENCHA_CMD_VERSION-linux-amd64.sh.zip"
+    REINSTALL_SENCHA=true
 fi
 
 # 2) Ext JS
@@ -53,7 +57,7 @@ if [ ! -d "ext-$SENCHA_EXTJS_VERSION" ]; then
 fi
 
 # Install Sencha cmd
-if [ ! -f $SENCHA_CMD ]; then
+if [ $REINSTALL_SENCHA ]; then
     ./SenchaCmd-$SENCHA_CMD_VERSION-linux-amd64.sh -q -dir $INSTALL_DIR
 fi
 
