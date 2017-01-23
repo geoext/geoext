@@ -32,8 +32,8 @@ cd $DOWN_DIR
 
 # DOWNLOAD (if needed)
 # 1) Sencha cmd (v6.2.0.103)
-if [ ! -f "SenchaCmd-$SENCHA_CMD_VERSION-linux-amd64.sh.zip" ]; then
-    wget "http://cdn.sencha.com/cmd/$SENCHA_CMD_VERSION/no-jre/SenchaCmd-$SENCHA_CMD_VERSION-linux-amd64.sh.zip"
+if [ ! -f "SenchaCmd-$SENCHA_CMD_VERSION_FULL-linux-amd64.sh.zip" ]; then
+    wget "http://cdn.sencha.com/cmd/$SENCHA_CMD_VERSION_FULL/no-jre/SenchaCmd-$SENCHA_CMD_VERSION_FULL-linux-amd64.sh.zip"
 fi
 
 # 2) Ext JS (v6.2.0.103)
