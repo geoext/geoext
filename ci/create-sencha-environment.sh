@@ -43,8 +43,8 @@ fi
 
 # EXTRACT (if needed)
 # 1) Sencha cmd (v6.2.0.103)
-if [ ! -f "SenchaCmd-$SENCHA_CMD_VERSION-linux-amd64.sh" ]; then
-    unzip -q "SenchaCmd-$SENCHA_CMD_VERSION-linux-amd64.sh.zip"
+if [ ! -f "SenchaCmd-$SENCHA_CMD_VERSION_FULL-linux-amd64.sh" ]; then
+    unzip -q "SenchaCmd-$SENCHA_CMD_VERSION_FULL-linux-amd64.sh.zip"
 fi
 
 # 2) Ext JS (v6.2.0.103)
@@ -54,7 +54,7 @@ fi
 
 # Install Sencha cmd
 if [ ! -f $SENCHA_CMD ]; then
-    ./SenchaCmd-$SENCHA_CMD_VERSION-linux-amd64.sh -q -dir $INSTALL_DIR
+    ./SenchaCmd-$SENCHA_CMD_VERSION_FULL-linux-amd64.sh -q -dir $INSTALL_DIR
 fi
 
 # Create a sencha workspace using the downloaded ExtJS
