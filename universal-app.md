@@ -2,9 +2,9 @@
 
 Follow these instructions to build your first GeoExt 3 application, using Sencha `cmd`. Supported versions:
 
-* Sencha Cmd v6.0.1.76 and v6.0.2.14
-* ExtJS GPL 6.0.0 (ext.version.number=6.0.0.640) and ExtJS GPL 6.0.1 (ext.version.number=6.0.1.250)
-* GeoExt 3 (from 2015-10-03 and from 2016-08-22)
+* Sencha Cmd v6.2.0.103
+* ExtJS GPL 6.2.0 (ext.version.number=6.2.0.981)
+* GeoExt 3 (2016-10-20)
 
 We will create a basic GeoExt 3 based universal app. A universal app should use both the classic and modern toolkit to work on desktop and mobile browsers. At the end of this exercise, you should have an application displaying a OL3 map on a panel, both on the desktop and mobile browser.
 
@@ -14,13 +14,13 @@ Let's review the Sencha `cmd` used to create a basic universal app.
 
 Install [Sencha Cmd](https://www.sencha.com/products/extjs/cmd-download/).
 
-Download ExtJS 6 GPL ([version ext-6.0.1](https://www.sencha.com/legal/gpl/)). Unzip it, and store it somewhere on your file system, like `/somewhere/ExtJS 6/ext-6.0.1/`.
+Download ExtJS 6 GPL ([version ext-6.2.0](https://www.sencha.com/legal/gpl/)). Unzip it, and store it somewhere on your file system, like `/somewhere/ExtJS 6/ext-6.2.0/`.
 
 To create a universal ExtJS 6 based app, do:
 
 ```
 cd ~/WebstormProjects
-sencha -sdk "/somewhere/ExtJS 6/ext-6.0.1/" generate app MyApp MyApp
+sencha -sdk "/somewhere/ExtJS 6/ext-6.2.0/" generate app MyApp MyApp
 cd MyApp
 sencha app watch
 ```
@@ -47,7 +47,7 @@ You already have Sencha cmd and ExtJS 6 working. Let's start with a basic ExtJS 
 
 ```
 cd ~/WebstormProjects
-sencha -sdk "/somewhere/ExtJS 6/ext-6.0.1/" generate app MyGeoExtApp MyGeoExtApp
+sencha -sdk "/somewhere/ExtJS 6/ext-6.2.0/" generate app MyGeoExtApp MyGeoExtApp
 cd MyGeoExtApp/
 sencha app watch
 ```
@@ -73,9 +73,9 @@ sencha repository list
 You should get something like:
 
 ```
-Sencha Cmd v6.0.2.14
+Sencha Cmd v6.2.0.103
 [INF] Remote repository connections (3):
-[INF] 
+[INF]
 [INF]     sencha - http://cdn.sencha.com/cmd/packages/
 [INF]     GeoExt - http://geoext.github.io/geoext3/cmd/pkgs/
 [INF]     font-awesome - http://geoext.github.io/geoext3/cmd/pkgs/
@@ -101,12 +101,12 @@ app/view/main/MapModel.js
 
 We need to change the view created by `sencha generate view main.Map` in the previous step.
 
-Four modifications are necessary. 
+Four modifications are necessary.
 The view should:
  - extend `GeoExt.component.Map` instead of `Ext.panel.Panel`
  - have an `xtype: 'mappanel'` assigned, needed for future reference
  - needs an additional `map` properly initialized
- - discard the default `html` property 
+ - discard the default `html` property
 
 The entire `app/view/main/Map.js` should be:
 
@@ -189,7 +189,7 @@ Add the same new tab to `modern/src/view/main/Main.js`. It will become:
         }, {
 ```
 
-These are all the changes to the code. 
+These are all the changes to the code.
 Now we need to tell how to build our application with the GeoExt package and load the necessary OpenLayers library.
 
 ### Adjust app.json
@@ -285,7 +285,7 @@ To open the application on a mobile device connected to the same local network, 
 
 The following screenshots shows the result, for the classic (running on desktop browser) and modern toolkit (running on mobile).
 
-![GeoExt 3 Universal app on desktop](docresources/MyGeoExtApp-classic_x600.png "GeoExt 3 Universal app on desktop") 
+![GeoExt 3 Universal app on desktop](docresources/MyGeoExtApp-classic_x600.png "GeoExt 3 Universal app on desktop")
 
 ![GeoExt 3 Universal app on mobile](docresources/MyGeoExtApp-modern_x600.png "GeoExt 3 Universal app on mobile")
 
@@ -297,9 +297,9 @@ Congratulations! Celebrate and share your accomplishment!
 
 If you are unable to get this GeoExt 3 app up and running, check the Sencha cmd output for errors. Also check the browser inspector/development tools to find any errors if don't see the map.
 
-There is a Github repository with the source of this application. 
+There is a Github repository with the source of this application.
 
-Check the [demo](http://mygeoextapp.geomaster.pt/) of this application running both on the desktop and on your mobile to discover any differences. 
+Check the [demo](http://mygeoextapp.geomaster.pt/) of this application running both on the desktop and on your mobile to discover any differences.
 The sources are also available on [Github](https://github.com/jgrocha/MyGeoExtApp).
 
 ### Further development
@@ -308,5 +308,5 @@ You can add more and more components to the newly created application, but keep 
 
 Check [GeoExt 3 Issue #65](https://github.com/geoext/geoext3/issues/65) for further details regarding issues converning both toolkits.
 
-If you are just interested in applications running on the traditional desktop environment, 
+If you are just interested in applications running on the traditional desktop environment,
 you can check the [GeoDashboard](http://geodashboard.geomaster.pt/#map) example.

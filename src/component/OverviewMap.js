@@ -1,4 +1,4 @@
-/* Copyright (c) 2015-2016 The Open Source Geospatial Foundation
+/* Copyright (c) 2015-2017 The Open Source Geospatial Foundation
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -87,6 +87,7 @@ Ext.define('GeoExt.component.OverviewMap', {
         'ol.geom.Polygon.fromExtent',
         'ol.geom.Polygon#getCoordinates',
         'ol.geom.Polygon#setCoordinates',
+        'ol.interaction.Translate',
         'ol.layer.Image', // we should get rid of this requirement
         'ol.layer.Tile', // we should get rid of this requirement
         'ol.layer.Vector',
@@ -172,12 +173,24 @@ Ext.define('GeoExt.component.OverviewMap', {
         recenterOnClick: true,
 
         /**
+         * Shall the extent box on the overview map be draggable to recenter the
+         * parent map?
+         *
+         * @cfg {Boolean} enableBoxDrag Whether we shall make the box feature of
+         *     the overview map draggable. When dragging ends, the parent map
+         *     is recentered.
+         */
+        enableBoxDrag: true,
+
+        /**
          * Duration time in milliseconds of the panning animation when we
-         * recenter the map after a click on the overview. Only has effect
-         * if #recenterOnClick is true.
+         * recenter the map after a click on the overview or after dragging of
+         * the extent box ends. Only has effect if either or both of the
+         * configs #recenterOnClick or #enableBoxDrag are `true`.
          *
          * @cfg {Number} recenterDuration Amount of milliseconds for panning
-         *     the parent map to the clicked location.
+         *     the parent map to the clicked location or the new center of the
+         *     box feature.
          */
         recenterDuration: 500
     },
@@ -246,21 +259,35 @@ Ext.define('GeoExt.component.OverviewMap', {
     },
 
     /**
+     * The `ol.Feature` that represents the extent of the parent map.
+     *
+     * @type {ol.Feature}
      * @private
      */
     boxFeature: null,
 
     /**
+     * The `ol.Feature` that represents the top left corner 0f the parent map.
+     *
+     * @type {ol.Feature}
      * @private
      */
     anchorFeature: null,
 
     /**
-     * The ol.layer.Vector displaying the extent geometry of the parentMap.
+     * The `ol.layer.Vector` displaying the extent geometry of the parent map.
      *
      * @private
      */
     extentLayer: null,
+
+    /**
+     * The `ol.interaction.Translate` that we might have created (depending on
+     * the setting of the #enableBoxDrag configuration).
+     *
+     * @private
+     */
+    dragInteraction: null,
 
     /**
      * Whether we already rendered an ol.Map in this component. Will be
@@ -271,6 +298,9 @@ Ext.define('GeoExt.component.OverviewMap', {
      */
     mapRendered: false,
 
+    /**
+     * The constructor of the OverviewMap component.
+     */
     constructor: function() {
         this.initOverviewFeatures();
         this.callParent(arguments);
@@ -350,20 +380,14 @@ Ext.define('GeoExt.component.OverviewMap', {
             me.getMap().addLayer(layer);
         });
 
-        /*
-         * Set the OverviewMaps center or resolution, on property changed
-         * in parentMap.
-         */
+        // Set the OverviewMaps center or resolution, on property changed
+        // in parentMap.
         parentMap.getView().on('propertychange', me.onParentViewPropChange, me);
 
-        /*
-         * Update the box after rendering a new frame of the parentMap.
-         */
+        // Update the box after rendering a new frame of the parentMap.
         parentMap.on('postrender', me.updateBox, me);
 
-        /*
-         * Initially set the center and resolution of the overviewMap.
-         */
+        // Initially set the center and resolution of the overviewMap.
         me.setOverviewMapProperty('center');
         me.setOverviewMapProperty('resolution');
 
@@ -371,6 +395,72 @@ Ext.define('GeoExt.component.OverviewMap', {
             me.boxFeature,
             me.anchorFeature
         ]);
+    },
+
+    /**
+     * Enable everything we need to be able to drag the extent box on the
+     * overview map, and to properly handle drag events (e.g. recenter on
+     * finished dragging).
+     */
+    setupDragBehaviour: function() {
+        var me = this;
+        var dragInteraction = new ol.interaction.Translate({
+            features: new ol.Collection([me.boxFeature])
+        });
+        me.getMap().addInteraction(dragInteraction);
+        dragInteraction.setActive(true);
+        dragInteraction.on('translating', me.repositionAnchorFeature, me);
+        dragInteraction.on('translateend', me.recenterParentFromBox, me);
+        me.dragInteraction = dragInteraction;
+    },
+
+    /**
+     * Disable / destroy everything we need to be able to drag the extent box on
+     * the overview map. Unregisters any events we might have added and removes
+     * the `ol.interaction.Translate`.
+     */
+    destroyDragBehaviour: function() {
+        var me = this;
+        var dragInteraction = me.dragInteraction;
+        if (!dragInteraction) {
+            return;
+        }
+        me.getMap().removeInteraction(dragInteraction);
+        dragInteraction.un('translating', me.repositionAnchorFeature, me);
+        dragInteraction.un('translateend', me.recenterParentFromBox, me);
+        dragInteraction.setActive(false);
+        me.dragInteraction = null;
+    },
+
+    /**
+     * Repositions the #anchorFeature during dragging sequences of the box.
+     * Called while the #boxFeature is being dragged.
+     */
+    repositionAnchorFeature: function() {
+        var me = this;
+        var boxCoords = me.boxFeature.getGeometry().getCoordinates();
+        var topLeftCoord = boxCoords[0][1];
+        var newAnchorGeom = new ol.geom.Point(topLeftCoord);
+        me.anchorFeature.setGeometry(newAnchorGeom);
+    },
+
+    /**
+     * Recenters the #parentMap to the center of the extent of the #boxFeature.
+     * Called when dragging of the #boxFeature ends.
+     */
+    recenterParentFromBox: function() {
+        var me = this;
+        var parentMap = me.getParentMap();
+        var parentView = parentMap.getView();
+        var currentMapCenter = parentView.getCenter();
+        var panAnimation = ol.animation.pan({
+            duration: me.getRecenterDuration(),
+            source: currentMapCenter
+        });
+        var boxExtent = me.boxFeature.getGeometry().getExtent();
+        var boxCenter = ol.extent.getCenter(boxExtent);
+        parentMap.beforeRender(panAnimation);
+        parentView.setCenter(boxCenter);
     },
 
     /**
@@ -451,30 +541,59 @@ Ext.define('GeoExt.component.OverviewMap', {
     },
 
     /**
-     * The applier for recenterOnClick method. Takes care of initially
-     * registering an appropriate eventhandler and also unregistering if the
-     * property changes.
+     * The applier for the #recenterOnClick configuration. Takes care of
+     * initially registering an appropriate eventhandler and also unregistering
+     * if the property changes.
      *
      * @param {Boolean} shallRecenter The value for #recenterOnClick that was
      *     set.
+     * @return {Boolean} The value for #recenterOnClick that was passed.
      */
     applyRecenterOnClick: function(shallRecenter) {
         var me = this;
         var map = me.getMap();
 
         if (!map) {
-            // TODO or shall we have our own event, once we have a map?
             me.addListener('afterrender', function() {
                 // set the property again, and re-trigger the 'apply…'-sequence
                 me.setRecenterOnClick(shallRecenter);
             }, me, {single: true});
-            return;
+            return shallRecenter;
         }
         if (shallRecenter) {
             map.on('click', me.overviewMapClicked, me);
         } else {
             map.un('click', me.overviewMapClicked, me);
         }
+        return shallRecenter;
+    },
+
+    /**
+     * The applier for the #enableBoxDrag configuration. Takes care of initially
+     * setting up an interaction if desired or destroying when dragging is not
+     * wanted.
+     *
+     * @param {Boolean} shallEnableBoxDrag The value for #enableBoxDrag that was
+     *     set.
+     * @return {Boolean} The value for #enableBoxDrag that was passed.
+     */
+    applyEnableBoxDrag: function(shallEnableBoxDrag) {
+        var me = this;
+        var map = me.getMap();
+
+        if (!map) {
+            me.addListener('afterrender', function() {
+                // set the property again, and re-trigger the 'apply…'-sequence
+                me.setEnableBoxDrag(shallEnableBoxDrag);
+            }, me, {single: true});
+            return shallEnableBoxDrag;
+        }
+        if (shallEnableBoxDrag) {
+            me.setupDragBehaviour();
+        } else {
+            me.destroyDragBehaviour();
+        }
+        return shallEnableBoxDrag;
     },
 
     /**
@@ -490,6 +609,9 @@ Ext.define('GeoExt.component.OverviewMap', {
             // unbind recenter listener, if any
             map.un('click', me.overviewMapClicked, me);
         }
+
+        me.destroyDragBehaviour();
+
         if (parentMap) {
             // unbind parent listeners
             parentMap.un('postrender', me.updateBox, me);

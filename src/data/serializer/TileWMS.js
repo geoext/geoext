@@ -1,4 +1,4 @@
-/* Copyright (c) 2015-2016 The Open Source Geospatial Foundation
+/* Copyright (c) 2015-2017 The Open Source Geospatial Foundation
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -44,6 +44,8 @@ Ext.define('GeoExt.data.serializer.TileWMS', {
          */
         serialize: function(layer, source) {
             this.validateSource(source);
+            var styles = source.getParams().STYLES;
+            var stylesArray = styles ? styles.split(',') : [''];
             var serialized = {
                 baseURL: source.getUrls()[0],
                 customParams: source.getParams(),
@@ -51,7 +53,7 @@ Ext.define('GeoExt.data.serializer.TileWMS', {
                     source.getParams().LAYERS
                 ],
                 opacity: layer.getOpacity(),
-                styles: [''],
+                styles: stylesArray,
                 type: 'WMS'
             };
             return serialized;
