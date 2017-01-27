@@ -2,7 +2,7 @@
 
 Follow these instructions to build your first GeoExt 3 application, using Sencha `cmd`. Supported versions:
 
-* Sencha Cmd v6.2.0.103
+* Sencha Cmd v6.2.1.29
 * ExtJS GPL 6.2.0 (ext.version.number=6.2.0.981)
 * GeoExt 3 (2016-10-20)
 
@@ -73,7 +73,7 @@ sencha repository list
 You should get something like:
 
 ```
-Sencha Cmd v6.2.0.103
+Sencha Cmd v6.2.1.29
 [INF] Remote repository connections (3):
 [INF]
 [INF]     sencha - http://cdn.sencha.com/cmd/packages/
