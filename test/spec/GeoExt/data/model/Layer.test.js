@@ -16,7 +16,7 @@ describe('A GeoExt.data.model.Layer', function() {
     });
 
     it('provides a getter for the underlying layers properties', function() {
-        var layer = new ol.layer.Tile({name : 'title'});
+        var layer = new ol.layer.Tile({name: 'title'});
         var instance = Ext.create('GeoExt.data.model.Layer', layer);
         expect(instance.getOlLayerProp('none')).to.be(undefined);
         expect(instance.getOlLayerProp('none', 'default')).to.be('default');

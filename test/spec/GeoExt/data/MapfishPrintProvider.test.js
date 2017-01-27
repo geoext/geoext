@@ -159,7 +159,7 @@ describe('GeoExt.data.MapfishPrintProvider', function() {
             document.body.appendChild(div);
 
             layer = new ol.layer.Tile({
-                name:'1',
+                name: '1',
                 source: new ol.source.TileWMS({
                     url: 'http://ows.terrestris.de/osm-gray/service',
                     params: {
@@ -169,19 +169,19 @@ describe('GeoExt.data.MapfishPrintProvider', function() {
             });
 
             extentLayer = new ol.layer.Vector({
-                name:'2',
+                name: '2',
                 source: new ol.source.Vector()
             });
 
             firstgrouplayer = new ol.layer.Tile({
-                name:'3',
+                name: '3',
                 source: new ol.source.Stamen({
                     layer: 'watercolor'
                 })
             });
 
             secondgrouplayer = new ol.layer.Tile({
-                name:'4',
+                name: '4',
                 source: new ol.source.Stamen({
                     layer: 'terrain-labels'
                 })
