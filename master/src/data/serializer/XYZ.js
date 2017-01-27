@@ -39,7 +39,7 @@ Ext.define('GeoExt.data.serializer.XYZ', {
         /**
          *
          */
-        allowedImageExtensions: ['png','jpg','gif'],
+        allowedImageExtensions: ['png', 'jpg', 'gif'],
 
         /**
          * @inheritdoc

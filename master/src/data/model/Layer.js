@@ -121,17 +121,17 @@ Ext.define('GeoExt.data.model.Layer', {
             }
         },
         {
-            name : 'qtip',
-            type : 'string',
-            persist : false,
+            name: 'qtip',
+            type: 'string',
+            persist: false,
             convert: function(v, record) {
                 return record.getOlLayerProp(record.descriptionProperty, '');
             }
         },
         {
-            name : 'qtitle',
-            type : 'string',
-            persist : false,
+            name: 'qtitle',
+            type: 'string',
+            persist: false,
             convert: function(v, record) {
                 return record.get('text');
             }
