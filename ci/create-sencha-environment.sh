@@ -24,6 +24,8 @@ fi
 mkdir -p $DOWN_DIR
 mkdir -p $INSTALL_DIR
 
+REINSTALL_SENCHA=false
+
 # Many of the commands below check if a resource or directory already exists,
 # this is here because the relevant directories are cached by travis and may
 # already be there from a previous build.
@@ -31,30 +33,32 @@ mkdir -p $INSTALL_DIR
 cd $DOWN_DIR
 
 # DOWNLOAD (if needed)
-# 1) Sencha cmd (v6.2.0.103)
-if [ ! -f "SenchaCmd-$SENCHA_CMD_VERSION_FULL-linux-amd64.sh.zip" ]; then
-    wget "http://cdn.sencha.com/cmd/$SENCHA_CMD_VERSION_FULL/no-jre/SenchaCmd-$SENCHA_CMD_VERSION_FULL-linux-amd64.sh.zip"
+# 1) Sencha cmd
+if [ ! -f "SenchaCmd-$SENCHA_CMD_VERSION-linux-amd64.sh.zip" ]; then
+    wget "http://cdn.sencha.com/cmd/$SENCHA_CMD_VERSION/no-jre/SenchaCmd-$SENCHA_CMD_VERSION-linux-amd64.sh.zip"
+    REINSTALL_SENCHA=true
 fi
 
-# 2) Ext JS (v6.2.0.103)
+# 2) Ext JS
 if [ ! -f "ext-$SENCHA_EXTJS_VERSION-gpl.zip" ]; then
     wget "http://cdn.sencha.com/ext/gpl/ext-$SENCHA_EXTJS_VERSION-gpl.zip"
 fi
 
 # EXTRACT (if needed)
-# 1) Sencha cmd (v6.2.0.103)
-if [ ! -f "SenchaCmd-$SENCHA_CMD_VERSION_FULL-linux-amd64.sh" ]; then
-    unzip -q "SenchaCmd-$SENCHA_CMD_VERSION_FULL-linux-amd64.sh.zip"
+# 1) Sencha cmd
+if [ ! -f "SenchaCmd-$SENCHA_CMD_VERSION-linux-amd64.sh" ]; then
+    unzip -q "SenchaCmd-$SENCHA_CMD_VERSION-linux-amd64.sh.zip"
+    REINSTALL_SENCHA=true
 fi
 
-# 2) Ext JS (v6.2.0.103)
+# 2) Ext JS
 if [ ! -d "ext-$SENCHA_EXTJS_VERSION" ]; then
     unzip -q "ext-$SENCHA_EXTJS_VERSION-gpl.zip"
 fi
 
 # Install Sencha cmd
-if [ ! -f $SENCHA_CMD ]; then
-    ./SenchaCmd-$SENCHA_CMD_VERSION_FULL-linux-amd64.sh -q -dir $INSTALL_DIR
+if [ $REINSTALL_SENCHA ]; then
+    ./SenchaCmd-$SENCHA_CMD_VERSION-linux-amd64.sh -q -dir $INSTALL_DIR
 fi
 
 # Create a sencha workspace using the downloaded ExtJS

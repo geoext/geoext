@@ -35,8 +35,8 @@ STATS_DIR="/tmp/build-stats"
 # This is the executable sencha command once it has been installed
 SENCHA_CMD="$INSTALL_DIR/sencha"
 
-# The version of sencha command to downlaod and install
-SENCHA_CMD_VERSION_FULL="6.2.0.103"
+# The version of sencha command to download and install
+SENCHA_CMD_VERSION="6.2.1.29"
 
 # The version of ExtJS to download and configure the sencha workspace with
 SENCHA_EXTJS_VERSION="6.2.0"
