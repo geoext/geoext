@@ -123,7 +123,7 @@ describe('GeoExt.data.store.LayersTree', function() {
             var layer2 = new ol.layer.Vector();
 
             var group = new ol.layer.Group({
-                layers:[layer2]
+                layers: [layer2]
             });
 
             mapComponent.addLayer(group);
@@ -143,13 +143,13 @@ describe('GeoExt.data.store.LayersTree', function() {
 
         beforeEach(function() {
             for (var i = 0; i < 6; i++) {
-                var vector = new ol.layer.Vector({name:'layer' + i});
+                var vector = new ol.layer.Vector({name: 'layer' + i});
                 layers.push(vector);
             }
 
             group = new ol.layer.Group({
-                layers:layers,
-                name:'group'
+                layers: layers,
+                name: 'group'
             });
         });
 
@@ -173,7 +173,7 @@ describe('GeoExt.data.store.LayersTree', function() {
 
                 var store = Ext.create('GeoExt.data.store.LayersTree', {
                     layerGroup: olMap2.getLayerGroup(),
-                    inverseLayerOrder:false
+                    inverseLayerOrder: false
                 });
 
                 var rootNode = store.getRootNode();
@@ -196,7 +196,7 @@ describe('GeoExt.data.store.LayersTree', function() {
 
                 for (var i = 0; i < indexes.length; i++) {
                     var vector = new ol.layer.Vector({
-                        name:'insertedLayer' + i
+                        name: 'insertedLayer' + i
                     });
                     group.getLayers().insertAt(indexes[i], vector);
                     var layerNode = groupNode.getChildAt(indexes[i]);
@@ -207,7 +207,7 @@ describe('GeoExt.data.store.LayersTree', function() {
 
             it('does properly order appended node', function() {
 
-                var vector = new ol.layer.Vector({name:'appendedLayer'});
+                var vector = new ol.layer.Vector({name: 'appendedLayer'});
 
                 group.getLayers().push(vector);
                 var groupSize = groupNode.childNodes.length;
@@ -241,7 +241,7 @@ describe('GeoExt.data.store.LayersTree', function() {
 
                 for (var i = 0; i < indexes.length; i++) {
                     var vector = new ol.layer.Vector({
-                        name:'insertedLayer' + i
+                        name: 'insertedLayer' + i
                     });
                     group.getLayers().insertAt(indexes[i], vector);
                     var groupSize = groupNode.childNodes.length;
@@ -253,7 +253,7 @@ describe('GeoExt.data.store.LayersTree', function() {
             });
 
             it('does properly order appended node', function() {
-                var vector = new ol.layer.Vector({name:'appendedLayer'});
+                var vector = new ol.layer.Vector({name: 'appendedLayer'});
 
                 group.getLayers().push(vector);
 
@@ -391,27 +391,29 @@ describe('GeoExt.data.store.LayersTree', function() {
         });
 
         describe('basics', function() {
-            it('sets the "classic" folderToggleMode as default',function() {
+            it('sets the "classic" folderToggleMode as default', function() {
                 expect(treeStore.getFolderToggleMode()).to.be('classic');
             });
 
-            it('can\'t set values else then \'ol3\' or \'classic\'',function() {
-                expect(function() {
-                    treeStore.setFolderToggleMode('ol3');
-                }).to.not.throwException();
+            it('can\'t set values else then \'ol3\' or \'classic\'',
+                function() {
+                    expect(function() {
+                        treeStore.setFolderToggleMode('ol3');
+                    }).to.not.throwException();
 
-                expect(function() {
-                    treeStore.setFolderToggleMode('classic');
-                }).to.not.throwException();
+                    expect(function() {
+                        treeStore.setFolderToggleMode('classic');
+                    }).to.not.throwException();
 
-                expect(function() {
-                    treeStore.setFolderToggleMode('peter');
-                }).to.throwException();
+                    expect(function() {
+                        treeStore.setFolderToggleMode('peter');
+                    }).to.throwException();
 
-                expect(treeStore.getFolderToggleMode()).to.be('classic');
-            });
+                    expect(treeStore.getFolderToggleMode()).to.be('classic');
+                }
+            );
 
-            it('sets the toggleMode on all nodes',function() {
+            it('sets the toggleMode on all nodes', function() {
                 treeStore.each(function(child) {
                     expect(child.get('__toggleMode')).to.be('classic');
                 });
@@ -420,7 +422,7 @@ describe('GeoExt.data.store.LayersTree', function() {
 
         describe('classic', function() {
 
-            it('checks all children if a folder is checked',function() {
+            it('checks all children if a folder is checked', function() {
                 var layerGroupNode = treePanel.getRootNode().getChildAt(0);
                 layerGroupNode.set('checked', true);
 
@@ -429,7 +431,7 @@ describe('GeoExt.data.store.LayersTree', function() {
                 });
             });
 
-            it('unchecks all children if a folder is unchecked',function() {
+            it('unchecks all children if a folder is unchecked', function() {
                 var layerGroupNode = treePanel.getRootNode().getChildAt(0);
                 layerGroupNode.set('checked', false);
 
@@ -438,7 +440,7 @@ describe('GeoExt.data.store.LayersTree', function() {
                 });
             });
 
-            it('checks all parent nodes if a leaf is checked',function() {
+            it('checks all parent nodes if a leaf is checked', function() {
                 var layerGroupNode = treePanel.getRootNode().getChildAt(0);
                 var childNode = layerGroupNode.getChildAt(0);
 
@@ -447,7 +449,7 @@ describe('GeoExt.data.store.LayersTree', function() {
             });
 
             it('unchecks all parent nodes if a leaf and all his siblings' +
-                'are unchecked',function() {
+                'are unchecked', function() {
                 var layerGroupNode = treePanel.getRootNode().getChildAt(0);
 
                 layerGroupNode.eachChild(function(child) {
@@ -468,13 +470,13 @@ describe('GeoExt.data.store.LayersTree', function() {
                 treeStore.setFolderToggleMode('ol3');
             });
 
-            it('sets the toggleMode on all nodes',function() {
+            it('sets the toggleMode on all nodes', function() {
                 treeStore.each(function(child) {
                     expect(child.get('__toggleMode')).to.be('ol3');
                 });
             });
 
-            it('folderNode does not react to leafchanges',function() {
+            it('folderNode does not react to leafchanges', function() {
                 var layerGroupNode = treePanel.getRootNode().getChildAt(0);
                 var childNode = layerGroupNode.getChildAt(0);
 
@@ -483,7 +485,7 @@ describe('GeoExt.data.store.LayersTree', function() {
                 expect(layerGroupNode.get('checked')).to.be(false);
             });
 
-            it('leafNodes don\'t not react to folderchanges',function() {
+            it('leafNodes don\'t not react to folderchanges', function() {
                 var layerGroupNode = treePanel.getRootNode().getChildAt(0);
                 var childNode = layerGroupNode.getChildAt(0);
 
@@ -771,8 +773,8 @@ describe('A GeoExt.data.store.LayersTree', function() {
         var record;
 
         // custom LayerTreeNode
-        Ext.define('GeoExt.CustomTreeNode',{
-            extend:'GeoExt.data.model.LayerTreeNode',
+        Ext.define('GeoExt.CustomTreeNode', {
+            extend: 'GeoExt.data.model.LayerTreeNode',
             fields: [{
                 name: 'text',
                 type: 'string',
