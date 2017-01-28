@@ -25,7 +25,7 @@ module.exports = function(config) {
             },
             // CSS files
             'http://openlayers.org/en/master/css/ol.css',
-            'https://cdnjs.cloudflare.com/ajax/libs/extjs/6.0.0/classic/'
+            'https://cdnjs.cloudflare.com/ajax/libs/extjs/6.2.0/classic/'
                 + 'theme-crisp/resources/theme-crisp-all' + suffix + '.css',
             // requestAnimationFrame shim
             'https://cdn.rawgit.com/paulirish/1579671/raw/'
@@ -33,7 +33,7 @@ module.exports = function(config) {
             // OpenLayers 3
             'http://openlayers.org/en/master/build/ol' + suffix + '.js',
             // ExtJS 6
-            'http://cdnjs.cloudflare.com/ajax/libs/extjs/6.0.0/ext-all'
+            'http://cdnjs.cloudflare.com/ajax/libs/extjs/6.2.0/ext-all'
                 + suffix + '.js',
             // Ext.Loader configuration
             'test/loader.js',
