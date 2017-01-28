@@ -56,8 +56,9 @@ Ext.define('Ext.form.field.Display', {
     alternateClassName: ['Ext.form.DisplayField', 'Ext.form.Display'],
     
 <span id='Ext-form-field-Display-cfg-fieldSubTpl'>    fieldSubTpl: [
-</span>        '&lt;div id=&quot;{id}&quot; data-ref=&quot;inputEl&quot; tabindex=&quot;-1&quot; role=&quot;textbox&quot; aria-readonly=&quot;true&quot;',
+</span>        '&lt;div id=&quot;{id}&quot; data-ref=&quot;inputEl&quot; role=&quot;textbox&quot; aria-readonly=&quot;true&quot;',
         ' aria-labelledby=&quot;{cmpId}-labelEl&quot; {inputAttrTpl}',
+        ' tabindex=&quot;&lt;tpl if=&quot;tabIdx != null&quot;&gt;{tabIdx}&lt;tpl else&gt;-1&lt;/tpl&gt;&quot;',
         '&lt;tpl if=&quot;fieldStyle&quot;&gt; style=&quot;{fieldStyle}&quot;&lt;/tpl&gt;', 
         ' class=&quot;{fieldCls} {fieldCls}-{ui}&quot;&gt;{value}&lt;/div&gt;',
         {
@@ -71,6 +72,10 @@ Ext.define('Ext.form.field.Display', {
     
 <span id='Ext-form-field-Display-property-focusable'>    focusable: false,
 </span>
+<span id='Ext-form-field-Display-property-skipLabelForAttribute'>    // Display fields are divs not real input fields, so rendering
+</span>    // &quot;for&quot; attribute in the label does not do any good.
+    skipLabelForAttribute: true,
+
 <span id='Ext-form-field-Display-cfg-readOnly'>    /**
 </span>     * @cfg {Boolean} readOnly
      * @private

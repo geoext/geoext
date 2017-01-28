@@ -21,7 +21,7 @@
  * typically required to validate data and handle returned data packets
  * (reading data, error conditions, etc).
  *
- * The Ext.direct namespace includes several classes for a closer integration
+ * The `Ext.direct` namespace includes several classes for a closer integration
  * with the server-side. The Ext.data namespace also includes classes for working
  * with Ext.data.Stores which are backed by data from an Ext Direct method.
  *
@@ -69,7 +69,6 @@
  * @singleton
  * @alternateClassName Ext.Direct
  */
-
 Ext.define('Ext.direct.Manager', {
     singleton: true,
 
@@ -100,10 +99,10 @@ Ext.define('Ext.direct.Manager', {
     
     config: {
 <span id='Ext-direct-Manager-cfg-varName'>        /**
-</span>         * @cfg {String} [varName=&quot;Ext.app.REMOTING_API&quot;]
-         * Default variable name to use for Ext.Direct API declaration.
+</span>         * @cfg {String} [varName=&quot;Ext.REMOTING_API&quot;]
+         * Default variable name to use for Ext Direct API declaration.
          */
-        varName: 'Ext.app.REMOTING_API'
+        varName: 'Ext.REMOTING_API'
     },
     
 <span id='Ext-direct-Manager-property-apiNotFoundError'>    apiNotFoundError: 'Ext Direct API was not found at {0}',
@@ -167,10 +166,12 @@ Ext.define('Ext.direct.Manager', {
      * it will auto-connect.
      *
      *      var pollProv = new Ext.direct.PollingProvider({
+     *          id: 'polling1',
      *          url: 'php/poll2.php'
      *      });
      *
      *      Ext.direct.Manager.addProvider({
+     *          id: 'remoting1',
      *          type: 'remoting',           // create a Ext.direct.RemotingProvider
      *          url:  'php/router.php',     // url to connect to the Ext Direct server-side router.
      *          actions: {                  // each property within the actions object represents an Action
@@ -187,6 +188,7 @@ Ext.define('Ext.direct.Manager', {
      *          },
      *          namespace: 'myApplication', // namespace to create the Remoting Provider in
      *      }, {
+     *          id:   'polling2',
      *          type: 'polling',            // create an Ext.direct.PollingProvider
      *          url:  'php/poll.php'
      *      },
@@ -239,7 +241,7 @@ Ext.define('Ext.direct.Manager', {
      * 
      *      Ext.direct.Manager.loadProvider({
      *          url: 'php/api.php',
-     *          varName: 'MY_REMOTING_API' // defaults to 'Ext.app.REMOTING_API'
+     *          varName: 'MY_REMOTING_API' // defaults to 'Ext.REMOTING_API'
      *      });
      *
      * @param {Object} config Remoting API configuration.
@@ -472,6 +474,47 @@ Ext.define('Ext.direct.Manager', {
         
         return resolved || null;
     },
+        
+<span id='Ext-direct-Manager-method-resolveApi'>    /**
+</span>     * @private
+     * Iterate over an API object containing function names and resolve Direct functions.
+     *
+     * @param {Object} api API object
+     * @param {Ext.Base} caller The object calling
+     *
+     * @return {Object} The API object with each property resolved to a Direct function.
+     */
+    resolveApi: function(api, caller) {
+        var prefix, action, method, fullName, fn;
+        
+        prefix = api &amp;&amp; api.prefix;
+        
+        if (prefix &amp;&amp; prefix.substr(prefix.length - 1) !== '.') {
+            prefix += '.';
+        }
+        
+        for (action in api) {
+            method = api[action];
+            
+            if (action !== 'prefix' &amp;&amp; typeof method !== 'function') {
+                fullName = (prefix || '') + method;
+                fn = this.parseMethod(fullName);
+                
+                if (typeof fn === 'function') {
+                    api[action] = fn;
+                }
+                //&lt;debug&gt;
+                else {
+                    Ext.raise(&quot;Cannot resolve Direct API method '&quot; + fullName + &quot;' for &quot; + action +
+                              &quot; action in &quot; + caller.$className + &quot; instance with id: &quot; +
+                              (caller.id != null ? caller.id : 'unknown'));
+                }
+                //&lt;/debug&gt;
+            }
+        }
+        
+        return api;
+    },
     
 <span id='Ext-direct-Manager-property-privates'>    privates: {
 </span>        addProviderClass: function(type, cls) {
@@ -485,7 +528,7 @@ Ext.define('Ext.direct.Manager', {
                 api, provider, error;
             
             try {
-                // Variable name could be nested (default is Ext.app.REMOTING_API),
+                // Variable name could be nested (default is Ext.REMOTING_API),
                 // so we use eval() to get the actual value.
                 api = Ext.apply(options.config, eval(varName));
                 

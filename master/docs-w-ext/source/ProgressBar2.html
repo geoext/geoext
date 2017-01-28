@@ -47,7 +47,10 @@
  */
 Ext.define('Ext.ProgressBar', {
     extend: 'Ext.Component',
-    alias: 'widget.progressbar',
+    xtype: 'progressbar',
+    mixins: [
+        'Ext.ProgressBase'
+    ],
 
     requires: [
         'Ext.Template',
@@ -58,37 +61,20 @@ Ext.define('Ext.ProgressBar', {
 
     uses: ['Ext.fx.Anim'],
 
-    config: {
-<span id='Ext-ProgressBar-cfg-value'>        /**
-</span>         * @cfg {Number} [value=0]
-         * A floating point value between 0 and 1 (e.g., .5)
-         */
-        value: 0,
+<span id='Ext-ProgressBar-cfg-textEl'>    /**
+</span>     * @cfg {String/HTMLElement/Ext.dom.Element} textEl
+     * The element to render the progress text to (defaults to the progress bar's internal text element)
+     */
 
-<span id='Ext-ProgressBar-cfg-textTpl'>        /**
-</span>         * @cfg {String/Ext.XTemplate} [textTpl]
-         * A template used to create this ProgressBar's background text given two values:
-         *
-         *    `value  ' - The raw progress value between 0 and 1
-         *    'percent' - The value as a percentage between 0 and 100
-         */
-        textTpl: null
-    },
+<span id='Ext-ProgressBar-cfg-id'>    /**
+</span>     * @cfg {String} id
+     * The progress bar element's id (defaults to an auto-generated id)
+     */
 
-<span id='Ext-ProgressBar-cfg-textEl'>   /**
-</span>    * @cfg {String/HTMLElement/Ext.dom.Element} textEl
-    * The element to render the progress text to (defaults to the progress bar's internal text element)
-    */
-
-<span id='Ext-ProgressBar-cfg-id'>   /**
-</span>    * @cfg {String} id
-    * The progress bar element's id (defaults to an auto-generated id)
-    */
-
-<span id='Ext-ProgressBar-cfg-baseCls'>   /**
-</span>    * @cfg {String} [baseCls='x-progress']
-    * The base CSS class to apply to the progress bar's wrapper element.
-    */
+<span id='Ext-ProgressBar-cfg-baseCls'>    /**
+</span>     * @cfg {String} [baseCls='x-progress']
+     * The base CSS class to apply to the progress bar's wrapper element.
+     */
     baseCls: Ext.baseCSSPrefix + 'progress',
 
 <span id='Ext-ProgressBar-cfg-animate'>    /**
@@ -117,12 +103,12 @@ Ext.define('Ext.ProgressBar', {
 </span>
 <span id='Ext-ProgressBar-cfg-renderTpl'>    renderTpl: [
 </span>        '&lt;tpl if=&quot;internalText&quot;&gt;',
-            '&lt;div class=&quot;{baseCls}-text {baseCls}-text-back&quot;&gt;{text}&lt;/div&gt;',
+            '&lt;div class=&quot;{baseCls}-text {baseCls}-text-back&quot; role=&quot;presentation&quot;&gt;{text}&lt;/div&gt;',
         '&lt;/tpl&gt;',
         '&lt;div id=&quot;{id}-bar&quot; data-ref=&quot;bar&quot; class=&quot;{baseCls}-bar {baseCls}-bar-{ui}&quot; role=&quot;presentation&quot; style=&quot;width:{percentage}%&quot;&gt;',
             '&lt;tpl if=&quot;internalText&quot;&gt;',
-                '&lt;div class=&quot;{baseCls}-text&quot;&gt;',
-                    '&lt;div&gt;{text}&lt;/div&gt;',
+                '&lt;div class=&quot;{baseCls}-text&quot; role=&quot;presentation&quot;&gt;',
+                    '&lt;div role=&quot;presentation&quot;&gt;{text}&lt;/div&gt;',
                 '&lt;/div&gt;',
             '&lt;/tpl&gt;',
         '&lt;/div&gt;'
@@ -131,7 +117,15 @@ Ext.define('Ext.ProgressBar', {
 <span id='Ext-ProgressBar-cfg-componentLayout'>    componentLayout: 'progressbar',
 </span>    
 <span id='Ext-ProgressBar-property-ariaRole'>    ariaRole: 'progressbar',
-</span>
+</span><span id='Ext-ProgressBar-property-focusable'>    focusable: true,
+</span><span id='Ext-ProgressBar-cfg-tabIndex'>    tabIndex: 0,
+</span>    
+<span id='Ext-ProgressBar-cfg-autoEl'>    autoEl: {
+</span>        'aria-valuemin': '0',
+        'aria-valuenow': '0',
+        'aria-valuemax': '100'
+    },
+
 <span id='Ext-ProgressBar-event-update'>    /**
 </span>     * @event update
      * Fires after each update interval
@@ -142,16 +136,19 @@ Ext.define('Ext.ProgressBar', {
 
     initRenderData: function() {
         var me = this,
-            value = me.value || 0;
-
-        return Ext.apply(me.callParent(), {
-            internalText : !me.hasOwnProperty('textEl'),
-            text         : me.text || '&amp;#160;',
-            percentage   : value * 100
+            value = me.value || 0,
+            data;
+        
+        data = me.callParent();
+        
+        return Ext.apply(data, {
+            internalText: !me.hasOwnProperty('textEl'),
+            text: me.text || Math.round(value * 100) + '%',
+            percentage: value * 100
         });
     },
 
-<span id='Ext-ProgressBar-method-onRender'>    onRender : function() {
+<span id='Ext-ProgressBar-method-onRender'>    onRender: function() {
 </span>        var me = this;
 
         me.callParent(arguments);
@@ -168,13 +165,19 @@ Ext.define('Ext.ProgressBar', {
             me.textEl = me.el.select('.' + me.baseCls + '-text');
         }
     },
-
-<span id='Ext-ProgressBar-method-applyValue'>    applyValue: function(value) {
-</span>        return value || 0;
+    
+<span id='Ext-ProgressBar-method-afterRender'>    afterRender: function() {
+</span>        var me = this;
+        
+        me.callParent(arguments);
+        
+        if (me.text) {
+            me.ariaEl.dom.setAttribute('aria-valuetext', me.text);
+        }
     },
 
 <span id='Ext-ProgressBar-method-updateValue'>    updateValue: function(value) {
-</span>        this.updateProgress(value, Math.round(value * 100) + '%');
+</span>        this.updateProgress(value);
     },
 
 <span id='Ext-ProgressBar-method-updateProgress'>    /**
@@ -204,15 +207,28 @@ Ext.define('Ext.ProgressBar', {
 
         // Empty string (falsy) must blank out the text as per docs.
         if (text != null) {
+            me.autoText = false;
             me.updateText(text);
         }
         // Generate text using template and progress values.
         else if (textTpl) {
+            me.autoText = false;
             me.updateText(textTpl.apply({
                 value: value,
                 percent: value * 100
             }));
         }
+        else if (!me.text &amp;&amp; me.autoText !== false) {
+            me.autoText = true;
+            me.updateText(Math.round(value * 100) + '%');
+        }
+        // Text was set the previous time but not this time. We can't
+        // deduce what it should be just from the value so need to
+        // reset aria-valuetext because it is no longer valid.
+        else if (me.text &amp;&amp; me.ariaEl.dom) {
+            me.ariaEl.dom.removeAttribute('aria-valuetext');
+        }
+        
         if (me.rendered &amp;&amp; !me.destroyed) {
             if (animate === true || (animate !== false &amp;&amp; me.animate)) {
                 me.bar.stopAnimation();
@@ -227,8 +243,12 @@ Ext.define('Ext.ProgressBar', {
             } else {
                 me.bar.setStyle('width', (value * 100) + '%');
             }
+            
+            me.ariaEl.dom.setAttribute('aria-valuenow', Math.round(value * 100));
         }
+        
         me.fireEvent('update', me, value, text);
+        
         return me;
     },
 
@@ -240,19 +260,23 @@ Ext.define('Ext.ProgressBar', {
      */
     updateText: function(text) {
         var me = this;
-        
-        me.text = text;
-        if (me.rendered) {
-            me.textEl.setHtml(me.text);
-        }
-        return me;
-    },
 
-<span id='Ext-ProgressBar-method-applyTextTpl'>    applyTextTpl: function(textTpl) {
-</span>        if (!textTpl.isTemplate) {
-            textTpl = new Ext.XTemplate(textTpl);
+        if (!me.autoText) {
+            me.text = text;
         }
-        return textTpl;
+        
+        if (me.rendered) {
+            me.textEl.setHtml(text);
+            
+            if (!me.autoText) {
+                me.ariaEl.dom.setAttribute('aria-valuetext', text);
+            }
+            else {
+                me.ariaEl.dom.removeAttribute('aria-valuetext');
+            }
+        }
+        
+        return me;
     },
 
 <span id='Ext-ProgressBar-method-applyText'>    applyText : function(text) {
@@ -326,6 +350,9 @@ Ext.define('Ext.ProgressBar', {
         if (!me.waitTimer) {
             scope = me;
             o = o || {};
+            if (o.text != null) {
+                me.autoText = false;
+            }
             me.updateText(o.text);
             me.waitTimer = Ext.TaskManager.start({
                 run: function(i){
@@ -366,9 +393,15 @@ Ext.define('Ext.ProgressBar', {
         
         me.updateProgress(0);
         me.clearTimer();
+        
         if (hide === true) {
             me.hide();
         }
+        
+        if (me.rendered) {
+            me.ariaEl.dom.removeAttribute('aria-valuetext');
+        }
+        
         return me;
     },
 
@@ -385,20 +418,24 @@ Ext.define('Ext.ProgressBar', {
         }
     },
 
-<span id='Ext-ProgressBar-method-onDestroy'>    onDestroy: function(){
+<span id='Ext-ProgressBar-method-doDestroy'>    doDestroy: function() {
 </span>        var me = this,
             bar = me.bar;
         
         me.clearTimer();
+        
         if (me.rendered) {
             if (me.textEl.isComposite) {
                 me.textEl.clear();
             }
+            
             Ext.destroyMembers(me, 'textEl', 'progressBar');
+            
             if (bar &amp;&amp; me.animate) {
                 bar.stopAnimation();
             }
         }
+        
         me.callParent();
     }
 });

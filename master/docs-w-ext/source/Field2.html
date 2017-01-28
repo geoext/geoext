@@ -206,6 +206,14 @@ Ext.define('Ext.form.field.Field', {
         me.initialValue = me.originalValue = me.lastValue = me.getValue();
     },
 
+<span id='Ext-form-field-Field-method-cleanupField'>    /**
+</span>     * Cleans up values initialized by this Field mixin on the current instance. 
+     * Components using this mixin should call this method before being destroyed.
+     */
+    cleanupField : function() {
+        delete this._ownerRecord;
+    },
+
 <span id='Ext-form-field-Field-method-getFieldIdentifier'>    // Fields can be editors, and some editors may not have a name property that maps
 </span>    // to its data index, so it's necessary in these cases to look it up by its dataIndex
     // property.  See EXTJSIV-11650.
@@ -330,7 +338,8 @@ Ext.define('Ext.form.field.Field', {
     },
     
 <span id='Ext-form-field-Field-method-beforeReset'>    /**
-</span>     * Template method before a field is reset.
+</span>     * @method
+     * Template method before a field is reset.
      * @protected
      */
     beforeReset: Ext.emptyFn,
@@ -359,11 +368,11 @@ Ext.define('Ext.form.field.Field', {
         var me = this,
             newVal, oldVal;
             
-        if (!me.suspendCheckChange) {
+        if (!me.suspendCheckChange &amp;&amp; !me.destroying &amp;&amp; !me.destroyed) {
             newVal = me.getValue();
             oldVal = me.lastValue;
                 
-            if (!me.destroyed &amp;&amp; me.didValueChange(newVal, oldVal)) {
+            if (me.didValueChange(newVal, oldVal)) {
                 me.lastValue = newVal;
                 me.fireEvent('change', me, newVal, oldVal);
                 me.onChange(newVal, oldVal);
@@ -440,7 +449,9 @@ Ext.define('Ext.form.field.Field', {
     },
 
 <span id='Ext-form-field-Field-method-onDirtyChange'>    /**
-</span>     * @private Called when the field's dirty state changes.
+</span>     * @method
+     * @private
+     * Called when the field's dirty state changes.
      * @param {Boolean} isDirty
      */
     onDirtyChange: Ext.emptyFn,
@@ -461,7 +472,7 @@ Ext.define('Ext.form.field.Field', {
             result;
 
         if (validationField) {
-            result = validationField.validate(value);
+            result = validationField.validate(value, null, null, this._ownerRecord);
             if (result !== true) {
                 errors.push(result);
             }
@@ -513,6 +524,14 @@ Ext.define('Ext.form.field.Field', {
         return isValid;
     },
 
+<span id='Ext-form-field-Field-method-setValidationField'>    /**
+</span>     * @private 
+     */
+    setValidationField: function(value, record) {
+        this.callParent([value]);
+        this._ownerRecord = record;
+    },
+
 <span id='Ext-form-field-Field-method-batchChanges'>    /**
 </span>     * A utility for grouping a set of modifications which may trigger value changes into a single transaction, to
      * prevent excessive firing of {@link #change} events. This is useful for instance if the field has sub-fields which
@@ -524,9 +543,6 @@ Ext.define('Ext.form.field.Field', {
         try {
             this.suspendCheckChange++;
             fn();
-        }
-        catch (pseudo) {  //required with IE when using 'try'
-            throw pseudo;
         }
         finally {
             this.suspendCheckChange--;
@@ -556,7 +572,8 @@ Ext.define('Ext.form.field.Field', {
     },
 
 <span id='Ext-form-field-Field-method-markInvalid'>    /**
-</span>     * Display one or more error messages associated with this field, using 
+</span>     * @method
+     * Display one or more error messages associated with this field, using 
      * {@link Ext.form.Labelable#msgTarget} to determine how to display the messages and 
      * applying {@link Ext.form.Labelable#invalidCls} to the field's UI element.
      *

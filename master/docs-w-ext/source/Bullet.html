@@ -54,27 +54,28 @@ Ext.define('Ext.sparkline.Bullet', {
 <span id='Ext-sparkline-Bullet-cfg-base'>        /**
 </span>         * @cfg {Number} [base] Set this to a number to change the base start number.
          */
-        base: null,
-        
-<span id='Ext-sparkline-Bullet-cfg-tipTpl'>        tipTpl: new Ext.XTemplate('{fieldkey:this.fields} - {value}', {
-</span>            fields: function(v) {
-                if (v === 'r') {
-                    return 'Range';
-                }
-                if (v === 'p') {
-                    return 'Performance';
-                }
-                if (v === 't') {
-                    return 'Target';
-                }
-            }
-        })
+        base: null
     },
+
+<span id='Ext-sparkline-Bullet-cfg-tipTpl'>    tipTpl: ['{fieldkey:this.fields} - {value}', {
+</span>        fields: function(v) {
+            if (v === 'r') {
+                return 'Range';
+            }
+            if (v === 'p') {
+                return 'Performance';
+            }
+            if (v === 't') {
+                return 'Target';
+            }
+        }
+    }],
 
 <span id='Ext-sparkline-Bullet-method-applyValues'>    // Ensure values is an array of normalized values
 </span>    applyValues: function(newValues) {
         newValues = Ext.Array.map(Ext.Array.from(newValues), this.normalizeValue);
         this.disabled = !(newValues &amp;&amp; newValues.length);
+        this.applyConfigChange();
         return newValues;
     },
 
@@ -122,17 +123,29 @@ Ext.define('Ext.sparkline.Bullet', {
     },
 
 <span id='Ext-sparkline-Bullet-method-renderHighlight'>    renderHighlight: function(region) {
-</span>        switch (region.substr(0, 1)) {
+</span>        var me = this,
+            valueShapes = me.valueShapes,
+            shapes = me.shapes,
+            shapeId = valueShapes[region],
+            shape;
+
+        delete shapes[shapeId];
+
+        switch (region.substr(0, 1)) {
             case 'r':
-                this.renderRange(region.substr(1), true).append();
+                shape = me.renderRange(region.substr(1), true);
                 break;
             case 'p':
-                this.renderPerformance(true).append();
+                shape = me.renderPerformance(true);
                 break;
             case 't':
-                this.renderTarget(true).append();
+                shape = me.renderTarget(true);
                 break;
         }
+
+        valueShapes[region] = shape.id;
+        shapes[shape.id] = region;
+        me.canvas.replaceWithShape(shapeId, shape);
     },
 
 <span id='Ext-sparkline-Bullet-method-renderRange'>    renderRange: function(region, highlight) {
@@ -202,6 +215,12 @@ Ext.define('Ext.sparkline.Bullet', {
             me.updateDisplay();
         }
         canvas.render();
+    },
+
+<span id='Ext-sparkline-Bullet-property-privates'>    privates: {
+</span>        isValidRegion: function(region, values) {
+            return true;
+        }
     }
 });</pre>
 </body>

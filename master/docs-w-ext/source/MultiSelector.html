@@ -134,12 +134,15 @@ Ext.define('Ext.view.MultiSelector', {
     },
 
 <span id='Ext-view-MultiSelector-method-addTools'>    addTools: function () {
-</span>        this.addTool({
+</span>        var me = this;
+
+        me.addTool({
             type: 'plus',
-            tooltip: this.addToolText,
+            tooltip: me.addToolText,
             callback: 'onShowSearch',
-            scope: this
+            scope: me
         });
+        me.searchTool = me.tools[me.tools.length - 1];
     },
 
 <span id='Ext-view-MultiSelector-property-convertSearchRecord'>    convertSearchRecord: Ext.identityFn,
@@ -150,7 +153,8 @@ Ext.define('Ext.view.MultiSelector', {
 </span>        var me = this;
 
         return {
-            width: 22,
+            width: 32,
+            align: 'center',
             menuDisabled: true,
             tdCls: Ext.baseCSSPrefix + 'multiselector-remove',
             processEvent: me.processRowEvent.bind(me),
@@ -161,12 +165,15 @@ Ext.define('Ext.view.MultiSelector', {
     },
 
 <span id='Ext-view-MultiSelector-method-processRowEvent'>    processRowEvent: function (type, view, cell, recordIndex, cellIndex, e, record, row) {
-</span>        if (e.type !== 'click') {
-            return;
-        }
+</span>        var body = Ext.getBody();
 
-        if (Ext.fly(cell).hasCls(Ext.baseCSSPrefix + 'multiselector-remove')) {
+        if (e.type === 'click' || (e.type === 'keydown' &amp;&amp; (e.keyCode === e.SPACE || e.keyCode === e.ENTER))) {
+
+            // Deleting the focused row will momentarily focusLeave
+            // That would dismiss the popup, so disable that.
+            body.suspendFocusEvents();
             this.store.remove(record);
+            body.resumeFocusEvents();
             if (this.searchPopup) {
                 this.searchPopup.deselectRecords(record);
             }
@@ -174,32 +181,45 @@ Ext.define('Ext.view.MultiSelector', {
     },
 
 <span id='Ext-view-MultiSelector-method-renderRemoveRow'>    renderRemoveRow: function () {
-</span>        return '&lt;span data-qtip=&quot;'+ this.removeRowTip + '&quot; role=&quot;button&quot;&gt;' +
+</span>        return '&lt;span data-qtip=&quot;'+ this.removeRowTip + '&quot; role=&quot;button&quot; tabIndex=&quot;0&quot;&gt;' +
             this.removeRowText + '&lt;/span&gt;';
     },
 
-<span id='Ext-view-MultiSelector-method-beforeDestroy'>    beforeDestroy: function() {
-</span>        Ext.un({
-            mousedown: 'onDismissSearch',
-            scope: this
-        });
-        this.callParent();
+<span id='Ext-view-MultiSelector-method-onFocusLeave'>    onFocusLeave: function(e) {
+</span>        this.onDismissSearch();
+        this.callParent([e]);
+    },
+
+<span id='Ext-view-MultiSelector-method-afterComponentLayout'>    afterComponentLayout: function(width, height, prevWidth, prevHeight) {
+</span>        var me = this,
+            popup = me.searchPopup;
+
+        me.callParent([width, height, prevWidth, prevHeight]);
+        if (popup &amp;&amp; popup.isVisible()) {
+            popup.showBy(me, me.popupAlign);
+        }
     },
 
 <span id='Ext-view-MultiSelector-property-privates'>    privates: {
-</span>        onDismissSearch: function (e) {
-            var searchPopup = this.searchPopup;
+</span>        popupAlign: 'tl-tr?',
 
-            if (searchPopup &amp;&amp; !(searchPopup.owns(e.getTarget()) || this.owns(e.getTarget()))) {
-                Ext.un({
-                    mousedown: 'onDismissSearch',
-                    scope: this
-                });
+        onGlobalScroll: function (scroller) {
+            // Collapse if the scroll is anywhere but inside this selector or the popup
+            if (!this.owns(scroller.getElement())) {
+                this.onDismissSearch();
+            }
+        },
+
+        onDismissSearch: function (e) {
+            var searchPopup = this.searchPopup;
+            if (searchPopup &amp;&amp; (!e || !(searchPopup.owns(e.getTarget()) || this.owns(e.getTarget())))) {
+                this.scrollListeners.destroy();
+                this.touchListeners.destroy();
                 searchPopup.hide();
             }
         },
 
-        onShowSearch: function (panel, tool) {
+        onShowSearch: function (panel, tool, event) {
             var me = this,
                 searchPopup = me.searchPopup,
                 store = me.getStore();
@@ -208,7 +228,8 @@ Ext.define('Ext.view.MultiSelector', {
                 searchPopup = Ext.merge({
                     owner: me,
                     field: me.fieldName,
-                    floating: true
+                    floating: true,
+                    alignOnScroll: false
                 }, me.getSearch());
                 me.searchPopup = searchPopup = me.add(searchPopup);
 
@@ -219,10 +240,32 @@ Ext.define('Ext.view.MultiSelector', {
                 }
             }
 
-            searchPopup.showBy(me, 'tl-tr?');
-            Ext.on({
-                mousedown: 'onDismissSearch',
-                scope: me
+            searchPopup.invocationEvent = event;
+            searchPopup.showBy(me, me.popupAlign);
+
+            // It only autofocuses its defaultFocus target if it was hidden.
+            // If they're reactivating the show tool, they'll expect to focus the search.
+            if (!event || event.pointerType !== 'touch') {
+                searchPopup.lookupReference('searchField').focus();
+            }
+
+            me.scrollListeners = Ext.on({
+                scroll: 'onGlobalScroll',
+                scope: me,
+                destroyable: true
+            });
+
+            // Dismiss on touch outside this component tree.
+            // Because touch platforms do not focus document.body on touch
+            // so no focusleave would occur to trigger a collapse.
+            me.touchListeners = Ext.getDoc().on({
+                // Do not translate on non-touch platforms.
+                // mousedown will blur the field.
+                translate:false,
+                touchstart: me.onDismissSearch,
+                scope: me,
+                delegated: false,
+                destroyable: true
             });
         }
     }

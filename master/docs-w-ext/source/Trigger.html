@@ -39,8 +39,13 @@ Ext.define('Ext.form.field.Trigger', {
     triggerCls: Ext.baseCSSPrefix + 'form-arrow-trigger',
 
     inheritableStatics: {
-<span id='Ext-form-field-Trigger-static-method-warnDeprecated'>        warnDeprecated: function() {
-</span>            //&lt;debug&gt;
+<span id='Ext-form-field-Trigger-static-method-warnDeprecated'>        /**
+</span>         * @private
+         * @static
+         * @inheritable
+         */
+        warnDeprecated: function() {
+            //&lt;debug&gt;
             // TODO: can we make this warning depend on compat level?
             Ext.log.warn('Ext.form.field.Trigger is deprecated. Use Ext.form.field.Text instead.');
             //&lt;/debug&gt;

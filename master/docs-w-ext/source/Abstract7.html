@@ -31,10 +31,14 @@ Ext.define('Ext.util.translatable.Abstract', {
 </span>
 <span id='Ext-util-translatable-Abstract-cfg-easing'>        easing: null,
 </span>
-<span id='Ext-util-translatable-Abstract-cfg-easingX'>        easingX: null,
-</span>
-<span id='Ext-util-translatable-Abstract-cfg-easingY'>        easingY: null
-</span>    },
+<span id='Ext-util-translatable-Abstract-cfg-easingX'>        easingX: {
+</span>            duration: 300
+        },
+
+<span id='Ext-util-translatable-Abstract-cfg-easingY'>        easingY: {
+</span>            duration: 300
+        }
+    },
 
 <span id='Ext-util-translatable-Abstract-event-animationstart'>    /**
 </span>     * @event animationstart
@@ -112,8 +116,12 @@ Ext.define('Ext.util.translatable.Abstract', {
 </span>        return this.factoryEasing(easing);
     },
 
-<span id='Ext-util-translatable-Abstract-method-doTranslate'>    doTranslate: Ext.emptyFn,
-</span>
+<span id='Ext-util-translatable-Abstract-method-doTranslate'>    doTranslate: function(x, y) {
+</span>        if (this.hasListeners.translate) {
+            this.fireEvent('translate', this, x, y);
+        }
+    },
+
 <span id='Ext-util-translatable-Abstract-method-translate'>    translate: function(x, y, animation) {
 </span>        if (animation) {
             return this.translateAnimated(x, y, animation);
@@ -284,10 +292,14 @@ Ext.define('Ext.util.translatable.Abstract', {
         me.isAnimating = false;
 
         Ext.AnimationQueue.stop(me.doAnimationFrame, me);
-        me.fireEvent('animationend', me, me.x, me.y);
-        if (me.callback) {
-            me.callback.call(me.callbackScope);
-            me.callback = null;
+        
+        if (!me.destroying) {
+            me.fireEvent('animationend', me, me.x, me.y);
+            
+            if (me.callback) {
+                me.callback.call(me.callbackScope);
+                me.callback = null;
+            }
         }
     },
 
@@ -296,12 +308,20 @@ Ext.define('Ext.util.translatable.Abstract', {
     },
 
 <span id='Ext-util-translatable-Abstract-method-destroy'>    destroy: function() {
-</span>        if (this.isAnimating) {
-            this.stopAnimation();
+</span>        var me = this;
+        
+        me.destroying = true;
+        
+        if (me.isAnimating) {
+            me.stopAnimation();
         }
 
-        this.callParent();
+        me.callParent();
+        
+        me.destroying = false;
+        me.destroyed = true;
     }
-});</pre>
+});
+</pre>
 </body>
 </html>

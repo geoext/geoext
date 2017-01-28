@@ -160,7 +160,7 @@ return {
          * @private
          */
         is: function (value) {
-            return (Ext.isObject(value) || Ext.isFunction(value)) &amp;&amp;
+            return value != null &amp;&amp; (typeof value === 'object' || Ext.isFunction(value)) &amp;&amp;
                 Ext.isFunction(value.then);
         },
 
@@ -412,7 +412,7 @@ return {
             identifier = '';
         }
         
-        return this._owner.then(function (value) {
+        return this.owner.then(function (value) {
             Ext.log(&quot;&quot; + (identifier || 'Promise') + &quot; resolved with value: &quot; + value);
             
             return value;

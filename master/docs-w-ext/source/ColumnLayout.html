@@ -49,19 +49,12 @@ Ext.define('Ext.grid.ColumnLayout', {
 <span id='Ext-grid-ColumnLayout-method-beginLayout'>    beginLayout: function (ownerContext) {
 </span>        var me = this,
             owner = me.owner,
-            view = owner.grid ? owner.grid.getView() : null,
             firstCls = me.firstHeaderCls,
             lastCls = me.lastHeaderCls,
             bothCls = [firstCls, lastCls],
             items = me.getVisibleItems(),
             len = items.length,
             i, item;
-
-        if (view &amp;&amp; view.scrollFlags.x) {
-            me.viewScrollX = view.getScrollX();
-            owner.suspendEvent('scroll');
-            view.suspendEvent('scroll');
-        }
 
         me.callParent([ ownerContext ]);
 
@@ -94,7 +87,8 @@ Ext.define('Ext.grid.ColumnLayout', {
 
         me.scrollbarWidth = 0;
 
-        if (owner.isRootHeader) {
+        if (owner.isRootHeader &amp;&amp; !owner.grid.isLocked) {
+            // In a locking grid, the scrollbar is only managed on the normal side.
             me.determineScrollbarWidth(ownerContext);
         }
         if (!me.scrollbarWidth) {
@@ -106,15 +100,28 @@ Ext.define('Ext.grid.ColumnLayout', {
     },
 
 <span id='Ext-grid-ColumnLayout-method-moveItemBefore'>    moveItemBefore: function (item, before) {
-</span>        var prevOwner = item.ownerCt;
+</span>        var prevOwner = item.ownerCt,
+            nextSibling = before &amp;&amp; before.nextSibling();
 
         // Due to the nature of grid headers, index calculation for
         // moving items is complicated, especially since removals can trigger
         // groups to be removed (and thus alter indexes). As such, the logic
         // is simplified by removing the item first, then calculating the index
-        // and inserting it
+        // and inserting it.
+        // When removing from previous container ensure the header is not destroyed
+        // or removed from the DOM (which would destroy focus).
+        // The layout's moveItem method will preserve focus when it does the move.
         if (item !== before &amp;&amp; prevOwner) {
-            prevOwner.remove(item, false);
+            prevOwner.remove(item, {
+                destroy: false,
+                detach: false
+            });
+
+            // If the removal caused destruction of the before, this was
+            // the last subheader, so move to beore its next sibling
+            if (before &amp;&amp; before.destroyed) {
+                before = nextSibling;
+            }
         }
         return this.callParent([item, before]);
     },
@@ -123,16 +130,12 @@ Ext.define('Ext.grid.ColumnLayout', {
 </span>        var me = this,
             owner = me.owner,
             grid = owner.grid,
-            // locking headerCt can refuse to reserveScrollbar, even if the locking grid
-            // view does reserveScrollbar (special technique for hiding the vertical
-            // scrollbar on the locked side)
-            vetoReserveScrollbar = owner.reserveScrollbar === false,
             // We read this value off of the immediate grid since the locked side of a
             // locking grid will not have this set. The ownerGrid in that case would have
             // it set but will pass along true only to the normal side.
-            reserveScrollbar = grid.reserveScrollbar &amp;&amp; !vetoReserveScrollbar,
-            manageScrollbar = !reserveScrollbar &amp;&amp; !vetoReserveScrollbar &amp;&amp;
-                    grid.view.scrollFlags.y;
+            reserveScrollbar = grid.reserveScrollbar,
+            scrollable = grid.view.getScrollable(),
+            manageScrollbar = !reserveScrollbar &amp;&amp; scrollable &amp;&amp; scrollable.getY();
 
         // If we have reserveScrollbar then we will always have a vertical scrollbar so
         // manageScrollbar should be false. Otherwise it is based on overflow-y:
@@ -155,24 +158,24 @@ Ext.define('Ext.grid.ColumnLayout', {
 
 <span id='Ext-grid-ColumnLayout-method-calculate'>    calculate: function (ownerContext) {
 </span>        var me = this,
-            grid = me.owner.grid,
+            owner = me.owner,
+            grid = owner.grid,
             // Our TableLayout buddy sets this in its beginLayout so we can work this
             // out together:
             viewContext = ownerContext.viewContext,
             state = ownerContext.state,
             context = ownerContext.context,
-            lockingPartnerContext, ownerGrid,
+            lockingPartnerContext,
             columnsChanged, columns, len, i, column, scrollbarAdjustment, viewOverflowY;
 
         me.callParent([ ownerContext ]);
 
-        if (grid &amp;&amp; state.parallelDone) {
+        if (grid &amp;&amp; owner.isRootHeader &amp;&amp; state.parallelDone) {
             lockingPartnerContext = viewContext.lockingPartnerContext;
-            ownerGrid = grid.ownerGrid;
 
             // A force-fit needs to be &quot;reflexed&quot; so check that now. If we have to reflex
             // the items, we need to re-cacheFlexes and invalidate ourselves.
-            if (ownerGrid.forceFit &amp;&amp; !state.reflexed) {
+            if (grid.forceFit &amp;&amp; !state.reflexed) {
                 if (me.convertWidthsToFlexes(ownerContext)) {
                     me.cacheFlexes(ownerContext);
                     me.done = false;
@@ -256,29 +259,14 @@ Ext.define('Ext.grid.ColumnLayout', {
     },
 
 <span id='Ext-grid-ColumnLayout-method-finishedLayout'>    finishedLayout: function(ownerContext) {
-</span>        var me = this,
-            owner = me.owner,
-            view = owner.grid ? owner.grid.getView() : null,
-            viewScrollX = me.viewScrollX;
-
-        me.callParent([ ownerContext ]);
-
-        // Keep the HeaderContainer's horizontal scroll position synced with where the user
-        // has scrolled the view to (it will reset during a layout) IF this is a top lever
-        // grid HeaderContainer and the view is doing horizontal scrolling and the
-        // HeaderContainer overflows. Only do this after the initial layout where scroll
-        // position will be at default.
-        if (view &amp;&amp; view.scrollFlags.x) {
-            if (viewScrollX !== undefined &amp;&amp; owner.tooNarrow &amp;&amp; owner.componentLayoutCounter) {
-                owner.setScrollX(viewScrollX);
-            }
-            view.resumeEvent('scroll');
-            owner.resumeEvent('scroll');
+</span>        this.callParent([ ownerContext ]);
+        if (this.owner.ariaRole === 'rowgroup') {
+            this.innerCt.dom.setAttribute('role', 'row');
         }
-        
-        if (owner.ariaRole === 'rowgroup') {
-            me.innerCt.dom.setAttribute('role', 'row');
-        }
+
+        // Wipe this array because it holds component references and gets cached on the object
+        // Can cause a circular reference
+        ownerContext.props.columnsChanged = null;
     },
 
 <span id='Ext-grid-ColumnLayout-method-convertWidthsToFlexes'>    convertWidthsToFlexes: function(ownerContext) {
@@ -323,7 +311,7 @@ Ext.define('Ext.grid.ColumnLayout', {
             scrollbarAdjustment = 0;
 
             if (grid.reserveScrollbar || (ownerContext.manageScrollbar &amp;&amp;
-                    !grid.ownerGrid.layout.ownerContext.heightModel.shrinkWrap)) {
+                    !grid.ownerGrid.getSizeModel().height.shrinkWrap)) {
                 scrollbarAdjustment = me.scrollbarWidth;
             }
 

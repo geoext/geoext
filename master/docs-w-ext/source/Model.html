@@ -128,123 +128,10 @@
  * values.
  *
  * # Associations
- *
+ * 
  * Models often have associations with other Models. These associations can be defined by
  * fields (often called &quot;foreign keys&quot;) or by other data such as a many-to-many (or &quot;matrix&quot;).
- *
- * ## Foreign-Key Associations - One-to-Many
- *
- * The simplest way to define an association from one Model to another is to add a
- * {@link Ext.data.field.Field#cfg-reference reference config} to the appropriate field.
- *
- *      Ext.define('Post', {
- *          extend: 'Ext.data.Model',
- *
- *          fields: [
- *              { name: 'user_id', reference: 'User' }
- *          ]
- *      });
- *
- *      Ext.define('Comment', {
- *          extend: 'Ext.data.Model',
- *
- *          fields: [
- *              { name: 'user_id', reference: 'User' },
- *              { name: 'post_id', reference: 'Post' }
- *          ]
- *      });
- *
- *      Ext.define('User', {
- *          extend: 'Ext.data.Model',
- *
- *          fields: [
- *              'name'
- *          ]
- *      });
- *
- * The placement of `reference` on the appropriate fields tells the Model which field has
- * the foreign-key and the type of Model it identifies. That is, the value of these fields
- * is set to value of the `idProperty` field of the target Model.
- *
- * ### One-to-Many Without Foreign-Keys
- *
- * To define an association without a foreign-key field, you will need to use either the
- * `{@link #cfg-hasMany}` or `{@link #cfg-belongsTo}`.
- *
- *      Ext.define('Post', {
- *          extend: 'Ext.data.Model',
- *
- *          belongsTo: 'User'
- *      });
- *
- *      Ext.define('Comment', {
- *          extend: 'Ext.data.Model',
- *
- *          belongsTo: [ 'Post', 'User' ]
- *      });
- *
- *      // User is as above
- *
- * These declarations have changed slightly from previous releases. In previous releases
- * both &quot;sides&quot; of an association had to declare their particular roles. This is now only
- * required if the defaults assumed for names are not satisfactory.
- *
- * ## Foreign-Key Associations - One-to-One
- *
- * A special case of one-to-many associations is the one-to-one case. This is defined as
- * a `{@link Ext.data.field.Field#reference unique reference}`.
- *
- *      Ext.define('Address', {
- *          extend: 'Ext.data.Model',
- *
- *          fields: [
- *              'address',
- *              'city',
- *              'state'
- *          ]
- *      });
- *
- *      Ext.define('User', {
- *          extend: 'Ext.data.Model',
- *
- *          fields: [{
- *              name: 'addressId',
- *              reference: 'Address',
- *              unique: true
- *          }]
- *      });
- *
- * ## Many-to-Many
- *
- * The classic use case for many-to-many is a User and Group. Users can belong to many
- * Groups and Groups can contain many Users. This association is declared using the
- * `{@link #cfg-manyToMany}` config like so:
- *
- *
- *      Ext.define('User', {
- *          extend: 'Ext.data.Model',
- *
- *          fields: [
- *              'name'
- *          ],
- *
- *          manyToMany: 'Group'
- *      });
- *
- *      Ext.define('Group', {
- *          extend: 'Ext.data.Model',
- *
- *          fields: [
- *              'name'
- *          ],
- *
- *          manyToMany: 'User'
- *      });
- *
- * As with other associations, only one &quot;side&quot; needs to be declared.
- *
- * To manage the relationship between a `manyToMany` relationship, a {@link Ext.data.Session}
- * must be used.
+ * See {@link Ext.data.schema.Association} for information about configuring and using associations.
  *
  * # Using a Proxy
  *
@@ -365,6 +252,43 @@ Ext.define('Ext.data.Model', {
 </span>
 <span id='Ext-data-Model-property-observableType'>    observableType: 'record',
 </span>
+<span id='Ext-data-Model-property-crudState'>    /**
+</span>     * @property {&quot;C&quot;/&quot;R&quot;/&quot;U&quot;/&quot;D&quot;} crudState
+     * This value is initially &quot;R&quot; or &quot;C&quot; indicating the initial CRUD state. As the
+     * record changes and the various joined parties (stores, sessions, etc.) are notified
+     * this value is updated prior to these calls. In other words, the joined parties
+     * are notified after the `crudState` is updated. This means that the `crudState`
+     * property may be briefly out of sync with underlying changes if this state is used
+     * outside of these notifications.
+     *
+     * The possible states have these meanings:
+     *
+     *  * &quot;R&quot; - The record is in a cleanly retrieved (unmodified) state.
+     *  * &quot;C&quot; - The record is in a newly created (`phantom`) state.
+     *  * &quot;U&quot; - The record is in an updated, `modified` (`dirty`) state.
+     *  * &quot;D&quot; - The record is in a `dropped` state.
+     *
+     * @readonly
+     * @protected
+     * @since 6.2.0
+     */
+    crudState: 'R',
+
+<span id='Ext-data-Model-property-crudStateWas'>    /**
+</span>     * @property {&quot;C&quot;/&quot;R&quot;/&quot;U&quot;/&quot;D&quot;} crudStateWas
+     * This value is initially `null` indicating there is no previous CRUD state. As the
+     * record changes and the various joined parties (stores, sessions, etc.) are notified
+     * this value is updated for the *subsequent* calls. In other words, the joined parties
+     * are notified and then `crudStateWas` is modified for the next update.
+     *
+     * The value of this property has the same meaning as `crudState`.
+     *
+     * @readonly
+     * @protected
+     * @since 6.2.0
+     */
+    crudStateWas: null,
+
 <span id='Ext-data-Model-method-constructor'>    constructor: function (data, session) {
 </span>        var me = this,
             cls = me.self,
@@ -379,6 +303,8 @@ Ext.define('Ext.data.Model', {
         // this.data being assigned in random scenarios, even though the data
         // is passed into the constructor. The issue occurs on 4th gen iPads and
         // lower, possibly other older iOS devices.
+        // A similar issue can occur with the hasListeners property of Observable
+        // (see the constructor of Ext.mixin.Observable)
         me.data = me.data = data || (data = {});
         me.session = session || null;
         me.internalId = internalId = modelIdentifier.generate();
@@ -424,6 +350,7 @@ Ext.define('Ext.data.Model', {
 
             data[idProperty] = me.id = id;
             me.phantom = true;
+            me.crudState = 'C';
         }
 
         if (session) {
@@ -669,9 +596,28 @@ Ext.define('Ext.data.Model', {
     // @cmd-auto-dependency {aliasPrefix: &quot;data.field.&quot;}
 <span id='Ext-data-Model-cfg-fields'>    /**
 </span>     * @cfg {Object[]/String[]} fields
-     * The fields for this model. This is an Array of `Ext.data.field.Field` definition
-     * objects or simply the field name. If just a name is given, the field type defaults
-     * to `auto`.
+     * An Array of `Ext.data.field.Field` config objects, simply the field 
+     * {@link Ext.data.field.Field#name name}, or a mix of config objects and strings. 
+     * If just a name is given, the field type defaults to `auto`.
+     * 
+     * In a {@link Ext.data.field.Field Field} config object you may pass the alias of 
+     * the `Ext.data.field.*` type using the `type` config option.
+     * 
+     *     // two fields are set:
+     *     // - an 'auto' field with a name of 'firstName'
+     *     // - and an Ext.data.field.Integer field with a name of 'age'
+     *     fields: ['firstName', {
+     *         type: 'int',
+     *         name: 'age'
+     *     }]
+     * 
+     * Fields will automatically be created at read time for any for any keys in the 
+     * data passed to the Model's {@link #proxy proxy's} 
+     * {@link Ext.data.reader.Reader reader} whose name is not explicitly configured in 
+     * the `fields` config.
+     * 
+     * Extending a Model class will inherit all the `fields` from the superclass / 
+     * ancestor classes.
      */
 <span id='Ext-data-Model-property-fields'>    /**
 </span>     * @property {Ext.data.field.Field[]} fields
@@ -832,14 +778,25 @@ Ext.define('Ext.data.Model', {
 <span id='Ext-data-Model-cfg-associations'>    /**
 </span>     * @cfg {Object[]} associations
      * An array of {@link Ext.data.schema.Association associations} for this model.
+     *
+     * For further documentation, see {@link Ext.data.schema.Association}.
+     *
+     * @deprecated 6.2.0 Use `hasMany/hasOne/belongsTo`.
      */
+
 <span id='Ext-data-Model-cfg-hasMany'>    /**
 </span>     * @cfg {String/Object/String[]/Object[]} hasMany
-     * One or more {@link #hasMany HasMany associations} for this model.
+     * One or more `Ext.data.schema.HasMany` associations for this model.
      */
+
+<span id='Ext-data-Model-cfg-hasOne'>    /**
+</span>     * @cfg {String/Object/String[]/Object[]} hasOne
+     * One or more `Ext.data.schema.HasOne` associations for this model.
+     */
+
 <span id='Ext-data-Model-cfg-belongsTo'>    /**
 </span>     * @cfg {String/Object/String[]/Object[]} belongsTo
-     * One or more {@link #belongsTo BelongsTo associations} for this model.
+     * One or more `Ext.data.schema.BelongsTo` associations for this model.
      */
 
 <span id='Ext-data-Model-method-beginEdit'>    /**
@@ -954,10 +911,11 @@ Ext.define('Ext.data.Model', {
 
 <span id='Ext-data-Model-method-setId'>    /**
 </span>     * Sets the model instance's id field to the given id.
-     * @param {Number/String} id The new id
+     * @param {Number/String} id The new id.
+     * @param {Object} [options] See {@link #set}.
      */
-    setId: function (id) {
-        this.set(this.idProperty, id);
+    setId: function (id, options) {
+        this.set(this.idProperty, id, options);
     },
 
 <span id='Ext-data-Model-method-getPrevious'>    /**
@@ -1069,8 +1027,10 @@ Ext.define('Ext.data.Model', {
             // end up with nothing modified and not dirty
             dirty = !(opt &amp;&amp; opt.dirty === false &amp;&amp; !commit),
             modifiedFieldNames = null,
+            dirtyRank = 0,
+            associations = me.associations,
             currentValue, field, idChanged, key, name, oldId, comparator, dep, dependents,
-            i, dirtyRank=0, numFields, newId, rankedFields, reference, value, values;
+            i, numFields, newId, rankedFields, reference, value, values, roleName;
 
         if (single) {
             values = me._singleProp;
@@ -1228,7 +1188,13 @@ Ext.define('Ext.data.Model', {
 
         if (idChanged) {
             me.id = newId;
+            me.onIdChanged(newId, oldId);
             me.callJoined('onIdChanged', [oldId, newId]);
+            if (associations) {
+                for (roleName in associations) {
+                    associations[roleName].onIdChanged(me, oldId, newId);
+                }
+            }
         }
 
         if (commit) {
@@ -1393,24 +1359,28 @@ Ext.define('Ext.data.Model', {
             store = me.store,
             i;
 
-        if (len === 1 &amp;&amp; joined[0] === item) {
-            joined.length = 0;
-        } else if (len) {
-            Ext.Array.remove(joined, item);
-        }
+        if (item === me.session) {
+            me.session = null;
+        } else {
+            if (len === 1 &amp;&amp; joined[0] === item) {
+                joined.length = 0;
+            } else if (len) {
+                Ext.Array.remove(joined, item);
+            }
 
-        if (store === item) {
-            store = null;
-            if (joined) {
-                for (i = 0, len = joined.length; i &lt; len; ++i) {
-                    item = joined[i];
-                    if (item.isStore) {
-                        store = item;
-                        break;
+            if (store === item) {
+                store = null;
+                if (joined) {
+                    for (i = 0, len = joined.length; i &lt; len; ++i) {
+                        item = joined[i];
+                        if (item.isStore) {
+                            store = item;
+                            break;
+                        }
                     }
                 }
+                me.store = store;
             }
-            me.store = store;
         }
     },
 
@@ -2176,6 +2146,7 @@ Ext.define('Ext.data.Model', {
         options.internalCallback = function(operation) {
             var args = [me, operation],
                 success = operation.wasSuccessful();
+                
             if (success) {
                 Ext.callback(options.success, scope, args);
             } else {
@@ -2212,6 +2183,8 @@ Ext.define('Ext.data.Model', {
          * of a field this may replace a previous field definition.
          *
          * @protected
+         * @static
+         * @inheritable
          * @since 5.0.0
          */
         addFields: function (newFields) {
@@ -2233,6 +2206,8 @@ Ext.define('Ext.data.Model', {
          * array).
          *
          * @protected
+         * @static
+         * @inheritable
          * @since 5.0.0
          */
         replaceFields: function (newFields, removeFields) {
@@ -2306,22 +2281,34 @@ Ext.define('Ext.data.Model', {
          * array).
          *
          * @protected
+         * @static
+         * @inheritable
          * @since 5.0.0
          */
         removeFields: function (removeFields) {
             this.replaceFields(null, removeFields);
         },
 
-<span id='Ext-data-Model-static-method-getIdFromData'>        getIdFromData: function(data) {
-</span>            var T = this,
+<span id='Ext-data-Model-static-method-getIdFromData'>        /**
+</span>         * @private
+         * @static
+         * @inheritable
+         */
+        getIdFromData: function(data) {
+            var T = this,
                 idField = T.idField,
                 id = idField.calculated ? (new T(data)).id : data[idField.name];
 
             return id;
         },
 
-<span id='Ext-data-Model-static-method-createWithId'>        createWithId: function (id, data, session) {
-</span>            var d = data,
+<span id='Ext-data-Model-static-method-createWithId'>        /**
+</span>         * @private
+         * @static
+         * @inheritable
+         */
+        createWithId: function (id, data, session) {
+            var d = data,
                 T = this;
 
             if (id || id === 0) {
@@ -2336,16 +2323,31 @@ Ext.define('Ext.data.Model', {
             return new T(d, session);
         },
         
-<span id='Ext-data-Model-static-method-getFields'>        getFields: function() {
-</span>            return this.fields;    
+<span id='Ext-data-Model-static-method-getFields'>        /**
+</span>         * @private
+         * @static
+         * @inheritable
+         */
+        getFields: function() {
+            return this.fields;    
         },
 
-<span id='Ext-data-Model-static-method-getFieldsMap'>        getFieldsMap: function() {
-</span>            return this.fieldsMap;
+<span id='Ext-data-Model-static-method-getFieldsMap'>        /**
+</span>         * @private
+         * @static
+         * @inheritable
+         */
+        getFieldsMap: function() {
+            return this.fieldsMap;
         },
 
-<span id='Ext-data-Model-static-method-getField'>        getField: function (name) {
-</span>            return this.fieldsMap[name] || null;
+<span id='Ext-data-Model-static-method-getField'>        /**
+</span>         * @private
+         * @static
+         * @inheritable
+         */
+        getField: function (name) {
+            return this.fieldsMap[name] || null;
         },
 
 <span id='Ext-data-Model-static-method-getProxy'>        /**
@@ -2650,32 +2652,53 @@ Ext.define('Ext.data.Model', {
             var me = this,
                 joined = me.joined,
                 session = me.session,
+                state = me.dropped ? 'D' : (me.phantom ? 'C' : (me.dirty ? 'U' : 'R')),
                 i, len, fn, item;
 
-            if (!joined &amp;&amp; !session) {
-                return;
-            }
+            me.crudState = state;
 
-            if (args) {
-                args.unshift(me);
-            } else {
-                args = [me];
-            } 
+            if (joined || session) {
+                if (args) {
+                    args.unshift(me);
+                } else {
+                    args = [me];
+                }
 
-            if (joined) {
-                for (i = 0, len = joined.length; i &lt; len; ++i) {
-                    item = joined[i];
-                    if (item &amp;&amp; (fn = item[funcName])) {
-                        fn.apply(item, args);
+                if (joined) {
+                    for (i = 0, len = joined.length; i &lt; len; ++i) {
+                        item = joined[i];
+                        if (item &amp;&amp; (fn = item[funcName])) {
+                            fn.apply(item, args);
+                        }
                     }
+                }
+
+                fn = session &amp;&amp; session[funcName];
+                if (fn) {
+                    fn.apply(session, args);
                 }
             }
 
-            fn = session &amp;&amp; session[funcName];
-            if (fn) {
-                fn.apply(session, args);
-            }
+            me.crudStateWas = state;
         },
+
+<span id='Ext-data-Model-method-onAssociatedRecordSet'>        /**
+</span>         * Called when an associated record instance has been set.
+         * @param {Ext.data.Model} record The record.
+         * @param {Ext.data.schema.Role} role The role.
+         *
+         * @private
+         */
+        onAssociatedRecordSet: function(record, role) {
+            this.callJoined('afterAssociatedRecordSet', [record, role]);
+        },
+
+<span id='Ext-data-Model-method-onIdChanged'>        /**
+</span>         * Called when the model id is changed.
+         * @param {Object} id The new id.
+         * @param {Object} oldId The old id.
+         */
+        onIdChanged: Ext.privateFn,
         
 <span id='Ext-data-Model-method-setSession'>        /**
 </span>         * Set the session for this record.
@@ -2736,7 +2759,7 @@ Ext.define('Ext.data.Model', {
             if (field) {
                 f = field.isField ? field : this.fieldsMap[field];
                 if (f) {
-                    return f.compare(lhs, rhs) === 0;
+                    return f.isEqual(lhs, rhs);
                 }
             }
 
@@ -2978,7 +3001,7 @@ Ext.define('Ext.data.Model', {
                         ordinal = fields.length;
                     }
                     delete fieldsMap[superIdFieldName];
-                    delete fieldOrdinals[superIdFieldName]
+                    delete fieldOrdinals[superIdFieldName];
                     idField = new Field(idProperty);
                     fields[ordinal] = idField;
                     fieldOrdinals[idProperty] = ordinal;
@@ -3098,47 +3121,40 @@ Ext.define('Ext.data.Model', {
             },
 
             initAssociations: function (schema, data, cls) {
-                    // The 4 legacy associations:
+                // Handle keyless associations
                 var associations = data.associations,
                     belongsTo = data.belongsTo,
                     hasMany = data.hasMany,
                     hasOne = data.hasOne,
-                    // The new one:
+                    // manyToMany can't be declared via reference
                     matrices = data.manyToMany,
-                    i, length, assoc;
+                    i, length, assoc, o;
 
-                //&lt;debug&gt;
-                if (data.belongsTo) {
-                    Ext.log.warn('Use of &quot;belongsTo&quot; is obsolete' +
-                        (cls.$className ? ' in ' + cls.$className : ''));
-                    delete data.belongsTo;
-                }
-                //&lt;/debug&gt;
-
-                delete data.manyToMany;
-                if (matrices) {
-                    schema.addMatrices(cls, matrices);
-                }
-
-                // Legacy:
                 delete data.associations;
                 delete data.belongsTo;
                 delete data.hasMany;
                 delete data.hasOne;
+                delete data.manyToMany;
+
+                if (matrices) {
+                    schema.addMatrices(cls, matrices);
+                }
 
                 if (associations) {
                     associations = Ext.isArray(associations) ? associations : [ associations ];
                     for (i = 0, length = associations.length; i &lt; length; ++i) {
                         assoc = associations[i];
+                        o = Ext.apply({}, assoc);
+                        delete o.type;
                         switch (assoc.type) {
                             case 'belongsTo':
-                                schema.addLegacyBelongsTo(cls, assoc);
+                                schema.addBelongsTo(cls, o);
                                 break;
                             case 'hasMany':
-                                schema.addLegacyHasMany(cls, assoc);
+                                schema.addHasMany(cls, o);
                                 break;
                             case 'hasOne':
-                                schema.addLegacyHasOne(cls, assoc);
+                                schema.addHasOne(cls, o);
                                 break;
 
                             //&lt;debug&gt;
@@ -3152,24 +3168,24 @@ Ext.define('Ext.data.Model', {
                 if (belongsTo) {
                     belongsTo = Ext.isArray(belongsTo) ? belongsTo : [ belongsTo ];
                     for (i = 0, length = belongsTo.length; i &lt; length; ++i) {
-                        schema.addLegacyBelongsTo(cls, belongsTo[i]);
+                        schema.addBelongsTo(cls, belongsTo[i]);
                     }
                 }
 
                 if (hasMany) {
                     hasMany = Ext.isArray(hasMany) ? hasMany : [ hasMany ];
                     for (i = 0, length = hasMany.length; i &lt; length; ++i) {
-                        schema.addLegacyHasMany(cls, hasMany[i]);
+                        schema.addHasMany(cls, hasMany[i]);
                     }
                 }
 
                 if (hasOne) {
                     hasOne = Ext.isArray(hasOne) ? hasOne : [ hasOne ];
                     for (i = 0, length = hasOne.length; i &lt; length; ++i) {
-                        schema.addLegacyHasOne(cls, hasOne[i]);
+                        schema.addHasOne(cls, hasOne[i]);
                     }
                 }
-                schema.afterLegacyAssociations(cls);
+                schema.afterKeylessAssociations(cls);
             },
 
             initIdentifier: function (data, cls, proto) {
@@ -3247,7 +3263,6 @@ Ext.define('Ext.data.Model', {
             makeInitializeFn: function (cls) {
                 var code = ['var '],
                     body = ['\nreturn function (e) {\n    var data = e.data, v;\n'],
-                    fieldVars = [],
                     work = 0,
                     bc, ec, // == beginClone, endClone
                     convert, expr, factory, field, fields, fs, hasDefValue, i, length;
@@ -3263,7 +3278,7 @@ Ext.define('Ext.data.Model', {
                     // name. These are used to access properties of the field (e.g., the convert
                     // method or defaultValue).
                     field = fields[i];
-                    fieldVars[i] = fs = 'f' + i;
+                    fs = 'f' + i;
                     convert = field.convert;
 
                     if (i) {

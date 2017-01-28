@@ -18,7 +18,7 @@
   <pre class="prettyprint lang-js"><span id='Ext-list-TreeItem'>/**
 </span> * The default implementation of the class used for `{@link Ext.list.Tree}`.
  *
- * This class can only be used in conjunction with {@link Ext.list.TreeList}.
+ * This class can only be used in conjunction with {@link Ext.list.Tree}.
  * @since 6.0.0
  */
 Ext.define('Ext.list.TreeItem', {
@@ -27,7 +27,7 @@ Ext.define('Ext.list.TreeItem', {
 
 <span id='Ext-list-TreeItem-property-collapsedCls'>    collapsedCls: Ext.baseCSSPrefix + 'treelist-item-collapsed',
 </span><span id='Ext-list-TreeItem-property-expandedCls'>    expandedCls: Ext.baseCSSPrefix + 'treelist-item-expanded',
-</span><span id='Ext-list-TreeItem-property-floatedCls'>    floatedCls: Ext.baseCSSPrefix + 'treelist-item-floated',
+</span><span id='Ext-list-TreeItem-property-floatedCls'>    floatedCls: [Ext.Widget.prototype.floatedCls, Ext.baseCSSPrefix + 'treelist-item-floated'],
 </span><span id='Ext-list-TreeItem-property-floatedToolCls'>    floatedToolCls: Ext.baseCSSPrefix + 'treelist-item-tool-floated',
 </span><span id='Ext-list-TreeItem-property-leafCls'>    leafCls: Ext.baseCSSPrefix + 'treelist-item-leaf',
 </span><span id='Ext-list-TreeItem-property-expandableCls'>    expandableCls: Ext.baseCSSPrefix + 'treelist-item-expandable',
@@ -36,6 +36,8 @@ Ext.define('Ext.list.TreeItem', {
 </span><span id='Ext-list-TreeItem-property-selectedCls'>    selectedCls: Ext.baseCSSPrefix + 'treelist-item-selected',
 </span><span id='Ext-list-TreeItem-property-selectedParentCls'>    selectedParentCls: Ext.baseCSSPrefix + 'treelist-item-selected-parent',
 </span><span id='Ext-list-TreeItem-property-withIconCls'>    withIconCls: Ext.baseCSSPrefix + 'treelist-item-with-icon',
+</span><span id='Ext-list-TreeItem-property-hoverCls'>    hoverCls: Ext.baseCSSPrefix + 'treelist-item-over',
+</span><span id='Ext-list-TreeItem-property-rowHoverCls'>    rowHoverCls: Ext.baseCSSPrefix + 'treelist-row-over',
 </span>
 <span id='Ext-list-TreeItem-property-isTreeListItem'>    /**
 </span>     * This property is `true` to allow type checking for this or derived class.
@@ -44,13 +46,32 @@ Ext.define('Ext.list.TreeItem', {
      */
     isTreeListItem: true,
 
+    config: {
+<span id='Ext-list-TreeItem-cfg-rowCls'>        /**
+</span>         * @cfg {String} rowCls
+         * One or more CSS classes to add to the tree item's logical &quot;row&quot; element. This
+         * element fills from left-to-right of the line.
+         * @since 6.0.1
+         */
+        rowCls: null
+    },
+
+<span id='Ext-list-TreeItem-cfg-rowClsProperty'>    /**
+</span>     * @cfg {String} [rowClsProperty=&quot;rowCls&quot;]
+     * The name of the associated record's field to map to the {@link #rowCls} config.
+     * @since 6.0.1
+     */
+    rowClsProperty: 'rowCls',
+
 <span id='Ext-list-TreeItem-property-element'>    element: {
 </span>        reference: 'element',
         tag: 'li',
         cls: Ext.baseCSSPrefix + 'treelist-item',
 
         children: [{
+            reference: 'rowElement',
             cls: Ext.baseCSSPrefix + 'treelist-row',
+
             children: [{
                 reference: 'wrapElement',
                 cls: Ext.baseCSSPrefix + 'treelist-item-wrap',
@@ -203,21 +224,12 @@ Ext.define('Ext.list.TreeItem', {
         this.callParent([ node, oldNode ]);
     },
 
-<span id='Ext-list-TreeItem-method-updateExpandable'>    updateExpandable: function (expandable) {
+<span id='Ext-list-TreeItem-method-updateExpandable'>    updateExpandable: function () {
 </span>        this.updateExpandCls();
     },
 
-<span id='Ext-list-TreeItem-method-updateExpanded'>    updateExpanded: function (expanded) {
+<span id='Ext-list-TreeItem-method-updateExpanded'>    updateExpanded: function () {
 </span>        this.updateExpandCls();
-    },
-
-<span id='Ext-list-TreeItem-method-updateFloated'>    updateFloated: function (floated, wasFloated) {
-</span>        var me = this;
-
-        me.callParent([floated, wasFloated]);
-
-        me.element.toggleCls(me.floatedCls, floated);
-        me.toolElement.toggleCls(me.floatedToolCls, floated);
     },
 
 <span id='Ext-list-TreeItem-method-updateIconCls'>    updateIconCls: function (iconCls, oldIconCls) {
@@ -239,13 +251,26 @@ Ext.define('Ext.list.TreeItem', {
 </span>        this.element.toggleCls(this.loadingCls, loading);
     },
 
+<span id='Ext-list-TreeItem-method-updateOver'>    updateOver: function (over) {
+</span>        var me = this;
+
+        me.element.toggleCls(me.hoverCls, !! over); // off if over==0, on otherwise
+        me.rowElement.toggleCls(me.rowHoverCls, over &gt; 1); // off if over = 0 or 1
+    },
+
+<span id='Ext-list-TreeItem-method-updateRowCls'>    updateRowCls: function (value, oldValue) {
+</span>        this.rowElement.replaceCls(oldValue, value);
+    },
+
 <span id='Ext-list-TreeItem-method-updateSelected'>    updateSelected: function(selected, oldSelected) {
 </span>        var me = this,
-            cls = me.selectedCls;
+            cls = me.selectedCls,
+            tool = me.getToolElement();
 
-        me.callParent([selected, oldSelected]);
+        me.callParent([ selected, oldSelected ]);
+
         me.element.toggleCls(cls, selected);
-        var tool = me.getToolElement();
+
         if (tool) {
             tool.toggleCls(cls, selected);
         }
@@ -269,6 +294,12 @@ Ext.define('Ext.list.TreeItem', {
 </span>    // Private
 
     privates: {
+        doNodeUpdate: function (node) {
+            this.callParent([ node ]);
+
+            this.setRowCls(node &amp;&amp; node.data[this.rowClsProperty]);
+        },
+
         doIconCls: function (element, iconCls, oldIconCls) {
             if (oldIconCls) {
                 element.removeCls(oldIconCls);

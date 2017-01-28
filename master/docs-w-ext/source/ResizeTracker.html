@@ -24,6 +24,9 @@ Ext.define('Ext.resizer.ResizeTracker', {
 <span id='Ext-resizer-ResizeTracker-property-dynamic'>    dynamic: true,
 </span><span id='Ext-resizer-ResizeTracker-property-preserveRatio'>    preserveRatio: false,
 </span>
+<span id='Ext-resizer-ResizeTracker-cfg-preventDefault'>    // Resizer mousedown must blur active element
+</span>    preventDefault: false,
+
 <span id='Ext-resizer-ResizeTracker-cfg-constrainTo'>    // Default to no constraint
 </span>    constrainTo: null,
     
@@ -132,6 +135,24 @@ Ext.define('Ext.resizer.ResizeTracker', {
         if (!this.dynamic) {
             this.resize(this.startBox);
         }
+    },
+
+<span id='Ext-resizer-ResizeTracker-method-onMouseDown'>    onMouseDown: function (e, target) {
+</span>        // Logic to resize components on top of iframes or handle resizers bound to iframes.
+        // To properly handle iframes &quot;below&quot; the resizable component, we cannot wait for 
+        // triggerStart or onStart because if the cursor moves out of the component and over the 
+        // iframe we won't detect that the drag has started. We cannot do this in
+        // general because other draggable things cannot assume that mouseDown is safe
+        // for this purpose. In particular ComponentDragger on a maximizable window will
+        // get tricked by the maximize button onMouseDown and mask everything but will
+        // never get the onMouseUp to unmask.
+        this.callParent([e, target]);
+        Ext.dom.Element.maskIframes();
+    },
+
+<span id='Ext-resizer-ResizeTracker-method-onMouseUp'>    onMouseUp: function(e) {
+</span>        this.callParent([e]);
+        Ext.dom.Element.unmaskIframes();
     },
 
 <span id='Ext-resizer-ResizeTracker-method-onDrag'>    onDrag: function(e) {

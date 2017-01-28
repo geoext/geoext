@@ -21,10 +21,12 @@
  */
 Ext.define('Ext.sparkline.Shape', {
 <span id='Ext-sparkline-Shape-method-constructor'>    constructor: function (target, id, type, args) {
-</span>        this.target = target;
-        this.id = id;
-        this.type = type;
-        this.args = args;
+</span>        var me = this;
+        
+        me.target = target;
+        me.id = id;
+        me.type = type;
+        me.args = args;
     },
 <span id='Ext-sparkline-Shape-method-append'>    append: function () {
 </span>        this.target.appendShape(this);

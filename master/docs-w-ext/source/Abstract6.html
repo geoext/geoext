@@ -36,13 +36,13 @@ Ext.define('Ext.util.sizemonitor.Abstract', {
 <span id='Ext-util-sizemonitor-Abstract-cfg-args'>        args: []
 </span>    },
 
-<span id='Ext-util-sizemonitor-Abstract-property-width'>    width: 0,
+<span id='Ext-util-sizemonitor-Abstract-property-width'>    width: null,
 </span>
-<span id='Ext-util-sizemonitor-Abstract-property-height'>    height: 0,
+<span id='Ext-util-sizemonitor-Abstract-property-height'>    height: null,
 </span>
-<span id='Ext-util-sizemonitor-Abstract-property-contentWidth'>    contentWidth: 0,
+<span id='Ext-util-sizemonitor-Abstract-property-contentWidth'>    contentWidth: null,
 </span>
-<span id='Ext-util-sizemonitor-Abstract-property-contentHeight'>    contentHeight: 0,
+<span id='Ext-util-sizemonitor-Abstract-property-contentHeight'>    contentHeight: null,
 </span>
 <span id='Ext-util-sizemonitor-Abstract-method-constructor'>    constructor: function(config) {
 </span>        this.refresh = Ext.Function.bind(this.refresh, this);
@@ -90,11 +90,11 @@ Ext.define('Ext.util.sizemonitor.Abstract', {
     },
 
 <span id='Ext-util-sizemonitor-Abstract-method-getContentWidth'>    getContentWidth: function() {
-</span>        return this.detectorsContainer.offsetWidth;
+</span>        return this.detectorsContainer.clientWidth;
     },
 
 <span id='Ext-util-sizemonitor-Abstract-method-getContentHeight'>    getContentHeight: function() {
-</span>        return this.detectorsContainer.offsetHeight;
+</span>        return this.detectorsContainer.clientHeight;
     },
 
 <span id='Ext-util-sizemonitor-Abstract-method-refreshSize'>    refreshSize: function() {
@@ -112,7 +112,7 @@ Ext.define('Ext.util.sizemonitor.Abstract', {
             currentContentHeight = this.contentHeight,
             info = this.info,
             resized = false,
-            flag;
+            flag = 0;
 
         this.width = width;
         this.height = height;
@@ -136,7 +136,11 @@ Ext.define('Ext.util.sizemonitor.Abstract', {
     },
 
 <span id='Ext-util-sizemonitor-Abstract-method-refresh'>    refresh: function(force) {
-</span>        if (this.refreshSize() || force) {
+</span>        if (this.destroying || this.destroyed) {
+            return;
+        }
+        
+        if (this.refreshSize() || force) {
             Ext.TaskQueue.requestWrite('refreshMonitors', this);
         }
     },
@@ -152,6 +156,9 @@ Ext.define('Ext.util.sizemonitor.Abstract', {
         }
 
         delete me._element;
+        
+        // This is a closure so Base destructor won't null it
+        me.refresh = null;
 
         me.callParent();
     }

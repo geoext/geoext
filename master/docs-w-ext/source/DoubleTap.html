@@ -24,10 +24,6 @@ Ext.define('Ext.event.gesture.DoubleTap', {
 
 <span id='Ext-event-gesture-DoubleTap-property-priority'>    priority: 300,
 </span>
-    inheritableStatics: {
-<span id='Ext-event-gesture-DoubleTap-static-property-DIFFERENT_TARGET'>        DIFFERENT_TARGET: 'Different Target'
-</span>    },
-
     config: {
 <span id='Ext-event-gesture-DoubleTap-cfg-moveDistance'>        /**
 </span>         * @cfg {Number}
@@ -71,29 +67,35 @@ Ext.define('Ext.event.gesture.DoubleTap', {
 </span>
 <span id='Ext-event-gesture-DoubleTap-method-onTouchStart'>    onTouchStart: function(e) {
 </span>        var me = this,
+            ret = me.callParent([e]),
             lastStartPoint;
 
-        if (me.callParent(arguments) === false) {
-            return false;
+        if (ret !== false) {
+            me.isStarted = true;
+
+            // the start point of the last touch that occurred.
+            lastStartPoint = me.lastStartPoint = e.changedTouches[0].point;
+
+            // the start point of the &quot;first&quot; touch in this gesture
+            me.startPoint = me.startPoint || lastStartPoint;
+
+            me.startTime = e.time;
+
+            clearTimeout(me.singleTapTimer);
         }
-        // the start point of the last touch that occurred.
-        lastStartPoint = me.lastStartPoint = e.changedTouches[0].point;
 
-        // the start point of the &quot;first&quot; touch in this gesture
-        me.startPoint = me.startPoint || lastStartPoint;
-
-        me.startTime = e.time;
-
-        clearTimeout(me.singleTapTimer);
+        return ret;
     },
 
 <span id='Ext-event-gesture-DoubleTap-method-onTouchMove'>    onTouchMove: function(e) {
 </span>        var me = this,
-            point = e.changedTouches[0].point;
+            point = e.changedTouches[0].point,
+            scale = Ext.Element.getViewportScale(),
+            // account for scale so that move distance is actual screen pixels, not page pixels
+            distance = Math.round(Math.abs(point.getDistanceTo(me.lastStartPoint) * scale));
 
-        if (Math.abs(point.getDistanceTo(me.lastStartPoint)) &gt;= me.getMoveDistance()) {
-            me.startPoint = null;
-            return me.fail(me.self.TOUCH_MOVED);
+        if (distance &gt;= me.getMoveDistance()) {
+            return me.cancel(e);
         }
     },
 
@@ -105,7 +107,7 @@ Ext.define('Ext.event.gesture.DoubleTap', {
             lastTapTime = me.lastTapTime,
             lastTarget = me.lastTarget,
             point = e.changedTouches[0].point,
-            duration;
+            duration, scale, distance;
 
         me.lastTapTime = time;
         me.lastTarget = target;
@@ -113,30 +115,33 @@ Ext.define('Ext.event.gesture.DoubleTap', {
         if (lastTapTime) {
             duration = time - lastTapTime;
 
-            if (duration &lt;= maxDuration &amp;&amp;
-                    Math.abs(point.getDistanceTo(me.startPoint)) &lt;= me.getTapDistance()) {
-                if (target !== lastTarget) {
-                    return me.fail(me.self.DIFFERENT_TARGET);
+            if (duration &lt;= maxDuration) {
+                scale = Ext.Element.getViewportScale();
+                // account for scale so that move distance is actual screen pixels, not page pixels
+                distance = Math.round(Math.abs(point.getDistanceTo(me.startPoint) * scale));
+
+                if (distance &lt;= me.getTapDistance()) {
+                    if (target !== lastTarget) {
+                        return me.cancel(e);
+                    }
+
+                    me.lastTarget = null;
+                    me.lastTapTime = 0;
+
+                    me.fire('doubletap', e, {
+                        touch: e.changedTouches[0],
+                        duration: duration
+                    });
+
+                    return me.callParent([e]);
                 }
-
-                me.lastTarget = null;
-                me.lastTapTime = 0;
-
-                me.fire('doubletap', e, {
-                    touch: e.changedTouches[0],
-                    duration: duration
-                });
-
-                me.startPoint = null;
-
-                return;
             }
         }
 
         if (time - me.startTime &gt; maxDuration) {
-            me.fireSingleTap(e);
-        }
-        else {
+            me.fire('singletap', e);
+            me.reset();
+        } else {
             me.setSingleTapTimer(e);
         }
     },
@@ -145,24 +150,21 @@ Ext.define('Ext.event.gesture.DoubleTap', {
 </span>        var me = this;
 
         me.singleTapTimer = Ext.defer(function() {
-            me.fireSingleTap(e);
+            me.fire('singletap', e);
+            me.reset();
         }, me.getMaxDuration());
-    },
-
-<span id='Ext-event-gesture-DoubleTap-method-fireSingleTap'>    fireSingleTap: function(e, touch) {
-</span>        this.fire('singletap', e, {
-            touch: touch
-        });
-
-        this.startPoint = null;
     },
 
 <span id='Ext-event-gesture-DoubleTap-method-reset'>    reset: function() {
 </span>        var me = this;
 
-        me.startTime = me.lastTapTime = 0;
+        clearTimeout(me.singleTapTimer);
 
+        me.startTime = me.lastTapTime = 0;
+ 
         me.lastStartPoint = me.startPoint = me.singleTapTimer = null;
+
+        return me.callParent();
     }
 }, function(DoubleTap) {
     var gestures = Ext.manifest.gestures;

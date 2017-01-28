@@ -50,7 +50,7 @@ Ext.define('Ext.menu.CheckItem', {
 <span id='Ext-menu-CheckItem-cfg-checkHandler'>    /**
 </span>     * @cfg {Function/String} checkHandler
      * Alternative for the {@link #checkchange} event.  Gets called with the same parameters.
-     * @declarativeHandler
+     * @controllable
      */
 
 <span id='Ext-menu-CheckItem-cfg-scope'>    /**
@@ -115,7 +115,9 @@ Ext.define('Ext.menu.CheckItem', {
 <span id='Ext-menu-CheckItem-cfg-childEls'>    childEls: [
 </span>        'checkEl'
     ],
-    
+
+<span id='Ext-menu-CheckItem-property-defaultBindProperty'>    defaultBindProperty: 'checked',
+</span>    
 <span id='Ext-menu-CheckItem-property-showCheckbox'>    showCheckbox: true,
 </span>
 <span id='Ext-menu-CheckItem-property-isMenuCheckItem'>    isMenuCheckItem: true,
@@ -174,11 +176,22 @@ Ext.define('Ext.menu.CheckItem', {
     
 <span id='Ext-menu-CheckItem-method-afterRender'>    afterRender: function() {
 </span>        var me = this;
+        
         me.callParent();
+        
         me.checked = !me.checked;
         me.setChecked(!me.checked, true);
+        
         if (me.checkChangeDisabled) {
             me.disableCheckChange();
+        }
+        
+        // For reasons unknown, clicking a div inside anchor element might cause
+        // the anchor to be blurred in Firefox. We can't allow this to happen
+        // because blurring will cause focusleave which will hide the menu
+        // before click event fires. See https://sencha.jira.com/browse/EXTJS-18882
+        if (Ext.isGecko &amp;&amp; me.checkEl) {
+            me.checkEl.on('mousedown', me.onMouseDownCheck);
         }
     },
     
@@ -213,11 +226,18 @@ Ext.define('Ext.menu.CheckItem', {
         }
         me.checkChangeDisabled = false;
     },
+    
+<span id='Ext-menu-CheckItem-method-onMouseDownCheck'>    onMouseDownCheck: function(e) {
+</span>        e.preventDefault();
+    },
 
 <span id='Ext-menu-CheckItem-method-onClick'>    onClick: function(e) {
 </span>        var me = this;
 
-        if (!me.disabled &amp;&amp; !me.checkChangeDisabled &amp;&amp; !(me.checked &amp;&amp; me.group)) {
+        // If pointer type is touch, we should only toggle check status if there's no submenu or they tapped in the checkEl
+        // This is because there's no hover to invoke the submenu on touch devices, so a tap is needed to show it. That tap
+        // should not toggle unless it's on the checkbox.
+        if (!(me.disabled || me.checkChangeDisabled || me.checked &amp;&amp; me.group || me.menu &amp;&amp; &quot;touch&quot; === e.pointerType &amp;&amp; !me.checkEl.contains(e.target))) {
             me.setChecked(!me.checked);
 
             // Clicked using SPACE or ENTER just un-checks.
@@ -229,9 +249,10 @@ Ext.define('Ext.menu.CheckItem', {
         this.callParent([e]);
     },
 
-<span id='Ext-menu-CheckItem-method-onDestroy'>    onDestroy: function() {
+<span id='Ext-menu-CheckItem-method-doDestroy'>    doDestroy: function() {
 </span>        Ext.menu.Manager.unregisterCheckable(this);
-        this.callParent(arguments);
+        
+        this.callParent();
     },
     
 <span id='Ext-menu-CheckItem-method-setText'>    setText: function(text) {
@@ -274,6 +295,8 @@ Ext.define('Ext.menu.CheckItem', {
 
             me.checked = checked;
             Ext.menu.Manager.onCheckChange(me, checked);
+
+            me.publishState('checked', checked);
 
             if (!suppressEvents) {
                 Ext.callback(me.checkHandler, me.scope, [me, checked], 0, me);

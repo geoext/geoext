@@ -35,22 +35,26 @@ Ext.define('Ext.event.gesture.Tap', {
     },
 
 <span id='Ext-event-gesture-Tap-method-onTouchStart'>    onTouchStart: function(e) {
-</span>        if (this.callParent([e]) === false) {
-            return false;
+</span>        var me = this,
+            ret = me.callParent([e]);
+
+        if (ret !== false) {
+            me.isStarted = true;
+            me.startPoint = e.changedTouches[0].point;
         }
 
-        this.startPoint = e.changedTouches[0].point;
+        return ret;
     },
 
 <span id='Ext-event-gesture-Tap-method-onTouchMove'>    onTouchMove: function(e) {
-</span>        var touch = e.changedTouches[0],
-            point = touch.point;
+</span>        var me = this,
+            point = e.changedTouches[0].point,
+            scale = Ext.Element.getViewportScale(),
+            // account for scale so that move distance is actual screen pixels, not page pixels
+            distance = Math.round(Math.abs(point.getDistanceTo(me.startPoint) * scale));
 
-        if (Math.abs(point.getDistanceTo(this.startPoint)) &gt;= this.getMoveDistance()) {
-            this.fire('tapcancel', e, {
-                touch: touch
-            });
-            return this.fail(this.self.TOUCH_MOVED);
+        if (distance &gt;= me.getMoveDistance()) {
+            return me.cancel(e);
         }
     },
 
@@ -58,17 +62,19 @@ Ext.define('Ext.event.gesture.Tap', {
 </span>        this.fire('tap', e, {
             touch: e.changedTouches[0]
         });
+
+        return this.callParent([e]);
     },
 
-<span id='Ext-event-gesture-Tap-method-onTouchCancel'>    onTouchCancel: function(e) {
+<span id='Ext-event-gesture-Tap-method-onCancel'>    onCancel: function(e) {
 </span>        this.fire('tapcancel', e, {
             touch: e.changedTouches[0]
-        });
-        return false;
+        }, true);
     },
 
 <span id='Ext-event-gesture-Tap-method-reset'>    reset: function() {
 </span>        this.startPoint = null;
+        return this.callParent();
     }
 }, function(Tap) {
     var gestures = Ext.manifest.gestures;

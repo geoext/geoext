@@ -59,15 +59,16 @@ Ext.define('Ext.sparkline.Discrete', {
          * between {@link #chartRangeMin} and {@link #chartRangeMax} - By default chartRangeMin/Max just ensure that the chart
          * spans at least that range of values, but does not constrain it.
          */
-        chartRangeClip: false,
-        
-<span id='Ext-sparkline-Discrete-cfg-tipTpl'>        tipTpl: new Ext.XTemplate('{prefix}{value}{suffix}')
-</span>    },
+        chartRangeClip: false
+    },
 
+<span id='Ext-sparkline-Discrete-cfg-tipTpl'>    tipTpl: '{prefix}{value}{suffix}',
+</span>
 <span id='Ext-sparkline-Discrete-method-applyValues'>    // Ensure values is an array of numbers
 </span>    applyValues: function(newValues) {
         newValues = Ext.Array.map(Ext.Array.from(newValues), Number);
         this.disabled = !(newValues &amp;&amp; newValues.length);
+        this.applyConfigChange();
         return newValues;
     },
 

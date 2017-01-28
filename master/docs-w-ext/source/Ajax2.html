@@ -27,6 +27,53 @@ Ext.define('Ext.data.request.Ajax', {
     requires: [
         'Ext.data.flash.BinaryXhr'
     ],
+
+    statics: {
+
+<span id='Ext-data-request-Ajax-static-method-parseStatus'>        /**
+</span>         * Checks if the response status was successful
+         * @param {Number} status The status code
+         * @param {Object} response The Response object
+         * @return {Object} An object containing success/status state
+         * @private
+         */
+        parseStatus: function(status, response) {
+            var len;
+
+            if (response) {
+                //We have to account for binary response type
+                if (response.responseType === 'arraybuffer') {
+                    len = response.byteLength;
+                } else if (response.responseText) {
+                    len = response.responseText.length;
+                }
+            }
+
+            // see: https://prototype.lighthouseapp.com/projects/8886/tickets/129-ie-mangles-http-response-status-code-204-to-1223
+            status = status == 1223 ? 204 : status;
+
+            var success = (status &gt;= 200 &amp;&amp; status &lt; 300) || status == 304 || (status == 0 &amp;&amp; Ext.isNumber(len)),
+                isException = false;
+
+            if (!success) {
+                switch (status) {
+                    case 12002:
+                    case 12029:
+                    case 12030:
+                    case 12031:
+                    case 12152:
+                    case 13030:
+                        isException = true;
+                        break;
+                }
+            }
+
+            return {
+                success: success,
+                isException: isException
+            };
+        }
+    },
     
 <span id='Ext-data-request-Ajax-method-start'>    start: function(data) {
 </span>        var me = this,
@@ -378,7 +425,7 @@ Ext.define('Ext.data.request.Ajax', {
         }
         
         try {
-            result = me.parseStatus(xhr.status);
+            result = Ext.data.request.Ajax.parseStatus(xhr.status, xhr);
             
             if (result.success) {
                 // This is quite difficult to reproduce, however if we abort a request
@@ -398,8 +445,13 @@ Ext.define('Ext.data.request.Ajax', {
         if (success) {
             response = me.createResponse(xhr);
             
-            owner.fireEvent('requestcomplete', owner, response, options);
-            Ext.callback(options.success, options.scope, [response, options]);
+            if (owner.hasListeners.requestcomplete) {
+                owner.fireEvent('requestcomplete', owner, response, options);
+            }
+            
+            if (options.success) {
+                Ext.callback(options.success, options.scope, [response, options]);
+            }
         }
         else {
             if (result.isException || me.aborted || me.timedout) {
@@ -409,50 +461,26 @@ Ext.define('Ext.data.request.Ajax', {
                 response = me.createResponse(xhr);
             }
             
-            owner.fireEvent('requestexception', owner, response, options);
-            Ext.callback(options.failure, options.scope, [response, options]);
+            if (owner.hasListeners.requestexception) {
+                owner.fireEvent('requestexception', owner, response, options);
+            }
+            
+            if (options.failure) {
+                Ext.callback(options.failure, options.scope, [response, options]);
+            }
         }
         
         me.result = response;
         
-        Ext.callback(options.callback, options.scope, [options, success, response]);
+        if (options.callback) {
+            Ext.callback(options.callback, options.scope, [options, success, response]);
+        }
         
         owner.onRequestComplete(me);
         
         me.callParent([xdrResult]);
         
         return response;
-    },
-
-<span id='Ext-data-request-Ajax-method-parseStatus'>    /**
-</span>     * Checks if the response status was successful
-     * @param {Number} status The status code
-     * @return {Object} An object containing success/status state
-     */
-    parseStatus: function(status) {
-        // see: https://prototype.lighthouseapp.com/projects/8886/tickets/129-ie-mangles-http-response-status-code-204-to-1223
-        status = status == 1223 ? 204 : status;
-
-        var success = (status &gt;= 200 &amp;&amp; status &lt; 300) || status == 304,
-            isException = false;
-
-        if (!success) {
-            switch (status) {
-                case 12002:
-                case 12029:
-                case 12030:
-                case 12031:
-                case 12152:
-                case 13030:
-                    isException = true;
-                    break;
-            }
-        }
-        
-        return {
-            success: success,
-            isException: isException
-        };
     },
 
 <span id='Ext-data-request-Ajax-method-createResponse'>    /**
@@ -488,8 +516,12 @@ Ext.define('Ext.data.request.Ajax', {
             requestId: me.id,
             status: xhr.status,
             statusText: xhr.statusText,
-            getResponseHeader: me._getHeader,
-            getAllResponseHeaders: me._getHeaders
+            getResponseHeader: function(header) {
+                return headers[header.toLowerCase()];
+            },
+            getAllResponseHeaders: function() {
+                return headers;
+            }
         };
 
         if (isXdr) {

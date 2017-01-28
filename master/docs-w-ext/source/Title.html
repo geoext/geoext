@@ -22,6 +22,10 @@ Ext.define('Ext.panel.Title', {
     extend: 'Ext.Component',
     xtype: 'title',
 
+    requires: [
+        'Ext.Glyph'
+    ],
+
 <span id='Ext-panel-Title-property-isTitle'>    isTitle: true,
 </span>    
 <span id='Ext-panel-Title-property-noWrap'>    // layout system optimization.  Allows autocomponent layout to measure height without
@@ -38,52 +42,51 @@ Ext.define('Ext.panel.Title', {
 </span>
 <span id='Ext-panel-Title-property-beforeRenderConfig'>    beforeRenderConfig: {
 </span><span id='Ext-panel-Title-cfg-textAlign'>        /**
-</span>         * @cfg {'left'/'center'/'right'} [textAlign='left']
-         * text alignment of the title
+</span>         * @cfg [textAlign='left']
+         * @inheritdoc Ext.panel.Header#cfg-titleAlign
+         * @accessor
          */
         textAlign: null,
 
 <span id='Ext-panel-Title-cfg-text'>        /**
 </span>         * @cfg {String}
          * The title's text (can contain html tags/entities)
+         * @accessor
          */
         text: null,
 
 <span id='Ext-panel-Title-cfg-glyph'>        /**
-</span>         * @cfg {Number/String} glyph
-         * A numeric unicode character code to use as the icon. The
-         * default font-family for glyphs can be set globally using
-         * {@link Ext#setGlyphFontFamily Ext.setGlyphFontFamily()}. Alternatively, this
-         * config option accepts a string with the charCode and font-family separated by the
-         * `@` symbol. For example '65@My Font Family'.
+</span>         * @cfg glyph
+         * @inheritdoc Ext.panel.Header#cfg-glyph
+         * @accessor
          */
         glyph: null,
 
 <span id='Ext-panel-Title-cfg-icon'>        /**
-</span>         * @cfg {String} icon
-         * Path to image for an icon.
+</span>         * @cfg icon
+         * @inheritdoc Ext.panel.Header#cfg-icon
+         * @accessor
          */
         icon: null,
 
 <span id='Ext-panel-Title-cfg-iconAlign'>        /**
 </span>         * @cfg {'top'/'right'/'bottom'/'left'} [iconAlign='left']
          * alignment of the icon
+         * @accessor
          */
         iconAlign: null,
 
 <span id='Ext-panel-Title-cfg-iconCls'>        /**
-</span>         * @cfg {String} iconCls
-         * CSS class for an icon.
+</span>         * @cfg iconCls
+         * @inheritdoc Ext.panel.Header#cfg-iconCls
+         * @accessor
          */
         iconCls: null,
         
 <span id='Ext-panel-Title-cfg-rotation'>        /**
-</span>         * @cfg {0/1/2} [rotation=0]
-         * The rotation of the title's text.  Can be one of the following values:
-         *
-         * - `0` - no rotation
-         * - `1` - rotate 90deg clockwise
-         * - `2` - rotate 90deg counter-clockwise
+</span>         * @cfg rotation
+         * @inheritdoc Ext.panel.Header#cfg-titleRotation
+         * @accessor
          */
         rotation: null
     },
@@ -133,7 +136,7 @@ Ext.define('Ext.panel.Title', {
                         'class=&quot;{baseIconCls} {baseIconCls}-{ui} {iconCls} {glyphCls}&quot; style=&quot;' +
                 '&lt;tpl if=&quot;iconUrl&quot;&gt;background-image:url({iconUrl});&lt;/tpl&gt;' +
                 '&lt;tpl if=&quot;glyph &amp;&amp; glyphFontFamily&quot;&gt;font-family:{glyphFontFamily};&lt;/tpl&gt;&quot;&gt;' +
-                '&lt;tpl if=&quot;glyph&quot;&gt;&amp;#{glyph};&lt;/tpl&gt;' +
+                '&lt;tpl if=&quot;glyph&quot;&gt;{glyph}&lt;/tpl&gt;' +
             '&lt;/div&gt;' +
         '&lt;/div&gt;',
 
@@ -237,7 +240,7 @@ Ext.define('Ext.panel.Title', {
     },
 
 <span id='Ext-panel-Title-method-getIconMarkup'>    getIconMarkup: function() {
-</span>        return this.getTpl('iconTpl').apply(this.getIconRenderData());
+</span>        return this.lookupTpl('iconTpl').apply(this.getIconRenderData());
     },
 
 <span id='Ext-panel-Title-method-getIconRenderData'>    getIconRenderData: function() {
@@ -245,15 +248,13 @@ Ext.define('Ext.panel.Title', {
             icon = me.getIcon(),
             iconCls = me.getIconCls(),
             glyph = me.getGlyph(),
-            glyphFontFamily = Ext._glyphFontFamily,
-            iconAlign = me.getIconAlign(),
-            glyphParts;
+            glyphFontFamily,
+            iconAlign = me.getIconAlign();
 
-
-        if (typeof glyph === 'string') {
-            glyphParts = glyph.split('@');
-            glyph = glyphParts[0];
-            glyphFontFamily = glyphParts[1];
+        // Transform Glyph to the useful parts
+        if (glyph) {
+            glyphFontFamily = glyph.fontFamily;
+            glyph = glyph.character;
         }
 
         return {
@@ -308,35 +309,36 @@ Ext.define('Ext.panel.Title', {
         me.callParent([container, pos, instanced]);
     },
 
-<span id='Ext-panel-Title-method-updateGlyph'>    updateGlyph: function(glyph, oldGlyph) {
-</span>        glyph = glyph || 0;
-        var me = this,
-            glyphCls = me._glyphCls,
-            iconEl, fontFamily, glyphParts;
+<span id='Ext-panel-Title-method-applyGlyph'>    applyGlyph: function(glyph, oldGlyph) {
+</span>        if (glyph) {
+            if (!glyph.isGlyph) {
+                glyph = new Ext.Glyph(glyph);
+            }
+            if (glyph.isEqual(oldGlyph)) {
+                glyph = undefined;
+            }
+        }
+        return glyph;
+    },
 
-        me.glyph = glyph;
+<span id='Ext-panel-Title-method-updateGlyph'>    updateGlyph: function(glyph, oldGlyph) {
+</span>        var me = this,
+            glyphCls = me._glyphCls,
+            iconEl;
 
         if (me.rendered) {
             me._syncIconVisibility();
             iconEl = me.iconEl;
-            
-            if (typeof glyph === 'string') {
-                glyphParts = glyph.split('@');
-                glyph = glyphParts[0];
-                fontFamily = glyphParts[1] || Ext._glyphFontFamily;
-            }
 
-            if (!glyph) {
+            if (glyph) {
+                iconEl.dom.innerHTML = glyph.character;
+                iconEl.addCls(glyphCls);
+                iconEl.setStyle('font-family', glyph.fontFamily);
+            } else if (oldGlyph !== glyph) {
                 iconEl.dom.innerHTML = '';
                 iconEl.removeCls(glyphCls);
-            } else if (oldGlyph !== glyph) {
-                iconEl.dom.innerHTML = '&amp;#' + glyph + ';';
-                iconEl.addCls(glyphCls);
             }
 
-            if (fontFamily) {
-                iconEl.setStyle('font-family', fontFamily);
-            }
             if (me._didIconStateChange(oldGlyph, glyph)) {
                 me.updateLayout();
             }

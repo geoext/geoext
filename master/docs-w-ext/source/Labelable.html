@@ -77,7 +77,10 @@ Ext.define(&quot;Ext.form.Labelable&quot;, {
             'errorEl',
 
             'errorWrapEl',
-            'ariaErrorEl'
+            'ariaErrorEl',
+            'ariaStatusEl',
+            'ariaHelpEl',
+            'labelTextEl'
         ]
     },
 
@@ -91,13 +94,16 @@ Ext.define(&quot;Ext.form.Labelable&quot;, {
     labelableRenderTpl: [
         '{beforeLabelTpl}',
         '&lt;label id=&quot;{id}-labelEl&quot; data-ref=&quot;labelEl&quot; class=&quot;{labelCls} {labelCls}-{ui} {labelClsExtra} ',
-                '{unselectableCls}&quot; style=&quot;{labelStyle}&quot;&lt;tpl if=&quot;inputId&quot;&gt;',
-                ' for=&quot;{inputId}&quot;&lt;/tpl&gt; {labelAttrTpl}&gt;',
+                '{childElCls} {unselectableCls}&quot; style=&quot;{labelStyle}&quot;',
+                '&lt;tpl if=&quot;inputId &amp;&amp; !skipLabelForAttribute&quot;&gt; for=&quot;{inputId}&quot;&lt;/tpl&gt;',
+                ' {labelAttrTpl}&gt;',
             '&lt;span class=&quot;{labelInnerCls} {labelInnerCls}-{ui}&quot; style=&quot;{labelInnerStyle}&quot;&gt;',
             '{beforeLabelTextTpl}',
-            '&lt;tpl if=&quot;fieldLabel&quot;&gt;{fieldLabel}',
-                '&lt;tpl if=&quot;labelSeparator&quot;&gt;{labelSeparator}&lt;/tpl&gt;',
-            '&lt;/tpl&gt;',
+            '&lt;span id=&quot;{id}-labelTextEl&quot; data-ref=&quot;labelTextEl&quot; class=&quot;{labelTextCls}&quot;&gt;',
+                '&lt;tpl if=&quot;fieldLabel&quot;&gt;{fieldLabel}',
+                    '&lt;tpl if=&quot;labelSeparator&quot;&gt;{labelSeparator}&lt;/tpl&gt;',
+                '&lt;/tpl&gt;',
+            '&lt;/span&gt;',
             '{afterLabelTextTpl}',
             '&lt;/span&gt;',
         '&lt;/label&gt;',
@@ -111,10 +117,33 @@ Ext.define(&quot;Ext.form.Labelable&quot;, {
             '{[values.$comp.getSubTplMarkup(values)]}',
             '{afterSubTpl}',
             '{afterBodyEl}',
-            // Unlike errorEl below ariaErrorEl is always rendered but is clipped out of existence
-            '&lt;div id=&quot;{id}-ariaErrorEl&quot; data-ref=&quot;ariaErrorEl&quot; role=&quot;alert&quot; aria-live=&quot;polite&quot;',
-                ' class=&quot;' + Ext.baseCSSPrefix + 'hidden-clip&quot;&gt;',
-            '&lt;/div&gt;',
+            // ARIA elements serve different purposes:
+            // - ariaHelpEl may contain optional hints about the field, such as
+            //   expected format. This text is static and usually does not change
+            //   once rendered. It is also optional.
+            // - ariaStatusEl is used to convey status of the field. Validation errors
+            //   are rendered here, as well as other information that might be helpful
+            //   to Assistive Technology users exploring the app in browse mode.
+            // - ariaErrorEl is used for announcing dynamic changes in the field state,
+            //   so that AT users receive updates while in forms mode.
+            //
+            // Both ariaHelpEl and ariaStatusEl are referenced by the field's input element
+            // via aria-describedby.
+            '&lt;tpl if=&quot;renderAriaElements&quot;&gt;',
+                '&lt;tpl if=&quot;ariaHelp&quot;&gt;',
+                    '&lt;span id=&quot;{id}-ariaHelpEl&quot; data-ref=&quot;ariaHelpEl&quot;',
+                        ' class=&quot;' + Ext.baseCSSPrefix + 'hidden-offsets&quot;&gt;',
+                        '{ariaHelp}',
+                    '&lt;/span&gt;',
+                '&lt;/tpl&gt;',
+                '&lt;span id=&quot;{id}-ariaStatusEl&quot; data-ref=&quot;ariaStatusEl&quot; aria-hidden=&quot;true&quot;',
+                    ' class=&quot;' + Ext.baseCSSPrefix + 'hidden-offsets&quot;&gt;',
+                    '{ariaStatus}',
+                '&lt;/span&gt;',
+                '&lt;span id=&quot;{id}-ariaErrorEl&quot; data-ref=&quot;ariaErrorEl&quot; aria-hidden=&quot;true&quot; aria-live=&quot;assertive&quot;',
+                    ' class=&quot;' + Ext.baseCSSPrefix + 'hidden-clip&quot;&gt;',
+                '&lt;/span&gt;',
+            '&lt;/tpl&gt;',
         '&lt;/div&gt;',
         '&lt;tpl if=&quot;renderError&quot;&gt;',
             '&lt;div id=&quot;{id}-errorWrapEl&quot; data-ref=&quot;errorWrapEl&quot; class=&quot;{errorWrapCls} {errorWrapCls}-{ui}',
@@ -151,6 +180,12 @@ Ext.define(&quot;Ext.form.Labelable&quot;, {
             '&lt;tpl for=&quot;errors&quot;&gt;&lt;tpl if=&quot;xindex &amp;gt; 1&quot;&gt;\n&lt;/tpl&gt;{.}&lt;/tpl&gt;',
         '&lt;/tpl&gt;'
     ],
+    
+<span id='Ext-form-Labelable-property-ariaActiveErrorsTpl'>    ariaActiveErrorsTpl: [
+</span>        '&lt;tpl if=&quot;errors &amp;&amp; errors.length&quot;&gt;',
+            '&lt;tpl for=&quot;errors&quot; between=&quot;. &quot;&gt;{.}&lt;/tpl&gt;',
+        '&lt;/tpl&gt;'
+    ],
 
 <span id='Ext-form-Labelable-property-isFieldLabelable'>    /**
 </span>     * @property {Boolean} isFieldLabelable
@@ -178,6 +213,7 @@ Ext.define(&quot;Ext.form.Labelable&quot;, {
     topLabelCls: Ext.baseCSSPrefix + 'form-item-label-top',
 <span id='Ext-form-Labelable-property-rightLabelCls'>    rightLabelCls: Ext.baseCSSPrefix + 'form-item-label-right',
 </span><span id='Ext-form-Labelable-property-labelInnerCls'>    labelInnerCls: Ext.baseCSSPrefix + 'form-item-label-inner',
+</span><span id='Ext-form-Labelable-property-labelTextCls'>    labelTextCls: Ext.baseCSSPrefix + 'form-item-label-text',
 </span><span id='Ext-form-Labelable-property-topLabelSideErrorCls'>    topLabelSideErrorCls: Ext.baseCSSPrefix + 'form-item-label-top-side-error',
 </span>
 <span id='Ext-form-Labelable-cfg-labelClsExtra'>    /**
@@ -214,6 +250,8 @@ Ext.define(&quot;Ext.form.Labelable&quot;, {
      */
     fieldBodyCls: '',
 
+<span id='Ext-form-Labelable-property-extraFieldBodyCls'>    extraFieldBodyCls: '',
+</span>
 <span id='Ext-form-Labelable-cfg-invalidCls'>    /**
 </span>     * @cfg {String} invalidCls
      * The CSS class to use when marking the component invalid.
@@ -346,9 +384,27 @@ Ext.define(&quot;Ext.form.Labelable&quot;, {
      * Tells the layout system that the height can be measured immediately because the width does not need setting.
      */
     noWrap: true,
-
-<span id='Ext-form-Labelable-property-labelableInsertions'>    labelableInsertions: [
+    
+<span id='Ext-form-Labelable-cfg-ariaHelp'>    /**
+</span>     * @cfg {String} [ariaHelp] Optional text description for this object. This text will be
+     * announced to Assistive Technology users when the object is focused.
+     */
+    ariaHelp: undefined,
+    
+    //&lt;/locale&gt;
+<span id='Ext-form-Labelable-cfg-ariaErrorText'>    /**
+</span>     * @cfg {String} ariaErrorText Localized announcement text for validation errors. This text
+     * will be used by Assistive Technologies such as screen readers to alert the users when
+     * field validation fails.
+     *
+     * This config is used with {@link Ext.String.format}. '{0}' will be replaced with the actual
+     * error message(s), '{1}' will be replaced with field label.
+     */
+    ariaErrorText: 'Input error. {0}.',
+<span id='Ext-form-Labelable-property-labelableInsertions'>    //&lt;/locale&gt;
 </span>
+    labelableInsertions: [
+
 <span id='Ext-form-Labelable-cfg-beforeBodyEl'>        /**
 </span>         * @cfg {String/Array/Ext.XTemplate} beforeBodyEl
          * An optional string or `XTemplate` configuration to insert in the field markup
@@ -451,9 +507,10 @@ Ext.define(&quot;Ext.form.Labelable&quot;, {
                 cfg.dismissDelay = 0;
                 cfg.anchor = 'top';
                 cfg.showDelay = 0;
+                cfg.showOnTap = true;
                 cfg.listeners = {
                     beforeshow: function() {
-                        this.minWidth = Ext.fly(this.anchorTarget).getWidth();
+                        this.minWidth = Ext.fly(this.activeTarget.el).getWidth();
                     }
                 };
             }
@@ -570,7 +627,8 @@ Ext.define(&quot;Ext.form.Labelable&quot;, {
                 if (separator) {
                     label = me.trimLabelSeparator() + separator;
                 }
-                labelEl.dom.firstChild.innerHTML = label;
+
+                me.labelTextEl.dom.innerHTML = label;
                 me.removeCls(noLabelCls);
                 if (sideLabel &amp;&amp; errorWrapEl) {
                     errorWrapEl.addCls(errorWrapUnderSideLabelCls);
@@ -698,6 +756,8 @@ Ext.define(&quot;Ext.form.Labelable&quot;, {
             labelStyle: labelStyle + (me.labelStyle || ''),
             labelInnerStyle: labelInnerStyle,
             labelInnerCls: me.labelInnerCls,
+            labelTextCls: me.labelTextCls,
+            skipLabelForAttribute: !!me.skipLabelForAttribute,
             unselectableCls: Ext.Element.unselectableCls,
             bodyStyle: bodyStyle,
             baseBodyCls: me.baseBodyCls,
@@ -713,8 +773,14 @@ Ext.define(&quot;Ext.form.Labelable&quot;, {
             errorWrapStyle: (sideError &amp;&amp; !autoFitErrors) ?
                     'visibility:hidden' : 'display:none',
             fieldLabel: me.getFieldLabel(),
-            labelSeparator: me.labelSeparator
+            labelSeparator: me.labelSeparator,
+            renderAriaElements: !!me.renderAriaElements,
+            ariaStatus: ''
         };
+        
+        if (me.ariaHelp) {
+            data.ariaHelp = Ext.String.htmlEncode(me.ariaHelp);
+        }
 
         me.getInsertionRenderData(data, me.labelableInsertions);
 
@@ -844,10 +910,11 @@ Ext.define(&quot;Ext.form.Labelable&quot;, {
             msgTarget = me.msgTarget,
             isSide = msgTarget === 'side',
             isQtip = msgTarget === 'qtip',
-            actionEl, activeError, tpl, targetEl;
+            ariaErrorEl = me.ariaErrorEl,
+            actionEl, activeError, tpl, targetEl, ariaTpl, errStr, errText;
 
         errors = Ext.Array.from(errors);
-        tpl = me.getTpl('activeErrorsTpl');
+        tpl = me.lookupTpl('activeErrorsTpl');
 
         me.activeErrors = errors;
         activeError = me.activeError = tpl.apply({
@@ -872,9 +939,22 @@ Ext.define(&quot;Ext.form.Labelable&quot;, {
             }
 
             // If msgTarget is title, setting an alert is redundant for ARIA purposes
-            if (msgTarget !== 'title') {
-                me.ariaErrorEl.dom.innerHTML = errors.join('. ');
-                actionEl.dom.setAttribute('aria-describedby', me.ariaErrorEl.id);
+            if (msgTarget !== 'title' &amp;&amp; ariaErrorEl) {
+                ariaTpl = me.lookupTpl('ariaActiveErrorsTpl');
+                errStr = ariaTpl.apply({ errors: errors });
+                
+                // Setting innerHTML on aria-live element will replace inner text node,
+                // and the browser will fire DOM change event even if the text is the same.
+                // We don't want the announcement to repeat if the text hasn't changed.
+                errText = Ext.String.formatEncode(me.ariaErrorText, errStr, me.fieldLabel);
+                
+                if (ariaErrorEl.dom.innerHTML !== errText) {
+                    ariaErrorEl.dom.innerHTML = errText;
+                }
+                
+                // ariaStatusEl is not aria-live so it's OK to change it every time.
+                // Contents will be announced only upon focusing the field.
+                me.ariaStatusEl.dom.innerHTML = Ext.String.htmlEncode(errStr);
             }
             
             if (isSide || isQtip) {
@@ -907,6 +987,7 @@ Ext.define(&quot;Ext.form.Labelable&quot;, {
     unsetActiveError: function() {
         var me = this,
             errorWrapEl = me.errorWrapEl,
+            ariaErrorEl = me.ariaErrorEl,
             msgTarget = me.msgTarget,
             restoreDisplay = me.restoreDisplay,
             actionEl, targetEl;
@@ -926,9 +1007,8 @@ Ext.define(&quot;Ext.form.Labelable&quot;, {
                     actionEl.dom.removeAttribute('title');
                 }
                 
-                if (msgTarget !== 'title') {
-                    me.ariaErrorEl.dom.innerHTML = '';
-                    actionEl.dom.removeAttribute('aria-describedby');
+                if (msgTarget !== 'title' &amp;&amp; ariaErrorEl) {
+                    ariaErrorEl.dom.innerHTML = me.ariaStatusEl.dom.innerHTML = '';
                 }
 
                 if (!me.msgTargets[msgTarget]) {

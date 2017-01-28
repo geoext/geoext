@@ -16,7 +16,8 @@
 </head>
 <body onload="prettyPrint(); highlight();">
   <pre class="prettyprint lang-js"><span id='Ext-data-ResultSet'>/**
-</span> * Simple wrapper class that represents a set of records returned by a Proxy.
+</span> * @protected
+ * Simple wrapper class that represents a set of records returned by a Proxy.
  */
 Ext.define('Ext.data.ResultSet', {
     
@@ -65,7 +66,13 @@ Ext.define('Ext.data.ResultSet', {
 </span>         * @cfg {String} message
          * The message that was read in from the data
          */
-        message: null
+        message: null,
+
+<span id='Ext-data-ResultSet-cfg-metadata'>        /**
+</span>         * @cfg {Object} metadata
+         * The metadata object from a server sourced JSON data packet.
+         */
+        metadata: null
     },
 
 <span id='Ext-data-ResultSet-method-constructor'>    /**

@@ -75,24 +75,24 @@ Ext.define('Ext.sparkline.TriState', {
          *         &quot;1:&quot;: &quot;red&quot;
          *     }
          */
-        colorMap: {},
-        
-<span id='Ext-sparkline-TriState-cfg-tipTpl'>        tipTpl: new Ext.XTemplate('&amp;#9679; {value:this.states}', {
-</span>            states: function(v) {
-                var value = Number(v);
-                if (value === -1) {
-                    return 'Loss';
-                }
-                if (value === 0) {
-                    return 'Draw';
-                }
-                if (value === 1) {
-                    return 'Win';
-                }
-                return v;
-            }
-        })
+        colorMap: {}
     },
+
+<span id='Ext-sparkline-TriState-cfg-tipTpl'>    tipTpl: ['&amp;#9679; {value:this.states}', {
+</span>        states: function(v) {
+            var value = Number(v);
+            if (value === -1) {
+                return 'Loss';
+            }
+            if (value === 0) {
+                return 'Draw';
+            }
+            if (value === 1) {
+                return 'Win';
+            }
+            return v;
+        }
+    }],
 
 <span id='Ext-sparkline-TriState-method-applyColorMap'>    applyColorMap: function(colorMap) {
 </span>        var me = this;
@@ -107,6 +107,7 @@ Ext.define('Ext.sparkline.TriState', {
                 me.colorMapByValue = new Ext.sparkline.RangeMap(colorMap);
             }
         }
+        me.applyConfigChange();
         return colorMap;
     },
 
@@ -114,6 +115,7 @@ Ext.define('Ext.sparkline.TriState', {
 </span>    applyValues: function(newValues) {
         newValues = Ext.Array.map(Ext.Array.from(newValues), Number);
         this.disabled = !(newValues &amp;&amp; newValues.length);
+        this.applyConfigChange();
         return newValues;
     },
 

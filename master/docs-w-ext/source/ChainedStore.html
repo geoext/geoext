@@ -32,29 +32,15 @@ Ext.define('Ext.data.ChainedStore', {
          */
         source: null,
 
-<span id='Ext-data-ChainedStore-cfg-remoteFilter'>        /**
-</span>         * @inheritdoc
-         */
-        remoteFilter: false,
-
-<span id='Ext-data-ChainedStore-cfg-remoteSort'>        /**
-</span>         * @inheritdoc
-         */
-        remoteSort: false
-    },
+<span id='Ext-data-ChainedStore-cfg-remoteFilter'>        remoteFilter: false,
+</span>
+<span id='Ext-data-ChainedStore-cfg-remoteSort'>        remoteSort: false
+</span>    },
 
     mixins: [
         'Ext.data.LocalStore'
     ],
     
-<span id='Ext-data-ChainedStore-method-constructor'>    constructor: function() {
-</span>        this.callParent(arguments);
-        this.getData().addObserver(this);
-    },
-
-<span id='Ext-data-ChainedStore-method-blockLoad'>    blockLoad: Ext.emptyFn,
-</span><span id='Ext-data-ChainedStore-method-unblockLoad'>    unblockLoad: Ext.emptyFn,
-</span>
 <span id='Ext-data-ChainedStore-method-updateRemoteFilter'>    //&lt;debug&gt;
 </span>    updateRemoteFilter: function(remoteFilter, oldRemoteFilter) {
         if (remoteFilter) {
@@ -91,6 +77,10 @@ Ext.define('Ext.data.ChainedStore', {
         return data;
     },
 
+<span id='Ext-data-ChainedStore-method-getTotalCount'>    getTotalCount: function() {
+</span>        return this.getCount();
+    },
+
 <span id='Ext-data-ChainedStore-method-getSession'>    getSession: function() {
 </span>        return this.getSource().getSession();
     },
@@ -117,7 +107,7 @@ Ext.define('Ext.data.ChainedStore', {
 </span>        var me = this,
             data;
         
-        if (oldSource) {
+        if (oldSource &amp;&amp; !oldSource.destroyed) {
             oldSource.removeObserver(me);
         }
         
@@ -174,6 +164,11 @@ Ext.define('Ext.data.ChainedStore', {
         // is an descendant of a collapsed node, and so *will not be contained by this store
         me.onUpdate(record, type, modifiedFieldNames, info);
         me.fireEvent('update', me, record, type, modifiedFieldNames, info);
+    },
+    
+<span id='Ext-data-ChainedStore-method-onCollectionUpdateKey'>    onCollectionUpdateKey: function(source, details) {
+</span>        // Must react to upstream Collection key update by firing idchanged event
+        this.fireEvent('idchanged', this, details.item, details.oldKey, details.newKey);
     },
 
 <span id='Ext-data-ChainedStore-method-onUpdate'>    onUpdate: Ext.emptyFn,
@@ -265,13 +260,15 @@ Ext.define('Ext.data.ChainedStore', {
 </span>        return this.getSource().isLoading();
     },
 
-<span id='Ext-data-ChainedStore-method-onDestroy'>    onDestroy: function() {
+<span id='Ext-data-ChainedStore-method-doDestroy'>    doDestroy: function() {
 </span>        var me = this;
 
         me.observers = null;
         me.setSource(null);
         me.getData().destroy(true);
         me.data = null;
+        
+        me.callParent();
     },
 
 <span id='Ext-data-ChainedStore-property-privates'>    privates: {

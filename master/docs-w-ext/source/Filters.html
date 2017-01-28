@@ -110,21 +110,20 @@
  * Since this plugin now uses actual store filters, the `onBeforeLoad` listener and all
  * helper methods that were used to clean and build the params have been removed. The store
  * will send the filters managed by this plugin along in its normal request.
-*/
+ */
 Ext.define('Ext.grid.filters.Filters', {
     extend: 'Ext.plugin.Abstract',
-
-    requires: [
-        'Ext.grid.filters.filter.*'
-    ],
+    alias: 'plugin.gridfilters',
 
     mixins: [
         'Ext.util.StoreHolder'
     ],
 
-    alias: 'plugin.gridfilters',
+    requires: [
+        'Ext.grid.filters.filter.*'
+    ],
 
-<span id='Ext-grid-filters-Filters-cfg-pluginId'>    pluginId: 'gridfilters',
+<span id='Ext-grid-filters-Filters-cfg-id'>    id: 'gridfilters',
 </span>
 <span id='Ext-grid-filters-Filters-property-defaultFilterTypes'>    /**
 </span>     * @property {Object} defaultFilterTypes
@@ -185,15 +184,16 @@ Ext.define('Ext.grid.filters.Filters', {
         store = grid.store;
         headerCt = grid.headerCt;
 
-        headerCt.on({
+        me.headerCtListeners = headerCt.on({
+            destroyable: true,
             scope: me,
             add: me.onAdd,
             menucreate: me.onMenuCreate
         });
 
-        grid.on({
+        me.gridListeners = grid.on({
+            destroyable: true,
             scope: me,
-            destroy: me.onGridDestroy,
             reconfigure: me.onReconfigure
         });
 
@@ -266,6 +266,9 @@ Ext.define('Ext.grid.filters.Filters', {
         }
 
         column.filter = Ext.Factory.gridFilter(filter);
+        if (!column.menuDisabled) {
+            column.requiresMenu = true;
+        }
     },
 
 <span id='Ext-grid-filters-Filters-method-onAdd'>    onAdd: function (headerCt, column, index) {
@@ -277,7 +280,8 @@ Ext.define('Ext.grid.filters.Filters', {
     },
 
 <span id='Ext-grid-filters-Filters-method-onMenuCreate'>    /**
-</span>     * @private Handle creation of the grid's header menu.
+</span>     * @private
+     * Handle creation of the grid's header menu.
      */
     onMenuCreate: function (headerCt, menu) {
         menu.on({
@@ -287,7 +291,8 @@ Ext.define('Ext.grid.filters.Filters', {
     },
 
 <span id='Ext-grid-filters-Filters-method-onMenuBeforeShow'>    /**
-</span>     * @private Handle showing of the grid's header menu. Sets up the filter item and menu
+</span>     * @private
+     * Handle showing of the grid's header menu. Sets up the filter item and menu
      * appropriate for the target column.
      */
     onMenuBeforeShow: function (menu) {
@@ -321,7 +326,10 @@ Ext.define('Ext.grid.filters.Filters', {
             }
 
             menuItem.setVisible(!!filter);
-            me.sep.setVisible(!!filter);
+            
+            if (me.sep) {
+                me.sep.setVisible(!!filter);
+            }
         }
     },
 
@@ -329,7 +337,10 @@ Ext.define('Ext.grid.filters.Filters', {
 </span>        var me = this,
             item;
 
-        me.sep = menu.add('-');
+        // only add separator if there are other menu items
+        if (menu.items.length) {
+            me.sep = menu.add('-');
+        }
 
         item = menu.add({
             checked: false,
@@ -344,13 +355,12 @@ Ext.define('Ext.grid.filters.Filters', {
         return (me.filterMenuItem[parentTableId] = item);
     },
 
-<span id='Ext-grid-filters-Filters-method-onGridDestroy'>    /**
-</span>     * Handler called by the grid 'beforedestroy' event
-     */
-    onGridDestroy: function () {
-        var me = this,
+<span id='Ext-grid-filters-Filters-method-destroy'>    destroy: function() {
+</span>        var me = this,
             filterMenuItem = me.filterMenuItem,
             item;
+
+        Ext.destroy(me.headerCtListeners, me.gridListeners);
 
         me.bindStore(null);
         me.sep = Ext.destroy(me.sep);
@@ -358,12 +368,14 @@ Ext.define('Ext.grid.filters.Filters', {
         for (item in filterMenuItem) {
             filterMenuItem[item].destroy();
         }
-
-        me.grid = null;
+        
+        this.callParent();
     },
 
 <span id='Ext-grid-filters-Filters-method-onUnbindStore'>    onUnbindStore: function(store) {
-</span>        store.getFilters().un('remove', this.onFilterRemove, this);
+</span>        if (store &amp;&amp; !store.destroyed) {
+            store.getFilters().un('remove', this.onFilterRemove, this);
+        }
     },
 
 <span id='Ext-grid-filters-Filters-method-onBindStore'>    onBindStore: function(store, initial, propName) {
@@ -419,8 +431,11 @@ Ext.define('Ext.grid.filters.Filters', {
         return headerCt.getMenu().activeHeader.filter;
     },
 
-<span id='Ext-grid-filters-Filters-method-onCheckChange'>    /** @private */
-</span>    onCheckChange: function (item, value) {
+<span id='Ext-grid-filters-Filters-method-onCheckChange'>    /**
+</span>     * @private
+     *
+     */
+    onCheckChange: function (item, value) {
         // Locking grids must lookup the correct grid.
         var parentTable = this.isLocked ? item.up('tablepanel') : this.grid,
             filter = this.getMenuFilter(parentTable.headerCt);
@@ -507,8 +522,6 @@ Ext.define('Ext.grid.filters.Filters', {
 
 <span id='Ext-grid-filters-Filters-method-clearFilters'>    /**
 </span>     * Turns all filters off. This does not clear the configuration information.
-     * @param {Boolean} autoFilter If true, don't fire the deactivate event in
-     * {@link Ext.grid.filters.filter.Base#setActive setActive}.
      */
     clearFilters: function () {
         var grid = this.grid,
@@ -537,17 +550,82 @@ Ext.define('Ext.grid.filters.Filters', {
     },
 
 <span id='Ext-grid-filters-Filters-method-onReconfigure'>    onReconfigure: function(grid, store, columns, oldStore) {
-</span>        var filterMenuItem = this.filterMenuItem,
+</span>        var me = this,
+            filterMenuItem = me.filterMenuItem,
+            changed = oldStore !== store,
             key;
 
         // The Filters item's menu should have already been destroyed by the time we get here but
         // we still need to null out the menu reference.
-        for (key in filterMenuItem) {
-            filterMenuItem[key].setMenu(null);
+        if (columns) {
+            for (key in filterMenuItem) {
+                filterMenuItem[key].setMenu(null);
+            }
         }
 
-        if (store &amp;&amp; oldStore !== store) {
-            this.bindStore(store);
+        if (store) {
+            if (oldStore &amp;&amp; !oldStore.destroyed &amp;&amp; changed) {
+                me.resetFilters(oldStore);
+            }
+
+            if (changed) {
+                me.bindStore(store);
+                me.applyFilters(store);
+            }
+        }
+        me.initColumns();
+    },
+
+<span id='Ext-grid-filters-Filters-property-privates'>    privates: {
+</span>        applyFilters: function(store) {
+            var columns = this.grid.columnManager.getColumns(),
+                len = columns.length,
+                i, column,
+                filter, filterCollection;
+
+            // We start with filters defined on any columns.
+            for (i = 0; i &lt; len; i++) {
+                column = columns[i];
+                filter = column.filter;
+
+                if (filter &amp;&amp; filter.isGridFilter) {
+                    if (!filterCollection) {
+                        filterCollection = store.getFilters();
+                        filterCollection.beginUpdate();
+                    }
+
+                    if (filter.active) {
+                        filter.activate();
+                    }
+                }
+            }
+
+            if (filterCollection) {
+                filterCollection.endUpdate();
+            }
+        },
+
+        resetFilters: function(store) {
+            var filters = store.getFilters(),
+                i, updating, filter;
+
+            if (filters) {
+                for (i = filters.getCount() - 1; i &gt;= 0; --i) {
+                    filter = filters.getAt(i);
+                    if (filter.isGridFilter) {
+                        if (!updating) {
+                            filters.beginUpdate();
+                        }
+                        filters.remove(filter);
+                        updating = true;
+                    }
+                }
+
+                if (updating) {
+                    filters.endUpdate();
+                }
+            }
+
         }
     }
 });

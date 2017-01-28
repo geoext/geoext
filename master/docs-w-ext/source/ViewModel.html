@@ -57,13 +57,15 @@
  * 
  *   * `'Hello {user.name}!'`
  *   * `'You have selected &quot;{selectedItem.text}&quot;.'`
+ *   * `'{!isDisabled}'`
+ *   * `'{a &gt; b ? &quot;Bigger&quot; : &quot;Smaller&quot;}'`
  *   * `'{user.groups}'`
  *
- * The first two bindings are `{@link Ext.app.bind.TemplateBinding template bindings}`
+ * All except the last are `{@link Ext.app.bind.TemplateBinding template bindings}`
  * which use the familiar `Ext.Template` syntax with some slight differences. For more on
  * templates see `{@link Ext.app.bind.Template}`.
  *
- * The third bind descriptor is called a &quot;direct bind descriptor&quot;. This special form of
+ * The last descriptor is called a &quot;direct bind descriptor&quot;. This special form of
  * bind maps one-to-one to some piece of data in the `ViewModel` and is managed by the
  * `{@link Ext.app.bind.Binding}` class.
  *
@@ -72,7 +74,7 @@
  * A direct bind descriptor may be able to write back a value to the `ViewModel` as well
  * as retrieve one. When this is the case, they are said to be &quot;two-way&quot;. For example:
  *
- *      var binding = viewModel.bind('{s}', function(x) { console.log('s=' + s); });
+ *      var binding = viewModel.bind('{s}', function(s) { console.log('s=' + s); });
  *
  *      binding.setValue('abc');
  *
@@ -248,7 +250,7 @@
  *         links: {
  *             theUser: {
  *                 type: 'User',
- *                 type: 22
+ *                 id: 22
  *             }
  *         }
  *     });
@@ -342,18 +344,18 @@
  * are automatically determined so that the formula will not be processed until the required
  * data is present.
  *
- *    var viewModel = new Ext.app.ViewModel({
- *        formulas: {
- *            fullName: function(get) {
- *                return get('firstName') + ' ' + get('lastName');
- *            }
- *        },
- *        data: {firstName: 'John', lastName: 'Smith'}
- *    });
+ *     var viewModel = new Ext.app.ViewModel({
+ *         formulas: {
+ *             fullName: function(get) {
+ *                 return get('firstName') + ' ' + get('lastName');
+ *             }
+ *         },
+ *         data: {firstName: 'John', lastName: 'Smith'}
+ *     });
  *
- *    viewModel.bind('{fullName}', function(v) {
- *        console.log(v);
- *    });
+ *     viewModel.bind('{fullName}', function(v) {
+ *         console.log(v);
+ *     });
  *
  * See {@link #formulas} for more detail.
  */
@@ -386,7 +388,7 @@ Ext.define('Ext.app.ViewModel', {
 
 <span id='Ext-app-ViewModel-property-collectTimeout'>    collectTimeout: 100,
 </span>
-<span id='Ext-app-ViewModel-property-expressionRe'>    expressionRe: /^(?:\{[!]?(?:(\d+)|([a-z_][\w\-\.]*))\})$/i,
+<span id='Ext-app-ViewModel-property-expressionRe'>    expressionRe: /^(?:\{(?:(\d+)|([a-z_][\w\-\.]*))\})$/i,
 </span>
 <span id='Ext-app-ViewModel-property-S-configStrict'>    $configStrict: false, // allow &quot;formulas&quot; to be specified on derived class body
 </span>    config: {
@@ -575,8 +577,7 @@ Ext.define('Ext.app.ViewModel', {
     },
 
 <span id='Ext-app-ViewModel-method-constructor'>    constructor: function (config) {
-</span>        this.hadValue = {};
-        // Used to track non-stub bindings
+</span>        // Used to track non-stub bindings
         this.bindings = {};
         /*
          *  me.data = {
@@ -657,7 +658,7 @@ Ext.define('Ext.app.ViewModel', {
             scheduler.destroy();
         }
 
-        me.hadValue = me.children = me.storeInfo = me._session = me._view = me._scheduler =
+        me.children = me.storeInfo = me._session = me._view = me._scheduler =
                       me.bindings = me._root = me._parent = me.formulaFn = me.$formulaData = null;
 
         me.destroying = false;
@@ -702,7 +703,8 @@ Ext.define('Ext.app.ViewModel', {
      */
     bind: function (descriptor, callback, scope, options) {
         var me = this,
-            binding, track;
+            track = true,
+            binding;
 
         scope = scope || me;
 
@@ -713,14 +715,13 @@ Ext.define('Ext.app.ViewModel', {
 
         if (!Ext.isString(descriptor)) {
             binding = new Ext.app.bind.Multi(descriptor, me, callback, scope, options);
-            track = true;
         } else if (me.expressionRe.test(descriptor)) {
             // If we have '{foo}' alone it is a literal
             descriptor = descriptor.substring(1, descriptor.length - 1);
             binding = me.bindExpression(descriptor, callback, scope, options);
+            track = false;
         } else {
             binding = new Ext.app.bind.TemplateBinding(descriptor, me, callback, scope, options);
-            track = true;
         }
 
         if (track) {
@@ -773,11 +774,10 @@ Ext.define('Ext.app.ViewModel', {
      */
     linkTo: function (key, reference) {
         var me = this,
-            stub = me.getStub(key),
-            create, id, modelType, linkStub, rec;
+            stub, create, id, modelType, linkStub, rec;
 
         //&lt;debug&gt;
-        if (stub.depth - me.getRoot().depth &gt; 1) {
+        if (key.indexOf('.') &gt; -1) {
             Ext.raise('Links can only be at the top-level: &quot;' + key + '&quot;');
         }
         //&lt;/debug&gt;
@@ -808,8 +808,12 @@ Ext.define('Ext.app.ViewModel', {
                 rec.commit();
                 rec.phantom = true;
             }
+            // Force creation at the root level. If an existing stub is there
+            // it will be grafted in place here.
+            stub = me.getRoot().createStubChild(key);
             stub.set(rec);
         } else {
+            stub = me.getStub(key);
             if (!stub.isLinkStub) {
                 // Pass parent=null since we will graft in this new stub to replace us:
                 linkStub = new Ext.app.bind.LinkStub(me, stub.name);
@@ -825,7 +829,10 @@ Ext.define('Ext.app.ViewModel', {
      * of all bindings.
      */
     notify: function () {
-        this.getScheduler().notify();
+        var scheduler = this.getScheduler();
+        if (!scheduler.firing) {
+            scheduler.notify();
+        }
     },
 
 <span id='Ext-app-ViewModel-method-get'>    /**
@@ -940,23 +947,9 @@ Ext.define('Ext.app.ViewModel', {
             return record;
         },
 
-        notFn: function (v) {
-            return !v;
-        },
-
         bindExpression: function (descriptor, callback, scope, options) {
-            var ch = descriptor.charAt(0),
-                not = (ch === '!'),
-                path = not ? descriptor.substring(1) : descriptor,
-                stub = this.getStub(path),
-                binding;
-
-            binding =  stub.bind(callback, scope, options);
-            if (not) {
-                binding.transform = this.notFn;
-            }
-
-            return binding;
+            var stub = this.getStub(descriptor);
+            return stub.bind(callback, scope, options);
         },
 
         applyScheduler: function (scheduler) {
@@ -970,8 +963,7 @@ Ext.define('Ext.app.ViewModel', {
         getScheduler: function () {
             var me = this,
                 scheduler = me._scheduler,
-                parent,
-                session;
+                parent;
 
             if (!scheduler) {
                 if (!(parent = me.getParent())) {
@@ -1108,7 +1100,7 @@ Ext.define('Ext.app.ViewModel', {
         applyStores: function(stores) {
             var me = this,
                 root = me.getRoot(),
-                key, cfg, storeBind, stub, listeners, isStatic;
+                key, cfg, storeBind, stub, listeners;
             
             me.storeInfo = {};
             me.listenerScopeFn = function() {
@@ -1169,9 +1161,7 @@ Ext.define('Ext.app.ViewModel', {
                     delete proxy.writer;
                     store.getProxy().setConfig(proxy);
                 }
-                store.blockLoad();
                 store.setConfig(cfg);
-                store.unblockLoad(true);
             }
         },
 
@@ -1180,20 +1170,27 @@ Ext.define('Ext.app.ViewModel', {
                 store;
 
             cfg = Ext.apply({}, cfg);
+
             if (cfg.session) {
                 cfg.session = session;
             }
             if (cfg.source) {
                 cfg.type = cfg.type || 'chained';
             }
+
             // Restore the listeners from applyStores here
             cfg.listeners = listeners;
+            // Ensure events fired by ctor can find their target:
+            cfg.resolveListenerScope = this.listenerScopeFn;
+
             store = Ext.Factory.store(cfg);
             store.$binding = binding;
+
             this.setupStore(store, key);
         },
 
-        setupStore: function(store, key) {
+        setupStore: function (store, key) {
+            // May have been given a store instance
             store.resolveListenerScope = this.listenerScopeFn;
             this.storeInfo[key] = store;
             this.set(key, store);

@@ -44,9 +44,18 @@ Ext.define('Ext.view.DragZone', {
         // because the DropZone may need to scroll on hover at a scrolling boundary, and it is the View's
         // main element which handles scrolling.
         // We use the View's parent element to drag from. Ideally, we would use the internal structure, but that
-        // is transient; DataView's recreate the internal structure dynamically as data changes.
+        // is transient; DataViews recreate the internal structure dynamically as data changes.
         // TODO: Ext 5.0 DragDrop must allow multiple DD objects to share the same element.
         view = me.view;
+
+        // This is for https://www.w3.org/TR/pointerevents/ platforms.
+        // On these platforms, the pointerdown event (single touchstart) is reserved for
+        // initiating a scroll gesture. Setting the items draggable defeats that and
+        // enables the touchstart event to trigger a drag.
+        //
+        // Two finger dragging will still scroll on these platforms.
+        view.setItemsDraggable(true);
+
         ownerCt = view.ownerCt;
         // We don't just grab the parent el, since the parent el may be
         // some el injected by the layout
@@ -69,9 +78,16 @@ Ext.define('Ext.view.DragZone', {
             };
 
         // If there may be ambiguity with touch/swipe to scroll and a drag gesture
-        // *also* trigger drag start on longpress
-        if (Ext.supports.touchScroll) {
-            eventSpec['itemlongpress'] = me.onItemMouseDown;
+        // trigger drag start on longpress and a *real* mousedown.
+        if (Ext.supports.Touch) {
+            eventSpec.itemlongpress = me.onItemLongPress;
+
+            // Longpress fires contextmenu in some touch platforms, so if we are using longpress
+            // inhibit the contextmenu on this element
+            eventSpec.contextmenu = {
+                element: 'el',
+                fn: me.onViewContextMenu
+            };
         }
         me.initTarget(id, sGroup, config);
         me.view.mon(me.view, eventSpec);
@@ -80,14 +96,40 @@ Ext.define('Ext.view.DragZone', {
 <span id='Ext-view-DragZone-method-onValidDrop'>    onValidDrop: function(target, e, id) {
 </span>        this.callParent([target, e, id]);
         // focus the view that the node was dropped onto so that keynav will be enabled.
-        target.el.focus();
+        if (!target.el.contains(Ext.Element.getActiveElement())) {
+            target.el.focus();
+        }
+    },
+
+<span id='Ext-view-DragZone-method-onViewContextMenu'>    onViewContextMenu: function(e) {
+</span>        if (e.pointerType !== 'mouse') {
+            e.preventDefault();
+        }
     },
 
 <span id='Ext-view-DragZone-method-onItemMouseDown'>    onItemMouseDown: function(view, record, item, index, e) {
+</span>        // Ignore touchstart.
+        // For touch events, we use longpress.
+        if (e.pointerType === 'mouse') {
+            this.onTriggerGesture(view, record, item, index, e);
+        }
+    },
+
+<span id='Ext-view-DragZone-method-onItemLongPress'>    onItemLongPress: function(view, record, item, index, e) {
+</span>        // Ignore long mousedowns.
+        // The initial mousedown started the drag.
+        // For touch events, we use longpress.
+        if (e.pointerType !== 'mouse') {
+            this.onTriggerGesture(view, record, item, index, e);
+        }
+    },
+
+<span id='Ext-view-DragZone-method-onTriggerGesture'>    onTriggerGesture: function(view, record, item, index, e) {
 </span>        var navModel;
 
-        // Only respond to longpress for touch dragging
-        if (e.pointerType === 'touch' &amp;&amp; e.type !== 'longpress') {
+        // Only respond to longpress for touch dragging.
+        // Reject drag start if mousedown is on the actionable cell of a grid view
+        if ((e.pointerType === 'touch' &amp;&amp; e.type !== 'longpress') || (e.position &amp;&amp; e.position.isEqual(e.view.actionPosition))) {
             return;
         }
 
@@ -122,7 +164,7 @@ Ext.define('Ext.view.DragZone', {
      * @param {Number} index The row number mousedowned upon.
      */
     isPreventDrag: function(e, record, item, index) {
-        return false;
+        return !!e.isInputFieldEvent;
     },
 
 <span id='Ext-view-DragZone-method-getDragData'>    getDragData: function(e) {

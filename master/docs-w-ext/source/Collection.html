@@ -94,10 +94,20 @@ Ext.define('Ext.util.Collection', {
     config: {
 <span id='Ext-util-Collection-cfg-autoFilter'>        autoFilter: true,
 </span>
-<span id='Ext-util-Collection-cfg-autoSort'>        autoSort: true,
-</span>
+<span id='Ext-util-Collection-cfg-autoSort'>        /**
+</span>         * @cfg {Boolean} [autoSort=true] `true` to maintain sorted order when items
+         * are added regardless of requested insertion point, or when an item mutation
+         * results in a new sort position.
+         *
+         * This does not affect a filtered Collection's reaction to mutations of the source
+         * Collection. If sorters are present when the source Collection is mutated, this Collection's
+         * sort order will always be maintained.
+         * @private
+         */
+        autoSort: true,
+
 <span id='Ext-util-Collection-cfg-autoGroup'>        /**
-</span>         * @cfg {Boolean} autoGroup `true` to sort by the grouper
+</span>         * @cfg {Boolean} [autoGroup=true] `true` to sort by the grouper
          * @private
          */
         autoGroup: true,
@@ -111,7 +121,7 @@ Ext.define('Ext.util.Collection', {
 
 <span id='Ext-util-Collection-cfg-extraKeys'>        /**
 </span>         * @cfg {Object} extraKeys
-         * One or more `Ext.util.CollectionKey' configuration objects or key properties.
+         * One or more `Ext.util.CollectionKey` configuration objects or key properties.
          * Each property of the given object is the name of the `CollectionKey` instance
          * that is stored on this collection. The value of each property configures the
          * `CollectionKey` instance.
@@ -182,7 +192,7 @@ Ext.define('Ext.util.Collection', {
          *      var filters = collection.getFilters(); // an Ext.util.FilterCollection
          *
          *      function legalAge (item) {
-         *          return item.age &gt;= 21;;
+         *          return item.age &gt;= 21;
          *      }
          *
          *      filters.add(legalAge);
@@ -365,6 +375,12 @@ Ext.define('Ext.util.Collection', {
      * to user code - data must already be filtered/sorted when the user's handler runs
      */
     $endUpdatePriority: 1001,
+
+<span id='Ext-util-Collection-property-manageSorters'>    /**
+</span>     * @private
+     * `true` to destroy the sorter collection on destroy.
+     */
+    manageSorters: true,
 
 <span id='Ext-util-Collection-event-add'>    /**
 </span>     * @event add
@@ -673,8 +689,13 @@ Ext.define('Ext.util.Collection', {
         }
 
         if (sorters) {
-            sorters.destroy();
-            me._sorters = null;
+            // Set to false here so updateSorters doesn't trigger
+            // the template methods
+            me.grouped = me.sorted = false;
+            me.setSorters(null);
+            if (me.manageSorters) {
+                sorters.destroy();
+            }
         }
 
         if (groups) {
@@ -720,9 +741,7 @@ Ext.define('Ext.util.Collection', {
             ret = items;
 
         if (items.length) {
-            me.requestedIndex = me.length;
             me.splice(me.length, 0, items);
-            delete me.requestedIndex;
             ret = (items.length === 1) ? items[0] : items;
         }
 
@@ -1590,9 +1609,7 @@ Ext.define('Ext.util.Collection', {
             ret = items;
 
         if (items.length) {
-            me.requestedIndex = index;
             me.splice(index, 0, items);
-            delete me.requestedIndex;
             ret = (items.length === 1) ? items[0] : items;
         }
 
@@ -1907,7 +1924,7 @@ Ext.define('Ext.util.Collection', {
             newKeys = null,
             source = me.getSource(),
             chunk, chunkItems, chunks, i, item, itemIndex, k, key, keys, n, duplicates,
-            sorters, end;
+            sorters;
 
         if (source &amp;&amp; !source.updating) {
             // Modifying the content of a child collection has to be translated into a
@@ -1930,7 +1947,10 @@ Ext.define('Ext.util.Collection', {
                 i = source.length;
             }
 
+            // When we react to the source add in onCollectionAdd, we must honour this requested index.
+            me.requestedIndex = index;
             source.splice(i, removeItems, newItems);
+            delete me.requestedIndex;
             return me;
         }
 
@@ -2073,7 +2093,7 @@ Ext.define('Ext.util.Collection', {
                 chunkItems.push(removeMap[key] = item);
                 keys.push(key);
 
-                if (itemIndex &lt; insertAt) {
+                if (itemIndex &lt; insertAt - 1) {
                     // If the removal is ahead of the insertion point specified, we need
                     // to move the insertAt backwards.
                     //
@@ -2162,7 +2182,7 @@ Ext.define('Ext.util.Collection', {
                     } else {
                         // If we are adding one item we can position it properly now and
                         // avoid a full sort.
-                        insertAt = sorters.findInsertionIndex(adds.items[0], items, me.getSortFn());
+                        insertAt = sorters.findInsertionIndex(adds.items[0], items, me.getSortFn(), index);
                     }
                 }
 
@@ -2376,7 +2396,9 @@ Ext.define('Ext.util.Collection', {
                     ++index;
                 }
             } else {
-                // If there was no atItem, must be at the front of the collection
+                // If there was no atItem, must be at the front of the collection.
+                // atItem is the item after which the upstream Collection inserted
+                // the new item(s) if null, it means at start.
                 index = 0;
             }
         }
@@ -2869,6 +2891,11 @@ Ext.define('Ext.util.Collection', {
         }
         //&lt;/debug&gt;
 
+        // if we're in the middle of notifying, we need to clone the observers
+        if (me.notifying) {
+            me.observers = observers = observers.slice(0);
+        }
+
         observers.push(observer);
 
         if (observers.length &gt; 1) {
@@ -3032,6 +3059,7 @@ Ext.define('Ext.util.Collection', {
         args = args || [];
 
         if (observers &amp;&amp; methodName) {
+            me.notifying = true;
             for (index = 0, length = observers.length; index &lt; length; ++index) {
                 method = (observer = observers[index])[methodName];
                 if (method) {
@@ -3041,6 +3069,7 @@ Ext.define('Ext.util.Collection', {
                     method.apply(observer, args);
                 }
             }
+            me.notifying = false;
         }
         
         // During construction, no need to fire an event here
@@ -3118,7 +3147,7 @@ Ext.define('Ext.util.Collection', {
             // In this method, we have changed the filter but since we don't start with
             // any and we create the source collection as needed that means we are getting
             // our first filter.
-            extraKeys = me.getExtraKeys()
+            extraKeys = me.getExtraKeys();
             if (extraKeys) {
                 newKeys = {};
                 for (key in extraKeys) {
@@ -3148,7 +3177,7 @@ Ext.define('Ext.util.Collection', {
 </span>    // Private
 
     applyFilters: function (filters, collection) {
-        if (filters == null || (filters &amp;&amp; filters.isFilterCollection)) {
+        if (!filters || filters.isFilterCollection) {
             return filters;
         }
 
@@ -3354,22 +3383,31 @@ Ext.define('Ext.util.Collection', {
         return this.sortItems(sortFn);
     },
 
-<span id='Ext-util-Collection-method-findInsertionIndex'>    //-------------------------------------------------------------------------
-</span>    // Private
-    // Can be called to find the insertion index of a passed object in this collection.
-    // Or can be passed an items array to search in, and may be passed a comparator
-    findInsertionIndex: function(item, items, comparatorFn) {
-        if (!items) {
-            items = this.items;
+<span id='Ext-util-Collection-method-findInsertionIndex'>    /*
+</span>     * @private
+     * Can be called to find the insertion index of a passed object in this collection.
+     * Or can be passed an items array to search in, and may be passed a comparator
+     */
+    findInsertionIndex: function(item, items, comparatorFn, index) {
+        var beforeCheck, afterCheck, len;
+        
+        items = items || this.items;
+        comparatorFn = comparatorFn || this.getSortFn();
+        len = items.length;
+        
+        if (index &lt; len) {
+            beforeCheck = index &gt; 0 ? comparatorFn(items[index - 1], item) : 0;
+            afterCheck = index &lt; len - 1 ? comparatorFn(item, items[index]) : 0;
+            if (beforeCheck &lt; 1 &amp;&amp; afterCheck &lt; 1) {
+                return index;
+            }
         }
-        if (!comparatorFn) {
-            comparatorFn = this.getSortFn();
-        }
+        
         return Ext.Array.binarySearch(items, item, comparatorFn);
     },
 
 <span id='Ext-util-Collection-method-applySorters'>    applySorters: function (sorters, collection) {
-</span>        if (sorters == null || (sorters &amp;&amp; sorters.isSorterCollection)) {
+</span>        if (!sorters || sorters.isSorterCollection) {
             return sorters;
         }
 
@@ -3444,7 +3482,7 @@ Ext.define('Ext.util.Collection', {
 <span id='Ext-util-Collection-method-updateSorters'>    updateSorters: function (newSorters, oldSorters) {
 </span>        var me = this;
 
-        if (oldSorters) {
+        if (oldSorters &amp;&amp; !oldSorters.destroyed) {
             // Do not disconnect from owning Filterable because
             // default options (eg _rootProperty) are read from there.
             // SorterCollections are detached from the Collection when the owning Store is remoteSort: true
@@ -3651,8 +3689,12 @@ Ext.define('Ext.util.Collection', {
 
 <span id='Ext-util-Collection-method-updateSource'>    updateSource: function (newSource, oldSource) {
 </span>        var auto = this.autoSource;
+        
         if (oldSource) {
-            oldSource.removeObserver(this);
+            if (!oldSource.destroyed) {
+                oldSource.removeObserver(this);
+            }
+            
             if (oldSource === auto) {
                 auto.destroy();
                 this.autoSource = null;
@@ -3694,6 +3736,7 @@ function () {
         };
     });
 });
+
 </pre>
 </body>
 </html>

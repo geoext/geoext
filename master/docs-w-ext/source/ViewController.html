@@ -17,7 +17,7 @@
 <body onload="prettyPrint(); highlight();">
   <pre class="prettyprint lang-js"><span id='Ext-app-ViewController'>/**
 </span> * A view controller is a controller that can be attached to a specific view
- * instance so it can manage the view and it's child components. Each instance of the view
+ * instance so it can manage the view and its child components. Each instance of the view
  * will have a new view controller, so the instances are isolated.
  * 
  * When a controller is specified on a view, the view automatically becomes a {@link Ext.container.Container#referenceHolder},
@@ -132,6 +132,7 @@
  */
 Ext.define('Ext.app.ViewController', {
     extend: 'Ext.app.BaseController',
+    alias: 'controller.controller',
     
     requires: [
         'Ext.app.domain.View'
@@ -151,13 +152,17 @@ Ext.define('Ext.app.ViewController', {
 <span id='Ext-app-ViewController-cfg-closeViewAction'>        closeViewAction: 'destroy'
 </span>    },
 
+<span id='Ext-app-ViewController-property-view'>    view: null,
+</span>
 <span id='Ext-app-ViewController-method-constructor'>    constructor: function() {
 </span>        this.compDomain = new Ext.app.domain.View(this);
         this.callParent(arguments);
     },
 
 <span id='Ext-app-ViewController-method-beforeInit'>    /**
-</span>     * Called before the view initializes. This is called before the view's
+</span>     * @method
+     *
+     * Called before the view initializes. This is called before the view's
      * initComponent method has been called.
      * @param {Ext.Component} view The view
      * @protected
@@ -165,7 +170,9 @@ Ext.define('Ext.app.ViewController', {
     beforeInit: Ext.emptyFn,
 
 <span id='Ext-app-ViewController-method-init'>    /**
-</span>     * Called when the view initializes. This is called after the view's initComponent
+</span>     * @method
+     *
+     * Called when the view initializes. This is called after the view's initComponent
      * method has been called.
      * @param {Ext.Component} view The view
      * @protected
@@ -173,7 +180,9 @@ Ext.define('Ext.app.ViewController', {
     init: Ext.emptyFn,
 
 <span id='Ext-app-ViewController-method-initViewModel'>    /**
-</span>     * Called when the view model instance for an attached view is first created.
+</span>     * @method
+     *
+     * Called when the view model instance for an attached view is first created.
      * @param {Ext.app.ViewModel} viewModel The ViewModel
      * @protected
      */
@@ -231,12 +240,20 @@ Ext.define('Ext.app.ViewController', {
         this.callParent([to, controller]);
     },
 
+<span id='Ext-app-ViewController-method-applyId'>    applyId: function(id) {
+</span>        if (!id) {
+            id = Ext.id(null, 'controller-');
+        }
+        return id;
+    },
+
 <span id='Ext-app-ViewController-method-getReferences'>    /**
 </span>     * @inheritdoc Ext.container.Container#getReferences
      * @since 5.0.0
      */
     getReferences: function () {
-        return this.view.getReferences();
+        var view = this.view;
+        return view &amp;&amp; view.getReferences();
     },
 
 <span id='Ext-app-ViewController-method-getView'>    /**
@@ -246,19 +263,34 @@ Ext.define('Ext.app.ViewController', {
     getView: function() {
         return this.view;
     },
-    
-<span id='Ext-app-ViewController-method-lookupReference'>    /**
-</span>     * Get a reference to a component set with the {@link Ext.Component#reference}
-     * configuration.
-     * @param {String} key The key for the reference
-     * 
-     * @return {Ext.Component} The component, `null` if the reference doesn't exist.
+
+<span id='Ext-app-ViewController-method-lookup'>    /**
+</span>     * Gets a reference to the component with the specified {@link Ext.Component#reference}
+     * value.
      *
+     * The method is a short-hand for the {@link #lookupReference} method.
+     *
+     * @param {String} key The name of the reference to lookup.
+     * @return {Ext.Component} The component, `null` if the reference doesn't exist.
+     * @since 6.0.1
+     */
+    lookup: function (key) {
+        var view = this.view;
+        return view &amp;&amp; view.lookup(key);
+    },
+
+<span id='Ext-app-ViewController-method-lookupReference'>    /**
+</span>     * Gets a reference to the component with the specified {@link Ext.Component#reference}
+     * value.
+     *
+     * The {@link #lookup} method is a short-hand version of this method.
+     *
+     * @param {String} key The name of the reference to lookup.
+     * @return {Ext.Component} The component, `null` if the reference doesn't exist.
      * @since 5.0.0
      */
     lookupReference: function (key) {
-        var view = this.view;
-        return view &amp;&amp; view.lookupReference(key);
+        return this.lookup(key);
     },
 
 <span id='Ext-app-ViewController-method-getSession'>    /**
@@ -329,13 +361,6 @@ Ext.define('Ext.app.ViewController', {
 <span id='Ext-app-ViewController-property-privates'>    //=========================================================================
 </span>    privates: {
         view: null,
-
-        ensureId: function() {
-            var id = this.getId();
-            if (!id) {
-                this.setId(Ext.id(null, 'controller-'));
-            }
-        },
 
 <span id='Ext-app-ViewController-method-attachReference'>        /**
 </span>         * Set a reference to a component.

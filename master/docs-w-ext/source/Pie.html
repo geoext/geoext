@@ -47,15 +47,16 @@ Ext.define('Ext.sparkline.Pie', {
 <span id='Ext-sparkline-Pie-cfg-borderColor'>        /**
 </span>         * @cfg {String} [borderColor=#000] Border color of line round slices.
          */
-        borderColor: '#000',
-        
-<span id='Ext-sparkline-Pie-cfg-tipTpl'>        tipTpl: new Ext.XTemplate('&amp;#9679; {value} ({percent:number(&quot;0.0&quot;)}%)')
-</span>    },
+        borderColor: '#000'
+    },
 
+<span id='Ext-sparkline-Pie-cfg-tipTpl'>    tipTpl: '&amp;#9679; {value} ({percent:number(&quot;0.0&quot;)}%)',
+</span>
 <span id='Ext-sparkline-Pie-method-applyValues'>    // Ensure values is an array of numbers
 </span>    applyValues: function(newValues) {
         newValues = Ext.Array.map(Ext.Array.from(newValues), Number);
         this.disabled = !(newValues &amp;&amp; newValues.length);
+        this.applyConfigChange();
         return newValues;
     },
 

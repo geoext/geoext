@@ -77,7 +77,7 @@ Ext.define('Ext.button.Cycle', {
      * callback is not supplied, the SplitButton will instead fire the {@link #change} event on active item change. The
      * changeHandler function will be called with the following argument list: (SplitButton this, Ext.menu.CheckItem
      * item)
-     * @declarativeHandler
+     * @controllable
      */
 <span id='Ext-button-Cycle-cfg-forceIcon'>    /**
 </span>     * @cfg {String} forceIcon
@@ -171,27 +171,21 @@ Ext.define('Ext.button.Cycle', {
 </span>     * @private
      */
     initComponent: function() {
+        var me = this,
+            checked = 0,
+            items, i, iLen, item;
+
         //&lt;debug&gt;
         // Ext JS Cycle buttons are implemented in a way that clashes with WAI-ARIA requirements,
         // so we warn the developer about that.
-        // Don't warn if we're under the slicer though.
-        if (Ext.enableAriaButtons &amp;&amp; !Ext.slicer) {
-            // Hard error if full ARIA compatibility is enabled, otherwise a warning
-            var logFn = Ext.enableAria ? Ext.log.error : Ext.log.warn;
-            
-            logFn(
-                &quot;Using Cycle buttons is not recommended in WAI-ARIA &quot; +
-                &quot;compliant applications, because their behavior conflicts &quot; +
-                &quot;with accessibility best practices. See WAI-ARIA 1.0 &quot; +
-                &quot;Authoring guide: http://www.w3.org/TR/wai-aria-practices/#menubutton&quot;
-            );
-        }
+        Ext.ariaWarn(me,
+            &quot;Using Cycle buttons is not recommended in accessible &quot; +
+            &quot;applications, because their behavior conflicts &quot; +
+            &quot;with accessibility best practices. See WAI-ARIA 1.0 &quot; +
+            &quot;Authoring guide: http://www.w3.org/TR/wai-aria-practices/#menubutton&quot;
+        );
         //&lt;/debug&gt;
-        var me      = this,
-            checked = 0,
-            items,
-            i, iLen, item;
-
+        
         // Allow them to specify a menu config which is a standard Button config.
         // Remove direct use of &quot;items&quot; in 5.0.
         items = (me.menu.items || []).concat(me.items || []);
@@ -249,6 +243,7 @@ Ext.define('Ext.button.Cycle', {
         checkItem = me.activeItem.next(':not([disabled])') || m.items.getAt(0);
         checkItem.setChecked(true);
     }
-});</pre>
+});
+</pre>
 </body>
 </html>

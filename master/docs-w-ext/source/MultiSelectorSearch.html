@@ -83,11 +83,31 @@ Ext.define('Ext.view.MultiSelectorSearch', {
 <span id='Ext-view-MultiSelectorSearch-cfg-layout'>    layout: 'fit',
 </span>
 <span id='Ext-view-MultiSelectorSearch-property-floating'>    floating: true,
-</span><span id='Ext-view-MultiSelectorSearch-cfg-resizable'>    resizable: true,
+</span><span id='Ext-view-MultiSelectorSearch-cfg-alignOnScroll'>    alignOnScroll: false,
 </span><span id='Ext-view-MultiSelectorSearch-cfg-minWidth'>    minWidth: 200,
 </span><span id='Ext-view-MultiSelectorSearch-cfg-minHeight'>    minHeight: 200,
 </span><span id='Ext-view-MultiSelectorSearch-cfg-border'>    border: true,
-</span>
+</span><span id='Ext-view-MultiSelectorSearch-cfg-keyMap'>    keyMap: {
+</span>        scope: 'this',
+        ESC: 'hide'
+    },
+
+<span id='Ext-view-MultiSelectorSearch-property-platformConfig'>    platformConfig: {
+</span>        desktop: {
+            resizable: true
+        },
+        'tablet &amp;&amp; rtl': {
+            resizable: {
+                handles: 'sw'
+            }
+        },
+        'tablet &amp;&amp; !rtl': {
+            resizable: {
+                handles: 'se'
+            }
+        }
+    },
+
 <span id='Ext-view-MultiSelectorSearch-cfg-defaultListenerScope'>    defaultListenerScope: true,
 </span><span id='Ext-view-MultiSelectorSearch-cfg-referenceHolder'>    referenceHolder: true,
 </span>
@@ -159,19 +179,8 @@ Ext.define('Ext.view.MultiSelectorSearch', {
             // The newly loaded records will NOT match any in the ownerStore.
             // So we must match them by ID in order to select the same dataset.
             store.on('load', function() {
-                var len = records.length,
-                    i,
-                    record,
-                    toSelect = [];
-
                 if (!me.destroyed) {
-                    for (i = 0; i &lt; len; i++) {
-                        record = store.getById(records[i].getId());
-                        if (record) {
-                            toSelect.push(record);
-                        }
-                    }
-                    me.selectRecords(toSelect);
+                    me.selectRecords(records);
                 }
             }, null, {single: true});
         } else {
@@ -184,13 +193,16 @@ Ext.define('Ext.view.MultiSelectorSearch', {
     },
 
 <span id='Ext-view-MultiSelectorSearch-method-afterShow'>    afterShow: function () {
-</span>        var searchField = this.lookupReference('searchField');
+</span>        this.callParent(arguments);
 
-        this.callParent(arguments);
-
-        if (searchField) {
-            searchField.focus();
+        // Do not focus if this was invoked by a touch gesture
+        if (!this.invocationEvent || this.invocationEvent.pointerType !== 'touch') {
+            var searchField = this.lookupReference('searchField');
+            if (searchField) {
+                searchField.focus();
+            }
         }
+        this.invocationEvent = null;
     },
 
 <span id='Ext-view-MultiSelectorSearch-method-getSearchStore'>    /**
@@ -220,10 +232,20 @@ Ext.define('Ext.view.MultiSelectorSearch', {
                 }
             },
             listeners: {
-                change: 'onSearchChange',
-                buffer: 300
+                specialKey: 'onSpecialKey',
+                change: {
+                    fn: 'onSearchChange',
+                    buffer: 300
+                }
             }
         }];
+    },
+
+<span id='Ext-view-MultiSelectorSearch-method-onSpecialKey'>    onSpecialKey: function(field, event) {
+</span>        if (event.getKey() === event.TAB &amp;&amp; event.shiftKey) {
+            event.preventDefault();
+            this.owner.searchTool.focus();
+        };
     },
 
 <span id='Ext-view-MultiSelectorSearch-method-makeItems'>    makeItems: function () {
@@ -239,13 +261,38 @@ Ext.define('Ext.view.MultiSelectorSearch', {
         }];
     },
 
+<span id='Ext-view-MultiSelectorSearch-method-getMatchingRecords'>    getMatchingRecords: function (records) {
+</span>        var searchGrid = this.lookupReference('searchGrid'),
+            store = searchGrid.getStore(),
+            selections = [],
+            i, record, len;
+
+        records = Ext.isArray(records) ? records : [records];
+
+        for (i = 0, len = records.length; i &lt; len; i++) {
+            record = store.getById(records[i].getId());
+
+            if (record) {
+                selections.push(record);
+            }
+        }
+
+        return selections;
+    },
+
 <span id='Ext-view-MultiSelectorSearch-method-selectRecords'>    selectRecords: function (records) {
 </span>        var searchGrid = this.lookupReference('searchGrid');
+        // match up passed records to the records in the search store so that the right internal ids are used
+        records = this.getMatchingRecords(records);
+        
         return searchGrid.getSelectionModel().select(records);
     },
 
 <span id='Ext-view-MultiSelectorSearch-method-deselectRecords'>    deselectRecords: function(records) {
 </span>        var searchGrid = this.lookupReference('searchGrid');
+        // match up passed records to the records in the search store so that the right internal ids are used
+        records = this.getMatchingRecords(records);
+
         return searchGrid.getSelectionModel().deselect(records);
     },
 

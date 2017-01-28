@@ -135,12 +135,9 @@ Ext.define('Ext.menu.Separator', {
     
 <span id='Ext-menu-Separator-property-ariaRole'>    ariaRole: 'separator',
 </span>
-<span id='Ext-menu-Separator-method-beforeRender'>    beforeRender: function(ct, pos) {
-</span>        var me = this;
-
-        me.callParent();
-
-        me.addCls(me.separatorCls);
+<span id='Ext-menu-Separator-method-beforeRender'>    beforeRender: function() {
+</span>        this.addCls(this.separatorCls);
+        this.callParent();
     }
 });</pre>
 </body>

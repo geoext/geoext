@@ -35,6 +35,9 @@ Ext.Number = (new function() { // jshint ignore:line
         };
 
     Ext.apply(ExtNumber, {
+        MIN_SAFE_INTEGER: Number.MIN_SAFE_INTEGER || -(math.pow(2, 53) - 1),
+        MAX_SAFE_INTEGER: Number.MAX_SAFE_INTEGER || math.pow(2, 53) - 1,
+
         Clip: {
             DEFAULT: ClipDefault,
 
@@ -253,14 +256,28 @@ Ext.Number = (new function() { // jshint ignore:line
             return value;
         },
 
+<span id='Ext-Number-method-roundToNearest'>        /**
+</span>         * Round a number to the nearest interval.
+         * @param {Number} value The value to round.
+         * @param {Number} interval The interval to round to.
+         * @return {Number} The rounded value.
+         *
+         * @since 6.2.0
+         */
+        roundToNearest: function(value, interval) {
+            interval = interval || 1;
+            return interval * math.round(value / interval);
+        },
+
 <span id='Ext-Number-method-sign'>        /**
 </span>         * Returns the sign of the given number. See also MDN for Math.sign documentation
          * for the standard method this method emulates.
          * @param {Number} x The number.
          * @return {Number} The sign of the number `x`, indicating whether the number is
          * positive (1), negative (-1) or zero (0).
+         * @method sign
          */
-        sign: function (x) {
+        sign: math.sign || function (x) {
             x = +x; // force to a Number
 
             if (x === 0 || isNaN(x)) {
@@ -270,8 +287,49 @@ Ext.Number = (new function() { // jshint ignore:line
             return (x &gt; 0) ? 1 : -1;
         },
 
+<span id='Ext-Number-method-log10'>        /**
+</span>         * Returns the base 10 logarithm of a number.
+         * This will use Math.log10, if available (ES6).
+         * @param {Number} x The number.
+         * @return {Number} Base 10 logarithm of the number 'x'.
+         * @method log10
+         */
+        log10: math.log10 || function (x) {
+            return math.log(x) * math.LOG10E;
+        },
+
+<span id='Ext-Number-method-isEqual'>        /**
+</span>         * Determines if two numbers `n1` and `n2` are equal within a given
+         * margin of precision `epsilon`.
+         * @param {Number} n1 First number.
+         * @param {Number} n2 Second number.
+         * @param {Number} epsilon Margin of precision.
+         * @returns {Boolean} `true`, if numbers are equal. `false` otherwise.
+         */
+        isEqual: function (n1, n2, epsilon) {
+            //&lt;debug&gt;
+            if (!(typeof n1 === 'number' &amp;&amp; typeof n2 === 'number' &amp;&amp; typeof epsilon === 'number')) {
+                Ext.raise(&quot;All parameters should be valid numbers.&quot;);
+            }
+            //&lt;/debug&gt;
+            return math.abs(n1 - n2) &lt; epsilon;
+        },
+
+<span id='Ext-Number-method-isFinite'>        /**
+</span>         * Determines if the value passed is a number and also finite.
+         * This a Polyfill version of Number.isFinite(),differently than 
+         * the isFinite() function, this method doesn't convert the parameter to a number.
+         * @param {Number} value Number to be tested.
+         * @returns {Boolean} `true`, if the parameter is a number and finite, `false` otherwise.
+         * @since 6.2
+         */
+        isFinite: Number.isFinite || function (value) {
+            return typeof value === 'number' &amp;&amp; isFinite(value);
+        },
+
 <span id='Ext-Number-method-toFixed'>        /**
-</span>         * Formats a number using fixed-point notation
+</span>         * @method
+         * Formats a number using fixed-point notation
          * @param {Number} value The number to format
          * @param {Number} precision The number of digits to show after the decimal point
          */
@@ -315,7 +373,7 @@ Ext.Number = (new function() { // jshint ignore:line
 <span id='Ext-Number-method-correctFloat'>        /**
 </span>         * Corrects floating point numbers that overflow to a non-precise
          * value because of their floating nature, for example `0.1 + 0.2`
-         * @param {Number} The number
+         * @param {Number} n The number
          * @return {Number} The correctly rounded number
          */
         correctFloat: function(n) {

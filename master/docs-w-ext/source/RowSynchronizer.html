@@ -74,6 +74,13 @@ Ext.define('Ext.grid.locking.RowSynchronizer', {
         // Compare the growth to both rows and see if this row is lacking.
         otherHeight = other.rowHeight + otherGrowth;
 
+        //&lt;feature legacyBrowser&gt;
+        // IE9 uses content box sizing on table, so height must not include border
+        if (Ext.isIE9 &amp;&amp; me.view.ownerGrid.rowLines) {
+            otherHeight--;
+        }
+        //&lt;/feature&gt;
+
         if (me.rowHeight + growth &lt; otherHeight) {
             Ext.fly(me.rowEl).setHeight(otherHeight);
         }

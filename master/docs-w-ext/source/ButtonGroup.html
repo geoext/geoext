@@ -114,6 +114,7 @@ Ext.define('Ext.container.ButtonGroup', {
 <span id='Ext-container-ButtonGroup-property-noTitleCls'>    noTitleCls: 'notitle',
 </span>    
 <span id='Ext-container-ButtonGroup-property-bodyAriaRole'>    bodyAriaRole: 'toolbar',
+</span><span id='Ext-container-ButtonGroup-property-focusableContainerEl'>    focusableContainerEl: 'body',
 </span>
 <span id='Ext-container-ButtonGroup-method-initComponent'>    initComponent: function() {
 </span>        // Copy the component's columns config to the layout if specified
@@ -198,10 +199,6 @@ Ext.define('Ext.container.ButtonGroup', {
                 c = this.callParent(arguments);
             }
             return c;
-        },
-        
-        getFocusableContainerEl: function() {
-            return this.body;
         }
     }
 

@@ -28,7 +28,7 @@
  * - String:
  *
  *       var t = new Ext.Template(&quot;&lt;div&gt;Hello {0}.&lt;/div&gt;&quot;);
- *       t.{@link #append}('some-element', ['foo']);
+ *       t.append('some-element', ['foo']);
  *
  * - Array:
  *
@@ -39,8 +39,8 @@
  *               '&lt;span class=&quot;{cls}&quot;&gt;{name:trim} {value:ellipsis(10)}&lt;/span&gt;',
  *           '&lt;/div&gt;',
  *       ]);
- *       t.{@link #compile}();
- *       t.{@link #append}('some-element', {id: 'myid', cls: 'myclass', name: 'foo', value: 'bar'});
+ *       t.compile();
+ *       t.append('some-element', {id: 'myid', cls: 'myclass', name: 'foo', value: 'bar'});
  *
  * # Multiple arguments: String, Object, Array, ...
  *
@@ -131,9 +131,6 @@ Ext.define('Ext.Template', {
             buffer.push(html);
         }
 
-<span id='Ext-Template-property-html'>        /**
-</span>         * @private
-         */
         me.html = buffer.join('');
     },
 
@@ -466,6 +463,7 @@ Ext.define('Ext.Template', {
      * @inheritdoc Ext.String#format
      * @member Ext.util.Format
      */
+
 <span id='Ext-String-method-format'>    /**
 </span>     * Allows you to define a tokenized string and pass an arbitrary number of arguments to replace the tokens.  Each
      * token must be unique, and must increment in the format {0}, {1}, etc.  Example usage:

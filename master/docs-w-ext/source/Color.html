@@ -15,258 +15,684 @@
   </script>
 </head>
 <body onload="prettyPrint(); highlight();">
-  <pre class="prettyprint lang-js"><span id='Ext-picker-Color'>/**
-</span> * Color picker provides a simple color palette for choosing colors. The picker can be rendered to any container. The
- * available default to a standard 40-color palette; this can be customized with the {@link #colors} config.
- *
- * Typically you will need to implement a handler function to be notified when the user chooses a color from the picker;
- * you can register the handler using the {@link #event-select} event, or by implementing the {@link #handler} method.
- *
- *     @example
- *     Ext.create('Ext.picker.Color', {
- *         value: '993300',  // initial selected color
- *         renderTo: Ext.getBody(),
- *         listeners: {
- *             select: function(picker, selColor) {
- *                 alert(selColor);
- *             }
- *         }
- *     });
+  <pre class="prettyprint lang-js"><span id='Ext-util-Color'>/**
+</span> * Represents an RGB color and provides helper functions on it e.g. to get
+ * color components in HSL color space.
  */
-Ext.define('Ext.picker.Color', {
-    extend: 'Ext.Component',
-    requires: 'Ext.XTemplate',
-    alias: 'widget.colorpicker',
-    alternateClassName: 'Ext.ColorPalette',
-    
-<span id='Ext-picker-Color-property-focusable'>    focusable: true,
+Ext.define('Ext.util.Color', {
+    alternateClassName: 'Ext.draw.Color',
+    statics: {
+<span id='Ext-util-Color-static-property-colorToHexRe'>        colorToHexRe: /(.*?)rgb\((\d+),\s*(\d+),\s*(\d+)\)/,
+</span><span id='Ext-util-Color-static-property-rgbToHexRe'>        rgbToHexRe: /\s*rgb\((\d+),\s*(\d+),\s*(\d+)\)/,
+</span><span id='Ext-util-Color-static-property-rgbaToHexRe'>        rgbaToHexRe: /\s*rgba\((\d+),\s*(\d+),\s*(\d+),\s*([\.\d]+)\)/,
+</span><span id='Ext-util-Color-static-property-hexRe'>        hexRe: /\s*#([0-9a-fA-F][0-9a-fA-F]?)([0-9a-fA-F][0-9a-fA-F]?)([0-9a-fA-F][0-9a-fA-F]?)\s*/,
 </span>
-<span id='Ext-picker-Color-cfg-componentCls'>    /**
-</span>     * @cfg {String} [componentCls='x-color-picker']
-     * The CSS class to apply to the containing element.
-     */
-    componentCls : Ext.baseCSSPrefix + 'color-picker',
+<span id='Ext-util-Color-static-property-NONE'>        // Note that 'none' ia an invalid color string.
+</span>        // When assigned to the fillStyle/strokeStyle/shadowColor properties
+        // of a Canvas context, those properties won't change their values.
+        NONE: 'none',
+<span id='Ext-util-Color-static-property-RGBA_NONE'>        RGBA_NONE: 'rgba(0, 0, 0, 0)'
+</span>    },
 
-<span id='Ext-picker-Color-cfg-selectedCls'>    /**
-</span>     * @cfg {String} [selectedCls='x-color-picker-selected']
-     * The CSS class to apply to the selected element
+<span id='Ext-util-Color-property-isColor'>    isColor: true,
+</span><span id='Ext-util-Color-cfg-lightnessFactor'>    /**
+</span>     * @cfg {Number} lightnessFactor
+     *
+     * The default factor to compute the lighter or darker color.
      */
-    selectedCls: Ext.baseCSSPrefix + 'color-picker-selected',
+    lightnessFactor: 0.2,
 
-<span id='Ext-picker-Color-cfg-itemCls'>    /**
-</span>     * @cfg {String} itemCls
-     * The CSS class to apply to the color picker's items
+<span id='Ext-util-Color-method-constructor'>    /**
+</span>     * @constructor
+     * @param {Number} red Red component (0..255)
+     * @param {Number} green Green component (0..255)
+     * @param {Number} blue Blue component (0..255)
+     * @param {Number} [alpha=1] (optional) Alpha component (0..1)
      */
-    itemCls: Ext.baseCSSPrefix + 'color-picker-item',
+    constructor: function (red, green, blue, alpha) {
+        this.setRGB(red, green, blue, alpha);
+    },
 
-<span id='Ext-picker-Color-cfg-value'>    /**
-</span>     * @cfg {String} value
-     * The initial color to highlight (should be a valid 6-digit color hex code without the # symbol). Note that the hex
-     * codes are case-sensitive.
+<span id='Ext-util-Color-method-clone'>    clone: function() {
+</span>        var me = this;
+        return new this.self(me.r, me.g, me.b, me.a);
+    },
+
+<span id='Ext-util-Color-method-setRGB'>    setRGB: function (red, green, blue, alpha) {
+</span>        var me = this;
+        me.r = Math.min(255, Math.max(0, red));
+        me.g = Math.min(255, Math.max(0, green));
+        me.b = Math.min(255, Math.max(0, blue));
+        if (alpha === undefined) {
+            me.a = 1;
+        } else {
+            me.a = Math.min(1, Math.max(0, alpha));
+        }
+    },
+
+<span id='Ext-util-Color-method-getBrightness'>    /**
+</span>     * The the brightness of a color as defined by W3C:
+     * https://www.w3.org/TR/AERT#color-contrast
+     * @return {Number} The brightness, between `0` and `100`.
      */
-    value : null,
+    getBrightness: function() {
+        var r = this.r / 255 * 100,
+            g = this.g / 255 * 100,
+            b = this.b / 255 * 100;
 
-<span id='Ext-picker-Color-cfg-clickEvent'>    /**
-</span>     * @cfg {String} clickEvent
-     * The DOM event that will cause a color to be selected. This can be any valid event name (dblclick, contextmenu).
+        return ((r * 299) + (g * 587) + (b * 114)) / 1000;
+    },
+
+<span id='Ext-util-Color-method-getGrayscale'>    /**
+</span>     * Returns the gray value (0 to 255) of the color.
+     *
+     * The gray value is calculated using the formula r*0.3 + g*0.59 + b*0.11.
+     *
+     * @return {Number}
      */
-    clickEvent :'click',
+    getGrayscale: function () {
+        // http://en.wikipedia.org/wiki/Grayscale#Converting_color_to_grayscale
+        return this.r * 0.3 + this.g * 0.59 + this.b * 0.11;
+    },
 
-<span id='Ext-picker-Color-cfg-allowReselect'>    /**
-</span>     * @cfg {Boolean} allowReselect
-     * If set to true then reselecting a color that is already selected fires the {@link #event-select} event
+<span id='Ext-util-Color-method-getHSL'>    /**
+</span>     * Get the equivalent HSL components of the color.
+     * @return {Number[]}
      */
-    allowReselect : false,
+    getHSL: function () {
+        var me = this,
+            r = me.r / 255,
+            g = me.g / 255,
+            b = me.b / 255,
+            max = Math.max(r, g, b),
+            min = Math.min(r, g, b),
+            delta = max - min,
+            h,
+            s = 0,
+            l = 0.5 * (max + min);
 
-<span id='Ext-picker-Color-property-colors'>    /**
-</span>     * @property {String[]} colors
-     * An array of 6-digit color hex code strings (without the # symbol). This array can contain any number of colors,
-     * and each hex code should be unique. The width of the picker is controlled via CSS by adjusting the width property
-     * of the 'x-color-picker' class (or assigning a custom class), so you can balance the number of colors with the
-     * width setting until the box is symmetrical.
-     *
-     * You can override individual colors if needed:
-     *
-     *     var cp = new Ext.picker.Color();
-     *     cp.colors[0] = 'FF0000';  // change the first box to red
-     *
-     * Or you can provide a custom array of your own for complete control:
-     *
-     *     var cp = new Ext.picker.Color();
-     *     cp.colors = ['000000', '993300', '333300'];
+        // min==max means achromatic (hue is undefined)
+        if (min !== max) {
+            s = (l &lt;= 0.5) ? delta / (max + min) : delta / (2 - max - min);
+            if (r === max) {
+                h = 60 * (g - b) / delta;
+            } else if (g === max) {
+                h = 120 + 60 * (b - r) / delta;
+            } else {
+                h = 240 + 60 * (r - g) / delta;
+            }
+            if (h &lt; 0) {
+                h += 360;
+            }
+            if (h &gt;= 360) {
+                h -= 360;
+            }
+        }
+
+        return [h, s, l];
+    },
+
+<span id='Ext-util-Color-method-getHSV'>    /**
+</span>     * Get the equivalent HSV components of the color.
+     * @return {Number[]}
      */
-    colors : [
-        '000000', '993300', '333300', '003300', '003366', '000080', '333399', '333333',
-        '800000', 'FF6600', '808000', '008000', '008080', '0000FF', '666699', '808080',
-        'FF0000', 'FF9900', '99CC00', '339966', '33CCCC', '3366FF', '800080', '969696',
-        'FF00FF', 'FFCC00', 'FFFF00', '00FF00', '00FFFF', '00CCFF', '993366', 'C0C0C0',
-        'FF99CC', 'FFCC99', 'FFFF99', 'CCFFCC', 'CCFFFF', '99CCFF', 'CC99FF', 'FFFFFF'
-    ],
+    getHSV: function() {
+        var me = this,
+            r = me.r / 255,
+            g = me.g / 255,
+            b = me.b / 255,
+            max = Math.max(r, g, b),
+            min = Math.min(r, g, b),
+            C = max - min,
+            h,
+            s = 0,
+            v = max;
 
-<span id='Ext-picker-Color-cfg-handler'>    /**
-</span>     * @cfg {Function/String} handler
-     * A function that will handle the select event of this picker. The handler is passed the following parameters:
+        // min == max means achromatic (hue is undefined)
+        if (min != max) {
+            s = v ? C / v : 0;
+            if (r === max) {
+                h = 60 * (g - b) / C;
+            } else if (g === max) {
+                h = 60 * (b - r) / C + 120;
+            } else {
+                h = 60 * (r - g) / C + 240;
+            }
+            if (h &lt; 0) {
+                h += 360;
+            }
+            if (h &gt;= 360) {
+                h -= 360;
+            }
+        }
+
+        return [h, s, v];
+    },
+
+<span id='Ext-util-Color-method-setHSL'>    /**
+</span>     * Set current color based on the specified HSL values.
      *
-     * - `picker` : ColorPicker
+     * @param {Number} h Hue component [0..360)
+     * @param {Number} s Saturation component [0..1]
+     * @param {Number} l Lightness component [0..1]
+     * @return {Ext.util.Color}
+     */
+    setHSL: function (h, s, l) {
+        var me = this,
+            abs = Math.abs,
+            c, x, m;
+
+        h = (h % 360 + 360 ) % 360;
+        s = s &gt; 1 ? 1 : s &lt; 0 ? 0 : s;
+        l = l &gt; 1 ? 1 : l &lt; 0 ? 0 : l;
+
+        if (s === 0 || h === null) {
+            l *= 255;
+            me.setRGB(l, l, l);
+        } else {
+            // http://en.wikipedia.org/wiki/HSL_and_HSV#From_HSL
+            h /= 60;
+            c = s * (1 - abs(2 * l - 1));  // chroma
+            x = c * (1 - abs(h % 2 - 1));  // second largest component
+            m = l - c / 2;                 // lightness adjustment
+
+            m *= 255;
+            c *= 255;
+            x *= 255;
+
+            switch (Math.floor(h)) {
+                case 0:
+                    me.setRGB(c + m, x + m, m);
+                    break;
+                case 1:
+                    me.setRGB(x + m, c + m, m);
+                    break;
+                case 2:
+                    me.setRGB(m, c + m, x + m);
+                    break;
+                case 3:
+                    me.setRGB(m, x + m, c + m);
+                    break;
+                case 4:
+                    me.setRGB(x + m, m, c + m);
+                    break;
+                case 5:
+                    me.setRGB(c + m, m, x + m);
+                    break;
+            }
+        }
+        return me;
+    },
+
+<span id='Ext-util-Color-method-setHSV'>    /**
+</span>     * Set current color based on the specified HSV values.
      *
-     *   The {@link Ext.picker.Color picker}.
-     *
-     * - `color` : String
-     *
-     *   The 6-digit color hex code (without the # symbol).
+     * @param {Number} h Hue component [0..360)
+     * @param {Number} s Saturation component [0..1]
+     * @param {Number} v Value component [0..1]
+     * @return {Ext.util.Color}
+     */
+    setHSV: function (h, s, v) {
+        var me = this,
+            c, x, m;
+
+        h = (h % 360 + 360 ) % 360;
+        s = s &gt; 1 ? 1 : s &lt; 0 ? 0 : s;
+        v = v &gt; 1 ? 1 : v &lt; 0 ? 0 : v;
+
+        if (s === 0 || h === null) {
+            v *= 255;
+            me.setRGB(v, v, v);
+        } else {
+            // http://en.wikipedia.org/wiki/HSL_and_HSV#From_HSV
+            h /= 60;
+            c = v * s;                          // chroma
+            x = c * (1 - Math.abs(h % 2 - 1));  // second largest component
+            m = v - c;                          // value adjustment
+
+            m *= 255;
+            c *= 255;
+            x *= 255;
+
+            switch (Math.floor(h)) {
+                case 0:
+                    me.setRGB(c + m, x + m, m);
+                    break;
+                case 1:
+                    me.setRGB(x + m, c + m, m);
+                    break;
+                case 2:
+                    me.setRGB(m, c + m, x + m);
+                    break;
+                case 3:
+                    me.setRGB(m, x + m, c + m);
+                    break;
+                case 4:
+                    me.setRGB(x + m, m, c + m);
+                    break;
+                case 5:
+                    me.setRGB(c + m, m, x + m);
+                    break;
+            }
+        }
+        return me;
+    },
+
+<span id='Ext-util-Color-method-createLighter'>    /**
+</span>     * Returns a new color that is lighter than this color in the HSL color space.
+     * @param {Number} [factor=0.2] Lighter factor (0..1).
+     * @return {Ext.util.Color}
+     */
+    createLighter: function (factor) {
+        var color = this.clone();
+        color.lighten(factor);
+        return color;
+    },
+
+<span id='Ext-util-Color-method-lighten'>    /**
+</span>     * Lighten this color in the HSL color space.
+     * @param {Number} [factor=0.2] Lighten factor (0..1).
+     */
+    lighten: function(factor) {
+        if (!factor &amp;&amp; factor !== 0) {
+            factor = this.lightnessFactor;
+        }
+        var hsl = this.getHSL();
+        this.setHSL(hsl[0], hsl[1], Ext.Number.constrain(hsl[2] + factor, 0, 1));
+    },
+
+<span id='Ext-util-Color-method-createDarker'>    /**
+</span>     * Returns a new color that is darker than this color in the HSL color space.
+     * @param {Number} [factor=0.2] Darker factor (0..1).
+     * @return {Ext.util.Color}
+     */
+    createDarker: function (factor) {
+        var color = this.clone();
+        color.darken(factor);
+        return color;
+    },
+
+<span id='Ext-util-Color-method-darken'>    /**
+</span>     * Darken this color in the HSL color space.
+     * @param {Number} [factor=0.2] Darken factor (0..1).
+     */
+    darken: function(factor) {
+        if (!factor &amp;&amp; factor !== 0) {
+            factor = this.lightnessFactor;
+        }
+        return this.lighten(-factor);
+    },
+
+<span id='Ext-util-Color-method-toString'>    /**
+</span>     * toString() returns a color in hex format ('#rrggbb') if the alpha is 1. If the 
+     * alpha is less than one, toString() returns the color in RGBA format ('rgba(255,0,0,0.3)').
      * 
-     * @declarativeHandler
+     * @return {String}
      */
+    toString: function () {
+        var me = this,
+            round = Math.round;
 
-<span id='Ext-picker-Color-cfg-scope'>    /**
-</span>     * @cfg {Object} scope
-     * The scope (`this` reference) in which the `{@link #handler}` function will be called.
+        if (me.a === 1) {
+            var r = round(me.r).toString(16),
+                g = round(me.g).toString(16),
+                b = round(me.b).toString(16);
+            r = (r.length === 1) ? '0' + r : r;
+            g = (g.length === 1) ? '0' + g : g;
+            b = (b.length === 1) ? '0' + b : b;
+            return ['#', r, g, b].join('');
+        } else {
+            return 'rgba(' + [
+                round(me.r),
+                round(me.g),
+                round(me.b),
+                me.a === 0 ? 0 : me.a.toFixed(15)
+            ].join(', ') + ')';
+            // Even though things like 'rgba(0,0,0,0)' will probably get converted to
+            // 'rgba(0, 0, 0, 0)' when assigned to ctx.fillStyle or ctx.strokeStyle,
+            // we can't be sure this is the case for every browser, so for consistency
+            // with the Ext.draw.Color.RGBA_NONE (which is used a lot for checks)
+            // we join using the ', ' and not ',' here.
+        }
+    },
+
+<span id='Ext-util-Color-method-toHex'>    /**
+</span>     * Get this color in hexadecimal format.
+     * @return {String} The color in hexadecimal format.
+     */
+    toHex: function (color) {
+        var r = this.r,
+            g = this.g,
+            b = this.b,
+            rgb = b | (g &lt;&lt; 8) | (r &lt;&lt; 16);
+
+        return '#' + ('000000' + rgb.toString(16)).slice(-6);
+    },
+
+<span id='Ext-util-Color-method-setFromString'>    /**
+</span>     * Parse the string and set the current color.
      *
-     * Defaults to this Color picker instance.
+     * Supported formats: 
+     * 
+     * + '#rrggbb'
+     * + '#rgb', 'rgb(r,g,b)'
+     * + 'rgba(r,g,b,a)'
+     * + supported CSS color names (e.g., 'black', 'white', etc).
+     *
+     * If the string is not recognized, setFromString returns rgba(0,0,0,0).
+     *
+     * @param {String} Color Color as string.
+     * @return this
      */
+    setFromString: function (str) {
+        var values, r, g, b, a = 1,
+            parse = parseInt;
 
-    colorRe: /(?:^|\s)color-(.{6})(?:\s|$)/,
-    
-<span id='Ext-picker-Color-cfg-renderTpl'>    renderTpl: [
-</span>        '&lt;tpl for=&quot;colors&quot;&gt;',
-            '&lt;a href=&quot;#&quot; role=&quot;button&quot; class=&quot;color-{.} {parent.itemCls}&quot; hidefocus=&quot;on&quot;&gt;',
-                '&lt;span class=&quot;{parent.itemCls}-inner&quot; style=&quot;background:#{.}&quot;&gt;&amp;#160;&lt;/span&gt;',
-            '&lt;/a&gt;',
-        '&lt;/tpl&gt;'
-    ],
-
-<span id='Ext-picker-Color-event-select'>    /**
-</span>     * @event select
-     * Fires when a color is selected
-     * @param {Ext.picker.Color} this
-     * @param {String} color The 6-digit color hex code (without the # symbol)
-     */
-
-<span id='Ext-picker-Color-method-initComponent'>    /**
-</span>     * @private
-     */
-    initComponent : function(){
-        var me = this;
-
-        me.callParent(arguments);
-
-        if (me.handler) {
-            me.on('select', me.handler, me.scope, true);
-        }
-    },
-
-
-<span id='Ext-picker-Color-method-initRenderData'>    /**
-</span>     * @private
-     */
-    initRenderData : function(){
-        var me = this;
-        return Ext.apply(me.callParent(), {
-            itemCls: me.itemCls,
-            colors: me.colors
-        });
-    },
-
-<span id='Ext-picker-Color-method-onRender'>    onRender : function(){
-</span>        var me = this,
-            clickEvent = me.clickEvent;
-
-        me.callParent(arguments);
-
-        me.mon(me.el, clickEvent, me.handleClick, me, {delegate: 'a'});
-        // always stop following the anchors
-        if (clickEvent !== 'click'){
-            me.mon(me.el, 'click', Ext.emptyFn, me, {delegate: 'a', stopEvent: true});
-        }
-    },
-
-<span id='Ext-picker-Color-method-afterRender'>    /**
-</span>     * @private
-     */
-    afterRender : function(){
-        var me = this,
-            value;
-
-        me.callParent(arguments);
-        if (me.value) {
-            value = me.value;
-            me.value = null;
-            me.select(value, true);
-        }
-    },
-
-<span id='Ext-picker-Color-method-handleClick'>    /**
-</span>     * @private
-     */
-    handleClick : function(event){
-        var me = this,
-            color;
-
-        event.stopEvent();
-        if (!me.disabled) {
-            color = event.currentTarget.className.match(me.colorRe)[1];
-            me.select(color.toUpperCase());
-        }
-    },
-
-<span id='Ext-picker-Color-method-select'>    /**
-</span>     * Selects the specified color in the picker (fires the {@link #event-select} event)
-     * @param {String} color A valid 6-digit color hex code (# will be stripped if included)
-     * @param {Boolean} [suppressEvent=false] True to stop the select event from firing.
-     */
-    select : function(color, suppressEvent){
-
-        var me = this,
-            selectedCls = me.selectedCls,
-            value = me.value,
-            el, item;
-
-        color = color.replace('#', '');
-        if (!me.rendered) {
-            me.value = color;
-            return;
+        if (str === Ext.util.Color.NONE) {
+            this.r = this.g = this.b = this.a = 0;
+            return this;
         }
 
-
-        if (color !== value || me.allowReselect) {
-            el = me.el;
-
-            if (me.value) {
-                item = el.down('a.color-' + value, true);
-                Ext.fly(item).removeCls(selectedCls);
-            }
-            item = el.down('a.color-' + color, true);
-            Ext.fly(item).addCls(selectedCls);
-            me.value = color;
-            if (suppressEvent !== true) {
-                me.fireEvent('select', me, color);
+        if ((str.length === 4 || str.length === 7) &amp;&amp; str.substr(0, 1) === '#') {
+            values = str.match(Ext.util.Color.hexRe);
+            if (values) {
+                r = parse(values[1], 16) &gt;&gt; 0;
+                g = parse(values[2], 16) &gt;&gt; 0;
+                b = parse(values[3], 16) &gt;&gt; 0;
+                if (str.length === 4) {
+                    r += (r * 16);
+                    g += (g * 16);
+                    b += (b * 16);
+                }
             }
         }
-    },
-    
-<span id='Ext-picker-Color-method-clear'>    /**
-</span>     * Clears any selection and sets the value to `null`.
-     */
-    clear: function(){
-        var me = this,
-            value = me.value,
-            el;
-            
-        if (value &amp;&amp; me.rendered) {
-            el = me.el.down('a.color-' + value, true);
-            Ext.fly(el).removeCls(me.selectedCls);
+        else if ((values = str.match(Ext.util.Color.rgbToHexRe))) {
+            r = +values[1];
+            g = +values[2];
+            b = +values[3];
+        } else if ((values = str.match(Ext.util.Color.rgbaToHexRe))) {
+            r = +values[1];
+            g = +values[2];
+            b = +values[3];
+            a = +values[4];
+        } else {
+            if (Ext.util.Color.ColorList.hasOwnProperty(str.toLowerCase())) {
+                return this.setFromString(Ext.util.Color.ColorList[str.toLowerCase()]);
+            }
         }
-        me.value = null;  
-    },
-
-<span id='Ext-picker-Color-method-getValue'>    /**
-</span>     * Get the currently selected color value.
-     * @return {String} value The selected value. Null if nothing is selected.
-     */
-    getValue: function(){
-        return this.value || null;
+        if (typeof r === 'undefined') {
+            return this;
+        }
+        this.r = r;
+        this.g = g;
+        this.b = b;
+        this.a = a;
+        return this;
     }
-});
-</pre>
+}, function () {
+    var flyColor = new this();
+
+    this.addStatics({
+<span id='Ext-util-Color-static-method-fly'>        /**
+</span>         * Returns a flyweight instance of Ext.util.Color.
+         *
+         * Can be called with either a CSS color string or with separate
+         * arguments for red, green, blue, alpha.
+         *
+         * @param {Number/String} red Red component (0..255) or CSS color string.
+         * @param {Number} [green] Green component (0..255)
+         * @param {Number} [blue] Blue component (0..255)
+         * @param {Number} [alpha=1] Alpha component (0..1)
+         * @return {Ext.util.Color}
+         * @static
+         */
+        fly: function (red, green, blue, alpha) {
+            switch (arguments.length) {
+                case 1:
+                    flyColor.setFromString(red);
+                    break;
+                case 3:
+                case 4:
+                    flyColor.setRGB(red, green, blue, alpha);
+                    break;
+                default:
+                    return null;
+            }
+            return flyColor;
+        },
+
+        ColorList: {
+            aliceblue: '#f0f8ff',
+            antiquewhite: '#faebd7',
+            aqua: '#00ffff',
+            aquamarine: '#7fffd4',
+            azure: '#f0ffff',
+            beige: '#f5f5dc',
+            bisque: '#ffe4c4',
+            black: '#000000',
+            blanchedalmond: '#ffebcd',
+            blue: '#0000ff',
+            blueviolet: '#8a2be2',
+            brown: '#a52a2a',
+            burlywood: '#deb887',
+            cadetblue: '#5f9ea0',
+            chartreuse: '#7fff00',
+            chocolate: '#d2691e',
+            coral: '#ff7f50',
+            cornflowerblue: '#6495ed',
+            cornsilk: '#fff8dc',
+            crimson: '#dc143c',
+            cyan: '#00ffff',
+            darkblue: '#00008b',
+            darkcyan: '#008b8b',
+            darkgoldenrod: '#b8860b',
+            darkgray: '#a9a9a9',
+            darkgreen: '#006400',
+            darkkhaki: '#bdb76b',
+            darkmagenta: '#8b008b',
+            darkolivegreen: '#556b2f',
+            darkorange: '#ff8c00',
+            darkorchid: '#9932cc',
+            darkred: '#8b0000',
+            darksalmon: '#e9967a',
+            darkseagreen: '#8fbc8f',
+            darkslateblue: '#483d8b',
+            darkslategray: '#2f4f4f',
+            darkturquoise: '#00ced1',
+            darkviolet: '#9400d3',
+            deeppink: '#ff1493',
+            deepskyblue: '#00bfff',
+            dimgray: '#696969',
+            dodgerblue: '#1e90ff',
+            firebrick: '#b22222',
+            floralwhite: '#fffaf0',
+            forestgreen: '#228b22',
+            fuchsia: '#ff00ff',
+            gainsboro: '#dcdcdc',
+            ghostwhite: '#f8f8ff',
+            gold: '#ffd700',
+            goldenrod: '#daa520',
+            gray: '#808080',
+            green: '#008000',
+            greenyellow: '#adff2f',
+            honeydew: '#f0fff0',
+            hotpink: '#ff69b4',
+            indianred: '#cd5c5c',
+            indigo: '#4b0082',
+            ivory: '#fffff0',
+            khaki: '#f0e68c',
+            lavender: '#e6e6fa',
+            lavenderblush: '#fff0f5',
+            lawngreen: '#7cfc00',
+            lemonchiffon: '#fffacd',
+            lightblue: '#add8e6',
+            lightcoral: '#f08080',
+            lightcyan: '#e0ffff',
+            lightgoldenrodyellow: '#fafad2',
+            lightgray: '#d3d3d3',
+            lightgrey: '#d3d3d3',
+            lightgreen: '#90ee90',
+            lightpink: '#ffb6c1',
+            lightsalmon: '#ffa07a',
+            lightseagreen: '#20b2aa',
+            lightskyblue: '#87cefa',
+            lightslategray: '#778899',
+            lightsteelblue: '#b0c4de',
+            lightyellow: '#ffffe0',
+            lime: '#00ff00',
+            limegreen: '#32cd32',
+            linen: '#faf0e6',
+            magenta: '#ff00ff',
+            maroon: '#800000',
+            mediumaquamarine: '#66cdaa',
+            mediumblue: '#0000cd',
+            mediumorchid: '#ba55d3',
+            mediumpurple: '#9370d8',
+            mediumseagreen: '#3cb371',
+            mediumslateblue: '#7b68ee',
+            mediumspringgreen: '#00fa9a',
+            mediumturquoise: '#48d1cc',
+            mediumvioletred: '#c71585',
+            midnightblue: '#191970',
+            mintcream: '#f5fffa',
+            mistyrose: '#ffe4e1',
+            moccasin: '#ffe4b5',
+            navajowhite: '#ffdead',
+            navy: '#000080',
+            oldlace: '#fdf5e6',
+            olive: '#808000',
+            olivedrab: '#6b8e23',
+            orange: '#ffa500',
+            orangered: '#ff4500',
+            orchid: '#da70d6',
+            palegoldenrod: '#eee8aa',
+            palegreen: '#98fb98',
+            paleturquoise: '#afeeee',
+            palevioletred: '#d87093',
+            papayawhip: '#ffefd5',
+            peachpuff: '#ffdab9',
+            peru: '#cd853f',
+            pink: '#ffc0cb',
+            plum: '#dda0dd',
+            powderblue: '#b0e0e6',
+            purple: '#800080',
+            red: '#ff0000',
+            rosybrown: '#bc8f8f',
+            royalblue: '#4169e1',
+            saddlebrown: '#8b4513',
+            salmon: '#fa8072',
+            sandybrown: '#f4a460',
+            seagreen: '#2e8b57',
+            seashell: '#fff5ee',
+            sienna: '#a0522d',
+            silver: '#c0c0c0',
+            skyblue: '#87ceeb',
+            slateblue: '#6a5acd',
+            slategray: '#708090',
+            snow: '#fffafa',
+            springgreen: '#00ff7f',
+            steelblue: '#4682b4',
+            tan: '#d2b48c',
+            teal: '#008080',
+            thistle: '#d8bfd8',
+            tomato: '#ff6347',
+            turquoise: '#40e0d0',
+            violet: '#ee82ee',
+            wheat: '#f5deb3',
+            white: '#ffffff',
+            whitesmoke: '#f5f5f5',
+            yellow: '#ffff00',
+            yellowgreen: '#9acd32'
+        },
+
+<span id='Ext-util-Color-static-method-fromHSL'>        /**
+</span>         * Create a new color based on the specified HSL values.
+         *
+         * @param {Number} h Hue component [0..360)
+         * @param {Number} s Saturation component [0..1]
+         * @param {Number} l Lightness component [0..1]
+         * @return {Ext.util.Color}
+         * @static
+         */
+        fromHSL: function (h, s, l) {
+            return (new this(0, 0, 0, 0)).setHSL(h, s, l);
+        },
+
+<span id='Ext-util-Color-static-method-fromHSV'>        /**
+</span>         * Create a new color based on the specified HSV values.
+         *
+         * @param {Number} h Hue component [0..360)
+         * @param {Number} s Saturation component [0..1]
+         * @param {Number} v Value component [0..1]
+         * @return {Ext.util.Color}
+         * @static
+         */
+        fromHSV: function (h, s, v) {
+            return (new this(0, 0, 0, 0)).setHSL(h, s, v);
+        },
+
+<span id='Ext-util-Color-static-method-fromString'>        /**
+</span>         * Parse the string and create a new color.
+         *
+         * Supported formats: 
+         * 
+         * + '#rrggbb'
+         * + '#rgb', 'rgb(r,g,b)'
+         * + 'rgba(r,g,b,a)'
+         * + supported CSS color names (e.g., 'black', 'white', etc).
+         *
+         * If the string is not recognized, fromString returns rgba(0,0,0,0).
+         *
+         * @param {String} color Color as string.
+         * @return {Ext.util.Color}
+         * @static
+         */
+        fromString: function (color) {
+            return (new this(0, 0, 0, 0)).setFromString(color);
+        },
+
+<span id='Ext-util-Color-static-method-create'>        /**
+</span>         * Convenience method for creating a color.
+         *
+         * Can be called with several different combinations of arguments:
+         *
+         *     // Ext.util.Color is returned unchanged.
+         *     Ext.util.Color.create(new Ext.util.color(255, 0, 0, 0));
+         *
+         *     // CSS color string.
+         *     Ext.util.Color.create(&quot;red&quot;);
+         *
+         *     // Array of red, green, blue, alpha
+         *     Ext.util.Color.create([255, 0, 0, 0]);
+         *
+         *     // Separate arguments of red, green, blue, alpha
+         *     Ext.util.Color.create(255, 0, 0, 0);
+         *
+         *     // Returns black when no arguments given.
+         *     Ext.util.Color.create();
+         *
+         * @param {Ext.util.Color/String/Number[]/Number} [red] Red component (0..255),
+         * CSS color string or array of all components.
+         * @param {Number} [green] Green component (0..255)
+         * @param {Number} [blue] Blue component (0..255)
+         * @param {Number} [alpha=1] Alpha component (0..1)
+         * @return {Ext.util.Color}
+         * @static
+         */
+        create: function (arg) {
+            if (arg instanceof this) {
+                return arg;
+            } else if (Ext.isArray(arg)) {
+                return new Ext.util.Color(arg[0], arg[1], arg[2], arg[3]);
+            } else if (Ext.isString(arg)) {
+                return Ext.util.Color.fromString(arg);
+            } else if (arguments.length &gt; 2) {
+                return new Ext.util.Color(arguments[0], arguments[1], arguments[2], arguments[3]);
+            } else {
+                return new Ext.util.Color(0, 0, 0, 0);
+            }
+        }
+    });
+});</pre>
 </body>
 </html>

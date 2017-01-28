@@ -40,6 +40,8 @@ Ext.define('Ext.util.translatable.ScrollParent', {
 
         parent.setScrollLeft(Math.round(-x));
         parent.setScrollTop(Math.round(-y));
+
+        this.callParent([x, y]);
     },
 
 <span id='Ext-util-translatable-ScrollParent-method-getPosition'>    getPosition: function() {

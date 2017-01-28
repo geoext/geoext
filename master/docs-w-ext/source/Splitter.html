@@ -112,6 +112,8 @@ Ext.define('Ext.resizer.Splitter', {
     horizontal: false,
 <span id='Ext-resizer-Splitter-property-vertical'>    vertical: false,
 </span>
+<span id='Ext-resizer-Splitter-cfg-touchAction'>    touchAction: undefined, // so applier/updater always run
+</span>
 <span id='Ext-resizer-Splitter-cfg-size'>    /**
 </span>     * @cfg {Number} size
      * The size of the splitter. This becomes the height for vertical splitters and 
@@ -131,6 +133,14 @@ Ext.define('Ext.resizer.Splitter', {
 </span>    
 <span id='Ext-resizer-Splitter-cfg-tabIndex'>    tabIndex: 0,
 </span>
+<span id='Ext-resizer-Splitter-method-applyTouchAction'>    applyTouchAction: function(touchAction, oldTouchAction) {
+</span>        if (touchAction === undefined) {
+            touchAction = this.vertical ? { panX: false } : { panY: false };
+        }
+
+        return this.callParent([touchAction, oldTouchAction]);
+    },
+
 <span id='Ext-resizer-Splitter-method-getTrackerConfig'>    /**
 </span>     * Returns the config object (with an `xclass` property) for the splitter tracker. This
      * is overridden by {@link Ext.resizer.BorderSplitter BorderSplitter} to create a
@@ -175,7 +185,7 @@ Ext.define('Ext.resizer.Splitter', {
 
 <span id='Ext-resizer-Splitter-method-onRender'>    onRender: function() {
 </span>        var me = this,
-            collapseEl;
+            target, collapseEl;
 
         me.callParent(arguments);
 
@@ -189,14 +199,20 @@ Ext.define('Ext.resizer.Splitter', {
             }
         }
 
-        // Ensure the mini collapse icon is set to the correct direction when the target is collapsed/expanded by any means
-        me.getCollapseTarget().on({
-            collapse: me.onTargetCollapse,
-            expand: me.onTargetExpand,
-            beforeexpand: me.onBeforeTargetExpand,
-            beforecollapse: me.onBeforeTargetCollapse,
-            scope: me
-        });
+        // Ensure the mini collapse icon is set to the correct direction
+        // when the target is collapsed/expanded by any means.
+        // Make sure we're only listening to collapse/expand events on Panels!
+        target = me.getCollapseTarget();
+        
+        if (target &amp;&amp; target.isPanel) {
+            target.on({
+                collapse: me.onTargetCollapse,
+                expand: me.onTargetExpand,
+                beforeexpand: me.onBeforeTargetExpand,
+                beforecollapse: me.onBeforeTargetCollapse,
+                scope: me
+            });
+        }
 
         if (me.canResize) {
             me.tracker = Ext.create(me.getTrackerConfig());
@@ -385,7 +401,7 @@ Ext.define('Ext.resizer.Splitter', {
             }
 
             if (toggle) {
-                if (cmp.collapsed) {
+                if (cmp.collapsed || cmp.floatedFromCollapse) {
                     cmp.expand();
                 } else if (cmp.collapseDirection) {
                     cmp.collapse();
@@ -407,8 +423,9 @@ Ext.define('Ext.resizer.Splitter', {
         }
     },
     
-<span id='Ext-resizer-Splitter-method-beforeDestroy'>    beforeDestroy: function(){
+<span id='Ext-resizer-Splitter-method-doDestroy'>    doDestroy: function() {
 </span>        Ext.destroy(this.tracker);
+        
         this.callParent();
     }
 });

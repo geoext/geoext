@@ -16,7 +16,9 @@
 </head>
 <body onload="prettyPrint(); highlight();">
   <pre class="prettyprint lang-js"><span id='Ext-env-OS'>/**
-</span> * Provides information about operating system environment.
+</span> * @class Ext.env.OS
+ *
+ * Provides information about operating system environment.
  *
  * Should not be manually instantiated unless for unit-testing.
  * Access the global instance stored in {@link Ext.os} instead.
@@ -29,8 +31,8 @@ Ext.env.OS = function(userAgent, platform, browserScope) {
 // @require Ext.env.Browser
 
     var me = this,
-        names = me.names,
-        prefixes = me.prefixes,
+        names = Ext.Boot.osNames,
+        prefixes = Ext.Boot.osPrefixes,
         name,
         version = '',
         is = me.is,
@@ -73,6 +75,13 @@ Ext.env.OS = function(userAgent, platform, browserScope) {
     this.name = name;
     this.version = version;
 
+    // This is added as a workaround for Chrome iPad emulation mode
+    // it will report the platform of the machine (MacIntel, Win32, etc) instead
+    // of an emulated platform
+    if (userAgent.match(/ipad/i)) {
+        platform = 'iPad';
+    }
+
     if (platform) {
         this.setFlag(platform.replace(/ simulator$/i, ''));
     }
@@ -113,34 +122,6 @@ Ext.env.OS = function(userAgent, platform, browserScope) {
 
 Ext.env.OS.prototype = {
     constructor: Ext.env.OS,
-
-    names: {
-        ios: 'iOS',
-        android: 'Android',
-        windowsPhone: 'WindowsPhone',
-        webos: 'webOS',
-        blackberry: 'BlackBerry',
-        rimTablet: 'RIMTablet',
-        mac: 'MacOS',
-        win: 'Windows',
-        tizen: 'Tizen',
-        linux: 'Linux',
-        bada: 'Bada',
-        chrome: 'ChromeOS',
-        other: 'Other'
-    },
-    prefixes: {
-        tizen: '(Tizen )',
-        ios: 'i(?:Pad|Phone|Pod)(?:.*)CPU(?: iPhone)? OS ',
-        android: '(Android |HTC_|Silk/)', // Some HTC devices ship with an OSX userAgent by default,
-                                    // so we need to add a direct check for HTC_
-        windowsPhone: 'Windows Phone ',
-        blackberry: '(?:BlackBerry|BB)(?:.*)Version\/',
-        rimTablet: 'RIM Tablet OS ',
-        webos: '(?:webOS|hpwOS)\/',
-        bada: 'Bada\/',
-        chrome: 'CrOS '
-    },
 
 <span id='Ext-os-method-is'>    /**
 </span>     * A &quot;hybrid&quot; property, can be either accessed as a method call, i.e:

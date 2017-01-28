@@ -50,7 +50,7 @@ Ext.define('Ext.grid.ColumnComponentLayout', {
         if (shrinkWrap) {
             owner.el.setWidth('');
         }
-        owner.textContainerEl[shrinkWrap ? 'addCls' : 'removeCls'](me.columnAutoCls);
+        owner.textContainerEl[shrinkWrap &amp;&amp; !owner.isGroupHeader ? 'addCls' : 'removeCls'](me.columnAutoCls);
         owner.titleEl.setStyle(me._paddingReset);
     },
 
@@ -122,7 +122,7 @@ Ext.define('Ext.grid.ColumnComponentLayout', {
             padWidth = ownerContext.getPaddingInfo().width,
             triggerOffset = this.getTriggerOffset(owner, ownerContext),
             inner;
-            
+
         // Only measure the content if we're not grouped, otherwise
         // the size should be governed by the children
         if (owner.isGroupHeader) {
@@ -135,7 +135,7 @@ Ext.define('Ext.grid.ColumnComponentLayout', {
     
 <span id='Ext-grid-ColumnComponentLayout-method-getTriggerOffset'>    getTriggerOffset: function(owner, ownerContext) {
 </span>        var width = 0;
-        
+
         if (ownerContext.widthModel.shrinkWrap &amp;&amp; !owner.menuDisabled) {
             // If we have any children underneath, then we already have space reserved
             if (owner.query('&gt;:not([hidden])').length === 0) {

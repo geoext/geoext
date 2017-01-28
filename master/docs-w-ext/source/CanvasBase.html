@@ -30,6 +30,7 @@ Ext.define('Ext.sparkline.CanvasBase', {
 </span>
 <span id='Ext-sparkline-CanvasBase-method-constructor'>    constructor: function(ownerSparkLine) {
 </span>        this.owner = ownerSparkLine;
+        this.rtl = this.owner.getInherited().rtl;
     },
 
 <span id='Ext-sparkline-CanvasBase-method-setWidth'>    setWidth: function(width) {

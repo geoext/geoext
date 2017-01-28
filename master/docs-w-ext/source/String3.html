@@ -151,6 +151,20 @@ Ext.define('Ext.grid.filters.filter.String', {
 
 <span id='Ext-grid-filters-filter-String-method-activateMenu'>    activateMenu: function () {
 </span>        this.inputItem.setValue(this.filter.getValue());
+    },
+    
+<span id='Ext-grid-filters-filter-String-method-createFilter'>    createFilter: function(config, key) {
+</span>        var me = this;
+        
+        if (me.filterFn) {
+            return new Ext.util.Filter({
+                filterFn: function(rec) {
+                    return Ext.callback(me.filterFn, me.scope, [rec, me.inputItem.getValue()]);
+                }
+            });
+        } else {
+            return me.callParent([config, key]);
+        }
     }
 });
 </pre>

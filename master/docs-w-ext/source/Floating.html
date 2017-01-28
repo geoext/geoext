@@ -59,6 +59,15 @@ Ext.define('Ext.util.Floating', {
      */
     constrain: false,
 
+<span id='Ext-util-Floating-cfg-alignOnScroll'>    /**
+</span>     * @cfg {Boolean} [alignOnScroll=true]
+     * By default, when the {@link Ext.Component#alignTo alignTo} method is called, a floating component will
+     * scroll to keep aligned with the anchoring element if the anchoring element is part of the scroll.
+     *
+     * If this is not necessary, and the `alignTo` is a one-off operation then set this config to `false`.
+     */
+    alignOnScroll: true,
+
 <span id='Ext-util-Floating-cfg-fixed'>    /**
 </span>     * @cfg {Boolean} [fixed=false]
      * Configure as `true` to have this Component fixed at its `X, Y` coordinates in the browser viewport, immune
@@ -199,22 +208,81 @@ Ext.define('Ext.util.Floating', {
         me.initHierarchyEvents();
     },
 
-<span id='Ext-util-Floating-method-alignTo'>    alignTo: function (element, position, offsets, animate) {
-</span>        var me = this;
+<span id='Ext-util-Floating-method-alignTo'>    alignTo: function (alignTarget, position, offsets, animate, monitorScroll) {
+</span>        var me = this,
+            alignEl,
+            destroyed,
+            dom,
+            myXY,
+            anchorXY,
+            listeners;
 
-        // Since floaters are rendered to the document.body, floaters could become marooned
-        // from its ownerRef if the ownerRef has been rendered into a container that overflows
-        // and then that container is scrolled.
-        if (!me._lastAlignToEl) {
-            Ext.on('scroll', me.onAlignToScroll, me);
+        // Ensure we always have an Ext.Element as our alignEl.
+        // We may be aligned to a Component, an Ext.Element, or an HtmlElement
+        if (alignTarget.isComponent) {
+            alignEl = alignTarget.el;
+            destroyed = alignTarget.destroyed;
+        } else {
+            // Ensure we have an Element
+            alignEl = alignTarget = Ext.get(alignTarget);
+            dom = alignEl.dom;
+            destroyed = !dom || Ext.isGarbage(dom);
         }
+        if (destroyed) {
+            me._lastAlignTarget = null;
+            if (me.alignListeners) {
+                me.alignListeners.destroy();
+            }
+            return;
+        }
+
+        me.mixins.positionable.alignTo.call(me, alignEl, position, offsets, animate, monitorScroll !== false);
+
+        // Work out the vector to maintain our relative position as the alignTarget element moves
+        myXY = me.getXY();
+        anchorXY = alignTarget.getXY();
+        me.alignVector = [myXY[0] - anchorXY[0], myXY[1] - anchorXY[1]];
 
         // Let's stash these on the component/element in case it's aligned to something else
         // in its little lifetime.
-        me._lastAlignToEl = element;
+        me._lastAlignTarget = alignTarget;
         me._lastAlignToPos = position;
+        me._lastAlignToOffsets = offsets;
 
-        me.mixins.positionable.alignTo.call(me, element, position, offsets, animate);
+        // If we are aligned to a Component which is also either floating and aligned, or
+        // *inside* a floating which is aligned, find the topmost, static target which
+        // is anchoring the whole cascade.
+        // For example the column header trigger el at the top of a column menu set.
+        me._topAlignTarget = me.getTopAlignTarget();
+
+        // Initially we have no clipping.
+        me.clearClip();
+
+        // Since floaters May be rendered to the document.body, floaters could become marooned
+        // from its alignTarget if the alignTarget is inside an element that scrolls
+        // and then that element is scrolled.
+        // Only add the listeners once.
+        if (!me.alignListeners) {
+            // Always realign on window resize - the anchor element can move as a result.
+            // Buffer so that we execute after any viewport layout has finished.
+            listeners = {
+                resize: {
+                    fn: me.alignOnResize,
+                    buffer: 100
+                },
+                scope: me,
+                destroyable: true
+            };
+
+            // If we are supposed to align on scroll aligned, then add global scroll listener
+            // so that we can follow the anchor element wherever it scrolls to.
+            // Do not need to do this the floater is rendered inside the element that they are aligned to.
+            // For example CellEditors within grid cells.
+            if (me.alignOnScroll &amp;&amp; !alignEl.contains(me.el)) {
+                listeners.scroll = me.doRealign;
+            }
+            me.alignListeners = Ext.on(listeners);
+        }
     },
 
 <span id='Ext-util-Floating-method-initFloatConstrain'>    initFloatConstrain: function () {
@@ -280,11 +348,11 @@ Ext.define('Ext.util.Floating', {
     onMouseDown: function (e) {
         var me = this,
             focusTask = me.focusTask,
+            owner = me.getRefOwner(),
             
             // Do not autofocus the Component (which delegates onto the getFocusEl() descendant)
             // for touch events.
-            parentEvent = e.parentEvent,
-            preventFocus = parentEvent &amp;&amp; parentEvent.type === 'touchstart',
+            preventFocus = e.pointerType === 'touch',
             target, dom, skipFronting;
 
         if (me.floating &amp;&amp;
@@ -292,6 +360,11 @@ Ext.define('Ext.util.Floating', {
             // that the handler for a mousedown on a child element set the focus on some
             // other component, and we so not want to steal it back. See EXTJSIV-9458
             (!focusTask || !focusTask.id)) {
+
+            // If focus is already within this floating hierarchy, then do not disturb it on mousedown.
+            if (me.owns(Ext.Element.getActiveElement())) {
+                preventFocus = true;
+            }
 
             target = e.target;
             dom = me.el.dom;
@@ -317,6 +390,11 @@ Ext.define('Ext.util.Floating', {
             // preventFocus as true.
             if (!skipFronting) {
                 me.toFront(preventFocus);
+            }
+            // If we have not hit a focusable element, and our owner
+            // contains focus, then prevent the default action of mousedown (focus movement)
+            if (!preventFocus &amp;&amp; owner &amp;&amp; owner.containsFocus) {
+                e.preventDefault();
             }
         }
     },
@@ -412,17 +490,18 @@ Ext.define('Ext.util.Floating', {
     },
 
 <span id='Ext-util-Floating-method-updateActiveCounter'>    updateActiveCounter: function(activeCounter) {
-</span>        var zim = this.zIndexParent;
+</span>        var me = this,
+            zim = me.zIndexParent;
 
         // If we have a zIndexParent, it has to rebase its own zIndices
-        if (zim &amp;&amp; this.bringParentToFront !== false) {
+        if (zim &amp;&amp; zim !== zim.zIndexManager.front &amp;&amp; me.bringParentToFront !== false) {
             zim.setActiveCounter(++Ext.ZIndexManager.activeCounter);
         }
 
         // Rebase the local zIndices
-        zim = this.zIndexManager;
+        zim = me.zIndexManager;
         if (zim) {
-            zim.onComponentUpdate(this);
+            zim.onComponentUpdate(me);
         }
     },
 
@@ -477,7 +556,9 @@ Ext.define('Ext.util.Floating', {
             activeCmp;
 
         if (active) {
-            if (me.el.shadow &amp;&amp; !me.maximized) {
+            // Check the element's visible state. Might be clipped to hide but
+            // be accessible. Do not show a shadow.
+            if (me.el.shadow &amp;&amp; me.el.getData().isVisible !== false &amp;&amp; !me.maximized) {
                 me.el.enableShadow(null, true);
             }
 
@@ -527,14 +608,16 @@ Ext.define('Ext.util.Floating', {
     },
     
 <span id='Ext-util-Floating-method-onFloatShow'>    onFloatShow: function() {
-</span>        if (this.needsCenter) {
-            this.center();    
-        }
-        delete this.needsCenter;
+</span>        var me = this;
 
-        if (this.toFrontOnShow) {
-            this.toFront();
+        if (me.needsCenter) {
+            me.center();    
         }
+        else if (me._lastAlignTarget) {
+            // Anchor to the target. Do not track scroll if we are position:fixed
+            me.alignTo(me._lastAlignTarget, me._lastAlignToPos, me._lastAlignToOffsets, false, !me.fixed);
+        }
+        me.needsCenter = false;
     },
 
 <span id='Ext-util-Floating-method-fitContainer'>    /**
@@ -561,29 +644,115 @@ Ext.define('Ext.util.Floating', {
             this.clearAlignEl();
         },
 
+<span id='Ext-util-Floating-method-getTopAlignTarget'>        /**
+</span>         * Gets the topmost *non floating* alignTo target if there are multiple aligns
+         * such as a menu stack hanging off a button or grid column header.
+         * @return {Ext.Element/Ext.Component} The topmost, *non floating* alignTo target.
+         * @private
+         */
+        getTopAlignTarget: function() {
+            var next = this._lastAlignTarget,
+                result = next;
+
+            // Track up through aligned floaters until we hit a root element or non-floater.
+            while (next &amp;&amp; (result = next) &amp;&amp; next.isComponent) {   
+                // If we hit a floater, try its alignTarget next
+                if (result.isFloating()) {
+                    next = result._lastAlignTarget;
+                }
+                // If a static component, see if it's owned by a floater and try its alignTarget if so.
+                else {
+                    next = result.up('{isFloating()}');
+                    next = next &amp;&amp; next._lastAlignTarget;
+                }
+            }
+            return result;
+        },
+
         clearAlignEl: function() {
             var me = this;
 
-            if (me._lastAlignToEl) {
-                Ext.un('scroll', me.onAlignToScroll, me);
-                me._lastAlignPos = me._lastAlignToEl = null;
+            if (me._lastAlignTarget) {
+                me.alignListeners = Ext.destroy(me.alignListeners);
+                Ext.un('scroll', me.doRealign, me);
+                me._lastAlignToPos = me._lastAlignTarget = me._lastAlignToOffsets = me._topAlignTarget = null;
+            }
+        },
+        
+        alignOnResize: function() {
+            this.doRealign();
+        },
+
+        doRealign: function (scroller) {
+            var me = this,
+                alignEl = me._lastAlignTarget.el,
+                destroyed,
+                dom,
+                anchorXY,
+                myXY;
+
+            // Only react if we are visible.
+            // onFloatShow realigns upon show.
+            if (alignEl &amp;&amp; me.isVisible()) {
+
+                // Ensure we always have an Ext.Element as our alignEl.
+                // We may be aligned to a Component, an Ext.Element, or an raw HtmlElement
+                if (alignEl.isComponent) {
+                    destroyed = alignEl.destroyed;
+                } else {
+                    dom = alignEl.dom;
+                    destroyed = !dom || Ext.isGarbage(dom);
+                }
+
+                // If the Component/Element we were aligning to is destroyed, clear our alignment.
+                if (destroyed) {
+                    me.clearAlignEl();
+                }
+
+                // Realign only if
+                //      the topmost align target is within the scrolling element (it has scrolled with the content)
+                //      AND our element is NOT within the scrolled element (it would move with the scroll)
+                else if (!scroller || (scroller.getElement().contains(me._topAlignTarget.el) &amp;&amp; !scroller.getElement().contains(me.el))) {
+                    anchorXY = alignEl.getXY();
+                    myXY = [anchorXY[0] + me.alignVector[0], anchorXY[1] + me.alignVector[1]];
+                    me.setXY(myXY);
+
+                    // Clip to the boundaries of the scroller which is moving us
+                    if (scroller) {
+                        me.clipToScroller(scroller);
+                    }
+                }
             }
         },
 
-        onAlignToScroll: function (scroller) {
+<span id='Ext-util-Floating-method-clipToScroller'>        /**
+</span>         * Clips this floating element to the scrolling element in line with how
+         * its topmost anchoring element is clipped.
+         * @private
+         */
+        clipToScroller: function(scroller) {
             var me = this,
-                el = me._lastAlignToEl,
-                dom;
+                anchorBox = me._topAlignTarget.getBox(),
+                scrollerBox = scroller.getElement().getConstrainRegion(),
+                sides = 0;
 
-            // Realign only if this element is not contained within the scrolling element.
-            if (el &amp;&amp; !scroller.getElement().contains(me.el)) {
-                dom = el.isElement ? el.dom : el;
-
-                if (dom &amp;&amp; !Ext.isGarbage(dom)) {
-                    me.alignTo(el, me._lastAlignToPos);
-                } else {
-                    me.clearAlignEl();
-                }
+            // Clip this to match the clippig of the anchor target
+            if (anchorBox.top &lt; scrollerBox.top) {
+                sides = 1;
+            }
+            if (anchorBox.right &gt; scrollerBox.right) {
+                sides = sides | 2;
+            }
+            if (anchorBox.bottom &gt; scrollerBox.bottom) {
+                sides = sides | 4;
+            }
+            if (anchorBox.left &lt; scrollerBox.left) {
+                sides = sides | 8;
+            }
+            if (sides) {
+                me.clipTo(scrollerBox, sides);
+            } else {
+                me.clearClip();
             }
         }
     }

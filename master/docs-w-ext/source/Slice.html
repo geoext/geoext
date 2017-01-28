@@ -20,8 +20,6 @@
  * @private
  */
 Ext.define('Ext.data.matrix.Slice', {
-<span id='Ext-data-matrix-Slice-property-stub'>    stub: null,
-</span>
 <span id='Ext-data-matrix-Slice-method-constructor'>    constructor: function (side, id) {
 </span><span id='Ext-data-matrix-Slice-property-id'>        /**
 </span>         * @property {String/Number} id
@@ -56,28 +54,12 @@ Ext.define('Ext.data.matrix.Slice', {
         store.on('load', me.onStoreLoad, me, {single: true});
     },
 
-<span id='Ext-data-matrix-Slice-method-changeId'>    changeId: function (newId) {
-</span>        var me = this,
-            oldId = me.id,
-            side = me.side,
-            slices = side.slices,
-            slice = slices[oldId],
-            members = slice.members,
-            index = side.index,
-            otherSlices = side.inverse.slices,
-            assoc, otherId, otherMembers;
+<span id='Ext-data-matrix-Slice-method-commit'>    commit: function() {
+</span>        var members = this.members,
+            id;
 
-        me.id = newId;
-        slices[newId] = slice;
-        delete slices[oldId];
-
-        for (otherId in members) {
-            assoc = members[otherId];
-            assoc[index] = newId;
-
-            otherMembers = otherSlices[otherId].members;
-            otherMembers[newId] = otherMembers[oldId];
-            delete otherMembers[oldId];
+        for (id in members) {
+            members[id][2] = 0;
         }
     },
 
@@ -150,6 +132,31 @@ Ext.define('Ext.data.matrix.Slice', {
                     otherSlice.notify.call(otherSlice.scope, otherSlice, id, state);
                 }
             }
+        }
+    },
+
+<span id='Ext-data-matrix-Slice-method-updateId'>    updateId: function (newId) {
+</span>        var me = this,
+            oldId = me.id,
+            side = me.side,
+            slices = side.slices,
+            slice = slices[oldId],
+            members = slice.members,
+            index = side.index,
+            otherSlices = side.inverse.slices,
+            assoc, otherId, otherMembers;
+
+        me.id = newId;
+        slices[newId] = slice;
+        delete slices[oldId];
+
+        for (otherId in members) {
+            assoc = members[otherId];
+            assoc[index] = newId;
+
+            otherMembers = otherSlices[otherId].members;
+            otherMembers[newId] = otherMembers[oldId];
+            delete otherMembers[oldId];
         }
     },
 

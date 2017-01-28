@@ -119,11 +119,15 @@ Ext.define('Ext.view.BoundListKeyNav', {
 <span id='Ext-view-BoundListKeyNav-method-onItemMouseDown'>    onItemMouseDown: function(view, record, item, index, event) {
 </span>        this.callParent([view, record, item, index, event]);
         
-        // Stop the mousedown from blurring the input field
-        event.preventDefault();
+        if (event.pointerType === 'mouse') {
+            // Stop the mousedown from blurring the input field
+            // We can't do this for touch events otherwise scrolling
+            // won't work.
+            event.preventDefault();
+        }
     },
 
-<span id='Ext-view-BoundListKeyNav-method-onKeyUp'>    onKeyUp: function() {
+<span id='Ext-view-BoundListKeyNav-method-onKeyUp'>    onKeyUp: function(e) {
 </span>        var me = this,
             boundList = me.view,
             allItems = boundList.all,
@@ -132,6 +136,9 @@ Ext.define('Ext.view.BoundListKeyNav', {
             newItemIdx = oldItemIdx &gt; 0 ? oldItemIdx - 1 : allItems.getCount() - 1; //wraps around
 
         me.setPosition(newItemIdx);
+
+        // Stop this from moving the cursor in the field
+        e.preventDefault();
     },
 
 <span id='Ext-view-BoundListKeyNav-method-onKeyDown'>    onKeyDown: function(e) {
@@ -143,6 +150,9 @@ Ext.define('Ext.view.BoundListKeyNav', {
             newItemIdx = oldItemIdx &lt; allItems.getCount() - 1 ? oldItemIdx + 1 : 0; //wraps around
 
         me.setPosition(newItemIdx);
+
+        // Stop this from moving the cursor in the field
+        e.preventDefault();
     },
 
 <span id='Ext-view-BoundListKeyNav-property-onKeyLeft'>    onKeyLeft: Ext.returnTrue,
@@ -185,7 +195,11 @@ Ext.define('Ext.view.BoundListKeyNav', {
         }
 
         // Stop propagation of the ENTER keydown event so that any Editor which owns the field
-        // does not completeEdit.
+        // does not completeEdit, but we also need to still fire the specialkey event for ENTER, 
+        // so lets add fromBoundList to eOpts, and this will be handled by CellEditor#onSpecialKey.
+        field.fireEvent('specialkey', field, e, {
+            fromBoundList: true
+        });
         return false;
     },
 

@@ -39,7 +39,8 @@ Ext.define('Ext.util.HashMap', {
     ],
 
 <span id='Ext-util-HashMap-property-generation'>    /**
-</span>     * @private Mutation counter which is incremented upon add and remove.
+</span>     * Mutation counter which is incremented upon add and remove.
+     * @readonly
      */
     generation: 0,
     
@@ -249,15 +250,12 @@ Ext.define('Ext.util.HashMap', {
         return map.hasOwnProperty(key) ? map[key] : undefined;
     },
 
-<span id='Ext-util-HashMap-method-clear'>    /**
-</span>     * @method clear
-     * Removes all items from the hash.
-     * @return {Ext.util.HashMap} this
+<span id='global-method-clear'>    /**
+</span>     * @ignore
      */
+    clear: function(initial) {
+        // We use the above syntax because we don't want the initial param to be part of the public API
 
-    // We use this syntax because we don't want the initial param to be part of the public API
-<span id='global-method-clear'>    /** @ignore **/
-</span>    clear: function(/* private */ initial) {
         var me = this;
 
         // Only clear if it has ever had any content
@@ -388,18 +386,12 @@ Ext.define('Ext.util.HashMap', {
             }
         }
         return undefined;
-    },
-
-<span id='Ext-util-HashMap-method-destroy'>    destroy: function() {
-</span>        this.callParent();
-        this.map = null;
-
     }
 }, function(HashMap) {
     var prototype = HashMap.prototype;
 
 <span id='Ext-util-HashMap-method-removeByKey'>    /**
-</span>     * @method
+</span>     * @method removeByKey
      * An alias for {@link #removeAtKey}
      * @inheritdoc Ext.util.HashMap#removeAtKey
      */

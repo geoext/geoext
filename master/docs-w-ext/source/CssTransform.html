@@ -23,11 +23,17 @@
 Ext.define('Ext.util.translatable.CssTransform', {
     extend: 'Ext.util.translatable.Dom',
 
+<span id='Ext-util-translatable-CssTransform-property-isCssTransform'>    isCssTransform: true,
+</span>
 <span id='Ext-util-translatable-CssTransform-method-doTranslate'>    doTranslate: function(x, y) {
-</span>        var element = this.getElement();
-        if (!this.destroyed &amp;&amp; !element.destroyed) {
+</span>        var me = this,
+            element = me.getElement();
+
+        if (!me.destroyed &amp;&amp; !element.destroyed) {
             element.translate(x, y);
         }
+
+        me.callParent([x, y]);
     },
 
 <span id='Ext-util-translatable-CssTransform-method-destroy'>    destroy: function() {

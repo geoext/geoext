@@ -24,20 +24,12 @@
 Ext.define('Ext.event.gesture.SingleTouch', {
     extend: 'Ext.event.gesture.Recognizer',
 
-    inheritableStatics: {
-<span id='Ext-event-gesture-SingleTouch-static-property-NOT_SINGLE_TOUCH'>        NOT_SINGLE_TOUCH: &quot;Not Single Touch&quot;,
-</span><span id='Ext-event-gesture-SingleTouch-static-property-TOUCH_MOVED'>        TOUCH_MOVED: &quot;Touch Moved&quot;,
-</span><span id='Ext-event-gesture-SingleTouch-static-property-EVENT_CANCELED'>        EVENT_CANCELED: &quot;Event Canceled&quot;
-</span>    },
-
+<span id='Ext-event-gesture-SingleTouch-property-isSingleTouch'>    isSingleTouch: true,
+</span>
 <span id='Ext-event-gesture-SingleTouch-method-onTouchStart'>    onTouchStart: function(e) {
 </span>        if (e.touches.length &gt; 1) {
-            return this.fail(this.self.NOT_SINGLE_TOUCH);
+            return this.cancel(e);
         }
-    },
-
-<span id='Ext-event-gesture-SingleTouch-method-onTouchCancel'>    onTouchCancel: function() {
-</span>        return false;
     }
 });
 

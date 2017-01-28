@@ -459,9 +459,10 @@ Ext.define('Ext.dd.DragSource', {
         this.setDelta(-12, -20);
     },
 
-<span id='Ext-dd-DragSource-method-destroy'>    destroy: function(){
-</span>        this.callParent();
-        Ext.destroy(this.proxy);
+<span id='Ext-dd-DragSource-method-destroy'>    destroy: function() {
+</span>        Ext.destroy(this.proxy);
+        
+        this.callParent();
     }
 });
 </pre>

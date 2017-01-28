@@ -1,5 +1,6 @@
 {
   "name": "GeoExt",
+  "namespace": "GeoExt",
   "format": "1",
   "version": "3.0.0",
   "creator": "GeoExt Contributors",
@@ -9,11 +10,11 @@
   "signatures": [
     {
       "name": "GeoExt Contributors",
-      "uuid": "c44e0d48-6125-4f04-b956-eea94d677d39",
-      "created": "2017-01-27T07:30:35Z",
+      "uuid": "d3065d2b-a0bf-4678-896b-b65168c485fe",
+      "created": "2017-01-28T09:12:57Z",
       "algorithm": "SHA1withRSA",
-      "nonce": "tnG7Bbfnxos\u003d",
-      "signature": "Z6q61WaxrO87swhrhMJYs71jH+i9rlZgajjdvJLh9OS+cdwmtF8oV1pbzrYk5f0C5Y90e8FqisktCETd5LoUEmbIpgMtX/EKzGZUPU4KIs8NDVWTE40/xcj04G/dWTCE9U7q5F2JPZ4st5tFvhnk01KQXcDTuqCJrs2z1oXmiIIFLhr+l9/qnKiu46Pma+ogfabwpnGfOrR80m3fgXoM70pOFYDwIJQwkdtT3IDSSArMyuXQv/yp19/woS+fWcIacMctJ9H4fF4c7+VhqfG9OmRoim9k57YJTCVKFKmEEfkrYGQfke5fm+9PsGPJRTTrYDgO0KITcVi0OSK1BMmMBg\u003d\u003d"
+      "nonce": "e4nQ54Mkq4g\u003d",
+      "signature": "QfcZgPKUXNxIK3MP7pwHCzZ8NFo9XmU9yflTGLAJQKAjKAHoLrB3nRE1EZh6GMbgKE8dEZSLJrR1PfTm/z8PqkbijW8cni5NigXyBBqmE3Zv3JbACCGEgbP3YqKnW4oSB/SMvuLTeDqI5CQ8pLWw2Cin56CnpG8CohkLyPFA+c+HEawUYafoTFLMp6RUpSZ7YHne4a/24n5R6eZSjmsDTXl6pAFaWguC/+IxnR8AYh0FMJJYhxX+gDvARvUSTpMU8+2d08JELsMzkuCHbPyuSYD3EDO09RWHgDMlEsGxcb7i7PABI3J3V8nUi6vxa7IIM2FC9bTu+9E0gb8kY6wweg\u003d\u003d"
     }
   ],
   "slicer": {

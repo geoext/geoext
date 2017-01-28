@@ -32,6 +32,11 @@ Ext.define('Ext.sparkline.Line', {
 
     config: {
 
+<span id='Ext-sparkline-Line-cfg-fillColor'>        /**
+</span>         * @cfg {String} [fillColor=#def] The hex value for fill color.
+         */
+        fillColor: '#def',
+
 <span id='Ext-sparkline-Line-cfg-spotColor'>        /**
 </span>         * @cfg {String} [spotColor=#f80] The colour of the final value marker. Set to false or an empty string to hide it.
          */
@@ -107,8 +112,6 @@ Ext.define('Ext.sparkline.Line', {
          */
         chartRangeMaxX: null,
         
-<span id='Ext-sparkline-Line-cfg-tipTpl'>        tipTpl: new Ext.XTemplate('&amp;#9679; {prefix}{y}{suffix}'),
-</span>        
 <span id='Ext-sparkline-Line-cfg-valueSpots'>        /**
 </span>         * @cfg {Object} [valueSpots] An object which uses range specifiers as keys to indicate spot color values
          * for range of values. A range specifier is of the form `[number]:[number]` indicating start and end range.
@@ -126,10 +129,13 @@ Ext.define('Ext.sparkline.Line', {
         valueSpots: null
     },
 
+<span id='Ext-sparkline-Line-cfg-tipTpl'>    tipTpl: '&amp;#9679; {prefix}{y}{suffix}',
+</span>
 <span id='Ext-sparkline-Line-method-applyValueSpots'>    applyValueSpots: function(valueSpots) {
 </span>        if (valueSpots &amp;&amp; !valueSpots.get) {
             valueSpots = new Ext.sparkline.RangeMap(valueSpots);
         }
+        this.applyConfigChange();
         return valueSpots;
     },
 

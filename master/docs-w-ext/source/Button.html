@@ -148,18 +148,18 @@ Ext.define('Ext.button.Button', {
     /* Begin Definitions */
     alias: 'widget.button',
     extend: 'Ext.Component',
-    
+
     requires: [
         'Ext.dom.ButtonElement',
         'Ext.button.Manager',
         'Ext.menu.Manager',
         'Ext.util.ClickRepeater',
-        'Ext.util.TextMetrics'
+        'Ext.util.TextMetrics',
+        'Ext.Glyph'
     ],
 
     mixins: [
-        'Ext.mixin.Queryable',
-        'Ext.util.KeyboardInteractive'
+        'Ext.mixin.Queryable'
     ],
 
     alternateClassName: 'Ext.Button',
@@ -193,12 +193,19 @@ Ext.define('Ext.button.Button', {
          * `false` to hide the button arrow.  Only applicable for {@link Ext.button.Split
          * Split Buttons} and buttons configured with a {@link #cfg-menu}.
          */
-        arrowVisible: true
+        arrowVisible: true,
+
+<span id='Ext-button-Button-cfg-glyph'>        /**
+</span>         * @cfg {Number/String} glyph
+         * @inheritdoc Ext.panel.Header#glyph
+         */
+        glyph: null
+
     },
 
     /* End Definitions */
 
-<span id='Ext-button-Button-property-isButton'>    /*
+<span id='Ext-button-Button-property-isButton'>    /**
 </span>     * @property {Boolean}
      * `true` in this class to identify an object as an instantiated Button, or subclass thereof.
      */
@@ -244,19 +251,17 @@ Ext.define('Ext.button.Button', {
 
 <span id='Ext-button-Button-cfg-icon'>    /**
 </span>     * @cfg {String} icon
-     * The path to an image to display in the button.
-     *
-     * There are no default icons that come with Ext JS.
+     * @inheritdoc Ext.panel.Header#icon
      */
 
 <span id='Ext-button-Button-cfg-handler'>    /**
 </span>     * @cfg {Function/String} handler
      * A function called when the button is clicked (can be used instead of click event).
-     * 
+     *
      * See also {@link #clickEvent}
      * @param {Ext.button.Button} button This button.
      * @param {Ext.event.Event} e The click event.
-     * @declarativeHandler
+     * @controllable
      */
 
 <span id='Ext-button-Button-cfg-minWidth'>    /**
@@ -328,7 +333,7 @@ Ext.define('Ext.button.Button', {
      * Function called when a Button with {@link #enableToggle} set to true is clicked.
      * @cfg {Ext.button.Button} toggleHandler.button This button.
      * @cfg {Boolean} toggleHandler.state The next state of the Button, true means pressed.
-     * @declarativeHandler
+     * @controllable
      */
 
 <span id='Ext-button-Button-cfg-menu'>    /**
@@ -360,18 +365,7 @@ Ext.define('Ext.button.Button', {
 
 <span id='Ext-button-Button-cfg-iconCls'>    /**
 </span>     * @cfg {String} iconCls
-     * A css class which sets a background image to be used as the icon for this button.
-     *
-     * There are no default icon classes that come with Ext JS.
-     */
-
-<span id='Ext-button-Button-cfg-glyph'>    /**
-</span>     * @cfg {Number/String} glyph
-     * A numeric unicode character code to use as the icon for this button. The default
-     * font-family for glyphs can be set globally using
-     * {@link Ext#setGlyphFontFamily Ext.setGlyphFontFamily()}. Alternatively, this
-     * config option accepts a string with the charCode and font-family separated by the
-     * `@` symbol. For example '65@My Font Family'.
+     * @inheritdoc Ext.panel.Header#cfg-iconCls
      */
 
 <span id='Ext-button-Button-cfg-clickEvent'>    /**
@@ -382,7 +376,10 @@ Ext.define('Ext.button.Button', {
 
 <span id='Ext-button-Button-cfg-preventDefault'>    /**
 </span>     * @cfg {Boolean} preventDefault
-     * `true` to prevent the default action when the {@link #clickEvent} is processed.
+     * Is set to `true` to prevent the default action when the {@link #clickEvent} is processed.
+     * This provides focus control for clicks and stops scrolling on some devices when using the keyboard
+     * to simulate clicks. Set this to `false` if you need to listen directly to element events (for
+     * example, to use `window.open()` in response to a click).
      */
     preventDefault: true,
 
@@ -450,12 +447,13 @@ Ext.define('Ext.button.Button', {
 </span>     * @cfg {String/Number} value
      * The value of this button.  Only applicable when used as an item of a {@link Ext.button.Segmented Segmented Button}.
      */
-    
+
     focusable: true,
 <span id='Ext-button-Button-property-ariaRole'>    ariaRole: 'button',
-</span>    
-<span id='Ext-button-Button-cfg-keyHandlers'>    keyHandlers: {
-</span>        SPACE: 'onEnterKey',
+</span>
+<span id='Ext-button-Button-cfg-keyMap'>    keyMap: {
+</span>        scope: 'this',
+        SPACE: 'onEnterKey',
         ENTER: 'onEnterKey',
         DOWN: 'onDownKey'
     },
@@ -519,6 +517,7 @@ Ext.define('Ext.button.Button', {
                 'role=&quot;button&quot; hidefocus=&quot;on&quot; unselectable=&quot;on&quot;' +
                 '&lt;tpl if=&quot;tabIndex != null&quot;&gt; tabindex=&quot;{tabIndex}&quot;&lt;/tpl&gt;' +
                 '&lt;tpl foreach=&quot;arrowElAttributes&quot;&gt; {$}=&quot;{.}&quot;&lt;/tpl&gt;' +
+                ' style=&quot;{arrowElStyle}&quot;' +
             '&gt;{arrowElText}&lt;/span&gt;' +
         '&lt;/tpl&gt;',
 
@@ -526,8 +525,14 @@ Ext.define('Ext.button.Button', {
 </span>        '&lt;span id=&quot;{id}-btnIconEl&quot; data-ref=&quot;btnIconEl&quot; role=&quot;presentation&quot; unselectable=&quot;on&quot; class=&quot;{baseIconCls} ' +
                 '{baseIconCls}-{ui} {iconCls} {glyphCls}{childElCls}&quot; style=&quot;' +
             '&lt;tpl if=&quot;iconUrl&quot;&gt;background-image:url({iconUrl});&lt;/tpl&gt;' +
-            '&lt;tpl if=&quot;glyph &amp;&amp; glyphFontFamily&quot;&gt;font-family:{glyphFontFamily};&lt;/tpl&gt;&quot;&gt;' +
-            '&lt;tpl if=&quot;glyph&quot;&gt;&amp;#{glyph};&lt;/tpl&gt;' +
+            '&lt;tpl if=&quot;glyph&quot;&gt;' +
+                '&lt;tpl if=&quot;glyphFontFamily&quot;&gt;' +
+                    'font-family:{glyphFontFamily};' +
+                '&lt;/tpl&gt;' +
+                '&quot;&gt;{glyph}' +
+            '&lt;tpl else&gt;' +
+                '&quot;&gt;' +
+            '&lt;/tpl&gt;' +
         '&lt;/span&gt;',
 
 <span id='Ext-button-Button-cfg-scale'>    /**
@@ -719,7 +724,7 @@ Ext.define('Ext.button.Button', {
 
     initComponent: function() {
         var me = this;
-        
+
         // WAI-ARIA spec requires that menu buttons react to Space and Enter keys
         // by showing the menu while leaving focus on the button, and to Down Arrow key
         // by showing the menu and selecting first menu item. This behavior may conflict
@@ -728,31 +733,31 @@ Ext.define('Ext.button.Button', {
         // the handler/click listener, and only Down Arrow key would open the menu.
         // To avoid the ambiguity, we check if the button has both menu *and* handler
         // or click event listener, and warn the developer in that case.
+        // Note that this check does not apply to Split buttons because those now have
+        // two tab stops and can effectively combine both menu and toggling/href/handler.
         //&lt;debug&gt;
-        // Don't check if we're under the slicer to avoid build failures
-        if (me.menu &amp;&amp; Ext.enableAriaButtons &amp;&amp; !Ext.slicer) {
-            // When ARIA compatibility is enabled, force an error here.
-            var logFn = Ext.enableAria ? Ext.log.error : Ext.log.warn;
-            
+        if (!me.isSplitButton &amp;&amp; me.menu) {
             if (me.enableToggle || me.toggleGroup) {
-                logFn(
+                Ext.ariaWarn(me,
                     &quot;According to WAI-ARIA 1.0 Authoring guide &quot; +
                     &quot;(http://www.w3.org/TR/wai-aria-practices/#menubutton), &quot; +
                     &quot;menu button '&quot; + me.id + &quot;' behavior will conflict with &quot; +
                     &quot;toggling.&quot;
                 );
             }
-            
+
             if (me.href) {
-                logFn(
+                Ext.ariaWarn(me,
                     &quot;According to WAI-ARIA 1.0 Authoring guide &quot; +
                     &quot;(http://www.w3.org/TR/wai-aria-practices/#menubutton), &quot; +
                     &quot;menu button '&quot; + me.id + &quot;' cannot behave as a link.&quot;
                 );
             }
-            
-            if (me.handler || me.hasListeners.click) {
-                logFn(
+
+            // Only check listeners of the component instance; there could be other
+            // listeners on the EventBus inherited via hasListeners prototype.
+            if (me.handler || me.hasListeners.hasOwnProperty('click')) {
+                Ext.ariaWarn(me,
                     &quot;According to WAI-ARIA 1.0 Authoring guide &quot; +
                     &quot;(http://www.w3.org/TR/wai-aria-practices/#menubutton), &quot; +
                     &quot;menu button '&quot; + me.id + &quot;' should display the menu &quot; +
@@ -762,7 +767,7 @@ Ext.define('Ext.button.Button', {
             }
         }
         //&lt;/debug&gt;
-        
+
         // Ensure no selection happens
         me.addCls(Ext.baseCSSPrefix + 'unselectable');
 
@@ -814,21 +819,21 @@ Ext.define('Ext.button.Button', {
                     if (hrefTarget) {
                        config.target = hrefTarget;
                     }
-                }   
+                }
             }
         }
-        
+
         if (!me.ariaStaticRoles[me.ariaRole]) {
             // Split buttons render aria-haspopup into arrowEl
             if (me.menu &amp;&amp; !me.isSplitButton) {
                 config['aria-haspopup'] = true;
             }
-            
+
             if (me.enableToggle) {
                 config['aria-pressed'] = !!me.pressed;
             }
         }
-        
+
         return config;
     },
 
@@ -909,7 +914,7 @@ Ext.define('Ext.button.Button', {
             }
 
             me.menu = menu;
-            
+
             // May not be rendered yet
             if (ariaDom) {
                 ariaDom.setAttribute('aria-haspopup', true);
@@ -921,7 +926,7 @@ Ext.define('Ext.button.Button', {
                 ariaAttr = me.isSplitButton ? (me.ariaArrowElAttributes || (me.ariaArrowElAttributes = {}))
                          :                    (me.ariaRenderAttributes  || (me.ariaRenderAttributes = {}))
                          ;
-                
+
                 ariaAttr['aria-haspopup'] = true;
                 ariaAttr['aria-owns'] = menu.id;
             }
@@ -935,7 +940,7 @@ Ext.define('Ext.button.Button', {
             }
             else {
                 ariaAttr = me.isSplitButton ? me.ariaArrowElAttributes : me.ariaRenderAttributes;
-                
+
                 if (ariaAttr) {
                     delete ariaAttr['aria-haspopup'];
                     delete ariaAttr['aria-owns'];
@@ -1048,16 +1053,15 @@ Ext.define('Ext.button.Button', {
             baseIconCls = me._baseIconCls,
             iconAlign = me.getIconAlign(),
             glyph = me.glyph,
-            glyphFontFamily = Ext._glyphFontFamily,
+            glyphFontFamily,
             text = me.text,
             hasIcon = me._hasIcon(),
-            hasIconCls = me._hasIconCls,
-            glyphParts;
+            hasIconCls = me._hasIconCls;
 
-        if (typeof glyph === 'string') {
-            glyphParts = glyph.split('@');
-            glyph = glyphParts[0];
-            glyphFontFamily = glyphParts[1];
+        // Transform Glyph to the useful parts
+        if (glyph) {
+            glyphFontFamily = glyph.fontFamily;
+            glyph = glyph.character;
         }
 
         return {
@@ -1083,12 +1087,13 @@ Ext.define('Ext.button.Button', {
             iconAlignCls: hasIcon ? (hasIconCls + '-' + iconAlign) : '',
             textAlignCls: btnCls + '-' + me.getTextAlign(),
             arrowElCls: me._arrowElCls,
+            arrowElStyle: me.arrowVisible ? '' : 'display:none',
             tabIndex: me.tabIndex
         };
     },
 
 <span id='Ext-button-Button-method-renderIcon'>    renderIcon: function(values) {
-</span>        return this.getTpl('iconTpl').apply(values);
+</span>        return this.lookupTpl('iconTpl').apply(values);
     },
 
 <span id='Ext-button-Button-method-setHref'>    /**
@@ -1155,7 +1160,7 @@ Ext.define('Ext.button.Button', {
      *     });
      *
      * When clicked, this button will open a new window with the url http://www.sencha.com/?foo=bar&amp;company=Sencha because
-     * the button was configured with the {@link #baseParams} to have `foo` = `'bar'` 
+     * the button was configured with the {@link #baseParams} to have `foo` = `'bar'`
      * and then used {@link #setParams} to set the `company` parameter to `'Sencha'`.
      *
      * **Only valid if the Button was originally configured with a {@link #href}**
@@ -1198,9 +1203,14 @@ Ext.define('Ext.button.Button', {
             btnIconEl = me.btnIconEl,
             oldIcon = me.icon || '';
 
+        // If setIcon is called when we are configured with a glyph, clear the glyph
+        if (me.glyph) {
+            me.setGlyph(null);
+        }
         me.icon = icon;
         if (icon !== oldIcon) {
             if (btnIconEl) {
+                btnIconEl.removeCls(me.iconCls);
                 btnIconEl.setStyle('background-image', icon ? 'url(' + icon + ')': '');
                 me._syncHasIconCls();
                 if (me.didIconStateChange(oldIcon, icon)) {
@@ -1224,9 +1234,16 @@ Ext.define('Ext.button.Button', {
             btnIconEl = me.btnIconEl,
             oldCls = me.iconCls || '';
 
+        // If setIcon is called when we are configured with a glyph, clear the glyph
+        if (me.glyph) {
+            me.setGlyph(null);
+        }
         me.iconCls = cls;
         if (oldCls !== cls) {
             if (btnIconEl) {
+                // In case it had been set to 'none' by a glyph setting.
+                btnIconEl.setStyle('background-image', '');
+
                 // Remove the previous iconCls from the button
                 btnIconEl.removeCls(oldCls);
                 btnIconEl.addCls(cls);
@@ -1240,48 +1257,42 @@ Ext.define('Ext.button.Button', {
         return me;
     },
 
-<span id='Ext-button-Button-method-setGlyph'>    /**
-</span>     * Sets this button's glyph
-     * @param {Number/String} glyph the numeric charCode or string charCode/font-family.
-     * This parameter expects a format consistent with that of {@link #glyph}
-     * @return {Ext.button.Button} this
-     */
-    setGlyph: function(glyph) {
-        glyph = glyph || 0;
-        var me = this,
-            btnIconEl = me.btnIconEl,
-            oldGlyph = me.glyph,
-            glyphCls = me._glyphCls,
-            fontFamily, glyphParts;
+<span id='Ext-button-Button-method-applyGlyph'>    applyGlyph: function(glyph, oldGlyph) {
+</span>        if (glyph) {
+            if (!glyph.isGlyph) {
+                glyph = new Ext.Glyph(glyph);
+            }
+            if (glyph.isEqual(oldGlyph)) {
+                glyph = undefined;
+            }
+        }
+        return glyph;
+    },
 
-        me.glyph = glyph;
+<span id='Ext-button-Button-method-updateGlyph'>    updateGlyph: function(glyph, oldGlyph) {
+</span>        var me = this,
+            btnIconEl = me.btnIconEl,
+            glyphCls = me._glyphCls;
 
         if (btnIconEl) {
-            if (typeof glyph === 'string') {
-                glyphParts = glyph.split('@');
-                glyph = glyphParts[0];
-                fontFamily = glyphParts[1] || Ext._glyphFontFamily;
-            }
-
-            if (!glyph) {
+            me.icon = null;
+            btnIconEl.setStyle('background-image', '');
+            if (glyph) {
+                btnIconEl.dom.innerHTML = glyph.character;
+                btnIconEl.addCls(glyphCls);
+                btnIconEl.setStyle(glyph.getStyle());
+            } else {
                 btnIconEl.dom.innerHTML = '';
                 btnIconEl.removeCls(glyphCls);
-            } else if (oldGlyph !== glyph) {
-                btnIconEl.dom.innerHTML = '&amp;#' + glyph + ';';
-                btnIconEl.addCls(glyphCls);
             }
 
-            if (fontFamily) {
-                btnIconEl.setStyle('font-family', fontFamily);
-            }
             me._syncHasIconCls();
             if (me.didIconStateChange(oldGlyph, glyph)) {
                 me.updateLayout();
             }
         }
 
-        me.fireEvent('glyphchange', me, me.glyph, oldGlyph);
-
+        me.fireEvent('glyphchange', me, glyph &amp;&amp; glyph.glyphConfig, oldGlyph &amp;&amp; oldGlyph.glyphConfig);
         return me;
     },
 
@@ -1364,13 +1375,15 @@ Ext.define('Ext.button.Button', {
      */
     getRefItems: function(deep){
         var menu = this.menu,
-            items;
+            items = [];
 
         if (menu) {
-            items = menu.getRefItems(deep);
+            if (deep) {
+                items = menu.getRefItems(deep);
+            }
             items.unshift(menu);
         }
-        return items || [];
+        return items;
     },
 
 <span id='Ext-button-Button-method-clearTip'>    /**
@@ -1387,37 +1400,22 @@ Ext.define('Ext.button.Button', {
         }
     },
 
-<span id='Ext-button-Button-method-beforeDestroy'>    /**
-</span>     * @private
-     */
-    beforeDestroy: function() {
-        var me = this;
+<span id='Ext-button-Button-method-doDestroy'>    doDestroy: function() {
+</span>        var me = this,
+            menu = me.menu;
 
         if (me.rendered) {
             me.clearTip();
         }
 
         Ext.destroy(me.repeater);
-        me.callParent();
-    },
-
-<span id='Ext-button-Button-method-onDestroy'>    /**
-</span>     * @private
-     */
-    onDestroy: function() {
-        var me = this,
-            menu = me.menu;
-
-        if (me.rendered) {
-            Ext.destroy(me.keyMap);
-            delete me.keyMap;
-        }
 
         if (menu &amp;&amp; me.destroyMenu) {
             me.menu = Ext.destroy(menu);
         }
 
         Ext.button.Manager.unregister(me);
+
         me.callParent();
     },
 
@@ -1465,7 +1463,7 @@ Ext.define('Ext.button.Button', {
         var currentEmpty = Ext.isEmpty(current);
         return Ext.isEmpty(old) ? !currentEmpty : currentEmpty;
     },
-    
+
 <span id='Ext-button-Button-method-click'>    /**
 </span>     * Programmatically activate the button.
      *
@@ -1494,7 +1492,11 @@ Ext.define('Ext.button.Button', {
         var me = this,
             ariaDom = me.ariaEl.dom;
 
-        state = state === undefined ? !me.pressed: !!state;
+        if (!me.enableToggle) {
+            return me;
+        }
+
+        state = state === undefined ? !me.pressed : !!state;
 
         // Allow toggle to be vetoed in case a toggle group needs to enforce a mimimum pressed state
         if (me.fireEvent('beforetoggle', me, state) !== false) {
@@ -1512,7 +1514,7 @@ Ext.define('Ext.button.Button', {
                     me.fireEvent('toggle', me, state);
                     Ext.callback(me.toggleHandler, me.scope, [me, state], 0, me);
 
-                    if (me.reference &amp;&amp; me.publishState) {
+                    if (me.publishState) {
                         me.publishState('pressed', state);
                     }
                 }
@@ -1529,8 +1531,9 @@ Ext.define('Ext.button.Button', {
 
 <span id='Ext-button-Button-method-showMenu'>    /**
 </span>     * Shows this button's menu (if it has one)
+     * @param clickEvent (private)
      */
-    showMenu: function(/* private */ clickEvent) {
+    showMenu: function(clickEvent) {
         var me = this,
             menu = me.menu,
             isPointerEvent = !clickEvent || clickEvent.pointerType;
@@ -1539,6 +1542,7 @@ Ext.define('Ext.button.Button', {
             if (me.tooltip &amp;&amp; Ext.quickTipsActive &amp;&amp; me.getTipAttr() !== 'title') {
                 Ext.tip.QuickTipManager.getQuickTip().cancelShow(me.el);
             }
+
             if (menu.isVisible()) {
                 // Click/tap toggles the menu visibility.
                 if (isPointerEvent) {
@@ -1566,7 +1570,7 @@ Ext.define('Ext.button.Button', {
                 menu.showBy(me.el, me.menuAlign);
             }
         }
-        
+
         return me;
     },
 
@@ -1599,17 +1603,19 @@ Ext.define('Ext.button.Button', {
 <span id='Ext-button-Button-method-onTouchStart'>    onTouchStart: function(e) {
 </span>        this.doPreventDefault(e);
     },
-    
+
 <span id='Ext-button-Button-method-onEnterKey'>    /**
 </span>     * @private
      */
     onEnterKey: function(e) {
-        this.onClick(e);
-        
-        // Buttons always intercept Space and Enter keys
-        e.stopEvent();
-        
-        return false;
+        if (!this.href) {
+            this.onClick(e);
+
+            // Buttons always intercept Space and Enter keys
+            e.stopEvent();
+
+            return false;
+        }
     },
 
 <span id='Ext-button-Button-method-onClick'>    /**
@@ -1617,19 +1623,31 @@ Ext.define('Ext.button.Button', {
      */
     onClick: function(e) {
         var me = this;
-        me.doPreventDefault(e);
+
+        // Event is optional if we're called from click()
+        if (e) {
+            me.doPreventDefault(e);
+        }
 
         // Can be triggered by ENTER or SPACE keydown events which set the button property.
         // Only veto event handling if it's a mouse event with an alternative button.
         // Checking e.button for a truthy value (instead of != 0) also allows touch events
         // (tap) to continue, as they do not have a button property defined.
-        if (e.type !== 'keydown' &amp;&amp; e.button) {
+        if (e &amp;&amp; e.type !== 'keydown' &amp;&amp; e.button) {
             return;
         }
+
         if (!me.disabled) {
             me.doToggle();
             me.maybeShowMenu(e);
             me.fireHandler(e);
+        }
+    },
+
+<span id='Ext-button-Button-method-doToggle'>    doToggle: function() {
+</span>        var me = this;
+        if (me.allowDepress !== false || !me.pressed) {
+            me.toggle();
         }
     },
 
@@ -1648,15 +1666,9 @@ Ext.define('Ext.button.Button', {
         }
     },
 
-<span id='Ext-button-Button-method-doToggle'>    doToggle: function() {
-</span>        var me = this;
-        if (me.enableToggle &amp;&amp; (me.allowDepress !== false || !me.pressed)) {
-            me.toggle();
-        }
-    },
-
 <span id='Ext-button-Button-method-onMouseOver'>    /**
-</span>     * @private mouseover handler called when a mouseover event occurs anywhere within the encapsulating element.
+</span>     * @private
+     * mouseover handler called when a mouseover event occurs anywhere within the encapsulating element.
      * The targets are interrogated to see what is being entered from where.
      * @param e
      */
@@ -1779,7 +1791,7 @@ Ext.define('Ext.button.Button', {
         if (me.split &amp;&amp; arrowTip) {
             me.btnWrap.dom.setAttribute(me.getTipAttr(), arrowTip);
         }
-        
+
         me.fireEvent('menutriggerover', me, me.menu, e);
     },
 
@@ -1791,13 +1803,13 @@ Ext.define('Ext.button.Button', {
      */
     onMenuTriggerOut: function(e) {
         var me = this;
-        
+
         delete me.overMenuTrigger;
         // See onMenuTriggerOver
         if (me.split &amp;&amp; me.arrowTooltip) {
             me.btnWrap.dom.setAttribute(me.getTipAttr(), '');
         }
-        
+
         me.fireEvent('menutriggerout', me, me.menu, e);
     },
 
@@ -1963,7 +1975,19 @@ Ext.define('Ext.button.Button', {
     },
 
 <span id='Ext-button-Button-property-privates'>    privates: {
-</span>        addOverCls: function() {
+</span>        elClsMap: {
+            'btnWrap': '_btnWrapCls',
+            'btnEl': '_btnCls',
+            'btnIconEl': '_baseIconCls',
+            'btnInnerEl': '_innerCls'
+        },
+
+        addUIToElement: function() {
+            this.callParent();
+            this.updateChildElsUICls(true);
+        },
+
+        addOverCls: function() {
             if (!this.disabled) {
                 this.addCls(this.overCls);
             }
@@ -1977,13 +2001,26 @@ Ext.define('Ext.button.Button', {
 
 <span id='Ext-button-Button-method-getTdCls'>        /**
 </span>         * @private
-         * @override
          * Needed for when widget is rendered into a grid cell. The class to add to the cell element.
-         * Override needed to add scale to the mix which is part of the ui name in the 
+         * Override needed to add scale to the mix which is part of the ui name in the
          * mixin and the CSS rule.
          */
         getTdCls: function() {
             return Ext.baseCSSPrefix + 'button-' + this.ui + '-' + this.scale + '-cell';
+        },
+
+<span id='Ext-button-Button-method-getValue'>        /**
+</span>         * @private
+         * @return {Number/String} The button value, used for segmented button API compatibility
+         * with modern.
+         */
+        getValue: function() {
+            return this.value;
+        },
+
+        removeUIFromElement: function() {
+            this.callParent();
+            this.updateChildElsUICls(false);
         },
 
         removeOverCls: function() {
@@ -2016,6 +2053,23 @@ Ext.define('Ext.button.Button', {
          */
         _hasIcon: function() {
             return !!(this.icon || this.iconCls || this.glyph);
+        },
+
+        updateChildElsUICls: function(add) {
+            var me = this,
+                ui = me.ui,
+                state = add ? 'addCls' : 'removeCls',
+                elClsMap = me.elClsMap,
+                key, el, mapCls, cls;
+
+            for(key in elClsMap) {
+                el = me[key];
+                mapCls = elClsMap[key];
+                cls = me[mapCls];
+                if(el &amp;&amp; cls) {
+                    el[state](cls + '-' + ui);
+                }
+            }
         },
 
         wrapPrimaryEl: function(dom) {

@@ -46,6 +46,13 @@
  *         renderTo: Ext.getBody()
  *     });
  *
+ * ## Using a glyph
+ *
+ *     var glyphImage = Ext.create('Ext.Img', {
+ *         glyph: 'xf015@FontAwesome',     // the &quot;home&quot; icon
+ *         renderTo: Ext.getBody()
+ *     });
+ *
  * ## Image Dimensions
  *
  * You should include height and width dimensions for any image owned by a parent 
@@ -55,16 +62,28 @@
 Ext.define('Ext.Img', {
     extend: 'Ext.Component',
     alias: ['widget.image', 'widget.imagecomponent'],
+    requires: [
+        'Ext.Glyph'
+    ],
 
 <span id='Ext-Img-cfg-autoEl'>    autoEl: 'img',
 </span>
 <span id='Ext-Img-cfg-baseCls'>    baseCls: Ext.baseCSSPrefix + 'img',
 </span>
-<span id='Ext-Img-cfg-src'>    /**
-</span>     * @cfg {String} src
-     * The image src.
-     */
-    src: '',
+    config: {
+<span id='Ext-Img-cfg-src'>        /**
+</span>         * @cfg {String} src The source of this image. See {@link Ext#resolveResource} for
+         * details on locating application resources.
+         * @accessor
+         */
+        src: null,
+
+<span id='Ext-Img-cfg-glyph'>        /**
+</span>         * @cfg {Number/String} glyph
+         * @inheritdoc Ext.panel.Header#glyph
+         */
+        glyph: null
+    },
 
 <span id='Ext-Img-cfg-alt'>    /**
 </span>     * @cfg {String} alt
@@ -96,44 +115,34 @@ Ext.define('Ext.Img', {
     
     maskOnDisable: false,
 
-<span id='Ext-Img-method-initComponent'>    initComponent: function() {
-</span>        if (this.glyph) {
-            this.autoEl = 'div';
-        }
-        this.callParent();
+<span id='Ext-Img-method-applySrc'>    applySrc: function (src) {
+</span>        return src &amp;&amp; Ext.resolveResource(src);
     },
 
 <span id='Ext-Img-method-getElConfig'>    getElConfig: function() {
 </span>        var me = this,
             autoEl = me.autoEl,
             config = me.callParent(),
-            glyphFontFamily = Ext._glyphFontFamily,
             glyph = me.glyph,
-            img, glyphParts;
+            img;
 
-        // It is sometimes helpful (like in a panel header icon) to have the img wrapped
-        // by a div. If our autoEl is not 'img' then we just add an img child to the el.
-        if (autoEl === 'img' || (Ext.isObject(autoEl) &amp;&amp; autoEl.tag === 'img')) {
-            img = config;
-        }
-        else if (me.glyph) {
-            if (typeof glyph === 'string') {
-                glyphParts = glyph.split('@');
-                glyph = glyphParts[0];
-                glyphFontFamily = glyphParts[1] || glyphFontFamily;
-            }
-            
-            config.html = '&amp;#' + glyph + ';';
-            
-            if (glyphFontFamily) {
-                config.style = config.style || {};
-                config.style.fontFamily = glyphFontFamily;
-            }
+        // We were configured with a glyph, then this is a div with a single char content
+        if (glyph) {
+            config.tag = 'div';
+            config.html = glyph.character;
+            config.style = config.style || {};
+            config.style.fontFamily = glyph.fontFamily;
             
             // A glyph is a graphic which is not an &lt;img&gt; tag so it should have
             // the corresponding role for Accessibility interface to recognize
             config.role = 'img';
         }
+        // The default; an img element
+        else if (autoEl === 'img' || (Ext.isObject(autoEl) &amp;&amp; autoEl.tag === 'img')) {
+            img = config;
+        }
+        // It is sometimes helpful (like in a panel header icon) to have the img wrapped
+        // by a div. If our autoEl is not 'img' then we just add an img child to the el.
         else {
             config.cn = [img = {
                 tag: 'img',
@@ -188,7 +197,7 @@ Ext.define('Ext.Img', {
         }
     },
 
-<span id='Ext-Img-method-onDestroy'>    onDestroy: function () {
+<span id='Ext-Img-method-doDestroy'>    doDestroy: function() {
 </span>        var me = this,
             imgEl = me.imgEl;
 
@@ -197,50 +206,140 @@ Ext.define('Ext.Img', {
         if (imgEl &amp;&amp; me.el !== imgEl) {
             imgEl.destroy();
         }
-        this.imgEl = null;
-        this.callParent();
+        me.imgEl = null;
+        
+        me.callParent();
     },
 
-<span id='Ext-Img-method-setSrc'>    /**
-</span>     * Updates the {@link #src} of the image.
-     * @param {String} src
+<span id='Ext-Img-method-getTitle'>    getTitle: function () {
+</span>        return this.title;
+    },
+
+<span id='Ext-Img-method-setTitle'>    /**
+</span>     * Updates the {@link #title} of the image.
+     * @param {String} title
      */
-    setSrc: function(src) {
+    setTitle: function (title) {
         var me = this,
             imgEl = me.imgEl;
 
-        me.src = src;
+        me.title = title || '';
+
+        if (imgEl) {
+            imgEl.dom.title = title || '';
+        }
+    },
+
+<span id='Ext-Img-method-afterComponentLayout'>    afterComponentLayout: function(width, height, oldWidth, oldHeight) {
+</span>        var heightModel = this.getSizeModel().height,
+            h;
+                
+        // If we have our height set, then size the glyph as requested to make image scalable.
+        if ((heightModel.calculated || heightModel.configured) &amp;&amp; height &amp;&amp; this.glyph) {
+            h = height + 'px';
+            this.setStyle({
+                'line-height': h,
+                'font-size': h
+            });
+        }
+        this.callParent([width, height, oldWidth, oldHeight]);
+    },
+
+<span id='Ext-Img-method-getAlt'>    getAlt: function () {
+</span>        return this.alt;
+    },
+
+<span id='Ext-Img-method-setAlt'>    /**
+</span>     * Updates the {@link #alt} of the image.
+     * @param {String} alt
+     */
+    setAlt: function (alt) {
+        var me = this,
+            imgEl = me.imgEl;
+
+        me.alt = alt || '';
+
+        if (imgEl) {
+            imgEl.dom.alt = alt || '';
+        }
+    },
+
+<span id='Ext-Img-property-_naturalSize'>    _naturalSize: null,
+</span>
+<span id='Ext-Img-method-getNaturalSize'>    /**
+</span>     * Returns the size of the image as an object.
+     * @return {Object} The size and aspect ratio of the image.
+     * @return {Number} return.aspect The aspect ration of the image (`width / height`).
+     * @return {Number} return.height The height of the image.
+     * @return {Number} return.width The width of the image.
+     * @since 6.2.0
+     */
+    getNaturalSize: function () {
+        var me = this,
+            img = me.imgEl,
+            naturalSize = me._naturalSize,
+            style, w, h;
+
+        if (img &amp;&amp; !naturalSize) {
+            img = img.dom;
+
+            me._naturalSize = naturalSize = {
+                width: w = img.naturalWidth,
+                height: img.naturalHeight
+            };
+
+            if (!w) {
+                style = img.style;
+
+                w = style.width;
+                h = style.height;
+
+                // As long as the width/height styles are &quot;auto&quot;, the IMG dom element
+                // will have &quot;width&quot; and &quot;height&quot; properties that are the natural size.
+                style.width = style.height = 'auto';
+
+                naturalSize.width = img.width;
+                naturalSize.height = img.height;
+
+                style.width = w;
+                style.height = h;
+            }
+
+            naturalSize.aspect = naturalSize.width / naturalSize.height;
+        }
+
+        return naturalSize;
+    },
+
+<span id='Ext-Img-method-updateSrc'>    updateSrc: function (src) {
+</span>        var imgEl = this.imgEl;
 
         if (imgEl) {
             imgEl.dom.src = src || Ext.BLANK_IMAGE_URL;
         }
     },
 
-<span id='Ext-Img-method-setGlyph'>    /**
-</span>     * Updates the {@link #glyph} of the image.
-     * @param {Number/String} glyph
-     */
-    setGlyph: function(glyph) {
-        var me = this,
-            glyphFontFamily = Ext._glyphFontFamily,
-            old = me.glyph,
-            el = me.el,
-            glyphParts;
-
-        me.glyph = glyph;
-        if (me.rendered &amp;&amp; glyph !== old) {
-            if (typeof glyph === 'string') {
-                glyphParts = glyph.split('@');
-                glyph = glyphParts[0];
-                glyphFontFamily = glyphParts[1] || glyphFontFamily;
+<span id='Ext-Img-method-applyGlyph'>    applyGlyph: function(glyph, oldGlyph) {
+</span>        if (glyph) {
+            if (!glyph.isGlyph) {
+                glyph = new Ext.Glyph(glyph);
             }
-
-            el.dom.innerHTML = '&amp;#' + glyph + ';';
-            if (glyphFontFamily) {
-                el.setStyle('font-family', glyphFontFamily);
+            if (glyph.isEqual(oldGlyph)) {
+                glyph = undefined;
             }
         }
+        return glyph;
+    },
+
+<span id='Ext-Img-method-updateGlyph'>    updateGlyph: function(glyph, oldGlyph) {
+</span>        var el = this.el;
+
+        if (el) {
+            el.dom.innerHTML = glyph.character;
+            el.setStyle(glyph.getStyle());
+        }
     }
-});</pre>
+});
+</pre>
 </body>
 </html>

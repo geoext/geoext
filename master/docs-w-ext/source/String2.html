@@ -49,10 +49,47 @@ Ext.String = (function() {
 
             return other.length &lt;= s.length; 
         },
-        
+        fromCharCode = String.fromCharCode,
         ExtString;
 
     return ExtString = {
+
+<span id='Ext-String-method-fromCodePoint'>        /**
+</span>         * Creates a string created by using the specified sequence of code points.
+         * @param {Number...} codePoint Codepoints from which to build the string.
+         * @return {String} A string built from the sequence of code points passed.
+         */
+        fromCodePoint: String.fromCodePoint || function() {
+            var codePoint,
+                result = '',
+                codeUnits = [],
+                index = -1,
+                length = arguments.length;
+
+            while (++index &lt; length) {
+                codePoint = Number(arguments[index]);
+                if (
+                    !isFinite(codePoint) ||       // `NaN`, `+Infinity`, or `-Infinity`
+                    codePoint &lt; 0 ||              // not a valid Unicode code point
+                    codePoint &gt; 0x10FFFF ||       // not a valid Unicode code point
+                    Math.floor(codePoint) !== codePoint // not an integer
+                ) {
+                    Ext.raise('Invalid code point: ' + codePoint);
+                }
+                if (codePoint &lt;= 0xFFFF) { // BMP code point
+                    codeUnits.push(codePoint);
+                } else { // Astral code point; split in surrogate halves
+                    // http://mathiasbynens.be/notes/javascript-encoding#surrogate-formulae
+                    codePoint -= 0x10000;
+                    codeUnits.push((codePoint &gt;&gt; 10) + 0xD800, (codePoint % 0x400) + 0xDC00);
+                }
+                if (index + 1 === length) {
+                    result += fromCharCode(codeUnits);
+                    codeUnits.length = 0;
+                }
+            }
+            return result;
+        },
 
 <span id='Ext-String-method-insert'>        /**
 </span>         * Inserts a substring into a string.
@@ -465,7 +502,7 @@ Ext.String.resetCharacterEntities();
 <span id='Ext-method-htmlEncode'>/**
 </span> * Old alias to {@link Ext.String#htmlEncode}
  * @deprecated Use {@link Ext.String#htmlEncode} instead
- * @method
+ * @method htmlEncode
  * @member Ext
  * @inheritdoc Ext.String#htmlEncode
  */
@@ -475,7 +512,7 @@ Ext.htmlEncode = Ext.String.htmlEncode;
 <span id='Ext-method-htmlDecode'>/**
 </span> * Old alias to {@link Ext.String#htmlDecode}
  * @deprecated Use {@link Ext.String#htmlDecode} instead
- * @method
+ * @method htmlDecode
  * @member Ext
  * @inheritdoc Ext.String#htmlDecode
  */
@@ -484,7 +521,7 @@ Ext.htmlDecode = Ext.String.htmlDecode;
 <span id='Ext-method-urlAppend'>/**
 </span> * Old alias to {@link Ext.String#urlAppend}
  * @deprecated Use {@link Ext.String#urlAppend} instead
- * @method
+ * @method urlAppend
  * @member Ext
  * @inheritdoc Ext.String#urlAppend
  */

@@ -144,7 +144,8 @@ Ext.define('Ext.picker.Month', {
      */
     totalYears: 10,
 <span id='Ext-picker-Month-property-monthOffset'><span id='Ext-picker-Month-property-yearOffset'>    yearOffset: 5, // 10 years in total, 2 per row
-</span></span>    monthOffset: 6, // 12 months, 2 per row
+</span></span><span id='Ext-picker-Month-cfg-alignOnScroll'>    monthOffset: 6, // 12 months, 2 per row
+</span>    alignOnScroll: false,
 
 <span id='Ext-picker-Month-event-cancelclick'>    /**
 </span>     * @event cancelclick
@@ -284,9 +285,20 @@ Ext.define('Ext.picker.Month', {
             body = me.bodyEl;
 
         me.callParent();
+        
+        // Month picker is not focusable and essentially is pointer only thing.
+        // Clicking on it will focus the document body, which may disrupt the state
+        // of the floating parent such as Date picker or a menu, and cause it to hide.
+        // To work around that, we stop the mousedown events completely.
+        if (me.up('[floating=true]')) {
+            me.el.on('mousedown', me.onElClick, me, {translate: false});
+        }
 
-        me.mon(body, 'click', me.onBodyClick, me);
-        me.mon(body, 'dblclick', me.onBodyClick, me);
+        body.on({
+            scope: me,
+            click: 'onBodyClick',
+            dblclick: 'onBodyClick'
+        });
 
         // keep a reference to the year/month elements since we'll be re-using them
         me.years = body.select('.' + me.baseCls + '-year a');
@@ -464,6 +476,10 @@ Ext.define('Ext.picker.Month', {
         offset = offset || 0;
         return year === null ? defaultValue : year + offset;
     },
+    
+<span id='Ext-picker-Month-method-onElClick'>    onElClick: function(e) {
+</span>        e.stopEvent();
+    },
 
 <span id='Ext-picker-Month-method-onBodyClick'>    /**
 </span>     * React to clicks on the body
@@ -555,19 +571,9 @@ Ext.define('Ext.picker.Month', {
         }
     },
 
-<span id='Ext-picker-Month-method-beforeDestroy'>    /**
-</span>     * @inheritdoc
-     * @private
-     */
-    beforeDestroy: function(){
-        var me = this;
-        me.years = me.months = null;
-        Ext.destroyMembers(me, 'backRepeater', 'nextRepeater', 'okBtn', 'cancelBtn');
-        me.callParent();
-    },
-
-<span id='Ext-picker-Month-method-onDestroy'>    onDestroy: function() {
-</span>        Ext.destroyMembers(this, 'okBtn', 'cancelBtn');
+<span id='Ext-picker-Month-method-doDestroy'>    doDestroy: function() {
+</span>        Ext.destroy(this.backRepeater, this.nextRepeater, this.okBtn, this.cancelBtn);
+        
         this.callParent();
     },
 

@@ -45,14 +45,16 @@ Ext.define('Ext.event.gesture.Recognizer', {
      * - Ext.event.gesture.Tap: 200
      * - Ext.event.gesture.DoubleTap: 300
      * - Ext.event.gesture.LongPress: 400
-     * - Ext.event.gesture.Swipe: 500
-     * - Ext.event.gesture.Pinch: 600
-     * - Ext.event.gesture.Rotate: 700
-     * - Ext.event.gesture.EdgeSwipe: 800
+     * - Ext.event.gesture.EdgeSwipe: 500
+     * - Ext.event.gesture.Swipe: 600
+     * - Ext.event.gesture.Pinch: 700
+     * - Ext.event.gesture.Rotate: 800
      */
     priority: 0,
 
 <span id='Ext-event-gesture-Recognizer-property-handledEvents'>    handledEvents: [],
+</span>
+<span id='Ext-event-gesture-Recognizer-property-isStarted'>    isStarted: false,
 </span>
     config: {
 <span id='Ext-event-gesture-Recognizer-cfg-onRecognized'>        onRecognized: Ext.emptyFn,
@@ -72,27 +74,34 @@ Ext.define('Ext.event.gesture.Recognizer', {
 </span>
 <span id='Ext-event-gesture-Recognizer-method-onTouchMove'>    onTouchMove: Ext.emptyFn,
 </span>
-<span id='Ext-event-gesture-Recognizer-method-onTouchEnd'>    onTouchEnd: Ext.emptyFn,
-</span>
-<span id='Ext-event-gesture-Recognizer-method-onTouchCancel'>    onTouchCancel: Ext.emptyFn,
-</span>
-<span id='Ext-event-gesture-Recognizer-method-fail'>    fail: function() {
-</span>        return false;
+<span id='Ext-event-gesture-Recognizer-method-onTouchEnd'>    onTouchEnd: function() {
+</span>        return this.reset();
     },
 
-<span id='Ext-event-gesture-Recognizer-method-fire'>    fire: function() {
-</span>        this.getOnRecognized().apply(this.getCallbackScope(), arguments);
+<span id='Ext-event-gesture-Recognizer-method-onTouchCancel'>    onTouchCancel: function(e) {
+</span>        return this.cancel(e);
     },
 
-<span id='Ext-event-gesture-Recognizer-method-reset'>    reset: Ext.emptyFn,
-</span>
-<span id='Ext-event-gesture-Recognizer-property-debugHooks'>    debugHooks: {
-</span>        $enabled: false,  // Disable by default
+<span id='Ext-event-gesture-Recognizer-method-fire'>    fire: function(eventName, e, info, isCancel) {
+</span>        this.getOnRecognized().call(this.getCallbackScope(), this, eventName, e, info, isCancel);
+    },
 
-        fail: function(msg) {
-            Ext.log.info(this.$className + ' Gesture Failed: ' + msg);
-            return false;
+<span id='Ext-event-gesture-Recognizer-method-cancel'>    cancel: function(e) {
+</span>        if (this.isStarted) {
+            // If the recognizer is started, that is to say, it has already begun publishing
+            // events for the current gesture, then we need to make sure it fires a &quot;cancel&quot;
+            // event (implementation determined by subclasses).
+            this.onCancel(e);
         }
+
+        return this.reset();
+    },
+
+<span id='Ext-event-gesture-Recognizer-method-onCancel'>    onCancel: Ext.emptyFn,
+</span>
+<span id='Ext-event-gesture-Recognizer-method-reset'>    reset: function() {
+</span>        this.isStarted = false;
+        return false;
     }
 });
 </pre>

@@ -60,6 +60,7 @@ Ext.define('Ext.dashboard.Dashboard', {
 </span><span id='Ext-dashboard-Dashboard-cfg-maxColumns'>        /**
 </span>         * @cfg {Number} maxColumns
          * The maximum number of visible columns.
+         * @accessor
          */
         maxColumns: 4
     },
@@ -294,10 +295,11 @@ Ext.define('Ext.dashboard.Dashboard', {
          this.updateLayout();
     },
 
-<span id='Ext-dashboard-Dashboard-method-beforeDestroy'>    beforeDestroy : function() {
+<span id='Ext-dashboard-Dashboard-method-doDestroy'>    doDestroy: function() {
 </span>        if (this.dd) {
             Ext.destroy(this.dd);
         }
+        
         this.callParent();
     },
 

@@ -164,72 +164,72 @@ Ext.define('Ext.form.Panel', {
 </span>    
 <span id='Ext-form-Panel-property-basicFormConfigs'>    basicFormConfigs: [
 </span><span id='Ext-form-Panel-cfg-api'>        /**
-</span>         * @cfg
+</span>         * @cfg api
          * @inheritdoc Ext.form.Basic#api
          */
         'api', 
 <span id='Ext-form-Panel-cfg-baseParams'>        /**
-</span>         * @cfg
+</span>         * @cfg baseParams
          * @inheritdoc Ext.form.Basic#baseParams
          */
         'baseParams', 
 <span id='Ext-form-Panel-cfg-errorReader'>        /**
-</span>         * @cfg
+</span>         * @cfg errorReader
          * @inheritdoc Ext.form.Basic#errorReader
          */
         'errorReader', 
 <span id='Ext-form-Panel-cfg-jsonSubmit'>        /**
-</span>         * @cfg
+</span>         * @cfg jsonSubmit
          * @inheritdoc Ext.form.Basic#jsonSubmit
          */
         'jsonSubmit',
 <span id='Ext-form-Panel-cfg-method'>        /**
-</span>         * @cfg
+</span>         * @cfg method
          * @inheritdoc Ext.form.Basic#method
          */
         'method', 
 <span id='Ext-form-Panel-cfg-paramOrder'>        /**
-</span>         * @cfg
+</span>         * @cfg paramOrder
          * @inheritdoc Ext.form.Basic#paramOrder
          */
         'paramOrder',
 <span id='Ext-form-Panel-cfg-paramsAsHash'>        /**
-</span>         * @cfg
+</span>         * @cfg paramsAsHash
          * @inheritdoc Ext.form.Basic#paramsAsHash
          */
         'paramsAsHash',
 <span id='Ext-form-Panel-cfg-reader'>        /**
-</span>         * @cfg
+</span>         * @cfg reader
          * @inheritdoc Ext.form.Basic#reader
          */
         'reader',
 <span id='Ext-form-Panel-cfg-standardSubmit'>        /**
-</span>         * @cfg
+</span>         * @cfg standardSubmit
          * @inheritdoc Ext.form.Basic#standardSubmit
          */
         'standardSubmit',
 <span id='Ext-form-Panel-cfg-timeout'>        /**
-</span>         * @cfg
+</span>         * @cfg timeout
          * @inheritdoc Ext.form.Basic#timeout
          */
         'timeout',
 <span id='Ext-form-Panel-cfg-trackResetOnLoad'>        /**
-</span>         * @cfg
+</span>         * @cfg trackResetOnLoad
          * @inheritdoc Ext.form.Basic#trackResetOnLoad
          */
         'trackResetOnLoad',
 <span id='Ext-form-Panel-cfg-url'>        /**
-</span>         * @cfg
+</span>         * @cfg url
          * @inheritdoc Ext.form.Basic#url
          */
         'url',
 <span id='Ext-form-Panel-cfg-waitMsgTarget'>        /**
-</span>         * @cfg
+</span>         * @cfg waitMsgTarget
          * @inheritdoc Ext.form.Basic#waitMsgTarget
          */
         'waitMsgTarget',
 <span id='Ext-form-Panel-cfg-waitTitle'>        /**
-</span>         * @cfg
+</span>         * @cfg waitTitle
          * @inheritdoc Ext.form.Basic#waitTitle
          */
         'waitTitle'
@@ -382,8 +382,8 @@ Ext.define('Ext.form.Panel', {
      *
      * @inheritdoc Ext.form.Basic#reset
      */
-    reset: function() {
-        this.form.reset();
+    reset: function(resetRecord) {
+        return this.form.reset(resetRecord);
     },
     
 <span id='Ext-form-Panel-method-hasInvalidField'>    /**
@@ -396,9 +396,10 @@ Ext.define('Ext.form.Panel', {
         return this.form.hasInvalidField();
     },
 
-<span id='Ext-form-Panel-method-beforeDestroy'>    beforeDestroy: function() {
+<span id='Ext-form-Panel-method-doDestroy'>    doDestroy: function() {
 </span>        this.stopPolling();
         this.form.destroy();
+        
         this.callParent();
     },
 

@@ -278,7 +278,7 @@ Ext.define('Ext.util.KeyMap', {
         for (i = 0; i &lt; len; ++i) {
             item = bindings[i];
             if ((item.fn || item.handler) === (binding.fn || binding.handler) &amp;&amp; item.scope === binding.scope) {
-                if (binding.alt === item.alt &amp;&amp; binding.crtl === item.crtl &amp;&amp; binding.shift === item.shift) {
+                if (binding.alt === item.alt &amp;&amp; binding.ctrl === item.ctrl &amp;&amp; binding.shift === item.shift) {
                     if (Ext.Array.equals(item.keyCode, keys)) {
                         Ext.Array.erase(me.bindings, i, 1);
                         return;

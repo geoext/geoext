@@ -76,6 +76,7 @@ Ext.define('Ext.form.field.TextArea', {
             '&lt;tpl if=&quot;tabIdx != null&quot;&gt; tabindex=&quot;{tabIdx}&quot;&lt;/tpl&gt;',
             ' class=&quot;{fieldCls} {typeCls} {typeCls}-{ui} {inputCls}&quot; ',
             '&lt;tpl if=&quot;fieldStyle&quot;&gt; style=&quot;{fieldStyle}&quot;&lt;/tpl&gt;',
+            '&lt;tpl foreach=&quot;ariaElAttributes&quot;&gt; {$}=&quot;{.}&quot;&lt;/tpl&gt;',
             '&lt;tpl foreach=&quot;inputElAriaAttributes&quot;&gt; {$}=&quot;{.}&quot;&lt;/tpl&gt;',
             ' autocomplete=&quot;off&quot;&gt;\n',
             '&lt;tpl if=&quot;value&quot;&gt;{[Ext.util.Format.htmlEncode(values.value)]}&lt;/tpl&gt;',
@@ -125,9 +126,8 @@ Ext.define('Ext.form.field.TextArea', {
 </span>
 <span id='Ext-form-field-TextArea-property-extraFieldBodyCls'>    extraFieldBodyCls: Ext.baseCSSPrefix + 'form-textarea-body',
 </span>    
-<span id='Ext-form-field-TextArea-cfg-ariaAttributes'>    // All TextArea fields share this trait
-</span>    ariaAttributes: {
-        'aria-multiline': true
+<span id='Ext-form-field-TextArea-cfg-ariaAttributes'>    ariaAttributes: {
+</span>        'aria-multiline': true
     },
 
 <span id='Ext-form-field-TextArea-method-constructor'>    //&lt;debug&gt;
@@ -141,11 +141,8 @@ Ext.define('Ext.form.field.TextArea', {
             Ext.log.warn('Ext.form.field.TextArea &quot;rows&quot; config was removed in Ext 5.0. Please specify a &quot;height&quot; or use a layout instead.');
         }
     },
-    //&lt;/debug&gt;
-
-<span id='Ext-form-field-TextArea-method-getSubTplData'>    /**
-</span>     * @private
-     */
+<span id='Ext-form-field-TextArea-method-getSubTplData'>    //&lt;/debug&gt;
+</span>
     getSubTplData: function(fieldData) {
         var me = this,
             fieldStyle = me.getFieldStyle(),
@@ -229,6 +226,11 @@ Ext.define('Ext.form.field.TextArea', {
             me.fireEvent('specialkey', me, e);
         }
         
+        // Enter key must not bubble up where it can trigger defaultButton action
+        if (key === e.ENTER) {
+            e.stopPropagation();
+        }
+        
         if (me.needsMaxCheck &amp;&amp; key !== e.BACKSPACE &amp;&amp; key !== e.DELETE &amp;&amp; !e.isNavKeyPress() &amp;&amp; !me.isCutCopyPasteSelectAll(e, key)) {
             value = me.getValue();
             if (value.length &gt;= me.maxLength) {
@@ -280,14 +282,16 @@ Ext.define('Ext.form.field.TextArea', {
         }
     },
 
-<span id='Ext-form-field-TextArea-method-beforeDestroy'>    beforeDestroy: function(){
+<span id='Ext-form-field-TextArea-method-doDestroy'>    doDestroy: function() {
 </span>        var task = this.pasteTask;
+        
         if (task) {
             task.cancel();
-            this.pasteTask = null;
         }    
+        
         this.callParent();
     }
-});</pre>
+});
+</pre>
 </body>
 </html>

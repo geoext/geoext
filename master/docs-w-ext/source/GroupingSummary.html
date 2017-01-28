@@ -108,8 +108,8 @@ Ext.define('Ext.grid.feature.GroupingSummary', {
     alias: 'feature.groupingsummary',
 
 <span id='Ext-grid-feature-GroupingSummary-cfg-showSummaryRow'>    showSummaryRow: true,
-</span>    
-<span id='Ext-grid-feature-GroupingSummary-method-vetoEvent'>    vetoEvent: function(record, row, rowIndex, e){
+</span>
+<span id='Ext-grid-feature-GroupingSummary-method-vetoEvent'>    vetoEvent: function (record, row, rowIndex, e){
 </span>        var result = this.callParent(arguments);
         if (result !== false &amp;&amp; e.getTarget(this.summaryRowSelector)) {
             result = false;
@@ -117,6 +117,7 @@ Ext.define('Ext.grid.feature.GroupingSummary', {
         return result;
     }
 });
+
 </pre>
 </body>
 </html>

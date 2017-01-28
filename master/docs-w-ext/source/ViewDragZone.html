@@ -29,14 +29,16 @@ Ext.define('Ext.tree.ViewDragZone', {
 </span>        var records = this.dragData.records,
             count = records.length,
             text = records[0].get(this.displayField),
-            suffix = 's';
-            
-        if (count === 1 &amp;&amp; text) {
-            return text;    
+            suffix = 's',
+            formatRe = /\{\d+\}/,
+            dragText = this.dragText;
+
+        if (formatRe.test(dragText) &amp;&amp; count === 1 &amp;&amp; text) {
+            return text;
         } else if (!text) {
             suffix = '';
         }
-        return Ext.String.format(this.dragText, count, suffix);
+        return Ext.String.format(dragText, count, suffix);
     },
 
 <span id='Ext-tree-ViewDragZone-method-afterRepair'>    afterRepair: function() {

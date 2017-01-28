@@ -33,6 +33,8 @@ Ext.define('Ext.util.translatable.CssPosition', {
         if (typeof y == 'number') {
             domStyle.top = y + 'px';
         }
+
+        this.callParent([x, y]);
     },
 
 <span id='Ext-util-translatable-CssPosition-method-destroy'>    destroy: function() {

@@ -120,6 +120,11 @@ Ext.define('Ext.Ajax', {
 <span id='Ext-Ajax-property-timeout'>    /**
 </span>     * @property {Number} timeout
      * The timeout in milliseconds to be used for requests. Defaults to 30000.
+     * 
+     * When a request fails due to timeout the XMLHttpRequest response object will 
+     * contain:
+     * 
+     *     timedout: true
      */
 
 <span id='Ext-Ajax-property-autoAbort'>    /**

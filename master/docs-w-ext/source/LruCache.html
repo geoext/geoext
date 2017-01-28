@@ -271,11 +271,6 @@ Ext.define('Ext.util.LruCache', {
                 me.removeAtKey(me.first.key);
             }
         }
-    },
-
-<span id='Ext-util-LruCache-method-destroy'>    destroy: function() {
-</span>        this.first = this.last = null;
-        this.callParent();     
     }
 
 <span id='Ext-util-LruCache-method-containsKey'>  /**

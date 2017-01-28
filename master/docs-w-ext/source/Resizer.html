@@ -166,6 +166,20 @@ Ext.define('Ext.resizer.Resizer', {
         ne: 'northeast'
     },
 
+<span id='Ext-resizer-Resizer-property-touchActionMap'>    /**
+</span>     * @private
+     */
+    touchActionMap: {
+        n: { panY: false },
+        s: { panY: false },
+        e: { panX: false },
+        w: { panX: false },
+        se: { panX: false, panY: false },
+        sw: { panX: false, panY: false },
+        nw: { panX: false, panY: false },
+        ne: { panX: false, panY: false }
+    },
+
 <span id='Ext-resizer-Resizer-cfg-target'>    /**
 </span>     * @cfg {Ext.dom.Element/Ext.Component} target
      * The Element or Component to resize.
@@ -207,11 +221,10 @@ Ext.define('Ext.resizer.Resizer', {
 
     constructor: function(config) {
         var me = this,
-            handles = me.handles,
             unselectableCls = Ext.dom.Element.unselectableCls,
             handleEls = [],
             resizeTarget, handleCls, possibles, tag,
-            len, i, pos, el, box, 
+            len, i, pos, box, handle, handles, handleEl,
             wrapTarget, positioning, targetBaseCls;
             
 
@@ -387,33 +400,26 @@ Ext.define('Ext.resizer.Resizer', {
 
         for (i = 0; i &lt; len; i++){
             // if specified and possible, create
-            if (handles[i] &amp;&amp; possibles[handles[i]]) {
-                pos = possibles[handles[i]];
+            handle = handles[i];
+            if (handle &amp;&amp; possibles[handle]) {
+                pos = possibles[handle];
 
-                handleEls.push(
-                    '&lt;div id=&quot;', me.el.id, '-', pos, '-handle&quot; class=&quot;', Ext.String.format(handleCls, pos), ' ', unselectableCls,
-                        '&quot; unselectable=&quot;on&quot; role=&quot;presentation&quot;',
-                    '&gt;&lt;/div&gt;'
-                );
-            }
-        }
-        Ext.DomHelper.append(me.el, handleEls.join(''));
+                handleEl = me[pos] = me.el.createChild({
+                    id: me.el.id + '-' + pos + '-handle',
+                    cls: Ext.String.format(handleCls, pos) + ' ' + unselectableCls,
+                    unselectable: 'on',
+                    role: 'presentation'
+                });
 
-        // Let's reuse the handleEls stack to collect the actual els.
-        handleEls.length = 0;
-
-        // store a reference to each handle element in this.east, this.west, etc
-        for (i = 0; i &lt; len; i++){
-            // if specified and possible, create
-            if (handles[i] &amp;&amp; possibles[handles[i]]) {
-                pos = possibles[handles[i]];
-                el = me[pos] = me.el.getById(me.el.id + '-' + pos + '-handle');
-                handleEls.push(el);
-                el.region = pos;
+                handleEl.region = pos;
 
                 if (me.transparent) {
-                    el.setOpacity(0);
+                    handleEl.setOpacity(0);
                 }
+
+                handleEl.setTouchAction(me.touchActionMap[handle]);
+
+                handleEls.push(handleEl);
             }
         }
 
@@ -421,18 +427,20 @@ Ext.define('Ext.resizer.Resizer', {
     },
 
 <span id='Ext-resizer-Resizer-method-disable'>    disable: function() {
-</span>        this.resizeTracker.disable();
+</span>        this.disabled = true;
+        this.resizeTracker.disable();
     },
 
 <span id='Ext-resizer-Resizer-method-enable'>    enable: function() {
-</span>        this.resizeTracker.enable();
+</span>        this.disabled = false;
+        this.resizeTracker.enable();
     },
 
 <span id='Ext-resizer-Resizer-method-onBeforeResize'>    /**
 </span>     * @private
      * Relay the Tracker's mousedown event as beforeresize
      * @param {Ext.resizer.ResizeTracker} tracker
-     * @param {Ext.event.Event} The event
+     * @param {Ext.event.Event} e The event
      */
     onBeforeResize: function(tracker, e) {
         return this.fireResizeEvent('beforeresize', tracker, e);
@@ -442,7 +450,7 @@ Ext.define('Ext.resizer.Resizer', {
 </span>     * @private
      * Relay the Tracker's drag event as resizedrag
      * @param {Ext.resizer.ResizeTracker} tracker
-     * @param {Ext.event.Event} The event
+     * @param {Ext.event.Event} e The event
      */
     onResize: function(tracker, e) {
         return this.fireResizeEvent('resizedrag', tracker, e);
@@ -452,7 +460,7 @@ Ext.define('Ext.resizer.Resizer', {
 </span>     * @private
      * Relay the Tracker's dragend event as resize
      * @param {Ext.resizer.ResizeTracker} tracker
-     * @param {Ext.event.Event} The event
+     * @param {Ext.event.Event} e The event
      */
     onResizeEnd: function(tracker, e) {
         return this.fireResizeEvent('resize', tracker, e);
@@ -463,7 +471,7 @@ Ext.define('Ext.resizer.Resizer', {
      * Fire a resize event, checking if we have listeners before firing.
      * @param {String} name The name of the event
      * @param {Ext.resizer.ResizeTracker} tracker
-     * @param {Ext.event.Event} The event
+     * @param {Ext.event.Event} e The event
      */
     fireResizeEvent: function(name, tracker, e) {
         var me = this,
@@ -511,11 +519,10 @@ Ext.define('Ext.resizer.Resizer', {
 
 <span id='Ext-resizer-Resizer-method-destroy'>    destroy: function() {
 </span>        var me = this,
-            i,
             handles = me.handles,
             len = handles.length,
             positions = me.possiblePositions,
-            handle;
+            handle, pos, i;
 
         me.resizeTracker.destroy();
 
@@ -525,10 +532,14 @@ Ext.define('Ext.resizer.Resizer', {
         }
 
         for (i = 0; i &lt; len; i++) {
-            if ((handle = me[positions[handles[i]]])) {
+            pos = positions[handles[i]];
+            
+            if ((handle = me[pos])) {
                 handle.destroy();
+                me[pos] = null;
             }
         }
+        
         me.callParent();
     }
 });

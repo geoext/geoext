@@ -237,14 +237,15 @@ Ext.define('Ext.flash.Component', {
 
 <span id='Ext-flash-Component-method-onFailure'>    onFailure: Ext.emptyFn,
 </span>
-<span id='Ext-flash-Component-method-beforeDestroy'>    beforeDestroy: function() {
+<span id='Ext-flash-Component-method-doDestroy'>    doDestroy: function() {
 </span>        var me = this,
             swf = me.swf;
+        
         if (swf) {
             swfobject.removeSWF(me.getSwfId()); // jshint ignore:line
-            Ext.destroy(swf);
-            delete me.swf;
+            me.swf = Ext.destroy(swf);
         }
+        
         me.callParent();
     },
 

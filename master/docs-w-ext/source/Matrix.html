@@ -95,8 +95,33 @@ Ext.define('Ext.data.matrix.Matrix', {
         right.inverse = left;
     },
 
+<span id='Ext-data-matrix-Matrix-method-commit'>    commit: function() {
+</span>        this.left.commit();
+        this.right.commit();
+    },
+
 <span id='Ext-data-matrix-Matrix-method-update'>    update: function (id1, id2, state) {
 </span>        return this.left.update(id1, id2, state);
+    },
+
+<span id='Ext-data-matrix-Matrix-method-updateId'>    updateId: function(record, oldId, newId) {
+</span>        var Type = record.self,
+            left = this.left,
+            right = this.right,
+            matchSide;
+
+        // Are we interested in this record? Check types
+        if (Type === left.role.cls) {
+            matchSide = left;
+        }
+
+        if (Type === right.role.cls) {
+            matchSide = right;
+        }
+
+        if (matchSide) {
+            matchSide.updateId(oldId, newId);
+        }
     },
 
 <span id='Ext-data-matrix-Matrix-method-destroy'>    destroy: function() {

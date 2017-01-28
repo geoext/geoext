@@ -98,44 +98,6 @@ Ext.define('Ext.container.DockingContainer', {
      */
     horizontalDocks: 0,
 
-<span id='Ext-container-DockingContainer-cfg-tabGuard'>    /**
-</span>     * When set to `true`, two elements are added to the panel's element. These are the
-     * `{@link #tabGuardBeforeEl}` and `{@link #tabGuardAfterEl}`.
-     * @cfg {Boolean} tabGuard
-     * @private
-     * @since 6.0.0
-     */
-    tabGuard: false,
-
-<span id='Ext-container-DockingContainer-property-tabGuardAfterEl'>    /**
-</span>     * This element reference is generated when `{@link #tabGuard}` is `true`. This element
-     * is generated after all `dockedItems` in the DOM.
-     * @property {Ext.dom.Element} tabGuardAfterEl
-     * @private
-     * @since 6.0.0
-     */
-
-<span id='Ext-container-DockingContainer-property-tabGuardBeforeEl'>    /**
-</span>     * This element reference is generated when `{@link #tabGuard}` is `true`. This element
-     * is generated before all `dockedItems` in the DOM.
-     * @property {Ext.dom.Element} tabGuardBeforeEl
-     * @private
-     * @since 6.0.0
-     */
-
-<span id='Ext-container-DockingContainer-property-tabGuardTpl'>    /**
-</span>     * @property {String/String[]/Ext.XTemplate} tabGuardTpl
-     * This template is used to generate the `tabGuard` elements. It is used once per
-     * element (see `{@link #tabGuardBeforeEl}` and `{@link #tabGuardAfterEl}`).
-     * @private
-     * @since 6.0.0
-     */
-    tabGuardTpl:
-        '&lt;div id=&quot;{id}-{tabGuardEl}&quot; data-ref=&quot;{tabGuardEl}&quot; tabIndex=&quot;0&quot; class=&quot;' +
-            Ext.baseCSSPrefix + 'tab-guard ' +
-            Ext.baseCSSPrefix + 'tab-guard-{tabGuard}&quot; ' +
-        '&gt;&lt;/div&gt;',
-
 <span id='Ext-container-DockingContainer-method-addDocked'>    /**
 </span>     * Adds docked item(s) to the container.
      *
@@ -213,35 +175,17 @@ Ext.define('Ext.container.DockingContainer', {
         // context is the renderData! The &quot;this&quot; pointer is either the frameTpl or the
         // renderTpl instance!
 
-        // Due to framing, we will be called in two different ways: in the frameTpl or in
-        // the renderTpl. The frameTpl version enters via doRenderFramingDockedItems which
-        // sets &quot;$skipDockedItems&quot; on the renderTpl's renderData.
-        //
         var me = renderData.$comp,
             layout = me.componentLayout,
-            tabGuard = me.tabGuard &amp;&amp; me.getTpl('tabGuardTpl'),
+            tabGuard = me.tabGuard &amp;&amp; me.lookupTpl('tabGuardTpl'),
             items, tree;
 
-        if (layout.getDockedItems &amp;&amp; !renderData.$skipDockedItems) {
-            if (tabGuard &amp;&amp; !after) {
-                renderData.tabGuard = 'before';
-                me.addChildEl(renderData.tabGuardEl = 'tabGuardBeforeEl');
-
-                tabGuard.applyOut(renderData, out);
-            }
-
+        if (layout.getDockedItems) {
             items = layout.getDockedItems('render', !after);
             tree = items &amp;&amp; layout.getItemsRenderTree(items);
 
             if (tree) {
                 Ext.DomHelper.generateMarkup(tree, out);
-            }
-
-            if (tabGuard &amp;&amp; after) {
-                renderData.tabGuard = 'after';
-                me.addChildEl(renderData.tabGuardEl = 'tabGuardAfterEl');
-
-                tabGuard.applyOut(renderData, out);
             }
         }
     },
@@ -323,14 +267,16 @@ Ext.define('Ext.container.DockingContainer', {
 
     // Placeholder empty functions
 <span id='Ext-container-DockingContainer-method-onDockedAdd'>    /**
-</span>     * Invoked after a docked item is added to the Panel.
+</span>     * @method
+     * Invoked after a docked item is added to the Panel.
      * @param {Ext.Component} component
      * @template
      * @protected
      */
     onDockedAdd : Ext.emptyFn,
 <span id='Ext-container-DockingContainer-method-onDockedRemove'>    /**
-</span>     * Invoked after a docked item is removed from the Panel.
+</span>     * @method
+     * Invoked after a docked item is removed from the Panel.
      * @param {Ext.Component} component
      * @template
      * @protected

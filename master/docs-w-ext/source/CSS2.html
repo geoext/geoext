@@ -77,12 +77,15 @@ Ext.define('Ext.util.CSS', function() {
 
 <span id='Ext-util-CSS-method-removeStyleSheet'>        /**
 </span>         * Removes a style or link tag by id
-         * @param {String} id The id of the tag
+         * @param {String/CSSStyleSheet} stylesheet The id of the style tag, or the CSSStyleSheet
+         * reference to remove
          */
-        removeStyleSheet : function(id) {
-            var existing = doc.getElementById(id);
-            if (existing) {
-                existing.parentNode.removeChild(existing);
+        removeStyleSheet: function(stylesheet) {
+            var styleEl = (typeof stylesheet === 'string') ?
+                doc.getElementById(stylesheet) : stylesheet.ownerNode;
+
+            if (styleEl) {
+                styleEl.parentNode.removeChild(styleEl);
             }
         },
 

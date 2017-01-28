@@ -80,12 +80,8 @@ Ext.define('Ext.grid.column.RowNumberer', {
      */
     producesHTML: false,
 
-<span id='Ext-grid-column-RowNumberer-cfg-ignoreExport'>    /**
-</span>     * @cfg {Boolean} ignoreExport
-     * @inheritdoc
-     */
-    ignoreExport: true,
-
+<span id='Ext-grid-column-RowNumberer-cfg-ignoreExport'>    ignoreExport: true,
+</span>
 <span id='Ext-grid-column-RowNumberer-method-constructor'>    constructor: function (config) {
 </span>        var me = this;
 
@@ -101,11 +97,8 @@ Ext.define('Ext.grid.column.RowNumberer', {
         me.scope = me;
     },
 
-<span id='Ext-grid-column-RowNumberer-property-resizable'>    /**
-</span>     * @private
-     */
-    resizable: false,
-<span id='Ext-grid-column-RowNumberer-cfg-hideable'>    hideable: false,
+<span id='Ext-grid-column-RowNumberer-cfg-resizable'>    resizable: false,
+</span><span id='Ext-grid-column-RowNumberer-cfg-hideable'>    hideable: false,
 </span><span id='Ext-grid-column-RowNumberer-cfg-menuDisabled'>    menuDisabled: true,
 </span><span id='Ext-grid-column-RowNumberer-cfg-dataIndex'>    dataIndex: '',
 </span><span id='Ext-grid-column-RowNumberer-cfg-cls'>    cls: Ext.baseCSSPrefix + 'row-numberer',
@@ -113,11 +106,8 @@ Ext.define('Ext.grid.column.RowNumberer', {
 </span><span id='Ext-grid-column-RowNumberer-property-innerCls'>    innerCls: Ext.baseCSSPrefix + 'grid-cell-inner-row-numberer',
 </span><span id='Ext-grid-column-RowNumberer-property-rowspan'>    rowspan: undefined,
 </span>
-<span id='Ext-grid-column-RowNumberer-method-defaultRenderer'>    /**
-</span>     * @private
-     */
-    defaultRenderer: function(value, metaData, record, rowIdx, colIdx, dataSource, view) {
-        var rowspan = this.rowspan,
+<span id='Ext-grid-column-RowNumberer-method-defaultRenderer'>    defaultRenderer: function(value, metaData, record, rowIdx, colIdx, dataSource, view) {
+</span>        var rowspan = this.rowspan,
             page = dataSource.currentPage,
             result = view.store.indexOf(record);
 

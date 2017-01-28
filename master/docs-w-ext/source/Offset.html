@@ -24,7 +24,16 @@ Ext.define('Ext.util.Offset', {
 
     statics: {
 <span id='Ext-util-Offset-static-method-fromObject'>        fromObject: function(obj) {
-</span>            return new this(obj.x, obj.y);
+</span>            if (obj instanceof this) {
+                return obj;
+            }
+            if (typeof obj === 'number') {
+                return new this(obj, obj);
+            }
+            if (obj.length) {
+                return new this(obj[0], obj[1]);
+            }
+            return new this(obj.x, obj.y);
         }
     },
 
@@ -57,7 +66,18 @@ Ext.define('Ext.util.Offset', {
         }
         //&lt;/debug&gt;
 
-        return (this.x == offset.x &amp;&amp; this.y == offset.y);
+        return (this.x === offset.x &amp;&amp; this.y === offset.y);
+    },
+
+<span id='Ext-util-Offset-method-add'>    add: function(offset) {
+</span>        //&lt;debug&gt;
+        if(!(offset instanceof this.statics())) {
+            Ext.raise('Offset must be an instance of Ext.util.Offset');
+        }
+        //&lt;/debug&gt;
+
+        this.x += offset.x;
+        this.y += offset.y;
     },
 
 <span id='Ext-util-Offset-method-round'>    round: function(to) {
@@ -72,7 +92,7 @@ Ext.define('Ext.util.Offset', {
     },
 
 <span id='Ext-util-Offset-method-isZero'>    isZero: function() {
-</span>        return this.x == 0 &amp;&amp; this.y == 0;
+</span>        return this.x === 0 &amp;&amp; this.y === 0;
     }
 });
 </pre>

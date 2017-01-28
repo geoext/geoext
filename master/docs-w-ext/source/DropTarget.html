@@ -148,11 +148,11 @@ Ext.define('Ext.dd.DropTarget', {
         return false;
     },
 
-<span id='Ext-dd-DropTarget-method-destroy'>    destroy : function(){
-</span>        this.callParent();
-        if (this.containerScroll) {
+<span id='Ext-dd-DropTarget-method-destroy'>    destroy: function() {
+</span>        if (this.containerScroll) {
             Ext.dd.ScrollManager.unregister(this.el);
         }
+        this.callParent();
     }
 });
 </pre>

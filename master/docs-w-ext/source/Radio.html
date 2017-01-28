@@ -194,7 +194,8 @@ Ext.define('Ext.form.field.Radio', {
 
 <span id='Ext-form-field-Radio-property-isRadio'>    /**
 </span>     * @property {Boolean} isRadio
-     * `true` in this class to identify an object as an instantiated Radio, or subclass thereof.
+     * The value `true` to identify an object as an instance of this or derived class.
+     * @readonly
      */
     isRadio: true,
 
@@ -204,11 +205,6 @@ Ext.define('Ext.form.field.Radio', {
      */
 
     inputType: 'radio',
-<span id='Ext-form-field-Radio-property-ariaRole'>    ariaRole: 'radio',
-</span>    
-<span id='Ext-form-field-Radio-cfg-tabIndex'>    // Radios are naturally focusable but they need to participate in RadioGroups
-</span>    // which are focusable containers; we set tabIndex to &gt;= 0 here to make that work
-    tabIndex: 0,
     
 <span id='Ext-form-field-Radio-property-formId'>    formId: null,
 </span>
@@ -221,17 +217,7 @@ Ext.define('Ext.form.field.Radio', {
         return selected ? selected.inputValue : null;
     },
 
-<span id='Ext-form-field-Radio-method-onBoxClick'>    /**
-</span>     * @private Handle click on the radio button
-     */
-    onBoxClick: function() {
-        var me = this;
-        if (!me.disabled &amp;&amp; !me.readOnly) {
-            this.setValue(true);
-        }
-    },
-    
-<span id='Ext-form-field-Radio-method-onRemoved'>    onRemoved: function(){
+<span id='Ext-form-field-Radio-method-onRemoved'>    onRemoved: function() {
 </span>        this.callParent(arguments);
         this.formId = null;
     },
@@ -254,6 +240,7 @@ Ext.define('Ext.form.field.Radio', {
                 active.setValue(true);
             }
         }
+
         return me;
     },
 
@@ -265,31 +252,31 @@ Ext.define('Ext.form.field.Radio', {
         return this.checked ? this.inputValue : null;
     },
 
-<span id='Ext-form-field-Radio-method-getModelData'>    getModelData: function() {
-</span>        var o = this.callParent(arguments);
-        if (o) {
-            o[this.getName()] = this.getSubmitValue();
-        }
-        return o;
-    },
-
 <span id='Ext-form-field-Radio-method-onChange'>    onChange: function(newVal, oldVal) {
 </span>        var me = this,
+            ownerCt = me.ownerCt,
             r, rLen, radio, radios;
 
         me.callParent(arguments);
-
+        
+        // Standard compliant browsers only fire change event on the radio button
+        // that became checked so we need to update other buttons in the group.
+        // See also IE8 override.
         if (newVal) {
             radios = me.getManager().getByName(me.name, me.getFormId()).items;
-            rLen   = radios.length;
+            rLen = radios.length;
 
             for (r = 0; r &lt; rLen; r++) {
                 radio = radios[r];
 
                 if (radio !== me) {
-                    radio.setValue(false);
+                    radio.updateValueFromDom();
                 }
             }
+        }
+
+        if (ownerCt &amp;&amp; ownerCt.isRadioGroup &amp;&amp; ownerCt.simpleValue) {
+            ownerCt.checkChange();
         }
     },
 

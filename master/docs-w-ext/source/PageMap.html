@@ -226,7 +226,7 @@ Ext.define('Ext.data.PageMap', {
 
 <span id='Ext-data-PageMap-method-getByInternalId'>    getByInternalId: function(internalId) {
 </span>        var index = this.indexMap[internalId];
-        if (index !== -1) {
+        if (index != null) {
             return this.getAt(index);
         }
     },
@@ -357,12 +357,6 @@ Ext.define('Ext.data.PageMap', {
             }
         }
         return result;
-    },
-
-<span id='Ext-data-PageMap-method-destroy'>    destroy: function() {
-</span>        this.callParent();
-        this.indexMap = {};
-
     }
 });
 </pre>

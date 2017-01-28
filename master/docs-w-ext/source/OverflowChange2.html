@@ -76,7 +76,7 @@ Ext.define('Ext.util.sizemonitor.OverflowChange', {
     },
 
 <span id='Ext-util-sizemonitor-OverflowChange-method-refreshMonitors'>    refreshMonitors: function() {
-</span>        if (this.destroyed) {
+</span>        if (this.destroying || this.destroyed) {
             return;
         }
 
@@ -100,6 +100,13 @@ Ext.define('Ext.util.sizemonitor.OverflowChange', {
         }
 
         Ext.TaskQueue.requestRead('refresh', this);
+    },
+    
+<span id='Ext-util-sizemonitor-OverflowChange-method-destroy'>    destroy: function() {
+</span>        // These are closures so Base destructor won't null them
+        this.onExpand = this.onShrink = null;
+        
+        this.callParent();
     }
 });
 </pre>

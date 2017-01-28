@@ -104,6 +104,10 @@ Ext.define('Ext.TaskQueue', {
             task = tasks[i];
             fn = task[0];
             scope = task[1];
+            
+            if (scope &amp;&amp; (scope.destroying || scope.destroyed)) {
+                continue;
+            }
 
             if (typeof fn === 'string') {
                 fn = scope[fn];
@@ -123,6 +127,16 @@ Ext.define('Ext.TaskQueue', {
             this.request(request);
         }
     }
+
+<span id='Ext-TaskQueue-property-privates'>    //&lt;debug&gt;
+</span>    ,privates: {
+        flush: function() {
+            while (this.readQueue.length || this.writeQueue.length) {
+                this.run();
+            }
+        }
+    }
+    //&lt;/debug&gt;
 });
 </pre>
 </body>

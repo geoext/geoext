@@ -102,7 +102,7 @@ Ext.define('Ext.fx.Animator', {
      */
     delay: 0,
 
-<span id='Ext-fx-Animator-property-delayStart'>    /* private used to track a delayed starting time */
+<span id='Ext-fx-Animator-property-delayStart'>    //  private used to track a delayed starting time
 </span>    delayStart: 0,
 
 <span id='Ext-fx-Animator-cfg-dynamic'>    /**
@@ -299,11 +299,10 @@ keyframes : {
         }
     },
 
-<span id='Ext-fx-Animator-property-applyAnimator'>    /**
+<span id='Ext-fx-Animator-method-applyAnimator'>    /**
 </span>     * Applies animation to the Ext.fx.target
+     * @param {String/Object} target
      * @private
-     * @param target
-     * @type String/Object
      */
     applyAnimator: function(target) {
         var me = this,
@@ -422,6 +421,7 @@ keyframes : {
 </span>        // Explicitly return false, we don't want to be run continuously by the manager
         return false;
     }
-});</pre>
+});
+</pre>
 </body>
 </html>

@@ -92,7 +92,7 @@ Ext.define('Ext.window.Toast', {
     useXAxis: false,
 
 <span id='Ext-window-Toast-cfg-align'>    /**
-</span>     * @cfg {&quot;br&quot;/&quot;bl&quot;/&quot;tr&quot;/&quot;tl&quot;/&quot;t&quot;/&quot;l&quot;/&quot;b&quot;/&quot;r&quot;} [align=&quot;br&quot;]
+</span>     * @cfg {&quot;br&quot;/&quot;bl&quot;/&quot;tr&quot;/&quot;tl&quot;/&quot;t&quot;/&quot;l&quot;/&quot;b&quot;/&quot;r&quot;} [align]
      * Specifies the basic alignment of the toast message with its {@link #anchor}. This 
      * controls many aspects of the toast animation as well. For fine grain control of 
      * the final placement of the toast and its `anchor` you may set 
@@ -109,8 +109,10 @@ Ext.define('Ext.window.Toast', {
      *  - b  - bottom
      *  - r  - right
      */
-    align: 'br',
+    align: 't',
 
+<span id='Ext-window-Toast-cfg-alwaysOnTop'>    alwaysOnTop: true,
+</span>
 <span id='Ext-window-Toast-cfg-anchorAlign'>    /**
 </span>     * @cfg {String} [anchorAlign]
      * This string is a full specification of how to position the toast with respect to
@@ -124,7 +126,6 @@ Ext.define('Ext.window.Toast', {
      * Set this to `false` to make toasts appear and disappear without animation.
      * This is helpful with applications' unit and integration testing.
      */
-    animate: true,
 
 <span id='Ext-window-Toast-property-spacing'>    // Pixels between each notification
 </span>    spacing: 6,
@@ -142,10 +143,17 @@ Ext.define('Ext.window.Toast', {
 </span><span id='Ext-window-Toast-property-slideBackDuration'>    slideBackDuration: 500,
 </span><span id='Ext-window-Toast-property-hideDuration'>    hideDuration: 500,
 </span><span id='Ext-window-Toast-property-autoCloseDelay'>    autoCloseDelay: 3000,
-</span><span id='Ext-window-Toast-property-stickOnClick'>    stickOnClick: true,
-</span><span id='Ext-window-Toast-property-stickWhileHover'>    stickWhileHover: true,
+</span>    
+<span id='Ext-window-Toast-cfg-stickOnClick'>    /**
+</span>     * @cfg {Boolean} [stickOnClick]
+     * This config will prevent the Toast from closing when you click on it. If this is set to `true`,
+     * closing the Toast will have to be handled some other way (e.g., Setting `closable: true`).
+     */
+    stickOnClick: false,
+<span id='Ext-window-Toast-property-stickWhileHover'>    stickWhileHover: true,
 </span><span id='Ext-window-Toast-property-closeOnMouseDown'>    closeOnMouseDown: false,
 </span><span id='Ext-window-Toast-cfg-closable'>    closable: false,
+</span><span id='Ext-window-Toast-property-focusable'>    focusable: false,
 </span>
 <span id='Ext-window-Toast-property-isHiding'>    // Private. Do not override!
 </span>    isHiding: false,
@@ -157,13 +165,24 @@ Ext.define('Ext.window.Toast', {
 </span>    xPos: 0,
 <span id='Ext-window-Toast-property-yPos'>    yPos: 0,
 </span>
+<span id='Ext-window-Toast-method-constructor'>    constructor: function(config) {
+</span>        config = config || {};
+        if (config.animate === undefined) {
+            config.animate = Ext.isBoolean(this.animate) ? this.animate : Ext.enableFx;
+        }
+        this.enableAnimations = config.animate;
+        delete config.animate;
+
+        this.callParent([config]);
+    },
+
 <span id='Ext-window-Toast-method-initComponent'>    initComponent: function() {
 </span>        var me = this;
 
         // Close tool is not really helpful to sight impaired users
         // when Toast window is set to auto-close on timeout; however
         // if it's forced, respect that.
-        if (me.autoClose &amp;&amp; !me.hasOwnProperty('closable')) {
+        if (me.autoClose &amp;&amp; me.closable == null) {
             me.closable = false;
         }
         
@@ -444,7 +463,7 @@ Ext.define('Ext.window.Toast', {
 
         Ext.Array.include(activeToasts, me);
 
-        if (me.animate) {
+        if (me.enableAnimations) {
             // Repeating from coordinates makes sure the windows does not flicker
             // into the center of the viewport during animation
             xy = el.getXY();
@@ -472,8 +491,12 @@ Ext.define('Ext.window.Toast', {
     },
 
 <span id='Ext-window-Toast-method-afterPositioned'>    afterPositioned: function() {
-</span>        if (this.autoClose) {
-            this.closeTask.delay(this.autoCloseDelay);
+</span>        var me = this;
+        
+        // This method can be called from afteranimation event being fired
+        // during destruction sequence.
+        if (!me.destroying &amp;&amp; !me.destroyed &amp;&amp; me.autoClose) {
+            me.closeTask.delay(me.autoCloseDelay);
         }
     },
 
@@ -504,7 +527,7 @@ Ext.define('Ext.window.Toast', {
 
             me.stopAnimation();
             
-            if (me.animate) {
+            if (me.enableAnimations) {
                 el.animate({
                     to: {
                         x: me.xPos,
@@ -551,6 +574,12 @@ Ext.define('Ext.window.Toast', {
             me.closeOnMouseOut = true;
         }
     },
+    
+<span id='Ext-window-Toast-method-doDestroy'>    doDestroy: function() {
+</span>        this.removeFromAnchor();
+        this.cancelAutoClose();
+        this.callParent();
+    },
 
 <span id='Ext-window-Toast-method-onMouseEnter'>    onMouseEnter: function () {
 </span>        this.mouseIsOver = true;
@@ -592,12 +621,10 @@ Ext.define('Ext.window.Toast', {
             el = me.el;
 
         me.cancelAutoClose();
-
+        
         if (me.isHiding) {
             if (!me.isFading) {
                 me.callParent(arguments);
-                // Must come after callParent() since it will pass through hide() again triggered by destroy()
-                me.removeFromAnchor();
                 me.isHiding = false;
             }
         }
@@ -609,15 +636,21 @@ Ext.define('Ext.window.Toast', {
             me.cancelAutoClose();
 
             if (el) {
-                if (me.animate) {
+                if (me.enableAnimations &amp;&amp; !me.destroying &amp;&amp; !me.destroyed) {
                     el.fadeOut({
                         opacity: 0,
                         easing: 'easeIn',
                         duration: me.hideDuration,
                         listeners: {
-                            afteranimate: function () {
+                            scope: me,
+                            afteranimate: function() {
+                                var me = this;
+                                
                                 me.isFading = false;
-                                me.hide(me.animateTarget, me.doClose, me);
+                                
+                                if (!me.destroying &amp;&amp; !me.destroyed) {
+                                    me.hide(me.animateTarget, me.doClose, me);
+                                }
                             }
                         }
                     });

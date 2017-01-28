@@ -19,7 +19,9 @@
     override: 'Ext.grid.plugin.BufferedRenderer',
 
     translateBody: function(body, bodyTop) {
-        if (this.isRTL &amp;&amp; Ext.supports.xOriginBug &amp;&amp; view.scrollFlags.y) {
+        var scroller = this.view.getScrollable();
+
+        if (this.isRTL &amp;&amp; Ext.supports.xOriginBug &amp;&amp; scroller &amp;&amp; scroller.getY()) {
             body.translate(Ext.getScrollbarSize().width, this.bodyTop = bodyTop);
         } else {
             this.callParent([body, bodyTop]);

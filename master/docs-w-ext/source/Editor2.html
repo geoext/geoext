@@ -263,7 +263,8 @@ Ext.define('Ext.Editor', {
      */
     
     preventDefaultAlign: true,
-<span id='Ext-Editor-property-specialKeyDelay'>    specialKeyDelay: 1,
+<span id='Ext-Editor-property-useBoundValue'>    useBoundValue: true,
+</span><span id='Ext-Editor-property-specialKeyDelay'>    specialKeyDelay: 1,
 </span>
 <span id='Ext-Editor-method-initComponent'>    initComponent: function() {
 </span>        var me = this,
@@ -283,7 +284,7 @@ Ext.define('Ext.Editor', {
         };
         me.items = field;
 
-        me.callParent(arguments);
+        me.callParent();
     },
 
 <span id='Ext-Editor-method-onAdded'>    onAdded: function (container) {
@@ -299,11 +300,8 @@ Ext.define('Ext.Editor', {
         this.updateLayout();
     },
 
-<span id='Ext-Editor-method-afterRender'>    /**
-</span>     * @private
-     */
-    afterRender: function(ct, position) {
-        var me = this,
+<span id='Ext-Editor-method-afterRender'>    afterRender: function(ct, position) {
+</span>        var me = this,
             field = me.field,
             inputEl = field.inputEl;
 
@@ -366,12 +364,20 @@ Ext.define('Ext.Editor', {
             field = me.field,
             dom, ownerCt, renderTo;
 
-        me.completeEdit();
+        me.completeEdit(true);
         me.boundEl = Ext.get(el);
         dom = me.boundEl.dom;
-        value = Ext.isDefined(value) ? value : Ext.String.trim(dom.textContent || dom.innerText || dom.innerHTML);
+
+        if (me.useBoundValue &amp;&amp; !Ext.isDefined(value)) {
+            value = Ext.String.trim(dom.textContent || dom.innerText || dom.innerHTML);
+        }
 
         if (me.fireEvent('beforestartedit', me, me.boundEl, value) !== false) {
+            if (me.context) {
+                // Grab the value again, may have changed in beforestartedit
+                value = me.context.value;
+            }
+
             // If NOT configured with a renderTo, render to the ownerCt's element
             // Being floating, we do not need to use the actual layout's target.
             // Indeed, it's better if we do not so that we do not interfere with layout's child management.
@@ -424,6 +430,7 @@ Ext.define('Ext.Editor', {
         var me = this,
             field = me.field,
             startValue = me.startValue,
+            cancel = me.context &amp;&amp; me.context.cancel,
             value;
 
         if (!me.editing) {
@@ -454,16 +461,13 @@ Ext.define('Ext.Editor', {
             if (me.updateEl &amp;&amp; me.boundEl) {
                 me.boundEl.setHtml(value);
             }
-            me.onEditComplete(remainVisible);
+            me.onEditComplete(remainVisible, cancel);
             me.fireEvent('complete', me, value, startValue);
         }
     },
 
-<span id='Ext-Editor-method-onShow'>    /**
-</span>     * @private
-     */
-    onShow: function() {
-        var me = this;
+<span id='Ext-Editor-method-onShow'>    onShow: function() {
+</span>        var me = this;
 
         me.callParent(arguments);
         me.fireEvent('startedit', me, me.boundEl, me.startValue);
@@ -488,7 +492,7 @@ Ext.define('Ext.Editor', {
                 me.setValue(startValue);
                 field.resumeEvents();
             }
-            me.onEditComplete(remainVisible);
+            me.onEditComplete(remainVisible, true);
             me.fireEvent('canceledit', me, value, startValue);
             delete me.editedValue;
         }
@@ -497,7 +501,7 @@ Ext.define('Ext.Editor', {
 <span id='Ext-Editor-method-onEditComplete'>    /**
 </span>     * @private
      */
-    onEditComplete: function(remainVisible) {
+    onEditComplete: function(remainVisible, canceling) {
         this.editing = false;
         if (remainVisible !== true) {
             this.hide();
@@ -505,11 +509,8 @@ Ext.define('Ext.Editor', {
         }
     },
 
-<span id='Ext-Editor-method-onFocusLeave'>    /**
-</span>     * @private
-     */
-    onFocusLeave: function(e) {
-        var me = this;
+<span id='Ext-Editor-method-onFocusLeave'>    onFocusLeave: function(e) {
+</span>        var me = this;
 
         if (me.allowBlur === true &amp;&amp; me.editing) {
             me.completeEdit();
@@ -517,11 +518,8 @@ Ext.define('Ext.Editor', {
         me.callParent([e]);
     },
 
-<span id='Ext-Editor-method-onHide'>    /**
-</span>     * @private
-     */
-    onHide: function() {
-        var me = this,
+<span id='Ext-Editor-method-onHide'>    onHide: function() {
+</span>        var me = this,
             field = me.field;
 
         if (me.editing) {
@@ -555,7 +553,7 @@ Ext.define('Ext.Editor', {
         }
     },
 
-<span id='Ext-Editor-method-beforeDestroy'>    beforeDestroy: function () {
+<span id='Ext-Editor-method-doDestroy'>    doDestroy: function() {
 </span>        var me = this,
             task = me.specialKeyTask;
 
@@ -563,8 +561,9 @@ Ext.define('Ext.Editor', {
             task.cancel();
         }
 
-        me.specialKeyTask = me.field = me.boundEl = Ext.destroy(me.field);
-        me.callParent(arguments);
+        Ext.destroy(me.field);
+        
+        me.callParent();
     }
 });
 </pre>

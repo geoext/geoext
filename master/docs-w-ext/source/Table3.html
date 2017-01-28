@@ -21,17 +21,9 @@
     rtlCellTpl: [
         '&lt;td class=&quot;' + Ext.baseCSSPrefix + 'rtl {tdCls}&quot; {tdAttr} {[Ext.aria ? &quot;id=\\&quot;&quot; + Ext.id() + &quot;\\&quot;&quot; : &quot;&quot;]} style=&quot;width:{column.cellWidth}px;&lt;tpl if=&quot;tdStyle&quot;&gt;{tdStyle}&lt;/tpl&gt;&quot; tabindex=&quot;-1&quot; {ariaCellAttr} data-columnid=&quot;{[values.column.getItemId()]}&quot;&gt;',
             '&lt;div {unselectableAttr} class=&quot;' + Ext.baseCSSPrefix + 'rtl ' + Ext.baseCSSPrefix + 'grid-cell-inner {innerCls}&quot; ',
-        'style=&quot;text-align:{[this.getAlign(values.align)]};&lt;tpl if=&quot;style&quot;&gt;{style}&lt;/tpl&gt;&quot; {ariaCellInnerAttr}&gt;{value}&lt;/div&gt;',
+        'style=&quot;text-align:{align};&lt;tpl if=&quot;style&quot;&gt;{style}&lt;/tpl&gt;&quot; {ariaCellInnerAttr}&gt;{value}&lt;/div&gt;',
         '&lt;/td&gt;', {
-            priority: 0,
-            rtlAlign: {
-                right: 'left',
-                left: 'right',
-                center: 'center'
-            },
-            getAlign: function(align) {
-                return this.rtlAlign[align];
-            }
+            priority: 0
         }
     ],
 
@@ -40,7 +32,7 @@
 
         me.callParent();
         if (me.getInherited().rtl) {
-            me.addCellTpl(me.getTpl('rtlCellTpl'));
+            me.addCellTpl(me.lookupTpl('rtlCellTpl'));
         }
     },
 

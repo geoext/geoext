@@ -21,7 +21,7 @@
 Ext.define('Ext.event.gesture.Rotate', {
     extend: 'Ext.event.gesture.MultiTouch',
 
-<span id='Ext-event-gesture-Rotate-property-priority'>    priority: 700,
+<span id='Ext-event-gesture-Rotate-property-priority'>    priority: 800,
 </span>
 <span id='Ext-event-gesture-Rotate-property-handledEvents'>    handledEvents: ['rotatestart', 'rotate', 'rotateend', 'rotatecancel'],
 </span>
@@ -77,64 +77,65 @@ Ext.define('Ext.event.gesture.Rotate', {
 <span id='Ext-event-gesture-Rotate-property-lastAngle'>    lastAngle: null,
 </span>
 <span id='Ext-event-gesture-Rotate-method-onTouchMove'>    onTouchMove: function(e) {
-</span>        if (!this.isTracking) {
-            return;
-        }
+</span>        var me = this,
+            touches, lastAngle, firstPoint, secondPoint, angle, nextAngle, previousAngle,
+            diff;
 
-        var touches = e.touches,
-            lastAngle = this.lastAngle,
-            firstPoint, secondPoint, angle, nextAngle, previousAngle, diff;
+        if (me.isTracking) {
+            touches = e.touches;
+            lastAngle = me.lastAngle;
 
-        firstPoint = touches[0].point;
-        secondPoint = touches[1].point;
+            firstPoint = touches[0].point;
+            secondPoint = touches[1].point;
 
-        angle = firstPoint.getAngleTo(secondPoint);
+            angle = firstPoint.getAngleTo(secondPoint);
 
-        if (lastAngle !== null) {
-            diff = Math.abs(lastAngle - angle);
-            nextAngle = angle + 360;
-            previousAngle = angle - 360;
+            if (lastAngle !== null) {
+                diff = Math.abs(lastAngle - angle);
+                nextAngle = angle + 360;
+                previousAngle = angle - 360;
 
-            if (Math.abs(nextAngle - lastAngle) &lt; diff) {
-                angle = nextAngle;
+                if (Math.abs(nextAngle - lastAngle) &lt; diff) {
+                    angle = nextAngle;
+                } else if (Math.abs(previousAngle - lastAngle) &lt; diff) {
+                    angle = previousAngle;
+                }
             }
-            else if (Math.abs(previousAngle - lastAngle) &lt; diff) {
-                angle = previousAngle;
+
+            me.lastAngle = angle;
+
+            if (!me.isStarted) {
+                me.isStarted = true;
+
+                me.startAngle = angle;
+
+                me.fire('rotatestart', e, {
+                    touches: touches,
+                    angle: angle,
+                    rotation: 0
+                });
+            } else {
+                me.fire('rotate', e, {
+                    touches: touches,
+                    angle: angle,
+                    rotation: angle - me.startAngle
+                });
             }
+
+            me.lastTouches = Ext.Array.clone(touches);
         }
-
-        this.lastAngle = angle;
-
-        if (!this.isStarted) {
-            this.isStarted = true;
-
-            this.startAngle = angle;
-
-            this.fire('rotatestart', e, {
-                touches: touches,
-                angle: angle,
-                rotation: 0
-            });
-        }
-        else {
-            this.fire('rotate', e, {
-                touches: touches,
-                angle: angle,
-                rotation: angle - this.startAngle
-            });
-        }
-
-        this.lastTouches = Ext.Array.clone(touches);
     },
 
-<span id='Ext-event-gesture-Rotate-method-fireEnd'>    fireEnd: function(e) {
-</span>        this.lastAngle = null;
-        this.fire('rotateend', e);
+<span id='Ext-event-gesture-Rotate-method-onTouchEnd'>    onTouchEnd: function(e) {
+</span>        if (this.isStarted) {
+            this.fire('rotateend', e);
+        }
+
+        return this.callParent([e]);
     },
 
-<span id='Ext-event-gesture-Rotate-method-fireCancel'>    fireCancel: function(e) {
-</span>        this.lastAngle = null;
-        this.fire('rotatecancel', e);
+<span id='Ext-event-gesture-Rotate-method-onCancel'>    onCancel: function(e) {
+</span>        this.fire('rotatecancel', e, null, true);
     },
 
 <span id='Ext-event-gesture-Rotate-method-reset'>    reset: function() {
@@ -142,7 +143,7 @@ Ext.define('Ext.event.gesture.Rotate', {
 
         me.lastTouches = me.lastAngle = me.startAngle = null;
 
-        this.callParent();
+        return this.callParent();
     }
 }, function(Rotate) {
     var gestures = Ext.manifest.gestures;

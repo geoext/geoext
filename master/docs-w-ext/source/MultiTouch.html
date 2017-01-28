@@ -28,51 +28,24 @@ Ext.define('Ext.event.gesture.MultiTouch', {
 </span>
 <span id='Ext-event-gesture-MultiTouch-property-isTracking'>    isTracking: false,
 </span>
-<span id='Ext-event-gesture-MultiTouch-property-isStarted'>    isStarted: false,
+<span id='Ext-event-gesture-MultiTouch-property-isMultiTouch'>    isMultiTouch: true,
 </span>
 <span id='Ext-event-gesture-MultiTouch-method-onTouchStart'>    onTouchStart: function(e) {
-</span>        var requiredTouchesCount = this.requiredTouchesCount,
+</span>        var me = this,
+            requiredTouchesCount = me.requiredTouchesCount,
             touches = e.touches,
             touchesCount = touches.length;
 
         if (touchesCount === requiredTouchesCount) {
-            this.start(e);
-        }
-        else if (touchesCount &gt; requiredTouchesCount) {
-            this.end(e);
-        }
-    },
-
-<span id='Ext-event-gesture-MultiTouch-method-onTouchEnd'>    onTouchEnd: function(e) {
-</span>        this.end(e);
-    },
-
-<span id='Ext-event-gesture-MultiTouch-method-onTouchCancel'>    onTouchCancel: function(e) {
-</span>        this.end(e, true);
-        return false;
-    },
-
-<span id='Ext-event-gesture-MultiTouch-method-start'>    start: function() {
-</span>        if (!this.isTracking) {
-            this.isTracking = true;
-            this.isStarted = false;
-        }
-    },
-
-<span id='Ext-event-gesture-MultiTouch-method-end'>    end: function(e, isCancel) {
-</span>        if (this.isTracking) {
-            this.isTracking = false;
-
-            if (this.isStarted) {
-                this.isStarted = false;
-
-                this[isCancel ? 'fireCancel' : 'fireEnd'](e);
-            }
+            me.isTracking = true;
+        } else if (touchesCount &gt; requiredTouchesCount) {
+            return me.cancel(e);
         }
     },
 
 <span id='Ext-event-gesture-MultiTouch-method-reset'>    reset: function() {
-</span>        this.isTracking = this.isStarted = false;
+</span>        this.isTracking = false;
+        return this.callParent();
     }
 });
 </pre>
