@@ -258,6 +258,22 @@ The application needs the OpenLayers library to work. Add this dependency to the
     }],
 ```
 
+and css file
+
+```
+    "css": [
+        {"path": "http://openlayers.org/en/master/css/ol.css" , "remote": true},
+        {
+            // this entry uses an ant variable that is the calculated
+            // value of the generated output css file for the app,
+            // defined in .sencha/app/defaults.properties
+            "path": "${build.out.css.path}",
+            "bundle": true,
+            "exclude": ["fashion"]
+        }
+    ],
+```
+
 This includes all OpenLayers 3 functionality. After this exercise, you can consider [creating a custom build](http://openlayers.org/en/v3.9.0/doc/tutorials/custom-builds.html) to create a smaller OL3 library, adjusted to only what you need.
 
 ### Build and test the app
