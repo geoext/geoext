@@ -380,14 +380,14 @@ Ext.define('GeoExt.component.FeatureRenderer', {
      */
     initComponent: function() {
         var me = this;
-        var id = this.getId();
-        this.autoEl = {
+        var id = me.getId();
+        me.autoEl = {
             'id': id,
             'tag': 'div',
             'class': this.getImgCls()
         };
-        if (!this.getLineFeature()) {
-            this.setLineFeature(new ol.Feature({
+        if (!me.getLineFeature()) {
+            me.setLineFeature(new ol.Feature({
                 geometry: new ol.geom.LineString([
                     [
                         -8,
@@ -408,16 +408,16 @@ Ext.define('GeoExt.component.FeatureRenderer', {
                 ])
             }));
         }
-        if (!this.getPointFeature()) {
-            this.setPointFeature(new ol.Feature({
+        if (!me.getPointFeature()) {
+            me.setPointFeature(new ol.Feature({
                 geometry: new ol.geom.Point([
                     0,
                     0
                 ])
             }));
         }
-        if (!this.getPolygonFeature()) {
-            this.setPolygonFeature(new ol.Feature({
+        if (!me.getPolygonFeature()) {
+            me.setPolygonFeature(new ol.Feature({
                 geometry: new ol.geom.Polygon([
                     [
                         [
@@ -456,15 +456,15 @@ Ext.define('GeoExt.component.FeatureRenderer', {
                 ])
             }));
         }
-        if (!this.getTextFeature()) {
-            this.setTextFeature(new ol.Feature({
+        if (!me.getTextFeature()) {
+            me.setTextFeature(new ol.Feature({
                 geometry: new ol.geom.Point([
                     0,
                     0
                 ])
             }));
         }
-        this.map = new ol.Map({
+        me.map = new ol.Map({
             controls: [],
             interactions: [],
             layers: [
@@ -473,13 +473,13 @@ Ext.define('GeoExt.component.FeatureRenderer', {
                 })
             ]
         });
-        var feature = this.getFeature();
+        var feature = me.getFeature();
         if (!feature) {
-            this.setFeature(this['get' + this.getSymbolType() + 'Feature']());
+            me.setFeature(me['get' + me.getSymbolType() + 'Feature']());
         } else {
-            this.applyFeature(feature);
+            me.applyFeature(feature);
         }
-        me.callParent(arguments);
+        me.callParent();
     },
     /**
      * Draw the feature when we are rendered.
@@ -505,8 +505,9 @@ Ext.define('GeoExt.component.FeatureRenderer', {
      * @private
      */
     initCustomEvents: function() {
-        this.clearCustomEvents();
-        this.el.on('click', this.onClick, this);
+        var me = this;
+        me.clearCustomEvents();
+        me.el.on('click', me.onClick, me);
     },
     /**
      * Unbinds previously bound listeners on #el.
@@ -514,8 +515,9 @@ Ext.define('GeoExt.component.FeatureRenderer', {
      * @private
      */
     clearCustomEvents: function() {
-        if (this.el && this.el.clearListeners) {
-            this.el.clearListeners();
+        var el = this.el;
+        if (el && el.clearListeners) {
+            el.clearListeners();
         }
     },
     /**
@@ -532,9 +534,10 @@ Ext.define('GeoExt.component.FeatureRenderer', {
      * @private
      */
     beforeDestroy: function() {
-        this.clearCustomEvents();
-        if (this.map) {
-            this.map.setTarget(null);
+        var me = this;
+        me.clearCustomEvents();
+        if (me.map) {
+            me.map.setTarget(null);
         }
     },
     /**
@@ -553,8 +556,10 @@ Ext.define('GeoExt.component.FeatureRenderer', {
      * @private
      */
     drawFeature: function() {
-        this.map.setTarget(this.el.id);
-        this.setRendererDimensions();
+        var me = this;
+        me.map.setTarget(me.el.id);
+        // TODO why not me.el?
+        me.setRendererDimensions();
     },
     /**
      * Set the dimension of our renderer, i.e. map and view.
@@ -562,7 +567,8 @@ Ext.define('GeoExt.component.FeatureRenderer', {
      * @private
      */
     setRendererDimensions: function() {
-        var gb = this.feature.getGeometry().getExtent();
+        var me = this;
+        var gb = me.feature.getGeometry().getExtent();
         var gw = ol.extent.getWidth(gb);
         var gh = ol.extent.getHeight(gb);
         /*
@@ -571,11 +577,11 @@ Ext.define('GeoExt.component.FeatureRenderer', {
          * 2) if not specified, use max res based on width or height of element
          * 3) if no width or height, assume a resolution of 1
          */
-        var resolution = this.initialConfig.resolution;
+        var resolution = me.initialConfig.resolution;
         if (!resolution) {
-            resolution = Math.max(gw / this.width || 0, gh / this.height || 0) || 1;
+            resolution = Math.max(gw / me.width || 0, gh / me.height || 0) || 1;
         }
-        this.map.setView(new ol.View({
+        me.map.setView(new ol.View({
             minResolution: resolution,
             maxResolution: resolution,
             projection: new ol.proj.Projection({
@@ -584,8 +590,8 @@ Ext.define('GeoExt.component.FeatureRenderer', {
             })
         }));
         // determine height and width of element
-        var width = Math.max(this.width || this.getMinWidth(), gw / resolution);
-        var height = Math.max(this.height || this.getMinHeight(), gh / resolution);
+        var width = Math.max(me.width || me.getMinWidth(), gw / resolution);
+        var height = Math.max(me.height || me.getMinHeight(), gh / resolution);
         // determine bounds of renderer
         var center = ol.extent.getCenter(gb);
         var bhalfw = width * resolution / 2;
@@ -596,9 +602,9 @@ Ext.define('GeoExt.component.FeatureRenderer', {
                 center[0] + bhalfw,
                 center[1] + bhalfh
             ];
-        this.el.setSize(Math.round(width), Math.round(height));
-        this.map.updateSize();
-        this.map.getView().fit(bounds, this.map.getSize());
+        me.el.setSize(Math.round(width), Math.round(height));
+        me.map.updateSize();
+        me.map.getView().fit(bounds, me.map.getSize());
     },
     /**
      * We're setting the symbolizers on the feature.
