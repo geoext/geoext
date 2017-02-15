@@ -374,6 +374,33 @@ describe('GeoExt.component.OverviewMap', function() {
                 var parentCenter = olMap.getView().getCenter();
                 expect(parentCenter).to.eql([1, 1]);
             });
+
+            it('reprojects if projections are not equal', function() {
+                overviewMap.destroyDragBehaviour(); // destroy first
+                overviewMap.setupDragBehaviour();
+                overviewMap.boxFeature.setGeometry(ol.geom.Polygon.fromExtent(
+                    [0, 0, 1000000, 1000000]
+                    // --> center is [500000, 500000] in 3857, which is
+                    // [4.491576420597607, 4.486983030705062] in 4326
+                ));
+
+                // set a different projection (4326) for the parent map
+                // to force projection between overviewMap (3857) and
+                // parentMap (4326)
+                var newParentView = new ol.View({
+                    center: [0, 0],
+                    projection: 'EPSG:4326',
+                    zoom: 2
+                });
+                olMap.setView(newParentView);
+
+                // we test whether this call will reproject
+                overviewMap.recenterParentFromBox();
+
+                var parentCenter = olMap.getView().getCenter();
+                var expectedCenter = [4.491576420597607, 4.486983030705062];
+                expect(parentCenter).to.eql(expectedCenter);
+            });
         });
     });
 
