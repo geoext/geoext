@@ -24,16 +24,16 @@ module.exports = function(config) {
                 included: false
             },
             // CSS files
-            'http://openlayers.org/en/v3.20.1/css/ol.css',
+            'https://openlayers.org/en/v3.20.1/css/ol.css',
             'https://cdnjs.cloudflare.com/ajax/libs/extjs/6.2.0/classic/'
                 + 'theme-crisp/resources/theme-crisp-all' + suffix + '.css',
             // requestAnimationFrame shim
             'https://cdn.rawgit.com/paulirish/1579671/raw/'
                 + '682e5c880c92b445650c4880a6bf9f3897ec1c5b/rAF.js',
             // OpenLayers 3
-            'http://openlayers.org/en/v3.20.1/build/ol' + suffix + '.js',
+            'https://openlayers.org/en/v3.20.1/build/ol' + suffix + '.js',
             // ExtJS 6
-            'http://cdnjs.cloudflare.com/ajax/libs/extjs/6.2.0/ext-all'
+            'https://cdnjs.cloudflare.com/ajax/libs/extjs/6.2.0/ext-all'
                 + suffix + '.js',
             // Ext.Loader configuration
             'test/loader.js',
