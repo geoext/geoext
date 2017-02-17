@@ -49,7 +49,7 @@ Ext.define('BasicTreeColumnLegends', {
             var layer = rec.data;
             var legendUrl = layer.get('legendUrl');
             if (!legendUrl) {
-                legendUrl = 'http://geoext.github.io/geoext2/' +
+                legendUrl = 'https://geoext.github.io/geoext2/' +
                     'website-resources/img/GeoExt-logo.png';
             }
             return '<img class="legend" src="' + legendUrl + '" height="32" />';
@@ -114,11 +114,11 @@ Ext.application({
         });
 
         source3 = new ol.source.TileWMS({
-            url: 'http://ows.terrestris.de/osm-gray/service',
+            url: 'https://ows.terrestris.de/osm-gray/service',
             params: {'LAYERS': 'OSM-WMS', 'TILED': true}
         });
         layer3 = new ol.layer.Tile({
-            legendUrl: 'http://ows.terrestris.de/osm-gray/service?' +
+            legendUrl: 'https://ows.terrestris.de/osm-gray/service?' +
                 'SERVICE=WMS&VERSION=1.3.0&REQUEST=GetMap&FORMAT=image%2Fpng&' +
                 'TRANSPARENT=true&LAYERS=OSM-WMS&TILED=true&WIDTH=256&' +
                 'HEIGHT=256&CRS=EPSG%3A3857&STYLES=&' +
@@ -211,7 +211,7 @@ Ext.application({
                     var legHtml = '';
 
                     if (!legendUrl) {
-                        legendUrl = 'http://geoext.github.io/geoext2/' +
+                        legendUrl = 'https://geoext.github.io/geoext2/' +
                             'website-resources/img/GeoExt-logo.png';
                     }
                     legHtml = '<img class="legend" src="' + legendUrl +
