@@ -214,7 +214,7 @@ Ext.application({
             layers: [
                 new ol.layer.Tile({
                     source: new ol.source.TileWMS({
-                        url: 'http://ows.terrestris.de/osm-gray/service',
+                        url: 'https://ows.terrestris.de/osm-gray/service',
                         params: {'LAYERS': 'OSM-WMS', 'TILED': true}
                     })
                 }),
