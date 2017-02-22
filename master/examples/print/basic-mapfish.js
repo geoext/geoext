@@ -75,6 +75,30 @@ Ext.application({
         });
 
         /**
+         * A small utility method that will change the `baseURL` from https to
+         * http (if needed and possible), because the MapFish instance we are
+         * talking to currently cannot handle all 'https' requests.
+         *
+         * Please note that this is a restriction posed by the remote server, a
+         * correctly configured MapFish instance can very well handle https.
+         *
+         * @param {Array<Object>} layers An array of serialized layers.
+         * @return {Array<Object>} An array of serialized layers, https URLs
+         *     will now point to their http-equivalent.
+         */
+        var unHttpsLayers = function(layers) {
+            var changed = [];
+            Ext.each(layers, function(layer) {
+                var clone = Ext.clone(layer);
+                if (clone.baseURL && (/^https:/i).test(clone.baseURL)) {
+                    clone.baseURL = clone.baseURL.replace('https', 'http');
+                }
+                changed.push(clone);
+            });
+            return changed;
+        };
+
+        /**
          * Once the store is loaded, we can create the button with the
          * following assumptions:
          *
@@ -117,7 +141,7 @@ Ext.application({
                             return !isExtentLayer;
                         }
                     );
-
+                    serializedLayers = unHttpsLayers(serializedLayers);
                     serializedLayers.reverse();
                     spec.attributes[attr.get('name')] = {
                         bbox: bbox,

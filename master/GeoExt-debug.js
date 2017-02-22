@@ -2904,7 +2904,7 @@ Ext.define('GeoExt.data.MapfishPrintProvider', {
          *     layer and serialize it.
          * @param {Object} [filterScope] The scope in which the filtering
          *     function will be executed.
-         * @return {Object[]} An array of serialized layers.
+         * @return {Array<Object>} An array of serialized layers.
          * @static
          */
         getSerializedLayers: function(mapComponent, filterFn, filterScope) {
