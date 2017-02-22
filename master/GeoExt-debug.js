@@ -1786,7 +1786,6 @@ Ext.define('GeoExt.component.OverviewMap', {
         'ol.geom.Point#getCoordinates',
         'ol.geom.Point#setCoordinates',
         'ol.geom.Polygon',
-        'ol.geom.Polygon.fromExtent',
         'ol.geom.Polygon#getCoordinates',
         'ol.geom.Polygon#setCoordinates',
         'ol.interaction.Translate',
@@ -1816,6 +1815,65 @@ Ext.define('GeoExt.component.OverviewMap', {
         'ol.View#setCenter',
         'ol.View#un'
     ],
+    statics: {
+        /**
+         * Returns an object with geometries representing the extent of the
+         * passed map and the top left point.
+         *
+         * @param {ol.Map} map The map to the extent and top left corner
+         *     geometries from.
+         * @return {Object} An object with keys `extent` and `topLeft`.
+         */
+        getVisibleExtentGeometries: function(map) {
+            var mapSize = map && map.getSize();
+            var w = mapSize && mapSize[0];
+            var h = mapSize && mapSize[1];
+            if (!mapSize || isNaN(w) || isNaN(h)) {
+                return;
+            }
+            var pixels = [
+                    [
+                        0,
+                        0
+                    ],
+                    [
+                        w,
+                        0
+                    ],
+                    [
+                        w,
+                        h
+                    ],
+                    [
+                        0,
+                        h
+                    ],
+                    [
+                        0,
+                        0
+                    ]
+                ];
+            var extentCoords = [];
+            Ext.each(pixels, function(pixel) {
+                var coord = map.getCoordinateFromPixel(pixel);
+                if (coord === null) {
+                    return false;
+                }
+                extentCoords.push(coord);
+            });
+            if (extentCoords.length !== 5) {
+                return;
+            }
+            var geom = new ol.geom.Polygon([
+                    extentCoords
+                ]);
+            var anchor = new ol.geom.Point(extentCoords[0]);
+            return {
+                extent: geom,
+                topLeft: anchor
+            };
+        }
+    },
     config: {
         /**
          * The style for the anchor feature which indicates the upper-left
@@ -1887,59 +1945,6 @@ Ext.define('GeoExt.component.OverviewMap', {
          *     box feature.
          */
         recenterDuration: 500
-    },
-    statics: {
-        /**
-         * Rotates a coordinate around another center coordinate and returns the
-         * new coordinate.
-         *
-         * @param {Number[]} coord The coordinate to rotate as array with
-         *     `[x, y]`.
-         * @param {Number[]} center The coordinate to rotate around as array
-         *     with `[x, y]`.
-         * @param {Number} rotation The rotation in radians.
-         * @return {Number[]} The rotate coordinate as array with `[x, y]`.
-         */
-        rotateCoordAroundCoord: function(coord, center, rotation) {
-            var cosTheta = Math.cos(rotation);
-            var sinTheta = Math.sin(rotation);
-            var x = (cosTheta * (coord[0] - center[0]) - sinTheta * (coord[1] - center[1]) + center[0]);
-            var y = (sinTheta * (coord[0] - center[0]) + cosTheta * (coord[1] - center[1]) + center[1]);
-            return [
-                x,
-                y
-            ];
-        },
-        /**
-         * Rotates a geometry around a center coordinate and returns the
-         * new geometry. Only reliably works with instances of `ol.geom.Point`
-         * or `ol.geom.Polygon`, the latter loosing any inner rings (holes) it
-         * may have.
-         *
-         * @param {ol.geom.Point|ol.geom.Polygon} geom The geometry to rotate.
-         * @param {Number[]} centerCoord The coordinate to rotate around as
-         *     array with `[x, y]`.
-         * @param {Number} rotation The rotation in radians.
-         * @return {Number[]} The rotate coordinate as array with `[x, y]`.
-         */
-        rotateGeomAroundCoord: function(geom, centerCoord, rotation) {
-            var me = this;
-            var ar = [];
-            var coords;
-            if (geom instanceof ol.geom.Point) {
-                ar.push(me.rotateCoordAroundCoord(geom.getCoordinates(), centerCoord, rotation));
-                geom.setCoordinates(ar[0]);
-            } else if (geom instanceof ol.geom.Polygon) {
-                coords = geom.getCoordinates()[0];
-                coords.forEach(function(coord) {
-                    ar.push(me.rotateCoordAroundCoord(coord, centerCoord, rotation));
-                });
-                geom.setCoordinates([
-                    ar
-                ]);
-            }
-            return geom;
-        }
     },
     /**
      * The `ol.Feature` that represents the extent of the parent map.
@@ -2130,7 +2135,7 @@ Ext.define('GeoExt.component.OverviewMap', {
     repositionAnchorFeature: function() {
         var me = this;
         var boxCoords = me.boxFeature.getGeometry().getCoordinates();
-        var topLeftCoord = boxCoords[0][1];
+        var topLeftCoord = boxCoords[0][0];
         var newAnchorGeom = new ol.geom.Point(topLeftCoord);
         me.anchorFeature.setGeometry(newAnchorGeom);
     },
@@ -2204,17 +2209,15 @@ Ext.define('GeoExt.component.OverviewMap', {
      */
     updateBox: function() {
         var me = this;
-        var parentMapView = me.getParentMap().getView();
-        var parentMapProjection = parentMapView.getProjection();
-        var parentExtent = parentMapView.calculateExtent(me.getParentMap().getSize());
-        var parentRotation = parentMapView.getRotation();
-        var parentCenter = parentMapView.getCenter();
-        var geom = ol.geom.Polygon.fromExtent(parentExtent);
-        var overviewView = me.getMap().getView();
-        var overviewProjection = overviewView.getProjection();
-        geom = me.self.rotateGeomAroundCoord(geom, parentCenter, parentRotation);
-        var anchor = new ol.geom.Point(ol.extent.getTopLeft(parentExtent));
-        anchor = me.self.rotateGeomAroundCoord(anchor, parentCenter, parentRotation);
+        var parentMap = me.getParentMap();
+        var extentGeometries = me.self.getVisibleExtentGeometries(parentMap);
+        if (!extentGeometries) {
+            return;
+        }
+        var geom = extentGeometries.extent;
+        var anchor = extentGeometries.topLeft;
+        var parentMapProjection = parentMap.getView().getProjection();
+        var overviewProjection = me.getMap().getView().getProjection();
         // transform if necessary
         if (!ol.proj.equivalent(parentMapProjection, overviewProjection)) {
             geom.transform(parentMapProjection, overviewProjection);
