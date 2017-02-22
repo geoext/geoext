@@ -28,6 +28,7 @@
   },
   "scripts": {
     "clean": "rm -rf coverage apidoc",
+    "postinstall": "node ./bin/fetch-external-resources.js",
     "lint": "eslint src/ examples/ && eslint -c test/.eslintrc test/",
     "lint:fix": "eslint --fix src/ examples/ && eslint --fix -c test/.eslintrc test/",
     "pretest": "npm run-script lint",
@@ -55,6 +56,8 @@
     "karma-mocha": "1.3.0",
     "karma-phantomjs-launcher": "1.0.2",
     "karma-sinon": "1.0.5",
+    "log-update": "1.0.2",
+    "mkdirp": "0.5.1",
     "mocha": "3.2.0",
     "openlayers": "3.20.1",
     "phantomjs-prebuilt": "2.1.14",

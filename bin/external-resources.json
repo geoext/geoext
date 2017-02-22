@@ -1,0 +1,10 @@
+{
+    "urls": [
+        "https://cdnjs.cloudflare.com/ajax/libs/extjs/6.2.0/classic/theme-crisp/resources/theme-crisp-all_1.css",
+        "https://cdnjs.cloudflare.com/ajax/libs/extjs/6.2.0/classic/theme-crisp/resources/theme-crisp-all_2.css",
+        "https://cdnjs.cloudflare.com/ajax/libs/extjs/6.2.0/classic/theme-crisp/resources/theme-crisp-all-debug_1.css",
+        "https://cdnjs.cloudflare.com/ajax/libs/extjs/6.2.0/classic/theme-crisp/resources/theme-crisp-all-debug_2.css",
+        "https://cdnjs.cloudflare.com/ajax/libs/extjs/6.2.0/ext-all.js",
+        "https://cdnjs.cloudflare.com/ajax/libs/extjs/6.2.0/ext-all-debug.js"
+    ]
+}
