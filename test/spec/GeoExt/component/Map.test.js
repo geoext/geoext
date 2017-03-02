@@ -16,50 +16,31 @@ describe('GeoExt.component.Map', function() {
     });
 
     describe('public functions', function() {
-        var div;
-        var mapComponent;
-        var mapPanel;
-        var source;
         var layer;
-        var olMap;
+        var map;
+        var mapComponent;
+        var testObjs;
 
         beforeEach(function() {
-            div = document.createElement('div');
-            div.style.position = 'absolute';
-            div.style.top = '0';
-            div.style.left = '-1000px';
-            div.style.width = '512px';
-            div.style.height = '256px';
-            document.body.appendChild(div);
-
-            source = new ol.source.OSM();
             layer = new ol.layer.Tile({
-                source: source
+                source: new ol.source.OSM()
+            });
+            testObjs = TestUtil.setupTestObjects({
+                mapOpts: {
+                    layers: [layer],
+                    view: new ol.View({
+                        center: [0, 0],
+                        zoom: 2
+                    })
+                }
             });
 
-            olMap = new ol.Map({
-                layers: [layer],
-                view: new ol.View({
-                    center: [0, 0],
-                    zoom: 2
-                })
-            });
-
-            mapComponent = Ext.create('GeoExt.component.Map', {
-                map: olMap
-            });
-
-            mapPanel = Ext.create('Ext.panel.Panel', {
-                title: 'GeoExt.component.Map Example',
-                items: [mapComponent],
-                layout: 'fit',
-                renderTo: div
-            });
+            map = testObjs.map;
+            mapComponent = testObjs.mapComponent;
         });
 
         afterEach(function() {
-            mapPanel.destroy();
-            document.body.removeChild(div);
+            TestUtil.teardownTestObjects(testObjs);
         });
         describe('getters and setters', function() {
 
@@ -109,7 +90,7 @@ describe('GeoExt.component.Map', function() {
             it('setCenter() sets the correct center', function() {
                 var center = [1183893.8882437304, 7914041.721258021];
                 mapComponent.setCenter(center);
-                expect(olMap.getView().getCenter()).to.be(center);
+                expect(map.getView().getCenter()).to.be(center);
             });
 
             it('setExtent() sets the correct center', function() {
@@ -124,7 +105,7 @@ describe('GeoExt.component.Map', function() {
                         (extent[3] - (extent[3] - extent[1]) / 2).toFixed(3)
                     ];
                     mapComponent.setExtent(extent);
-                    var olCenter = olMap.getView().getCenter();
+                    var olCenter = map.getView().getCenter();
                     var derivedCenter = [
                         olCenter[0].toFixed(3),
                         olCenter[1].toFixed(3)
@@ -143,7 +124,7 @@ describe('GeoExt.component.Map', function() {
                         zoom: 4
                     });
                     mapComponent.setView(view);
-                    expect(olMap.getView()).to.be(view);
+                    expect(map.getView()).to.be(view);
                 }
             );
         });
@@ -156,7 +137,7 @@ describe('GeoExt.component.Map', function() {
                         source: source2
                     });
                     mapComponent.addLayer(layer2);
-                    expect(olMap.getLayers().getArray()).to.contain(layer2);
+                    expect(map.getLayers().getArray()).to.contain(layer2);
                 }
             );
 
@@ -167,7 +148,7 @@ describe('GeoExt.component.Map', function() {
                         undefined,
                         new ol.source.OSM(),
                         '',
-                        olMap
+                        map
                     ];
 
                     nolayer.forEach(function(oneLayer) {
@@ -180,9 +161,9 @@ describe('GeoExt.component.Map', function() {
             );
 
             it('removeLayer() removes an ol.layer.Base', function() {
-                expect(olMap.getLayers().getArray()).to.contain(layer);
+                expect(map.getLayers().getArray()).to.contain(layer);
                 mapComponent.removeLayer(layer);
-                expect(olMap.getLayers().getArray()).to.not.contain(layer);
+                expect(map.getLayers().getArray()).to.not.contain(layer);
             });
 
             it('removeLayer() throws error if no layer is passed',
@@ -192,7 +173,7 @@ describe('GeoExt.component.Map', function() {
                         undefined,
                         new ol.source.OSM(),
                         '',
-                        olMap
+                        map
                     ];
 
                     nolayer.forEach(function(oneLayer) {
@@ -208,7 +189,7 @@ describe('GeoExt.component.Map', function() {
         describe('listening to size changes', function() {
 
             it('ensure the map is updated when the size changes', function() {
-                var spy = sinon.spy(olMap, 'updateSize');
+                var spy = sinon.spy(map, 'updateSize');
 
                 mapComponent.setSize(100, 100);
 
@@ -216,7 +197,7 @@ describe('GeoExt.component.Map', function() {
                 expect(spy.callCount).to.be(1);
 
                 // restore old method
-                olMap.updateSize.restore();
+                map.updateSize.restore();
             });
 
         });
