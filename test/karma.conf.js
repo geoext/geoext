@@ -30,6 +30,8 @@ module.exports = function(config) {
             'resources/external/ext-all' + suffix + '.js',
             // Ext.Loader configuration
             'test/loader.js',
+            // Our utility class with some test helpers
+            'test/TestUtil.js',
             // GeoExt source files
             {
                 pattern: 'src/**/*.js',
