@@ -202,5 +202,38 @@ describe('GeoExt.component.Map', function() {
 
         });
 
+        describe('pointerrest configuration', function() {
+            it('is off by default', function() {
+                expect(mapComponent.getPointerRest()).to.be(false);
+            });
+            it('when it is off, there is no buffered handler', function() {
+                expect(mapComponent.bufferedPointerMove).to.be(Ext.emptyFn);
+            });
+            it('can be turned on (config)', function() {
+                var testObjs2 = TestUtil.setupTestObjects({
+                    mapComponentOpts: {
+                        pointerRest: true
+                    }
+                });
+                var mapComponent2 = testObjs2.mapComponent;
+
+                expect(mapComponent2.getPointerRest()).to.be(true);
+                expect(mapComponent2.bufferedPointerMove).to.not.be(
+                    Ext.emptyFn
+                );
+
+                TestUtil.teardownTestObjects(testObjs2);
+            });
+            it('can be turned on (setter)', function() {
+                // sanity check
+                expect(mapComponent.getPointerRest()).to.be(false);
+                mapComponent.setPointerRest(true);
+                expect(mapComponent.getPointerRest()).to.be(true);
+                expect(mapComponent.bufferedPointerMove).to.not.be(
+                    Ext.emptyFn
+                );
+            });
+        });
+
     });
 });
