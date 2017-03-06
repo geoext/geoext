@@ -233,6 +233,45 @@ describe('GeoExt.component.Map', function() {
                     Ext.emptyFn
                 );
             });
+            it('can be turned off', function() {
+                // sanity checks
+                expect(mapComponent.getPointerRest()).to.be(false);
+                expect(mapComponent.bufferedPointerMove).to.be(Ext.emptyFn);
+                // 1) enable it…
+                mapComponent.setPointerRest(true);
+                expect(mapComponent.bufferedPointerMove).to.not.be(Ext.emptyFn);
+                // 2) …disable it…
+                mapComponent.setPointerRest(false);
+                // 3) … bufferedPointerMove is the emptyFn again
+                expect(mapComponent.bufferedPointerMove).to.be(Ext.emptyFn);
+            });
+            it('ensures bufferedPointerMove calls unbuffered one',
+                function(done) {
+                    var spy = sinon.spy(mapComponent, 'unbufferedPointerMove');
+                    mapComponent.setPointerRestInterval(50);
+                    mapComponent.setPointerRest(true);
+
+                    // call into the generated bufferedPointerMove
+                    var mockOlEvt = {pixel: [0, 0]};
+                    mapComponent.bufferedPointerMove(mockOlEvt);
+
+                    setTimeout(function() {
+                        expect(spy.called).to.be(true);
+                        expect(spy.callCount).to.be(1);
+                        mapComponent.unbufferedPointerMove.restore();
+                        done();
+                    }, 100); // interval plus a bit offset
+                }
+            );
+            it('ensures changing the interval changes the buffered method',
+                function() {
+                    mapComponent.setPointerRest(true);
+                    var oldBuffered = mapComponent.bufferedPointerMove;
+                    mapComponent.setPointerRestInterval(50);
+                    var newBuffered = mapComponent.bufferedPointerMove;
+                    expect(newBuffered).to.not.be(oldBuffered);
+                }
+            );
         });
 
     });
