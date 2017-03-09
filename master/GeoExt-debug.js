@@ -1590,24 +1590,46 @@ Ext.define('GeoExt.component.Map', {
      * over- and out-listeners.
      */
     unregisterPointerRestEvents: function() {
-        var map = this.getMap();
-        this.unbindOverOutListeners();
+        var me = this;
+        var map = me.getMap();
+        me.unbindOverOutListeners();
         if (map) {
-            map.un('pointermove', this.bufferedPointerMove);
+            map.un('pointermove', me.bufferedPointerMove);
         }
+        me.bufferedPointerMove = Ext.emptyFn;
     },
     /**
      * Whenever the value of #pointerRest is changed, this method will take
      * care of registering or unregistering internal event listeners.
      *
      * @param {Boolean} val The new value that someone set for `pointerRest`.
-     * @return {Boolean} The passed new value for  `pointerRest` unchanged.
+     * @return {Boolean} The passed new value for `pointerRest` unchanged.
      */
     applyPointerRest: function(val) {
         if (val) {
             this.registerPointerRestEvents();
         } else {
             this.unregisterPointerRestEvents();
+        }
+        return val;
+    },
+    /**
+     * Whenever the value of #pointerRestInterval is changed, this method will
+     * take to reinitialize the #bufferedPointerMove method and handlers to
+     * actually trigger the event.
+     *
+     * @param {Boolean} val The new value that someone set for
+     *     `pointerRestInterval`.
+     * @return {Boolean} The passed new value for `pointerRestInterval`
+     *     unchanged.
+     */
+    applyPointerRestInterval: function(val) {
+        var me = this;
+        var isEnabled = me.getPointerRest();
+        if (isEnabled) {
+            // Toggle to rebuild the buffered pointer move.
+            me.setPointerRest(false);
+            me.setPointerRest(isEnabled);
         }
         return val;
     },
@@ -1678,7 +1700,7 @@ Ext.define('GeoExt.component.Map', {
         }
     },
     /**
-     * Returns the GeoExt.data.store.Layers.
+     * Returns the `GeoExt.data.store.Layers`.
      *
      * @return {GeoExt.data.store.Layers} The layer store.
      */
