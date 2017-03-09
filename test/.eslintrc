@@ -9,6 +9,7 @@
     "module": false,
     "expect": false,
     "it": false,
-    "sinon": false
+    "sinon": false,
+    "TestUtil": true
   }
 }
