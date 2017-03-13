@@ -13,11 +13,11 @@
       "signatures": [
         {
           "name": "GeoExt Contributors",
-          "uuid": "6955c578-78db-4ddd-8106-684ad4f58834",
-          "created": "2017-03-13T15:22:45Z",
+          "uuid": "141a472b-e0a6-4211-8b70-dcdc74aa1e79",
+          "created": "2017-03-13T19:22:13Z",
           "algorithm": "SHA1withRSA",
-          "nonce": "3j+FZC3k4fw\u003d",
-          "signature": "wenk0vaKVmazP0VvkQgN5lg+5JkyNlKblpFb+fb2Bt/eGAAdp1gTYTk3g03L2ZYENbvUZtf8HhlaFjeC0ZjWIztt25XchN/CDgoP70k3W++Z29qouvS08HmA9jHG70/Hr4psUUE7m7WD92ZKwOsON3CTupD/HX77wTW8F881Xk+dyXr/WqlqX5RcDbBtApWgxd5qtgCOGDeocvgVMcQTCZ8lCMMPBe2cG/nhP+VhTZzOuTuTKFxlpiZeaVZUaYkmhU45vQ9Qz8F1COu/FV1B54nBx+f6gcJT5Yfl+XmhShLZj1ENqJ2ZBq4bFyJLkE8lMBu8cJQfRRfEe4BXIEFzKw\u003d\u003d"
+          "nonce": "0tOSC2le37k\u003d",
+          "signature": "RaZkUeIaeOcYKyLeFbv/mIEuTau5HFFfixC+bW90L8gUdCrZ386mUvxkfwOh3rUx6eesUh8UZg16QSxycnLaX7g6F50m/jDR8N+SggE2W3HIBsEuIWs74nmOwRXPeAFO8gB5lObbkendJUH+wo6ASs7Cfih3eZRxlL7OENjhouZWyWDlVfEEQg+UqbNxGOGrtyK//EcV2C3Ln+iuUOuKffMdbKpruwti/qCHcBsDv+L95z5QjSrpO+R6RpVuR23/cUcaRMM7bvkZydypjGK6M1Qd3AjZ5aVfp5oitLWV+xY3cgcklovfpQ7Vb9Efh/rvK4SuVnR/FqL+ZdtMS7Nk2w\u003d\u003d"
         }
       ],
       "slicer": {
