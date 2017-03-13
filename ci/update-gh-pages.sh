@@ -4,9 +4,10 @@ set -e
 # ------------------------------------------------------------------------------
 # This script is supposed to be called from Travis continuous integration server
 #
-# It will update the gh.pages branch of GeoExt with various artifacts created
+# It will update the gh-pages branch of GeoExt with various artifacts created
 # in the previous step
 # ------------------------------------------------------------------------------
+
 echo "$TRAVIS_BUILD_DIR/ci/shared.sh"
 if [ -f "$TRAVIS_BUILD_DIR/ci/shared.sh" ]; then
     # Load variables and the 'running-on-travis'-check
@@ -29,11 +30,14 @@ fi
 # default is master…
 SUB_FOLDER_NAME=$TRAVIS_BRANCH;
 DOC_SUFFIX="-dev"
+PUBLISH_SENCHA_PACKAGE="false"
 
 if [ "$TRAVIS_TAG" != "" ]; then
     # … but if we are building for a tag, let's use this as folder name
     SUB_FOLDER_NAME=$TRAVIS_TAG
     DOC_SUFFIX=""
+    # … only publish the tagged versions
+    PUBLISH_SENCHA_PACKAGE="true"
 fi
 
 DOCS_DIR=$SUB_FOLDER_NAME/docs
@@ -70,12 +74,14 @@ cd $GH_PAGES_DIR
 
 
 # 1. Update GeoExt package
-mkdir -p cmd/pkgs/$GEOEXT_PACKAGE_NAME
-rm -Rf cmd/pkgs/$GEOEXT_PACKAGE_NAME/$GEOEXT_PACKAGE_VERSION
-cp -r $INSTALL_DIR/../repo/pkgs/$GEOEXT_PACKAGE_NAME/$GEOEXT_PACKAGE_VERSION cmd/pkgs/$GEOEXT_PACKAGE_NAME
-# TODO the files catalog.json should better be updated, instead of overwritten…
-cp $INSTALL_DIR/../repo/pkgs/catalog.json cmd/pkgs/
-cp $INSTALL_DIR/../repo/pkgs/$GEOEXT_PACKAGE_NAME/catalog.json cmd/pkgs/$GEOEXT_PACKAGE_NAME
+if [ "$PUBLISH_SENCHA_PACKAGE" == "true" ]; then
+    mkdir -p cmd/pkgs/$GEOEXT_PACKAGE_NAME
+    rm -Rf cmd/pkgs/$GEOEXT_PACKAGE_NAME/$GEOEXT_PACKAGE_VERSION
+    cp -r $INSTALL_DIR/../repo/pkgs/$GEOEXT_PACKAGE_NAME/$GEOEXT_PACKAGE_VERSION cmd/pkgs/$GEOEXT_PACKAGE_NAME
+    # TODO the files catalog.json should better be updated, instead of overwritten…
+    cp $INSTALL_DIR/../repo/pkgs/catalog.json cmd/pkgs/
+    cp $INSTALL_DIR/../repo/pkgs/$GEOEXT_PACKAGE_NAME/catalog.json cmd/pkgs/$GEOEXT_PACKAGE_NAME
+fi
 
 # 2.
 # 2.1 examples, resources & src copied from repo
