@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <title>The source code</title>
+  <link href="../resources/prettify/prettify.css" type="text/css" rel="stylesheet" />
+  <script type="text/javascript" src="../resources/prettify/prettify.js"></script>
+  <style type="text/css">
+    .highlight { display: block; background-color: #ddd; }
+  </style>
+  <script type="text/javascript">
+    function highlight() {
+      document.getElementById(location.hash.replace(/#/, "")).className = "highlight";
+    }
+  </script>
+</head>
+<body onload="prettyPrint(); highlight();">
+  <pre class="prettyprint lang-js"><span id='Ext-GlobalEvents'>/**
+</span> * An `{@link Ext.mixin.Observable Observable}` through which Ext fires global events.
+ * 
+ * Ext.on() and Ext.un() are shorthand for {@link #addListener} and {@link #removeListener}
+ * on this Observable.  For example, to listen for the idle event:
+ * 
+ *     Ext.on('idle', function() {
+ *         // do something
+ *     });
+ */
+Ext.define('Ext.GlobalEvents', {
+    extend: 'Ext.mixin.Observable',
+    alternateClassName: 'Ext.globalEvents', // for compat with Ext JS 4.2 and earlier
+    
+    requires: [
+        'Ext.dom.Element'
+    ],
+
+<span id='Ext-GlobalEvents-property-observableType'>    observableType: 'global',
+</span>
+    singleton: true,
+
+<span id='Ext-GlobalEvents-property-resizeBuffer'>    /**
+</span>     * @private
+     */
+    resizeBuffer: 100,
+
+<span id='Ext-GlobalEvents-event-added'>    /**
+</span>     * @event added
+     * Fires when a Component is added to a Container.
+     * @param {Ext.Component} component
+     */
+
+<span id='Ext-GlobalEvents-event-beforeresponsiveupdate'>    /**
+</span>     * @event beforeresponsiveupdate
+     * Fires before {@link Ext.mixin.Responsive} perform any updates in response to
+     * dynamic changes. This is prior to refreshing `responsiveFormulas`.
+     * @param {Object} context The context object used by `responsiveConfig` expressions.
+     * @since 5.0.1
+     */
+
+<span id='Ext-GlobalEvents-event-beginresponsiveupdate'>    /**
+</span>     * @event beginresponsiveupdate
+     * Fires when {@link Ext.mixin.Responsive} is about to perform updates in response to
+     * dynamic changes. At this point all `responsiveFormulas` have been refreshed.
+     * @param {Object} context The context object used by `responsiveConfig` expressions.
+     * @since 5.0.1
+     */
+
+<span id='Ext-GlobalEvents-event-responsiveupdate'>    /**
+</span>     * @event responsiveupdate
+     * Fires after {@link Ext.mixin.Responsive} has performed updates in response to
+     * dynamic changes.
+     * @param {Object} context The context object used by `responsiveConfig` expressions.
+     * @since 5.0.1
+     */
+
+<span id='Ext-GlobalEvents-event-collapse'>    /**
+</span>     * @event collapse
+     * Fires when a Component is collapsed (e.g., a panel).
+     * @param {Ext.Component} component
+     */
+
+<span id='Ext-GlobalEvents-event-expand'>    /**
+</span>     * @event expand
+     * Fires when a Component is expanded (e.g., a panel).
+     * @param {Ext.Component} component
+     */
+
+<span id='Ext-GlobalEvents-event-hide'>    /**
+</span>     * @event hide
+     * Fires when a Component is hidden.
+     * @param {Ext.Component} component
+     */
+
+<span id='Ext-GlobalEvents-event-idle'>    /**
+</span>     * @event idle
+     * Fires when an event handler finishes its run, just before returning to
+     * browser control.
+     * 
+     * This includes DOM event handlers, Ajax (including JSONP) event handlers,
+     * and {@link Ext.util.TaskRunner TaskRunners}
+     * 
+     * When called at the tail of a DOM event, the event object is passed as the
+     * sole parameter.
+     * 
+     * This can be useful for performing cleanup, or update tasks which need to
+     * happen only after all code in an event handler has been run, but which
+     * should not be executed in a timer due to the intervening browser
+     * reflow/repaint which would take place.
+     */
+
+<span id='Ext-GlobalEvents-event-removed'>    /**
+</span>     * @event removed
+     * Fires when a Component is removed from a Container.
+     * @param {Ext.Component} component
+     */
+
+<span id='Ext-GlobalEvents-event-resize'>    /**
+</span>     * @event resize
+     * Fires when the browser window is resized.  To avoid running resize handlers
+     * too often resulting in sluggish window resizing, resize events use a buffer
+     * of 100 milliseconds.
+     * @param {Number} width The new width
+     * @param {Number} height The new height
+     */
+
+<span id='Ext-GlobalEvents-event-show'>    /**
+</span>     * @event show
+     * Fires when a Component is shown.
+     * @param {Ext.Component} component
+     */
+    
+<span id='Ext-GlobalEvents-event-beforebindnotify'>    /**
+</span>     * @event beforebindnotify
+     * Fires before a scheduled set of bindings are fired. This allows interested parties
+     * to react and do any required work.
+     * @param {Ext.util.Scheduler} scheduler The scheduler triggering the bindings.
+     * 
+     * @private
+     * @since 5.1.0
+     */
+    
+<span id='Ext-GlobalEvents-event-mousedown'>    /**
+</span>     * @event mousedown
+     * A mousedown listener on the document that is immune to stopPropagation()
+     * used in cases where we need to know if a mousedown event occurred on the
+     * document regardless of whether some other handler tried to stop it.  An
+     * example where this is useful is a menu that needs to be hidden whenever
+     * there is a mousedown event on the document.
+     * @param {Ext.event.Event} e The event object
+     */
+
+<span id='Ext-GlobalEvents-property-idleEventMask'>    /**
+</span>     * @property {Object} idleEventMask
+     * This object holds event names for events that should not trigger an `idle` event
+     * following their dispatch.
+     * @private
+     * @since 5.0.0
+     */
+    idleEventMask: {
+        mousemove: 1,
+        touchmove: 1,
+        pointermove: 1,
+        MSPointerMove: 1,
+        unload: 1
+    },
+
+<span id='Ext-GlobalEvents-method-constructor'>    constructor: function() {
+</span>        var me = this;
+
+        me.callParent();
+
+        Ext.onInternalReady(function() {
+            // using a closure here instead of attaching the event directly to the
+            // attachListeners method gives us a chance to override the method
+            me.attachListeners();
+        });
+    },
+
+<span id='Ext-GlobalEvents-method-attachListeners'>    attachListeners: function() {
+</span>        Ext.get(window).on('resize', this.fireResize, this, {
+            buffer: this.resizeBuffer
+        });
+        Ext.getDoc().on('mousedown', this.fireMouseDown, this);
+    },
+
+<span id='Ext-GlobalEvents-method-fireMouseDown'>    fireMouseDown: function(e) {
+</span>        this.fireEvent('mousedown', e);
+    },
+
+<span id='Ext-GlobalEvents-method-fireResize'>    fireResize: function() {
+</span>        var me = this,
+            Element = Ext.Element,
+            w = Element.getViewportWidth(),
+            h = Element.getViewportHeight();
+
+         // In IE the resize event will sometimes fire even though the w/h are the same.
+         if (me.curHeight !== h || me.curWidth !== w) {
+             me.curHeight = h;
+             me.curWidth = w;
+             me.fireEvent('resize', w, h);
+         }
+    }
+
+}, function(GlobalEvents) {
+<span id='Ext-method-on'>    /**
+</span>     * @member Ext
+     * @method on
+     * Shorthand for {@link Ext.GlobalEvents#addListener}.
+     * @inheritdoc Ext.mixin.Observable#addListener
+     */
+    Ext.on = function() {
+        return GlobalEvents.addListener.apply(GlobalEvents, arguments);
+    };
+
+<span id='Ext-method-un'>    /**
+</span>     * @member Ext
+     * @method un
+     * Shorthand for {@link Ext.GlobalEvents#removeListener}.
+     * @inheritdoc Ext.mixin.Observable#removeListener
+     */
+    Ext.un = function() {
+        return GlobalEvents.removeListener.apply(GlobalEvents, arguments);
+    };
+
+<span id='Ext-method-fireEvent'>    /**
+</span>     * @member Ext
+     * @method fireEvent
+     * Shorthand for {@link Ext.GlobalEvents#fireEvent}.
+     * @inheritdoc Ext.mixin.Observable#fireEvent
+     *
+     * @since 6.2.0
+     */
+    Ext.fireEvent = function() {
+        return GlobalEvents.fireEvent.apply(GlobalEvents, arguments);
+    };
+});
+</pre>
+</body>
+</html>

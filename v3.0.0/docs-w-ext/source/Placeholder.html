@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <title>The source code</title>
+  <link href="../resources/prettify/prettify.css" type="text/css" rel="stylesheet" />
+  <script type="text/javascript" src="../resources/prettify/prettify.js"></script>
+  <style type="text/css">
+    .highlight { display: block; background-color: #ddd; }
+  </style>
+  <script type="text/javascript">
+    function highlight() {
+      document.getElementById(location.hash.replace(/#/, "")).className = "highlight";
+    }
+  </script>
+</head>
+<body onload="prettyPrint(); highlight();">
+  <pre class="prettyprint lang-js"><span id='Ext-drag-proxy-Placeholder'>/**
+</span> * A drag proxy that creates a new element to follow the cursor.
+ */
+Ext.define('Ext.drag.proxy.Placeholder', {
+    extend: 'Ext.drag.proxy.None',
+    alias: 'drag.proxy.placeholder',
+
+    config: {
+<span id='Ext-drag-proxy-Placeholder-cfg-cls'>        /**
+</span>         * @cfg {String} cls
+         * A class for this proxy.
+         */
+        cls: '',
+
+<span id='Ext-drag-proxy-Placeholder-cfg-cursorOffset'>        /**
+</span>         * @cfg {Number[]} cursorOffset
+         * Determines the position of the proxy in relation
+         * to the cursor.
+         */
+        cursorOffset: [12, 20],
+
+<span id='Ext-drag-proxy-Placeholder-cfg-html'>        /**
+</span>         * @cfg {String} html
+         * The html for this proxy.
+         */
+        html: null,
+
+<span id='Ext-drag-proxy-Placeholder-cfg-invalidCls'>        /**
+</span>         * @cfg {String} invalidCls
+         * A class to add to this proxy when over an
+         * invalid {@link Ext.drag.Target target}.
+         */
+        invalidCls: '',
+
+<span id='Ext-drag-proxy-Placeholder-cfg-validCls'>        /**
+</span>         * @cfg {String} validCls
+         * A class to add to this proxy when over a
+         * valid {@link Ext.drag.Target target}.
+         */
+        validCls: ''
+    },
+
+<span id='Ext-drag-proxy-Placeholder-property-placeholderCls'>    placeholderCls: Ext.baseCSSPrefix + 'drag-proxy-placeholder',
+</span>
+<span id='Ext-drag-proxy-Placeholder-method-cleanup'>    /**
+</span>     * @inheritdoc
+     */
+    cleanup: function() {
+        var el = this.element;
+        if (el) {
+            el.hide();
+        }
+    },
+
+<span id='Ext-drag-proxy-Placeholder-method-getElement'>    /**
+</span>     * @inheritdoc
+     */
+    getElement: function(source) {
+        var me = this,
+            el = me.element;
+
+        if (!el) {
+            me.element = el = Ext.getBody().createChild({
+                cls: me.getCls(),
+                html: me.getHtml()
+            });
+            el.addCls(me.placeholderCls);
+            
+            el.setTouchAction({
+                panX: false,
+                panY: false
+            });
+
+        }
+        el.show();
+
+        return el;
+    },
+
+<span id='Ext-drag-proxy-Placeholder-method-update'>    /**
+</span>     * @inheritdoc
+     */
+    update: function(info) {
+        var el = this.element,
+            invalidCls = this.getInvalidCls(),
+            validCls = this.getValidCls(),
+            valid = info.valid;
+
+        if (info.target) {
+            // If we are valid, replace the invalidCls with the validCls.
+            // Otherwise do the reverse
+            el.replaceCls(valid ? invalidCls : validCls, valid ? validCls : invalidCls);
+        } else {
+            el.removeCls([invalidCls, validCls]);
+        }
+    },
+
+<span id='Ext-drag-proxy-Placeholder-method-updateCls'>    updateCls: function(cls, oldCls) {
+</span>        var el = this.element;
+        if (el) {
+            if (oldCls) {
+                el.removeCls(oldCls);
+            }
+
+            if (cls) {
+                el.addCls(cls);
+            }
+        }
+    },
+
+<span id='Ext-drag-proxy-Placeholder-method-updateHtml'>    updateHtml: function(html) {
+</span>        var el = this.element;
+        if (el) {
+            el.setHtml(html || '');
+        }
+    },
+
+<span id='Ext-drag-proxy-Placeholder-method-updateInvalidCls'>    updateInvalidCls: function(invalidCls, oldInvalidCls) {
+</span>        this.doUpdateCls(invalidCls, oldInvalidCls);
+    },
+
+<span id='Ext-drag-proxy-Placeholder-method-updateValidCls'>    updateValidCls: function(validCls, oldValidCls) {
+</span>        this.doUpdateCls(validCls, oldValidCls);
+    },
+
+<span id='Ext-drag-proxy-Placeholder-method-destroy'>    destroy: function() {
+</span>        this.element = Ext.destroy(this.element);
+        this.callParent();
+    },
+
+<span id='Ext-drag-proxy-Placeholder-property-privates'>    privates: {
+</span><span id='Ext-drag-proxy-Placeholder-method-adjustCursorOffset'>        /**
+</span>         * @inheritdoc
+         */
+        adjustCursorOffset: function(info, xy) {
+            var offset = this.getCursorOffset();
+            if (offset) {
+                xy[0] += (offset[0] || 0);
+                xy[1] += (offset[1] || 0);
+            }
+            return xy;
+        },
+
+<span id='Ext-drag-proxy-Placeholder-method-doUpdateCls'>        /**
+</span>         * Removes a class and replaces it with a new one, if the old class
+         * was already on the element.
+         * 
+         * @param {String} cls The new class to add.
+         * @param {String} oldCls The old class to remove.
+         *
+         * @private
+         */
+        doUpdateCls: function(cls, oldCls) {
+            var el = this.element,
+                hasCls;
+
+            if (el) {
+                if (oldCls) {
+                    hasCls = cls &amp;&amp; el.hasCls(oldCls);
+                    el.removeCls(oldCls);
+                }
+
+                if (cls &amp;&amp; hasCls) {
+                    el.addCls(cls);
+                }
+            }
+        }
+    }
+});</pre>
+</body>
+</html>

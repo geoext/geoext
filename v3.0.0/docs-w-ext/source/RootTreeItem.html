@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <title>The source code</title>
+  <link href="../resources/prettify/prettify.css" type="text/css" rel="stylesheet" />
+  <script type="text/javascript" src="../resources/prettify/prettify.js"></script>
+  <style type="text/css">
+    .highlight { display: block; background-color: #ddd; }
+  </style>
+  <script type="text/javascript">
+    function highlight() {
+      document.getElementById(location.hash.replace(/#/, "")).className = "highlight";
+    }
+  </script>
+</head>
+<body onload="prettyPrint(); highlight();">
+  <pre class="prettyprint lang-js"><span id='Ext-list-RootTreeItem'>/**
+</span> * This class implements the top-level node in a `{@link Ext.list.Tree treelist}`. Unlike
+ * other nodes, this item is only a container for other items. It does not correspond to
+ * a data record.
+ *
+ * @since 6.0.0
+ */
+Ext.define('Ext.list.RootTreeItem', {
+    extend: 'Ext.list.AbstractTreeItem',
+
+<span id='Ext-list-RootTreeItem-property-isRootListItem'>    /**
+</span>     * This property is `true` to allow type checking for this or derived class.
+     * @property {Boolean} isRootListItem
+     * @readonly
+     */
+    isRootListItem: true,
+
+<span id='Ext-list-RootTreeItem-property-element'>    element: {
+</span>        reference: 'element',
+        tag: 'ul',
+        cls: Ext.baseCSSPrefix + 'treelist-root-container'
+    },
+
+<span id='Ext-list-RootTreeItem-method-insertItem'>    insertItem: function (item, refItem) {
+</span>        if (refItem) {
+            item.element.insertBefore(refItem.element);
+        } else {
+            this.element.appendChild(item.element);
+        }
+    },
+
+<span id='Ext-list-RootTreeItem-method-isToggleEvent'>    isToggleEvent: function (e) {
+</span>        return false;
+    }
+});
+</pre>
+</body>
+</html>

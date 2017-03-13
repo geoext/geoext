@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <title>The source code</title>
+  <link href="../resources/prettify/prettify.css" type="text/css" rel="stylesheet" />
+  <script type="text/javascript" src="../resources/prettify/prettify.js"></script>
+  <style type="text/css">
+    .highlight { display: block; background-color: #ddd; }
+  </style>
+  <script type="text/javascript">
+    function highlight() {
+      document.getElementById(location.hash.replace(/#/, "")).className = "highlight";
+    }
+  </script>
+</head>
+<body onload="prettyPrint(); highlight();">
+  <pre class="prettyprint lang-js"><span id='Ext-data-matrix-Slice'>/**
+</span> * This class manages one side of a `Matrix`.
+ * @private
+ */
+Ext.define('Ext.data.matrix.Slice', {
+<span id='Ext-data-matrix-Slice-method-constructor'>    constructor: function (side, id) {
+</span><span id='Ext-data-matrix-Slice-property-id'>        /**
+</span>         * @property {String/Number} id
+         * The id of the interested entity. Based on whether this slice is on the &quot;left&quot;
+         * or &quot;right&quot; of the matrix, this id identities the respective entity.
+         * @readonly
+         */
+        this.id = id;
+
+<span id='Ext-data-matrix-Slice-property-side'>        /**
+</span>         * @property {Ext.data.matrix.Side} side
+         * The side of the matrix to which this slice belongs.
+         */
+        this.side = side;
+
+<span id='Ext-data-matrix-Slice-property-members'>        /**
+</span>         * 
+         */
+        this.members = {};
+    },
+
+<span id='Ext-data-matrix-Slice-method-attach'>    attach: function (store) {
+</span>        var me = this;
+        
+        //&lt;debug&gt;
+        Ext.Assert.falsey(me.store, 'Store is already attached');
+        //&lt;/debug&gt;
+
+        me.store = store;
+        store.matrix = me;
+
+        store.on('load', me.onStoreLoad, me, {single: true});
+    },
+
+<span id='Ext-data-matrix-Slice-method-commit'>    commit: function() {
+</span>        var members = this.members,
+            id;
+
+        for (id in members) {
+            members[id][2] = 0;
+        }
+    },
+
+<span id='Ext-data-matrix-Slice-method-onStoreLoad'>    onStoreLoad: function (store) {
+</span>        this.update(store.getData().items, 0);
+    },
+
+<span id='Ext-data-matrix-Slice-method-update'>    update: function (recordsOrIds, state) {
+</span>        //&lt;debug&gt;
+        if (!(recordsOrIds instanceof Array)) {
+            Ext.raise('Only array of records or record ids are supported');
+        }
+        //&lt;/debug&gt;
+
+        var me = this,
+            MatrixSlice = Ext.data.matrix.Slice,
+            side = me.side,
+            assocIndex = side.index,
+            length = recordsOrIds.length,
+            id = me.id,
+            members = me.members,
+            otherSide = side.inverse,
+            otherSlices = otherSide.slices,
+            assoc, call, i, item, otherId, otherSlice, record;
+
+        for (i = 0; i &lt; length; ++i) {
+            call = record = null;
+            item = recordsOrIds[i];
+            otherId = item.isEntity ? (record = item).id : item;
+            assoc = members[otherId];
+
+            // If we're in a created state and we're asking to remove it, don't move it to
+            // removed state, just blow it away completely.
+            if (state &lt; 0 &amp;&amp; assoc &amp;&amp; assoc[2] === 1) {
+                delete members[otherId];
+                otherSlice = otherSlices[otherId];
+                if (otherSlice) {
+                    delete otherSlice.members[id];
+                }
+                call = 1;
+            } else {
+                if (!assoc) {
+                    // Note - when we create a new matrix tuple we must catalog it on both
+                    // sides of the matrix or risk losing it on only one side. To gather all
+                    // of the tuples we need only visit one side.
+                    assoc = [ otherId, otherId, state ];
+                    assoc[assocIndex] = id;
+
+                    members[otherId] = assoc;
+                    otherSlice = otherSlices[otherId];
+                    if (!otherSlice) {
+                        otherSlices[otherId] = otherSlice = new MatrixSlice(otherSide, otherId);
+                    }
+                    otherSlice.members[id] =  assoc;
+                    call = 1;
+                } else if (state !== assoc[2] &amp;&amp; state !== 0) {
+                    // If they aren't equal and we're setting it to 0, favour the current state
+                    assoc[2] = state;
+                    otherSlice = otherSlices[otherId];
+                    // because the assoc exists the other side will have a slice
+                    call = 1;
+                }
+            }
+
+            if (call) {
+                if (me.notify) {
+                    me.notify.call(me.scope, me, otherId, state);
+                }
+                if (otherSlice &amp;&amp; otherSlice.notify) {
+                    otherSlice.notify.call(otherSlice.scope, otherSlice, id, state);
+                }
+            }
+        }
+    },
+
+<span id='Ext-data-matrix-Slice-method-updateId'>    updateId: function (newId) {
+</span>        var me = this,
+            oldId = me.id,
+            side = me.side,
+            slices = side.slices,
+            slice = slices[oldId],
+            members = slice.members,
+            index = side.index,
+            otherSlices = side.inverse.slices,
+            assoc, otherId, otherMembers;
+
+        me.id = newId;
+        slices[newId] = slice;
+        delete slices[oldId];
+
+        for (otherId in members) {
+            assoc = members[otherId];
+            assoc[index] = newId;
+
+            otherMembers = otherSlices[otherId].members;
+            otherMembers[newId] = otherMembers[oldId];
+            delete otherMembers[oldId];
+        }
+    },
+
+<span id='Ext-data-matrix-Slice-method-destroy'>    destroy: function() {
+</span>        var me = this,
+            store = me.store;
+
+        if (store) {
+            store.matrix = null;
+            store.un('load', me.onStoreLoad, me);
+        }
+
+        me.notify = me.scope = me.store = me.side = me.members = null;
+        me.callParent();
+    }
+});
+</pre>
+</body>
+</html>
