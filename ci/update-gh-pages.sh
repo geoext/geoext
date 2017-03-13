@@ -75,12 +75,12 @@ cd $GH_PAGES_DIR
 
 # 1. Update GeoExt package
 if [ "$PUBLISH_SENCHA_PACKAGE" == "true" ]; then
-    mkdir -p cmd/pkgs/$GEOEXT_PACKAGE_NAME
-    rm -Rf cmd/pkgs/$GEOEXT_PACKAGE_NAME/$GEOEXT_PACKAGE_VERSION
-    cp -r $INSTALL_DIR/../repo/pkgs/$GEOEXT_PACKAGE_NAME/$GEOEXT_PACKAGE_VERSION cmd/pkgs/$GEOEXT_PACKAGE_NAME
-    # TODO the files catalog.json should better be updated, instead of overwritten…
-    cp $INSTALL_DIR/../repo/pkgs/catalog.json cmd/pkgs/
-    cp $INSTALL_DIR/../repo/pkgs/$GEOEXT_PACKAGE_NAME/catalog.json cmd/pkgs/$GEOEXT_PACKAGE_NAME
+    # mkdir -p cmd/pkgs/$GEOEXT_PACKAGE_NAME
+    # rm -Rf cmd/pkgs/$GEOEXT_PACKAGE_NAME/$GEOEXT_PACKAGE_VERSION
+    # cp -r $INSTALL_DIR/../repo/pkgs/$GEOEXT_PACKAGE_NAME/$GEOEXT_PACKAGE_VERSION cmd/pkgs/$GEOEXT_PACKAGE_NAME
+    # # TODO the files catalog.json should better be updated, instead of overwritten…
+    # cp $INSTALL_DIR/../repo/pkgs/catalog.json cmd/pkgs/
+    # cp $INSTALL_DIR/../repo/pkgs/$GEOEXT_PACKAGE_NAME/catalog.json cmd/pkgs/$GEOEXT_PACKAGE_NAME
 fi
 
 # 2.
