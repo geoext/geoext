@@ -21,7 +21,7 @@ if [ "$TRAVIS_PULL_REQUEST" != "false" ]; then
     exit 1;
 fi
 
-if [[ "$TRAVIS_BRANCH" =~ ^master|v[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+if ! [[ "$TRAVIS_BRANCH" =~ ^master|v[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
     echo "Target branch is neither 'master' nor expected version, not doing anything."
     exit 1;
 fi

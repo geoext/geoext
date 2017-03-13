@@ -13,7 +13,6 @@ script:
   - ./ci/create-sencha-package.sh
 after_success:
   - npm run-script coveralls
-  - ./ci/debug-gh-pages.sh
   - ./ci/update-gh-pages.sh > /dev/null 2>&1
 branches:
   only:
