@@ -24,42 +24,68 @@ Ext.application({
                 {
                     'type': 'Feature',
                     'properties': {
-                        'city': 'Hamburg',
-                        'pop': 1700000
-                    },
-                    'geometry': {
-                        'type': 'Point',
-                        'coordinates': [
-                            10.107421874999998,
-                            53.527247970102465
-                        ]
-                    }
-                },
-                {
-                    'type': 'Feature',
-                    'properties': {
-                        'city': 'Frankfurt / Main',
-                        'pop': 700000
-                    },
-                    'geometry': {
-                        'type': 'Point',
-                        'coordinates': [
-                            8.76708984375,
-                            50.064191736659104
-                        ]
-                    }
-                },
-                {
-                    'type': 'Feature',
-                    'properties': {
                         'city': 'Berlin',
                         'pop': 3500000
                     },
                     'geometry': {
-                        'type': 'Point',
+                        'type': 'Polygon',
                         'coordinates': [
-                            13.447265624999998,
-                            52.53627304145948
+                            [
+                                [
+                                    13.238525390625,
+                                    52.44261787120725
+                                ],
+                                [
+                                    13.568115234375,
+                                    52.44261787120725
+                                ],
+                                [
+                                    13.568115234375,
+                                    52.60971939156648
+                                ],
+                                [
+                                    13.238525390625,
+                                    52.60971939156648
+                                ],
+                                [
+                                    13.238525390625,
+                                    52.44261787120725
+                                ]
+                            ]
+                        ]
+                    }
+                },
+                {
+                    'type': 'Feature',
+                    'properties': {
+                        'city': 'Hamburg',
+                        'pop': 1700000
+                    },
+                    'geometry': {
+                        'type': 'Polygon',
+                        'coordinates': [
+                            [
+                                [
+                                    9.832763671875,
+                                    53.44880683542759
+                                ],
+                                [
+                                    10.1953125,
+                                    53.44880683542759
+                                ],
+                                [
+                                    10.1953125,
+                                    53.657661020298
+                                ],
+                                [
+                                    9.832763671875,
+                                    53.657661020298
+                                ],
+                                [
+                                    9.832763671875,
+                                    53.44880683542759
+                                ]
+                            ]
                         ]
                     }
                 },
@@ -70,10 +96,64 @@ Ext.application({
                         'pop': 1400000
                     },
                     'geometry': {
-                        'type': 'Point',
+                        'type': 'Polygon',
                         'coordinates': [
-                            11.6455078125,
-                            48.1367666796927
+                            [
+                                [
+                                    11.42578125,
+                                    48.05605376398125
+                                ],
+                                [
+                                    11.744384765625,
+                                    48.05605376398125
+                                ],
+                                [
+                                    11.744384765625,
+                                    48.246625590713826
+                                ],
+                                [
+                                    11.42578125,
+                                    48.246625590713826
+                                ],
+                                [
+                                    11.42578125,
+                                    48.05605376398125
+                                ]
+                            ]
+                        ]
+                    }
+                },
+                {
+                    'type': 'Feature',
+                    'properties': {
+                        'city': 'Frankfurt / Main',
+                        'pop': 700000
+                    },
+                    'geometry': {
+                        'type': 'Polygon',
+                        'coordinates': [
+                            [
+                                [
+                                    8.558349609375,
+                                    50.05008477838256
+                                ],
+                                [
+                                    8.81103515625,
+                                    50.05008477838256
+                                ],
+                                [
+                                    8.81103515625,
+                                    50.21206446065373
+                                ],
+                                [
+                                    8.558349609375,
+                                    50.21206446065373
+                                ],
+                                [
+                                    8.558349609375,
+                                    50.05008477838256
+                                ]
+                            ]
                         ]
                     }
                 }
@@ -153,15 +233,13 @@ Ext.application({
 
         // style objects
         var blueStyle = new ol.style.Style({
-            image: new ol.style.Circle({
-                radius: 6,
-                fill: new ol.style.Fill({
-                    color: '#0099CC'
-                }),
-                stroke: new ol.style.Stroke({
-                    color: '#fff',
-                    width: 2
-                })
+            fill: new ol.style.Fill({
+                // color: '#0099CC'
+                color: 'rgba(0,153,255, 0.3)'
+            }),
+            stroke: new ol.style.Stroke({
+                color: '#0099FF',
+                width: 2
             })
         });
         var redStyle = new ol.style.Style({
