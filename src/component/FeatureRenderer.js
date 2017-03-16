@@ -444,11 +444,16 @@ Ext.define('GeoExt.component.FeatureRenderer', {
      *     symbolizers.
      */
     update: function(options) {
+        var me = this;
         if (options.feature) {
-            this.setFeature(options.feature);
+            // detect the legend geometry by the given geometry type
+            var geom = options.feature.getGeometry();
+            var feat =
+                me['get' + geom.getType() + 'Feature']();
+            me.setFeature(feat);
         }
         if (options.symbolizers) {
-            this.setSymbolizers(options.symbolizers);
+            me.setSymbolizers(options.symbolizers);
         }
     }
 });
