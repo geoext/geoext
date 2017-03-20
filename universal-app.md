@@ -174,7 +174,7 @@ Four modifications are necessary.
 The view should:
  - extend `GeoExt.component.Map` instead of `Ext.panel.Panel`
  - have an `xtype: 'mappanel'` assigned, needed for future reference
- - needs an additional `map` properly initialized
+ - needs an additional `map` property initialized
  - discard the default `html` property
 
 The entire `app/view/main/Map.js` should be:
@@ -335,8 +335,6 @@ Congratulations! Celebrate and share your accomplishment!
 ### What Went Wrong?
 
 If you are unable to get this GeoExt 3 app up and running, check the Sencha cmd output for errors. Also check the browser inspector/development tools to find any errors if don't see the map.
-
-There is a Github repository with the source of this application.
 
 Check the [demo](http://mygeoextapp.geomaster.pt/) of this application running both on the desktop and on your mobile to discover any differences.
 The sources are also available on [Github](https://github.com/jgrocha/MyGeoExtApp).
