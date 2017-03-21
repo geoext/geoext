@@ -56,9 +56,34 @@ When you see `Waiting for changes...`, open the browser using [http://localhost:
 
 If the application is running properly, you can stop the web server with `CONTROL-C` and move on.
 
-### GeoExt 3 package repository
+### Add GeoExt 3 to your app
 
-GeoExt 3 was developed as a ExtJS [package](http://docs.sencha.com/cmd/6.x/cmd_packages/cmd_packages.html). We need to tell Sencha cmd where it can find the `GeoExt3` package.
+Since [GeoExt v3.0.0](https://github.com/geoext/geoext3/releases/tag/v3.0.0) it is strongly recommended that app devs use GeoExt 3 via git clone, especially if the latest (and greatest) version should be used.
+
+Alternatively the released versions are published as [ExtJS package](http://docs.sencha.com/cmd/6.x/cmd_packages/cmd_packages.html). They can be used as any other ExtJS package, taking advantage of Sencha cmd.
+
+#### Use GeoExt 3 from a git clone (recommended)
+
+Clone the latest GeoExt 3 code from the official github repository:
+```
+mkdir lib
+cd lib
+git clone https://github.com/geoext/geoext3.git
+cd ..
+```
+
+Adjust the `classpath` property in your ``app.json`` like below.
+```
+"classpath": [
+    "app",
+    "${toolkit.name}/src",
+    "./lib/geoext3/src"
+]
+```
+
+#### Use GeoExt 3 as ExtJS package
+
+The released version of GeoExt 3 are available as a ExtJS package. We need to tell Sencha cmd where it can find the `GeoExt3` package.
 
 ```
 sencha package repo add GeoExt http://geoext.github.io/geoext3/cmd/pkgs
@@ -79,6 +104,50 @@ Sencha Cmd v6.2.1.29
 [INF]     sencha - http://cdn.sencha.com/cmd/packages/
 [INF]     GeoExt - http://geoext.github.io/geoext3/cmd/pkgs/
 [INF]     font-awesome - http://geoext.github.io/geoext3/cmd/pkgs/
+```
+Add the following GeoExt 3 path `"packages/remote/GeoExt/src"` to the `classpath`:
+
+```
+  "classpath": [
+    "app",
+    "${toolkit.name}/src",
+    "packages/remote/GeoExt/src"
+  ],
+```
+
+##### Add GeoExt to the requires section
+
+Change the ```builds``` section, adding `requires` to the `"classic"` build:
+
+```
+    "builds": {
+        "classic": {
+            "toolkit": "classic",
+            "theme": "theme-triton",
+            "sass": {
+                // "save": "classic/sass/save.scss"
+            },
+            "requires": [
+                "GeoExt"
+            ]
+        },
+        "modern": {
+            "toolkit": "modern",
+            "theme": "theme-triton",
+            "sass": {
+                // "save": "modern/sass/save.scss"
+            }
+        }
+    },
+```
+
+Note: Do not change the global `requires`:
+
+```
+    "requires": [
+        "font-awesome"
+        // "GeoExt" // not here, put it under builds/classic/requires
+    ],
 ```
 
 ### Adding a new view
@@ -105,7 +174,7 @@ Four modifications are necessary.
 The view should:
  - extend `GeoExt.component.Map` instead of `Ext.panel.Panel`
  - have an `xtype: 'mappanel'` assigned, needed for future reference
- - needs an additional `map` properly initialized
+ - needs an additional `map` property initialized
  - discard the default `html` property
 
 The entire `app/view/main/Map.js` should be:
@@ -196,54 +265,8 @@ Now we need to tell how to build our application with the GeoExt package and loa
 
 The file `app.json` must be adjusted before we can build the application.
 
-Three small changes are necessary.
+Two small changes are necessary.
 
-#### Add GeoExt sources to the classpath
-
-Add the following GeoExt 3 path `"packages/remote/GeoExt/src"` to the `classpath`:
-
-```
-  "classpath": [
-    "app",
-    "${toolkit.name}/src",
-    "packages/remote/GeoExt/src"
-  ],
-```
-
-#### Add GeoExt to the requires section
-
-Change the ```builds``` section, adding `requires` to the `"classic"` build:
-
-```
-    "builds": {
-        "classic": {
-            "toolkit": "classic",
-            "theme": "theme-triton",
-            "sass": {
-                // "save": "classic/sass/save.scss"
-            },
-            "requires": [
-                "GeoExt"
-            ]
-        },
-        "modern": {
-            "toolkit": "modern",
-            "theme": "theme-triton",
-            "sass": {
-                // "save": "modern/sass/save.scss"
-            }
-        }
-    },
-```
-
-Note: Do not change the global `requires`:
-
-```
-    "requires": [
-        "font-awesome"
-        // "GeoExt" // not here, put it under builds/classic/requires
-    ],
-```
 #### Add the OpenLayers 3 library
 
 The application needs the OpenLayers library to work. Add this dependency to the `js` property.
@@ -284,7 +307,7 @@ Start by doing:
 sencha app refresh
 ```
 
-Since we need the GeoExt package (added to the "requires" in `app.json`), the previous command will download the package and installs it under `packages/remote/GeoExt`.
+Since we need the GeoExt package (added to the "requires" in `app.json`), the previous command will download the package and installs it under `packages/remote/GeoExt` (only in case you [installed GeoExt as ExtJS package](#use-geoext-3-as-extjs-package)).
 Make sure you have this folder added to your local application.
 
 If you have some error reported, double check the changes you made. Confirm that you do not have syntax errors in `app.json`.
@@ -311,18 +334,10 @@ Congratulations! Celebrate and share your accomplishment!
 
 ### What Went Wrong?
 
-If you are unable to get this GeoExt 3 app up and running, check the Sencha cmd output for errors. Also check the browser inspector/development tools to find any errors if don't see the map.
+If you are unable to get this GeoExt 3 app up and running, check the Sencha cmd output for errors. Also check the browser inspector/development tools to find any errors if you don't see the map.
 
-There is a Github repository with the source of this application.
-
-Check the [demo](http://mygeoextapp.geomaster.pt/) of this application running both on the desktop and on your mobile to discover any differences.
-The sources are also available on [Github](https://github.com/jgrocha/MyGeoExtApp).
+Check the sources, which are also available on [Github](https://github.com/jgrocha/MyGeoExtApp).
 
 ### Further development
 
-You can add more and more components to the newly created application, but keep in mind that some GeoExt 3 components might not able to run properly on both toolkits (classic and modern).
-
-Check [GeoExt 3 Issue #65](https://github.com/geoext/geoext3/issues/65) for further details regarding issues converning both toolkits.
-
-If you are just interested in applications running on the traditional desktop environment,
-you can check the [GeoDashboard](http://geodashboard.geomaster.pt/#map) example.
+Of course you can extend the newly created application by adding more and more components.
