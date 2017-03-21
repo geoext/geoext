@@ -334,14 +334,10 @@ Congratulations! Celebrate and share your accomplishment!
 
 ### What Went Wrong?
 
-If you are unable to get this GeoExt 3 app up and running, check the Sencha cmd output for errors. Also check the browser inspector/development tools to find any errors if don't see the map.
+If you are unable to get this GeoExt 3 app up and running, check the Sencha cmd output for errors. Also check the browser inspector/development tools to find any errors if you don't see the map.
 
-Check the [demo](http://mygeoextapp.geomaster.pt/) of this application running both on the desktop and on your mobile to discover any differences.
-The sources are also available on [Github](https://github.com/jgrocha/MyGeoExtApp).
+Check the sources, which are also available on [Github](https://github.com/jgrocha/MyGeoExtApp).
 
 ### Further development
 
 Of course you can extend the newly created application by adding more and more components.
-
-If you are just interested in applications running on the traditional desktop environment,
-you can check the [GeoDashboard](http://geodashboard.geomaster.pt/#map) example.
