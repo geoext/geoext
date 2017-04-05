@@ -143,6 +143,8 @@ Ext.define('GeoExt.data.store.Features', {
         }
 
         me.bindLayerEvents();
+
+        me.on('filterchange', me.onFilterChange);
     },
 
     applyFields: function(fields) {
@@ -272,6 +274,37 @@ Ext.define('GeoExt.data.store.Features', {
                 me._removing = true;
                 me.remove(record);
                 delete me._removing;
+            }
+        }
+    },
+
+    /**
+     * Handles the 'filterchange'-event.
+     * Applies the filter of this store to the underlying layer.
+     */
+    onFilterChange: function() {
+        var me = this;
+        if (me.layer && me.layer.getSource() instanceof ol.source.Vector) {
+            if (!me._filtering) {
+
+                me._filtering = true;
+
+                me.unbindLayerEvents();
+
+                // collect the filtered features in the store
+                var filteredFeatures = [];
+                me.each(function(rec) {
+                    filteredFeatures.push(rec.data);
+                });
+
+                // apply the filtered to the underlying layer / collection
+                me.layer.getSource().clear();
+                me.layer.getSource().addFeatures(filteredFeatures);
+                me.olCollection = new ol.Collection(filteredFeatures);
+
+                delete me._filtering;
+
+                me.bindLayerEvents();
             }
         }
     }
