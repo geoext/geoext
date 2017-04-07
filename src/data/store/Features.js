@@ -67,8 +67,8 @@ Ext.define('GeoExt.data.store.Features', {
     map: null,
 
     /**
-     * Setting this flag to true will create a vector #layer with the given
-     * #features and adds it to the given #map (if available).
+     * Setting this flag to `true` will create a vector #layer with the
+     * given #features and adds it to the given #map (if available).
      *
      * @cfg {Boolean}
      */
