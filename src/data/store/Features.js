@@ -98,6 +98,16 @@ Ext.define('GeoExt.data.store.Features', {
      */
     features: null,
 
+    /**
+     * Setting this flag to true the filter of the store will be
+     * applied to the underlying vector #layer.
+     * This will only have an effect if the source of the #layer is NOT
+     * configured with an 'url' parameter.
+     *
+     * @cfg {Boolean}
+     */
+    passThroughFilter: false,
+
 
     /**
      * Constructs the feature store.
@@ -143,6 +153,11 @@ Ext.define('GeoExt.data.store.Features', {
         }
 
         me.bindLayerEvents();
+
+        if (me.passThroughFilter === true) {
+            me.on('filterchange', me.onFilterChange);
+        }
+
     },
 
     applyFields: function(fields) {
@@ -272,6 +287,37 @@ Ext.define('GeoExt.data.store.Features', {
                 me._removing = true;
                 me.remove(record);
                 delete me._removing;
+            }
+        }
+    },
+
+    /**
+     * Handles the 'filterchange'-event.
+     * Applies the filter of this store to the underlying layer.
+     */
+    onFilterChange: function() {
+        var me = this;
+        if (me.layer && me.layer.getSource() instanceof ol.source.Vector) {
+            if (!me._filtering) {
+
+                me._filtering = true;
+
+                me.unbindLayerEvents();
+
+                // collect the filtered features in the store
+                var filteredFeatures = [];
+                me.each(function(rec) {
+                    filteredFeatures.push(rec.getFeature());
+                });
+
+                // apply the filtered to the underlying layer / collection
+                me.layer.getSource().clear();
+                me.layer.getSource().addFeatures(filteredFeatures);
+                me.olCollection = new ol.Collection(filteredFeatures);
+
+                me.bindLayerEvents();
+
+                delete me._filtering;
             }
         }
     }
