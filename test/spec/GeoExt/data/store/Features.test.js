@@ -442,4 +442,51 @@ describe('GeoExt.data.store.Features', function() {
         );
     });
 
+    describe('Passing filter to underlying layer', function() {
+        var layer;
+        var store;
+        var feature1;
+        var feature2;
+
+        beforeEach(function() {
+            feature1 = new ol.Feature({id: 1});
+            feature2 = new ol.Feature({id: 2});
+            layer = new ol.layer.Vector({
+                source: new ol.source.Vector({
+                    features: [feature1, feature2]
+                })
+            });
+        });
+
+        afterEach(function() {
+            if (store.destroy) {
+                store.destroy();
+            }
+            store = null;
+            layer = null;
+            feature1 = null;
+            feature2 = null;
+        });
+
+        it('is not enabled by default', function() {
+            store = Ext.create('GeoExt.data.store.Features', {
+                layer: layer
+            });
+            store.filter('id', 1);
+            expect(layer.getSource().getFeatures().length).to.be(2);
+        });
+
+        it('can be activated by setting config "passThroughFilter" to "true"',
+            function() {
+                store = Ext.create('GeoExt.data.store.Features', {
+                    layer: layer,
+                    passThroughFilter: true
+                });
+                store.filter('id', 1);
+                expect(layer.getSource().getFeatures().length).to.be(1);
+            }
+        );
+
+    });
+
 });
