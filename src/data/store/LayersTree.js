@@ -132,6 +132,8 @@ Ext.define('GeoExt.data.store.LayersTree', {
             me.addLayerNode(layer);
         }, me, me.inverseLayerOrder);
 
+        me.fireEvent('storeloaded', me);
+
         me.bindGroupLayerCollectionEvents(me.layerGroup);
 
         me.on({
