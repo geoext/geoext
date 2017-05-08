@@ -1,5 +1,7 @@
 # GeoExt 3
 
+[![Greenkeeper badge](https://badges.greenkeeper.io/geoext/geoext3.svg)](https://greenkeeper.io/)
+
 JavaScript Toolkit for Rich Web Mapping Applications.
 
 [![Build Status](https://travis-ci.org/geoext/geoext3.svg?branch=master)](https://travis-ci.org/geoext/geoext3)
