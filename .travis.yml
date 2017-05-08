@@ -19,6 +19,7 @@ branches:
     - master
     - /^greenkeeper-.*$/
     - /^v\d+\.\d+\.\d+/
+    - /^greenkeeper/.*$/
 cache:
   directories:
     - __download
