@@ -6,6 +6,7 @@ JavaScript Toolkit for Rich Web Mapping Applications.
 [![Coverage Status](https://coveralls.io/repos/geoext/geoext3/badge.svg?branch=master&service=github)](https://coveralls.io/github/geoext/geoext3?branch=master)
 [![Dependency Status](https://david-dm.org/geoext/geoext3.svg)](https://david-dm.org/geoext/geoext3)
 [![devDependency Status](https://david-dm.org/geoext/geoext3/dev-status.svg)](https://david-dm.org/geoext/geoext3#info=devDependencies)
+[![Greenkeeper badge](https://badges.greenkeeper.io/geoext/geoext3.svg)](https://greenkeeper.io/)
 
 [![GeoExt logo](https://geoext.github.io/geoext3/website-resources/img/GeoExt-logo.png)](https://geoext.github.io/geoext3/)
 
