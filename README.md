@@ -20,9 +20,9 @@ The current state of GeoExt is compatible with ExtJS 6.2.0 and OpenLayers 3.20.1
 | OpenLayers | ExtJS | GeoExt |
 | ---------- | ----- | ------ |
 | 3.20.1     | 6.2.0 | 3.0.0  |
-| 4.0.x      | 6.2.0 | WIP    |
+| 4.2.x      | 6.2.0 | WIP    |
 
-We plan on making GeoExt compatible to the already released v4.0.1 of OpenLayers. Stay tuned.
+We plan on making GeoExt compatible to the already released v4.2.x of OpenLayers. Stay tuned.
 
 ## More information on GeoExt 3
 
