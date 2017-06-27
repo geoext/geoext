@@ -13,12 +13,12 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
- /**
-  * A serializer for layers that have an `ol.source.XYZ` source.
-  * Sources with an tileUrlFunction are currently not supported.
-  *
-  * @class GeoExt.data.serializer.XYZ
-  */
+/**
+ * A serializer for layers that have an `ol.source.XYZ` source.
+ * Sources with an tileUrlFunction are currently not supported.
+ *
+ * @class GeoExt.data.serializer.XYZ
+ */
 Ext.define('GeoExt.data.serializer.XYZ', {
     extend: 'GeoExt.data.serializer.Base',
     mixins: [
