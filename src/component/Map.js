@@ -49,7 +49,8 @@ Ext.define('GeoExt.component.Map', {
         'widget.gx_component_map'
     ],
     requires: [
-        'GeoExt.data.store.Layers'
+        'GeoExt.data.store.Layers',
+        'GeoExt.util.Version'
     ],
     mixins: [
         'GeoExt.mixin.SymbolCheck'
