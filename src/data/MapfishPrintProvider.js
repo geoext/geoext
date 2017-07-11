@@ -54,7 +54,7 @@ Ext.define('GeoExt.data.MapfishPrintProvider', {
         url: ''
     },
 
-    statics: {
+    inheritableStatics: {
         /**
          * An array of objects specifying a serializer and a connected
          * OpenLayers class. This should not be manipulated by hand, but rather
@@ -96,7 +96,7 @@ Ext.define('GeoExt.data.MapfishPrintProvider', {
             Ext.each(available, function(candidate, idx) {
                 if (candidate.serializerCls === serializerCls) {
                     index = idx;
-                    return false;  // break early
+                    return false; // break early
                 }
             });
             if (Ext.isDefined(index)) {

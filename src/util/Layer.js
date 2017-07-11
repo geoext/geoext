@@ -19,7 +19,7 @@
  * @class GeoExt.util.Layer
  */
 Ext.define('GeoExt.util.Layer', {
-    statics: {
+    inheritableStatics: {
         /**
          * A utility method to find the `ol.layer.Group` which is the direct
          * parent of the passed layer. Searching starts at the passed
