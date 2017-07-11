@@ -433,12 +433,12 @@ Ext.define('GeoExt.component.OverviewMap', {
         if (!dragInteraction) {
             return;
         }
+        dragInteraction.setActive(false);
         me.getMap().removeInteraction(dragInteraction);
         dragInteraction.un('translatestart', me.disableBoxUpdate, me);
         dragInteraction.un('translating', me.repositionAnchorFeature, me);
         dragInteraction.un('translateend', me.recenterParentFromBox, me);
         dragInteraction.un('translateend', me.enableBoxUpdate, me);
-        dragInteraction.setActive(false);
         me.dragInteraction = null;
     },
 
