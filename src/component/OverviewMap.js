@@ -113,7 +113,7 @@ Ext.define('GeoExt.component.OverviewMap', {
     ],
     // </debug>
 
-    statics: {
+    inheritableStatics: {
 
         /**
          * Returns an object with geometries representing the extent of the

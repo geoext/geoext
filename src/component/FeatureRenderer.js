@@ -184,7 +184,7 @@ Ext.define('GeoExt.component.FeatureRenderer', {
         symbolType: 'Polygon'
     },
 
-    statics: {
+    inheritableStatics: {
 
         /**
          * Determines the style for the given feature record.

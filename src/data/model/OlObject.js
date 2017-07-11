@@ -34,7 +34,7 @@ Ext.define('GeoExt.data.model.OlObject', {
     ],
     // </debug>
 
-    statics: {
+    inheritableStatics: {
         /**
          * Gets a reference to an ol contructor function.
          *
