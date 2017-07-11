@@ -24,7 +24,7 @@ module.exports = function(config) {
             'node_modules/openlayers/dist/ol' + suffix + '.css',
             'resources/external/theme-crisp-all' + suffix + '_1.css',
             'resources/external/theme-crisp-all' + suffix + '_2.css',
-            // OpenLayers 3
+            // OpenLayers 3/4
             'node_modules/openlayers/dist/ol' + suffix + '.js',
             // ExtJS 6
             'resources/external/ext-all' + suffix + '.js',
