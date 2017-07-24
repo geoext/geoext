@@ -90,7 +90,7 @@ describe('GeoExt.component.OverviewMap', function() {
                 });
 
                 var ovLayers = overviewMap.getLayers();
-                 // two layers plus extentlayer:
+                // two layers plus extentlayer:
                 expect(ovLayers).to.have.length(3);
                 expect(ovLayers[0]).to.be(layer1);
                 expect(ovLayers[1]).to.be(layer2);

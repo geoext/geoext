@@ -328,7 +328,7 @@ Ext.define('GeoExt.data.serializer.Vector', {
          * @private
          */
         encodeVectorStylePolygon: function(symbolizers, fillStyle,
-              strokeStyle) {
+            strokeStyle) {
             var symbolizer = {
                 type: 'polygon'
             };
