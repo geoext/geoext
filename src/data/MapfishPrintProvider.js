@@ -162,9 +162,9 @@ Ext.define('GeoExt.data.MapfishPrintProvider', {
             inputLayers.forEach(function(layer) {
                 if (layer instanceof ol.layer.Group) {
                     Ext.each(me.getLayerArray(layer.getLayers()),
-                    function(subLayer) {
-                        outputLayers.push(subLayer);
-                    });
+                        function(subLayer) {
+                            outputLayers.push(subLayer);
+                        });
                 } else {
                     outputLayers.push(layer);
                 }

@@ -22,8 +22,8 @@ describe('GeoExt.data.serializer.Vector', function() {
                     ];
                     var cls = GeoExt.data.serializer;
                     var possiblePrintStyles = Ext.Object.getValues(
-                            cls.Vector.PRINTSTYLE_TYPES
-                        );
+                        cls.Vector.PRINTSTYLE_TYPES
+                    );
                     var lookUp = cls.Vector.GEOMETRY_TYPE_TO_PRINTSTYLE_TYPE;
                     Ext.each(olGeomTypes, function(olGeomType) {
                         var printstyle = lookUp[olGeomType];

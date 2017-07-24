@@ -78,8 +78,7 @@ describe('GeoExt.data.model.OlObject', function() {
                 }
             );
 
-            it(t + ': setting multiple properties of ol.Object syncs with' +
-                'Ext.data.Model instance',
+            it(t + ': multiple props on object syncs with model instance',
                 function() {
                     objs[i].setProperties({
                         key1: 'value1changed',

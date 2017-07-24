@@ -478,7 +478,7 @@ Ext.define('GeoExt.component.OverviewMap', {
         // transform if necessary
         if (!ol.proj.equivalent(parentProjection, overviewProjection)) {
             boxCenter = ol.proj.transform(boxCenter,
-                    overviewProjection, parentProjection);
+                overviewProjection, parentProjection);
         }
 
         parentView.setCenter(boxCenter);
@@ -521,7 +521,7 @@ Ext.define('GeoExt.component.OverviewMap', {
         // transform if necessary
         if (!ol.proj.equivalent(parentProjection, overviewProjection)) {
             newCenter = ol.proj.transform(newCenter,
-                    overviewProjection, parentProjection);
+                overviewProjection, parentProjection);
         }
 
         parentMap.beforeRender(panAnimation);
@@ -574,19 +574,19 @@ Ext.define('GeoExt.component.OverviewMap', {
             // transform if necessary
             if (!ol.proj.equivalent(parentProjection, overviewProjection)) {
                 overviewCenter = ol.proj.transform(overviewCenter,
-                        parentProjection, overviewProjection);
+                    parentProjection, overviewProjection);
             }
             overviewView.set('center', overviewCenter);
         }
         if (key === 'resolution') {
             if (ol.proj.equivalent(parentProjection, overviewProjection)) {
                 overviewView.set('resolution',
-                        me.getMagnification() * parentView.getResolution());
+                    me.getMagnification() * parentView.getResolution());
             } else if (me.mapRendered === true) {
                 var parentExtent = parentView.calculateExtent(
-                        me.getParentMap().getSize());
+                    me.getParentMap().getSize());
                 var parentExtentProjected = ol.proj.transformExtent(
-                        parentExtent, parentProjection, overviewProjection);
+                    parentExtent, parentProjection, overviewProjection);
 
                 // call fit to assure that resolutions are available on
                 // overviewView

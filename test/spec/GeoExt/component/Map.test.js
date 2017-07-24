@@ -64,8 +64,7 @@ describe('GeoExt.component.Map', function() {
                 }
             );
 
-            it('getLayers() returns an ol.Collection containing' +
-                ' instances of ol.layers.Base',
+            it('getLayers() returns collection of instances of ol.layers.Base',
                 function() {
                     var layers = mapComponent.getLayers();
                     expect(layers).to.be.an(ol.Collection);

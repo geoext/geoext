@@ -326,10 +326,8 @@ describe('GeoExt.data.MapfishPrintProvider', function() {
             }
         );
 
-        it('getLayerArray returns the correct order within subfolders for ' +
-           ' Collection',
+        it('getLayerArray returns correct order subfolders for collection',
             function() {
-
                 var layerArray = GeoExt.data.MapfishPrintProvider.getLayerArray(
                     mapComponent.getMap().getLayers()
                 );
