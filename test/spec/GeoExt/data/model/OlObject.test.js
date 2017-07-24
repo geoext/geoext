@@ -80,16 +80,16 @@ describe('GeoExt.data.model.OlObject', function() {
 
             it(t + ': setting multiple properties of ol.Object syncs with' +
                 'Ext.data.Model instance',
-                function() {
-                    objs[i].setProperties({
-                        key1: 'value1changed',
-                        key3: 'value3'
-                    });
+            function() {
+                objs[i].setProperties({
+                    key1: 'value1changed',
+                    key3: 'value3'
+                });
 
-                    Ext.Object.each(objs[i].getProperties(), function(k, v) {
-                        expect(records[i].get(k)).to.equal(v);
-                    });
-                }
+                Ext.Object.each(objs[i].getProperties(), function(k, v) {
+                    expect(records[i].get(k)).to.equal(v);
+                });
+            }
             );
         });
     });

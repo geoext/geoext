@@ -328,17 +328,17 @@ describe('GeoExt.data.MapfishPrintProvider', function() {
 
         it('getLayerArray returns the correct order within subfolders for ' +
            ' Collection',
-            function() {
+        function() {
 
-                var layerArray = GeoExt.data.MapfishPrintProvider.getLayerArray(
-                    mapComponent.getMap().getLayers()
-                );
-                var layerOrder = '';
-                Ext.each(layerArray, function(l) {
-                    layerOrder += l.get('name');
-                });
-                expect(layerOrder).to.eql('1256734');
-            }
+            var layerArray = GeoExt.data.MapfishPrintProvider.getLayerArray(
+                mapComponent.getMap().getLayers()
+            );
+            var layerOrder = '';
+            Ext.each(layerArray, function(l) {
+                layerOrder += l.get('name');
+            });
+            expect(layerOrder).to.eql('1256734');
+        }
         );
 
         it('getSerializedLayers returns the serialized Layers', function() {
