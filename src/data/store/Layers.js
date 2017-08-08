@@ -323,6 +323,7 @@ Ext.define('GeoExt.data.store.Layers', {
      * @param {Ext.data.Model} record The model instance that was updated.
      * @param {String} operation The operation, either Ext.data.Model.EDIT,
      *     Ext.data.Model.REJECT or Ext.data.Model.COMMIT.
+     * @private
      */
     onStoreUpdate: function(store, record, operation) {
         if (operation === Ext.data.Record.EDIT) {
