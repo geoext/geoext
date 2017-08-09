@@ -55,6 +55,7 @@ Ext.define('GeoExt.data.store.OlObjects', {
         /**
          * Forwards changes on the Ext.data.Store to the ol.Collection.
          *
+         * @private
          * @inheritdoc
          */
         add: function(store, records, index) {
@@ -72,6 +73,7 @@ Ext.define('GeoExt.data.store.OlObjects', {
         /**
          * Forwards changes on the Ext.data.Store to the ol.Collection.
          *
+         * @private
          * @inheritdoc
          */
         remove: function(store, records, index) {
@@ -116,6 +118,7 @@ Ext.define('GeoExt.data.store.OlObjects', {
      * Forwards changes to the `ol.Collection` to the Ext.data.Store.
      *
      * @param {ol.CollectionEvent} evt The event emitted by the `ol.Collection`.
+     * @private
      */
     onOlCollectionAdd: function(evt) {
         var target = evt.target;
@@ -131,6 +134,7 @@ Ext.define('GeoExt.data.store.OlObjects', {
      * Forwards changes to the `ol.Collection` to the Ext.data.Store.
      *
      * @param {ol.CollectionEvent} evt The event emitted by the `ol.Collection`.
+     * @private
      */
     onOlCollectionRemove: function(evt) {
         var element = evt.element;

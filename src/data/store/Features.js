@@ -294,6 +294,7 @@ Ext.define('GeoExt.data.store.Features', {
     /**
      * Handles the 'filterchange'-event.
      * Applies the filter of this store to the underlying layer.
+     * @private
      */
     onFilterChange: function() {
         var me = this;
