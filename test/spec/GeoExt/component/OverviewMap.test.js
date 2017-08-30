@@ -333,7 +333,7 @@ describe('GeoExt.component.OverviewMap', function() {
         });
 
         describe('#recenterParentFromBox', function() {
-            it('updates the parent map center', function() {
+            it('updates the parent map center', function(done) {
                 overviewMap.destroyDragBehaviour(); // destroy first
                 overviewMap.setupDragBehaviour();
                 overviewMap.boxFeature.setGeometry(ol.geom.Polygon.fromExtent(
@@ -341,14 +341,14 @@ describe('GeoExt.component.OverviewMap', function() {
                 ));
                 overviewMap.recenterParentFromBox();
 
-                var parentCenter = olMap.getView().getCenter();
-
                 setTimeout(function() {
+                    var parentCenter = olMap.getView().getCenter();
                     expect(parentCenter).to.eql([1, 1]);
-                }, 100);
+                    done();
+                }, 1200);
             });
 
-            it('reprojects if projections are not equal', function() {
+            it('reprojects if projections are not equal', function(done) {
                 overviewMap.destroyDragBehaviour(); // destroy first
                 overviewMap.setupDragBehaviour();
                 overviewMap.boxFeature.setGeometry(ol.geom.Polygon.fromExtent(
@@ -370,9 +370,12 @@ describe('GeoExt.component.OverviewMap', function() {
                 // we test whether this call will reproject
                 overviewMap.recenterParentFromBox();
 
-                var parentCenter = olMap.getView().getCenter();
                 var expectedCenter = [4.491576420597607, 4.486983030705062];
+
+
                 setTimeout(function() {
+                    var parentCenter = olMap.getView().getCenter();
+
                     expect(
                         parentCenter[0].toFixed(12)
                     ).to.eql(
@@ -383,7 +386,8 @@ describe('GeoExt.component.OverviewMap', function() {
                     ).to.eql(
                         expectedCenter[1].toFixed(12)
                     );
-                }, 100);
+                    done();
+                }, 1200);
             });
         });
     });
