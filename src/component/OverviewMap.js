@@ -69,13 +69,17 @@ Ext.define('GeoExt.component.OverviewMap', {
         'widget.gx_overviewmap',
         'widget.gx_component_overviewmap'
     ],
+    requires: [
+        'GeoExt.util.Version'
+    ],
     mixins: [
         'GeoExt.mixin.SymbolCheck'
     ],
 
     // <debug>
     symbols: [
-        'ol.animation.pan',
+        // For ol4 support we can no longer require this symbol
+        // 'ol.animation.pan',
         'ol.Collection',
         'ol.Feature',
         'ol.Feature#setGeometry',
@@ -429,12 +433,12 @@ Ext.define('GeoExt.component.OverviewMap', {
         if (!dragInteraction) {
             return;
         }
+        dragInteraction.setActive(false);
         me.getMap().removeInteraction(dragInteraction);
         dragInteraction.un('translatestart', me.disableBoxUpdate, me);
         dragInteraction.un('translating', me.repositionAnchorFeature, me);
         dragInteraction.un('translateend', me.recenterParentFromBox, me);
         dragInteraction.un('translateend', me.enableBoxUpdate, me);
-        dragInteraction.setActive(false);
         me.dragInteraction = null;
     },
 
@@ -466,22 +470,29 @@ Ext.define('GeoExt.component.OverviewMap', {
         var overviewProjection = overviewView.getProjection();
 
         var currentMapCenter = parentView.getCenter();
-        var panAnimation = ol.animation.pan({
-            duration: me.getRecenterDuration(),
-            source: currentMapCenter
-        });
         var boxExtent = me.boxFeature.getGeometry().getExtent();
         var boxCenter = ol.extent.getCenter(boxExtent);
 
-        parentMap.beforeRender(panAnimation);
-
         // transform if necessary
         if (!ol.proj.equivalent(parentProjection, overviewProjection)) {
-            boxCenter = ol.proj.transform(boxCenter,
-                overviewProjection, parentProjection);
+            boxCenter = ol.proj.transform(boxCenter, overviewProjection,
+                parentProjection);
         }
 
-        parentView.setCenter(boxCenter);
+        // Check for backwards compatibility
+        if (GeoExt.util.Version.isOl3()) {
+            var panAnimation = ol.animation.pan({
+                duration: me.getRecenterDuration(),
+                source: currentMapCenter
+            });
+            parentMap.beforeRender(panAnimation);
+            parentView.setCenter(boxCenter);
+        } else {
+            parentView.animate({
+                center: boxCenter
+            });
+        }
+
     },
 
     /**
@@ -512,10 +523,6 @@ Ext.define('GeoExt.component.OverviewMap', {
         var overviewMap = me.getMap();
         var overviewView = overviewMap.getView();
         var overviewProjection = overviewView.getProjection();
-        var panAnimation = ol.animation.pan({
-            duration: me.getRecenterDuration(),
-            source: currentMapCenter
-        });
         var newCenter = evt.coordinate;
 
         // transform if necessary
@@ -524,8 +531,19 @@ Ext.define('GeoExt.component.OverviewMap', {
                 overviewProjection, parentProjection);
         }
 
-        parentMap.beforeRender(panAnimation);
-        parentView.setCenter(newCenter);
+        // Check for backwards compatibility
+        if (GeoExt.util.Version.isOl3()) {
+            var panAnimation = ol.animation.pan({
+                duration: me.getRecenterDuration(),
+                source: currentMapCenter
+            });
+            parentMap.beforeRender(panAnimation);
+            parentView.setCenter(newCenter);
+        } else {
+            parentView.animate({
+                center: newCenter
+            });
+        }
     },
 
     /**
@@ -590,11 +608,20 @@ Ext.define('GeoExt.component.OverviewMap', {
 
                 // call fit to assure that resolutions are available on
                 // overviewView
-                overviewView.fit(
-                    parentExtentProjected,
-                    me.getMap().getSize(),
-                    {constrainResolution: false}
-                );
+
+                // Check for backwards compatibility
+                if (GeoExt.util.Version.isOl3()) {
+                    overviewView.fit(
+                        parentExtentProjected,
+                        me.getMap().getSize(),
+                        {constrainResolution: false}
+                    );
+                } else {
+                    overviewView.fit(
+                        parentExtentProjected,
+                        {constrainResolution: false}
+                    );
+                }
                 overviewView.set(
                     'resolution',
                     me.getMagnification() * overviewView.getResolution()

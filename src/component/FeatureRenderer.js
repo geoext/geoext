@@ -65,6 +65,9 @@
 Ext.define('GeoExt.component.FeatureRenderer', {
     extend: 'Ext.Component',
     alias: 'widget.gx_renderer',
+    requires: [
+        'GeoExt.util.Version'
+    ],
     mixins: [
         'GeoExt.mixin.SymbolCheck'
     ],
@@ -394,7 +397,12 @@ Ext.define('GeoExt.component.FeatureRenderer', {
         ];
         me.el.setSize(Math.round(width), Math.round(height));
         me.map.updateSize();
-        me.map.getView().fit(bounds, me.map.getSize());
+        // Check for backwards compatibility
+        if (GeoExt.util.Version.isOl3()) {
+            me.map.getView().fit(bounds, me.map.getSize());
+        } else {
+            me.map.getView().fit(bounds);
+        }
     },
     /**
      * We're setting the symbolizers on the feature.

@@ -293,7 +293,8 @@ Ext.define('GeoExt.data.store.LayersTree', {
         var currentLayerInGroupIdx = GeoExt.util.Layer.getLayerIndex(
             layer, group
         );
-        if (currentLayerInGroupIdx !== insertIdx) {
+        if (currentLayerInGroupIdx !== insertIdx &&
+            !Ext.Array.contains(groupLayers.getArray(), layer)) {
             me.suspendCollectionEvents();
             groupLayers.insertAt(insertIdx, layer);
             me.resumeCollectionEvents();

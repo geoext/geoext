@@ -49,7 +49,8 @@ Ext.define('GeoExt.component.Map', {
         'widget.gx_component_map'
     ],
     requires: [
-        'GeoExt.data.store.Layers'
+        'GeoExt.data.store.Layers',
+        'GeoExt.util.Version'
     ],
     mixins: [
         'GeoExt.mixin.SymbolCheck'
@@ -428,7 +429,12 @@ Ext.define('GeoExt.component.Map', {
      * @param {ol.Extent} extent The extent as `ol.Extent`.
      */
     setExtent: function(extent) {
-        this.getView().fit(extent, this.getMap().getSize());
+        // Check for backwards compatibility
+        if (GeoExt.util.Version.isOl3()) {
+            this.getView().fit(extent, this.getMap().getSize());
+        } else {
+            this.getView().fit(extent);
+        }
     },
 
     /**

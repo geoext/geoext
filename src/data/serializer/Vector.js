@@ -210,7 +210,8 @@ Ext.define('GeoExt.data.serializer.Vector', {
                         styles = styleFunction.call(layer, feature, viewRes);
                     }
                 }
-                if (styles !== null && styles.length > 0) {
+
+                if (!Ext.isEmpty(styles)) {
                     geoJsonFeatures.push(geojsonFeature);
                     if (Ext.isEmpty(geojsonFeature.properties)) {
                         geojsonFeature.properties = {};

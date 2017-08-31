@@ -294,7 +294,7 @@ describe('GeoExt.component.OverviewMap', function() {
             it('creates and adds a Translate interaction', function() {
                 overviewMap.destroyDragBehaviour(); // destroy first
                 var before = overviewMap.getMap().getInteractions().getLength();
-                overviewMap.setupDragBehaviour();  // we test this call
+                overviewMap.setupDragBehaviour(); // we test this call
                 var after = overviewMap.getMap().getInteractions().getLength();
                 expect(overviewMap.dragInteraction).to.not.be(null);
                 expect(overviewMap.dragInteraction).to.be.a(
@@ -333,7 +333,7 @@ describe('GeoExt.component.OverviewMap', function() {
         });
 
         describe('#recenterParentFromBox', function() {
-            it('updates the parent map center', function() {
+            it('updates the parent map center', function(done) {
                 overviewMap.destroyDragBehaviour(); // destroy first
                 overviewMap.setupDragBehaviour();
                 overviewMap.boxFeature.setGeometry(ol.geom.Polygon.fromExtent(
@@ -341,11 +341,14 @@ describe('GeoExt.component.OverviewMap', function() {
                 ));
                 overviewMap.recenterParentFromBox();
 
-                var parentCenter = olMap.getView().getCenter();
-                expect(parentCenter).to.eql([1, 1]);
+                setTimeout(function() {
+                    var parentCenter = olMap.getView().getCenter();
+                    expect(parentCenter).to.eql([1, 1]);
+                    done();
+                }, 1200);
             });
 
-            it('reprojects if projections are not equal', function() {
+            it('reprojects if projections are not equal', function(done) {
                 overviewMap.destroyDragBehaviour(); // destroy first
                 overviewMap.setupDragBehaviour();
                 overviewMap.boxFeature.setGeometry(ol.geom.Polygon.fromExtent(
@@ -367,18 +370,24 @@ describe('GeoExt.component.OverviewMap', function() {
                 // we test whether this call will reproject
                 overviewMap.recenterParentFromBox();
 
-                var parentCenter = olMap.getView().getCenter();
                 var expectedCenter = [4.491576420597607, 4.486983030705062];
-                expect(
-                    parentCenter[0].toFixed(12)
-                ).to.eql(
-                    expectedCenter[0].toFixed(12)
-                );
-                expect(
-                    parentCenter[1].toFixed(12)
-                ).to.eql(
-                    expectedCenter[1].toFixed(12)
-                );
+
+
+                setTimeout(function() {
+                    var parentCenter = olMap.getView().getCenter();
+
+                    expect(
+                        parentCenter[0].toFixed(12)
+                    ).to.eql(
+                        expectedCenter[0].toFixed(12)
+                    );
+                    expect(
+                        parentCenter[1].toFixed(12)
+                    ).to.eql(
+                        expectedCenter[1].toFixed(12)
+                    );
+                    done();
+                }, 1200);
             });
         });
     });
