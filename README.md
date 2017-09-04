@@ -80,6 +80,9 @@ To help with your first GeoExt 3 project, follow the instructions provided to bu
 * [Basic print with Mapfish v3](http://rawgit.com/geoext/geoext3/master/examples/print/basic-mapfish.html)
 * [Popup on a map component](https://rawgit.com/geoext/geoext3/master/examples/popup/gx-popup.html)
 * [FeatureGrid component](https://rawgit.com/geoext/geoext3/master/examples/features/grid.html)
+* [Interactively filtered heatmap](https://rawgit.com/geoext/geoext3/master/examples/filtered-heatmap/filtered-heatmap.html)
+* [FeatureRenderer component](https://rawgit.com/geoext/geoext3/master/examples/renderer/renderer.html)
+* [MapView form](https://rawgit.com/geoext/geoext3/master/examples/mapviewform/mapviewform.html)
 
 
 ## Want to contribute? Yes, please 😀
