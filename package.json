@@ -59,13 +59,11 @@
     "log-update": "2.1.0",
     "mkdirp": "0.5.1",
     "mocha": "3.5.0",
-    "openlayers": "3.20.1",
+    "openlayers": "4.3.2",
     "phantomjs-prebuilt": "2.1.15",
     "sinon": "3.2.1"
   },
   "greenkeeper": {
-    "ignore": [
-      "openlayers"
-    ]
+    "ignore": []
   }
 }
