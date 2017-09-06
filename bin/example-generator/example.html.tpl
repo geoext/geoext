@@ -3,7 +3,7 @@
 <head>
     <meta charset="utf-8">
     <title>@@EXAMPLE_NAME@@ Example</title>
-    <link rel="stylesheet" type="text/css" href="https://openlayers.org/en/v3.20.1/css/ol.css">
+    <link rel="stylesheet" type="text/css" href="https://openlayers.org/en/v4.3.2/css/ol.css">
     <link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/extjs/6.2.0/classic/theme-crisp/resources/theme-crisp-all.css"/>
 </head>
 
@@ -19,7 +19,7 @@
         </p>
     </div>
 
-    <script src="https://openlayers.org/en/v3.20.1/build/ol.js"></script>
+    <script src="https://openlayers.org/en/v4.3.2/build/ol.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/extjs/6.2.0/ext-all.js"></script>
     <script>
         Ext.Loader.setConfig({

@@ -12,17 +12,15 @@ JavaScript Toolkit for Rich Web Mapping Applications.
 
 GeoExt is Open Source and enables building desktop-like GIS applications through the web. It is a JavaScript framework that combines the GIS functionality of OpenLayers with the user interface savvy of the ExtJS library provided by Sencha.
 
-Version 3 of GeoExt is the successor to the GeoExt 2.x-series and is built atop the newest official installments of its base libraries; OpenLayers 3 and ExtJS 6.
+Version 3 of GeoExt is the successor to the GeoExt 2.x-series and is built atop the newest official installments of its base libraries; OpenLayers (v3.x and v4.x) and ExtJS 6.
 
 We are trying hard to keep up with developments on both our parent libraries.
-The current state of GeoExt is compatible with ExtJS 6.2.0 and OpenLayers 3.20.1. This state is released as GeoExt v3.0.0.
+The current state of GeoExt is compatible with ExtJS 6.2.0 and OpenLayers 4.3.2. This state is released as GeoExt v3.1.0.
 
-| OpenLayers | ExtJS | GeoExt |
-| ---------- | ----- | ------ |
-| 3.20.1     | 6.2.0 | 3.0.0  |
-| 4.2.x      | 6.2.0 | WIP    |
-
-We plan on making GeoExt compatible to the already released v4.2.x of OpenLayers. Stay tuned.
+| OpenLayers       | ExtJS | GeoExt |
+| ---------------- | ----- | ------ |
+| 3.20.1           | 6.2.0 | 3.0.0  |
+| 3.20.1 / 4.3.2   | 6.2.0 | 3.1.0  |
 
 ## More information on GeoExt 3
 
@@ -82,6 +80,9 @@ To help with your first GeoExt 3 project, follow the instructions provided to bu
 * [Basic print with Mapfish v3](http://rawgit.com/geoext/geoext3/master/examples/print/basic-mapfish.html)
 * [Popup on a map component](https://rawgit.com/geoext/geoext3/master/examples/popup/gx-popup.html)
 * [FeatureGrid component](https://rawgit.com/geoext/geoext3/master/examples/features/grid.html)
+* [Interactively filtered heatmap](https://rawgit.com/geoext/geoext3/master/examples/filtered-heatmap/filtered-heatmap.html)
+* [FeatureRenderer component](https://rawgit.com/geoext/geoext3/master/examples/renderer/renderer.html)
+* [MapView form](https://rawgit.com/geoext/geoext3/master/examples/mapviewform/mapviewform.html)
 
 
 ## Want to contribute? Yes, please 😀
