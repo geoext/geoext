@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <title>The source code</title>
+  <link href="../resources/prettify/prettify.css" type="text/css" rel="stylesheet" />
+  <script type="text/javascript" src="../resources/prettify/prettify.js"></script>
+  <style type="text/css">
+    .highlight { display: block; background-color: #ddd; }
+  </style>
+  <script type="text/javascript">
+    function highlight() {
+      document.getElementById(location.hash.replace(/#/, "")).className = "highlight";
+    }
+  </script>
+</head>
+<body onload="prettyPrint(); highlight();">
+  <pre class="prettyprint lang-js"><span id='Ext-fx-layout-card-Scroll'>/**
+</span> * @private
+ */
+Ext.define('Ext.fx.layout.card.Scroll', {
+    extend: 'Ext.fx.layout.card.Abstract',
+
+    requires: [
+        'Ext.fx.easing.Linear'
+    ],
+
+    alias: 'fx.layout.card.scroll',
+
+    config: {
+<span id='Ext-fx-layout-card-Scroll-cfg-duration'>        duration: 150
+</span>    },
+
+<span id='Ext-fx-layout-card-Scroll-method-constructor'>    constructor: function(config) {
+</span>        this.initConfig(config);
+    },
+
+<span id='Ext-fx-layout-card-Scroll-method-getEasing'>    getEasing: function() {
+</span>        var easing = this.easing;
+
+        if (!easing) {
+            this.easing = easing = new Ext.fx.easing.Linear();
+        }
+
+        return easing;
+    },
+
+<span id='Ext-fx-layout-card-Scroll-method-updateDuration'>    updateDuration: function(duration) {
+</span>        this.getEasing().setDuration(duration);
+    },
+
+<span id='Ext-fx-layout-card-Scroll-method-onActiveItemChange'>    onActiveItemChange: function(cardLayout, newItem, oldItem, controller) {
+</span>        var direction = this.getDirection(),
+            easing = this.getEasing(),
+            containerElement, inElement, outElement, containerWidth, containerHeight, reverse;
+
+        if (newItem &amp;&amp; oldItem) {
+            if (this.isAnimating) {
+                this.stopAnimation();
+            }
+
+            newItem.setWidth('100%');
+            newItem.setHeight('100%');
+
+            containerElement = this.getLayout().container.innerElement;
+            containerWidth = containerElement.getWidth();
+            containerHeight = containerElement.getHeight();
+
+            inElement = newItem.renderElement;
+            outElement = oldItem.renderElement;
+
+            this.oldItem = oldItem;
+            this.newItem = newItem;
+            this.containerElement = containerElement;
+            this.currentEventController = controller;
+            this.isReverse = reverse = this.getReverse();
+
+            newItem.show();
+
+            if (direction == 'right') {
+                direction = 'left';
+                this.isReverse = reverse = !reverse;
+            }
+            else if (direction == 'down') {
+                direction = 'up';
+                this.isReverse = reverse = !reverse;
+            }
+
+            if (direction == 'left') {
+                if (reverse) {
+                    easing.setConfig({
+                        startValue: containerWidth,
+                        endValue: 0
+                    });
+
+                    containerElement.dom.scrollLeft = containerWidth;
+                    outElement.setLeft(containerWidth);
+                }
+                else {
+                    easing.setConfig({
+                        startValue: 0,
+                        endValue: containerWidth
+                    });
+
+                    inElement.setLeft(containerWidth);
+                }
+            }
+            else {
+                if (reverse) {
+                    easing.setConfig({
+                        startValue: containerHeight,
+                        endValue: 0
+                    });
+
+                    containerElement.dom.scrollTop = containerHeight;
+                    outElement.setTop(containerHeight);
+                }
+                else {
+                    easing.setConfig({
+                        startValue: 0,
+                        endValue: containerHeight
+                    });
+
+                    inElement.setTop(containerHeight);
+                }
+            }
+
+            this.startAnimation();
+            controller.pause();
+        }
+    },
+
+<span id='Ext-fx-layout-card-Scroll-method-startAnimation'>    startAnimation: function() {
+</span>        this.isAnimating = true;
+        this.getEasing().setStartTime(Date.now());
+        Ext.AnimationQueue.start(this.doAnimationFrame, this);
+    },
+
+<span id='Ext-fx-layout-card-Scroll-method-doAnimationFrame'>    doAnimationFrame: function() {
+</span>        var easing = this.getEasing(),
+            direction = this.getDirection(),
+            scroll = 'scrollTop',
+            value;
+
+        if (direction == 'left' || direction == 'right') {
+            scroll = 'scrollLeft';
+        }
+
+        if (easing.isEnded) {
+            this.stopAnimation();
+        }
+        else {
+            value = easing.getValue();
+            this.containerElement.dom[scroll] = value;
+        }
+    },
+
+<span id='Ext-fx-layout-card-Scroll-method-stopAnimation'>    stopAnimation: function() {
+</span>        var me = this,
+            direction = me.getDirection(),
+            scroll = 'setTop',
+            oldItem = me.oldItem,
+            newItem = me.newItem;
+
+        if (direction == 'left' || direction == 'right') {
+            scroll = 'setLeft';
+        }
+
+        me.currentEventController.resume();
+
+        if (me.isReverse &amp;&amp; oldItem &amp;&amp; oldItem.renderElement &amp;&amp; oldItem.renderElement.dom) {
+            oldItem.renderElement[scroll](null);
+        }
+        else if (newItem &amp;&amp; newItem.renderElement &amp;&amp; newItem.renderElement.dom) {
+            newItem.renderElement[scroll](null);
+        }
+
+        Ext.AnimationQueue.stop(this.doAnimationFrame, this);
+        me.isAnimating = false;
+        me.fireEvent('animationend', me);
+    }
+});
+</pre>
+</body>
+</html>

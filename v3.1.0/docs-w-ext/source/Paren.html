@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <title>The source code</title>
+  <link href="../resources/prettify/prettify.css" type="text/css" rel="stylesheet" />
+  <script type="text/javascript" src="../resources/prettify/prettify.js"></script>
+  <style type="text/css">
+    .highlight { display: block; background-color: #ddd; }
+  </style>
+  <script type="text/javascript">
+    function highlight() {
+      document.getElementById(location.hash.replace(/#/, "")).className = "highlight";
+    }
+  </script>
+</head>
+<body onload="prettyPrint(); highlight();">
+  <pre class="prettyprint lang-js"><span id='Ext-parse-symbol-Paren'>/**
+</span> * This class implements the parenthesis operator.
+ * @private
+ */
+Ext.define('Ext.parse.symbol.Paren', {
+    extend: 'Ext.parse.Symbol',
+
+<span id='Ext-parse-symbol-Paren-property-arity'>    arity: 'binary',
+</span><span id='Ext-parse-symbol-Paren-property-isBinary'>    isBinary: true,
+</span>
+<span id='Ext-parse-symbol-Paren-property-priority'>    priority: 80,
+</span>
+<span id='Ext-parse-symbol-Paren-method-led'>    led: function (left) {
+</span>        // Handles function call operator
+        var me = this,
+            args = [],
+            parser = me.parser,
+            id = left.id,
+            type = left.arity;
+
+        if (id !== '.' &amp;&amp; id !== '[') {
+            if ((type !== &quot;unary&quot; || id !== &quot;function&quot;) &amp;&amp;
+                 type !== &quot;ident&quot; &amp;&amp; id !== &quot;(&quot; &amp;&amp;
+                 id !== &quot;&amp;&amp;&quot; &amp;&amp; id !== &quot;||&quot; &amp;&amp; id !== &quot;?&quot;) {
+                parser.syntaxError(left.at, &quot;Expected a variable name.&quot;);
+            }
+        }
+
+        me.arity = 'invoke';
+        me.isInvoke = true;
+        me.operand = left;
+        me.args = args;
+
+        while (parser.token.id !== ')') {
+            if (args.length) {
+                parser.advance(',');
+            }
+
+            args.push(parser.parseExpression());
+        }
+
+        parser.advance(')');
+        return me;
+    },
+
+<span id='Ext-parse-symbol-Paren-method-nud'>    nud: function () {
+</span>        // Handles parenthesized expressions
+        var parser = this.parser,
+            ret = parser.parseExpression();
+
+        parser.advance(&quot;)&quot;);
+        return ret;
+    }
+});
+</pre>
+</body>
+</html>

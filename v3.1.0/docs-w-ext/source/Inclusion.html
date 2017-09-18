@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <title>The source code</title>
+  <link href="../resources/prettify/prettify.css" type="text/css" rel="stylesheet" />
+  <script type="text/javascript" src="../resources/prettify/prettify.js"></script>
+  <style type="text/css">
+    .highlight { display: block; background-color: #ddd; }
+  </style>
+  <script type="text/javascript">
+    function highlight() {
+      document.getElementById(location.hash.replace(/#/, "")).className = "highlight";
+    }
+  </script>
+</head>
+<body onload="prettyPrint(); highlight();">
+  <pre class="prettyprint lang-js"><span id='Ext-data-validator-Inclusion'>/**
+</span> * Validates that the value exists in a {@link #list} of values.
+ */
+Ext.define('Ext.data.validator.Inclusion', {
+    extend: 'Ext.data.validator.List',
+    alias: 'data.validator.inclusion',
+    
+<span id='Ext-data-validator-Inclusion-property-type'>    type: 'inclusion',
+</span>    config: {
+<span id='Ext-data-validator-Inclusion-cfg-message'>        /**
+</span>         * @cfg {String} message
+         * The error message to return when the passed value does not exist
+         * in the specified {@link #list}.
+         */
+        message: 'Is not in the list of acceptable values'
+    },
+    
+<span id='Ext-data-validator-Inclusion-method-constructor'>    //&lt;debug&gt;
+</span>    constructor: function() {
+        this.callParent(arguments);
+        if (!this.getList()) {
+            Ext.raise('validator.Inclusion requires a list');
+        }    
+    },
+<span id='Ext-data-validator-Inclusion-property-inclusion'>    //&lt;/debug&gt;
+</span>    
+    inclusion: true
+});
+</pre>
+</body>
+</html>

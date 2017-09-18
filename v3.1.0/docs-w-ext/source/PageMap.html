@@ -1,0 +1,364 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <title>The source code</title>
+  <link href="../resources/prettify/prettify.css" type="text/css" rel="stylesheet" />
+  <script type="text/javascript" src="../resources/prettify/prettify.js"></script>
+  <style type="text/css">
+    .highlight { display: block; background-color: #ddd; }
+  </style>
+  <script type="text/javascript">
+    function highlight() {
+      document.getElementById(location.hash.replace(/#/, "")).className = "highlight";
+    }
+  </script>
+</head>
+<body onload="prettyPrint(); highlight();">
+  <pre class="prettyprint lang-js"><span id='Ext-data-PageMap'>/**
+</span> * @class Ext.data.PageMap
+ * @extends Ext.util.LruCache
+ * Private class for use by only Store when configured `buffered: true`.
+ * @private
+ */
+Ext.define('Ext.data.PageMap', {
+    extend: 'Ext.util.LruCache',
+
+    config: {
+<span id='Ext-data-PageMap-cfg-store'>        store: null,
+</span>
+<span id='Ext-data-PageMap-cfg-pageSize'>        /**
+</span>         * @cfg {Number} pageSize
+         * The size of pages in this map.
+         */
+        pageSize: 0,
+
+<span id='Ext-data-PageMap-cfg-rootProperty'>        /**
+</span>         * @cfg {String} rootProperty
+         * The root property to use for aggregation, filtering and sorting. By default
+         * this is `null` but when containing things like {@link Ext.data.Model records}
+         * this config would likely be set to &quot;data&quot; so that property names are applied
+         * to the fields of each record.
+         */
+        rootProperty: ''
+    },
+
+<span id='Ext-data-PageMap-method-clear'>    // Maintain a generation counter, so that the Store can reject incoming pages destined for the previous generation
+</span>    clear: function(initial) {
+        var me = this;
+        me.pageMapGeneration = (me.pageMapGeneration || 0) + 1;
+
+        // Map of internalId to recordIndex
+        me.indexMap = {};
+
+        me.callParent([initial]);
+    },
+
+<span id='Ext-data-PageMap-method-updatePageSize'>    //&lt;debug&gt;
+</span>    updatePageSize: function(value, oldValue) {
+        if (oldValue != null) {
+            throw &quot;pageMap page size may not be changed&quot;;
+        }
+    },
+<span id='Ext-data-PageMap-method-forEach'>    //&lt;/debug&gt;
+</span>
+    forEach: function(fn, scope) {
+        var me = this,
+            pageNumbers = Ext.Object.getKeys(me.map),
+            pageCount = pageNumbers.length,
+            pageSize = me.getPageSize(),
+            i, j,
+            pageNumber,
+            page,
+            len;
+
+        for (i = 0; i &lt; pageCount; i++) {
+            pageNumbers[i] = +pageNumbers[i];
+        }
+        Ext.Array.sort(pageNumbers, Ext.Array.numericSortFn);
+        scope = scope || me;
+        for (i = 0; i &lt; pageCount; i++) {
+            pageNumber = pageNumbers[i];
+            page = me.getPage(pageNumber);
+            len = page.length;
+            for (j = 0; j &lt; len; j++) {
+                if (fn.call(scope, page[j], (pageNumber - 1) * pageSize + j) === false) {
+                    return;
+                }
+            }
+        }
+    },
+
+<span id='Ext-data-PageMap-method-findBy'>    /**
+</span>    * Returns the first record in this page map which elicits a true return value from the
+    * passed selection function.
+    *
+    * **IMPORTANT
+    * This can ONLY find records which happen to be cached in the page cache. This will be parts of the dataset around the currently
+    * visible zone, or recently visited zones if the pages have not yet been purged from the cache.
+    * 
+    * This CAN NOT find records which have not been loaded into the cache.**
+    *
+    * If full client side searching is required, do not use a buffered store, instead use a regular, fully loaded store and
+    * use the {@link Ext.grid.plugin.BufferedRenderer BufferedRenderer} plugin to minimize DOM footprint.
+    * @param {Function} fn The selection function to execute for each item.
+    *  @param {Mixed} fn.rec The record.
+    *  @param {Mixed} fn.index The index in the total dataset of the record.
+    * @param {Object} [scope] The scope (`this` reference) in which the function is executed. Defaults to this PageMap.
+    * @return {Object} The first record in this page map which returned true from the selection
+    * function, or null if none was found.
+    */
+    findBy: function(fn, scope) {
+        var me = this,
+            result = null;
+
+        scope = scope || me;
+        me.forEach(function(rec, index) {
+            if (fn.call(scope, rec, index)) {
+                result = rec;
+                return false;
+            }
+        });
+        return result;
+    },
+
+<span id='Ext-data-PageMap-method-findIndexBy'>    /**
+</span>    * Returns the index *in the whole dataset* of the first record in this page map which elicits a true return value from the
+    * passed selection function.
+    *
+    * **IMPORTANT
+    * This can ONLY find records which happen to be cached in the page cache. This will be parts of the dataset around the currently
+    * visible zone, or recently visited zones if the pages have not yet been purged from the cache.
+    * 
+    * This CAN NOT find records which have not been loaded into the cache.**
+    *
+    * If full client side searching is required, do not use a buffered store, instead use a regular, fully loaded store and
+    * use the {@link Ext.grid.plugin.BufferedRenderer BufferedRenderer} plugin to minimize DOM footprint.
+    * @param {Function} fn The selection function to execute for each item.
+    *  @param {Mixed} fn.rec The record.
+    *  @param {Mixed} fn.index The index in the total dataset of the record.
+    * @param {Object} [scope] The scope (`this` reference) in which the function is executed. Defaults to this PageMap.
+    * @return {Number} The index first record in this page map which returned true from the selection
+    * function, or -1 if none was found.
+    */
+    findIndexBy: function(fn, scope) {
+        var me = this,
+            result = -1;
+
+        scope = scope || me;
+        me.forEach(function(rec, index) {
+            if (fn.call(scope, rec)) {
+                result = index;
+                return false;
+            }
+        });
+        return result;
+    },
+
+<span id='Ext-data-PageMap-method-find'>    find: function (property, value, start, startsWith, endsWith, ignoreCase) {
+</span>        if (Ext.isEmpty(value, false)) {
+            return null;
+        }
+
+        var regex = Ext.String.createRegex(value, startsWith, endsWith, ignoreCase),
+            root = this.getRootProperty();
+
+        return this.findBy(function (item) {
+            return item &amp;&amp; regex.test((root ? item[root] : item)[property]);
+        }, null, start);
+    },
+
+<span id='Ext-data-PageMap-method-findIndex'>    findIndex: function (property, value, start, startsWith, endsWith, ignoreCase) {
+</span>        if (Ext.isEmpty(value, false)) {
+            return null;
+        }
+
+        var regex = Ext.String.createRegex(value, startsWith, endsWith, ignoreCase),
+            root = this.getRootProperty();
+
+        return this.findIndexBy(function (item) {
+            return item &amp;&amp; regex.test((root ? item[root] : item)[property]);
+        }, null, start);
+    },
+
+<span id='Ext-data-PageMap-method-getPageFromRecordIndex'>    getPageFromRecordIndex: function(index) {
+</span>        return Math.floor(index / this.getPageSize()) + 1;
+    },
+
+<span id='Ext-data-PageMap-method-addAll'>    addAll: function(records) {
+</span>        //&lt;debug&gt;
+        if (this.getCount()) {
+            Ext.raise('Cannot addAll to a non-empty PageMap');
+        }
+        //&lt;/debug&gt;
+        this.addPage(1, records);
+    },
+
+<span id='Ext-data-PageMap-method-addPage'>    addPage: function(pageNumber, records) {
+</span>        var me = this,
+            pageSize = me.getPageSize(),
+            lastPage = pageNumber + Math.floor((records.length - 1) / pageSize),
+            storeIndex = (pageNumber - 1) * pageSize,
+            indexMap = me.indexMap,
+            page, i, len, startIdx;
+
+        // Account for being handed a block of records spanning several pages.
+        // This can happen when loading from a MemoryProxy before a viewSize has been determined.
+        for (startIdx = 0; pageNumber &lt;= lastPage; pageNumber++, startIdx += pageSize) {
+            page = Ext.Array.slice(records, startIdx, startIdx + pageSize);
+
+            // Maintain the indexMap so that we can implement indexOf(record)
+            for (i = 0, len = page.length; i &lt; len; i++) {
+                indexMap[page[i].internalId] = storeIndex++;
+            }
+            me.add(pageNumber, page);
+            me.fireEvent('pageadd', me, pageNumber, page);
+        }
+    },
+
+<span id='Ext-data-PageMap-method-getCount'>    getCount: function() {
+</span>        var result = this.callParent();
+        if (result) {
+            result = (result - 1) * this.getPageSize() + this.last.value.length;
+        }
+        return result;
+    },
+
+<span id='Ext-data-PageMap-method-getByInternalId'>    getByInternalId: function(internalId) {
+</span>        var index = this.indexMap[internalId];
+        if (index != null) {
+            return this.getAt(index);
+        }
+    },
+
+<span id='Ext-data-PageMap-method-indexOf'>    indexOf: function(record) {
+</span>        var result = -1;
+        if (record) {
+            result = this.indexMap[record.internalId];
+            if (result == null) {
+                result = -1;
+            }
+        }
+        return result;
+    },
+
+<span id='Ext-data-PageMap-method-insert'>    insert: function() {
+</span>        //&lt;debug&gt;
+        Ext.raise('insert operation not suppported into buffered Store');
+        //&lt;/debug&gt;
+    },
+
+<span id='Ext-data-PageMap-method-remove'>    remove: function() {
+</span>        //&lt;debug&gt;
+        Ext.raise('remove operation not suppported from buffered Store');
+        //&lt;/debug&gt;
+    },
+
+<span id='Ext-data-PageMap-method-removeAt'>    removeAt: function() {
+</span>        //&lt;debug&gt;
+        Ext.raise('removeAt operation not suppported from buffered Store');
+        //&lt;/debug&gt;
+    },
+
+<span id='Ext-data-PageMap-method-removeAtKey'>    removeAtKey: function (page) {
+</span>        // Allow observers to veto
+        var me = this,
+            thePage = me.getPage(page),
+            len,
+            i,
+            result;
+
+        if (thePage) {
+            if (me.fireEvent('beforepageremove', me, page, thePage) !== false) {
+                len = thePage.length;
+                for (i = 0; i &lt; len; i++) {
+                    delete me.indexMap[thePage[i].internalId];
+                }
+                result = me.callParent(arguments);
+                me.fireEvent('pageremove', me, page, thePage);
+
+                // Empty the page array *after* informing observers that the records have exited.
+                thePage.length = 0;
+            }
+        }
+        return result;
+    },
+
+<span id='Ext-data-PageMap-method-getPage'>    getPage: function(pageNumber) {
+</span>        return this.get(pageNumber);
+    },
+
+<span id='Ext-data-PageMap-method-hasRange'>    hasRange: function(start, end) {
+</span>        var me = this,
+            pageNumber = me.getPageFromRecordIndex(start),
+            endPageNumber = me.getPageFromRecordIndex(end);
+
+        for (; pageNumber &lt;= endPageNumber; pageNumber++) {
+            if (!me.hasPage(pageNumber)) {
+                return false;
+            }
+        }
+        // Check that the last page is filled enough to encapsulate the range.
+        return (endPageNumber - 1) * me._pageSize + me.getPage(endPageNumber).length &gt; end;
+    },
+
+<span id='Ext-data-PageMap-method-hasPage'>    hasPage: function(pageNumber) {
+</span>        // We must use this.get to trigger an access so that the page which is checked for presence is not eligible for pruning
+        return !!this.get(pageNumber);
+    },
+
+<span id='Ext-data-PageMap-method-peekPage'>    peekPage: function(pageNumber) {
+</span>        return this.map[pageNumber];
+    },
+
+<span id='Ext-data-PageMap-method-getAt'>    getAt: function(index) {
+</span>        return this.getRange(index, index + 1)[0];
+    },
+
+<span id='Ext-data-PageMap-method-getRange'>    getRange: function(start, end) {
+</span>        // Store's backing Collection now uses EXCLUSIVE endIndex
+        // So store will always pass the endIndex+1
+        end--;
+
+        if (!this.hasRange(start, end)) {
+            Ext.raise('PageMap asked for range which it does not have');
+        }
+        var me = this,
+            Array = Ext.Array,
+            pageSize = me.getPageSize(),
+            startPageNumber = me.getPageFromRecordIndex(start),
+            endPageNumber = me.getPageFromRecordIndex(end),
+            dataStart = (startPageNumber - 1) * pageSize,
+            dataEnd = (endPageNumber * pageSize) - 1,
+            pageNumber = startPageNumber,
+            result = [],
+            sliceBegin, sliceEnd, doSlice;
+
+        for (; pageNumber &lt;= endPageNumber; pageNumber++) {
+
+            // First and last pages *may* need slicing to cut into the actual wanted records
+            if (pageNumber === startPageNumber) {
+                sliceBegin = start - dataStart;
+                doSlice = sliceBegin &gt; 0;
+            } else {
+                sliceBegin = 0;
+                doSlice = false;
+            }
+            if (pageNumber === endPageNumber) {
+                sliceEnd = pageSize - (dataEnd - end);
+                doSlice = doSlice || sliceEnd &lt; pageSize;
+            }
+
+            // First and last pages will need slicing
+            if (doSlice) {
+                Array.push(result, Array.slice(me.getPage(pageNumber), sliceBegin, sliceEnd));
+            } else {
+                Array.push(result, me.getPage(pageNumber));
+            }
+        }
+        return result;
+    }
+});
+</pre>
+</body>
+</html>

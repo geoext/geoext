@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <title>The source code</title>
+  <link href="../resources/prettify/prettify.css" type="text/css" rel="stylesheet" />
+  <script type="text/javascript" src="../resources/prettify/prettify.js"></script>
+  <style type="text/css">
+    .highlight { display: block; background-color: #ddd; }
+  </style>
+  <script type="text/javascript">
+    function highlight() {
+      document.getElementById(location.hash.replace(/#/, "")).className = "highlight";
+    }
+  </script>
+</head>
+<body onload="prettyPrint(); highlight();">
+  <pre class="prettyprint lang-js"><span id='Ext-app-domain-View'>/**
+</span> * @class Ext.app.domain.View
+ */
+Ext.define('Ext.app.domain.View', {
+    extend: 'Ext.app.EventDomain',
+
+    requires: ['Ext.Widget'],
+    
+<span id='Ext-app-domain-View-property-isInstance'>    isInstance: true,
+</span>    
+<span id='Ext-app-domain-View-method-constructor'>    constructor: function(controller) {
+</span>        this.callParent([controller]);
+        this.controller = controller;
+        this.monitoredClasses = [Ext.Widget];
+    },
+    
+<span id='Ext-app-domain-View-method-match'>    match: function(target, selector, controller) {
+</span>        var out = false;
+        if (selector === '#') {
+            out = controller === target.getController();
+        } else {
+            out = target.is(selector);
+        }
+        return out;
+    },
+    
+<span id='Ext-app-domain-View-method-destroy'>    destroy: function() {
+</span>        this.controller = null;
+        this.callParent();
+    }
+});
+</pre>
+</body>
+</html>
