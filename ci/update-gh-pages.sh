@@ -75,6 +75,7 @@ cd $GH_PAGES_DIR
 
 # 1. Update GeoExt package
 if [ "$PUBLISH_SENCHA_PACKAGE" == "true" ]; then
+    echo "Sencha package building is currently disabled."
     # mkdir -p cmd/pkgs/$GEOEXT_PACKAGE_NAME
     # rm -Rf cmd/pkgs/$GEOEXT_PACKAGE_NAME/$GEOEXT_PACKAGE_VERSION
     # cp -r $INSTALL_DIR/../repo/pkgs/$GEOEXT_PACKAGE_NAME/$GEOEXT_PACKAGE_VERSION cmd/pkgs/$GEOEXT_PACKAGE_NAME
