@@ -59,7 +59,7 @@
     "log-update": "2.1.0",
     "mkdirp": "0.5.1",
     "mocha": "4.0.1",
-    "openlayers": "4.3.3",
+    "openlayers": "4.4.1",
     "phantomjs-prebuilt": "2.1.15",
     "sinon": "4.0.1"
   },
