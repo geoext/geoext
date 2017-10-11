@@ -46,7 +46,7 @@
   "devDependencies": {
     "browser-sync": "2.18.13",
     "coveralls": "3.0.0",
-    "eslint": "4.7.2",
+    "eslint": "4.8.0",
     "eslint-config-openlayers": "7.0.0",
     "expect.js": "0.3.1",
     "karma": "1.7.1",
@@ -59,9 +59,9 @@
     "log-update": "2.1.0",
     "mkdirp": "0.5.1",
     "mocha": "3.5.2",
-    "openlayers": "4.3.3",
+    "openlayers": "4.4.1",
     "phantomjs-prebuilt": "2.1.15",
-    "sinon": "4.0.0"
+    "sinon": "4.0.1"
   },
   "greenkeeper": {
     "ignore": []
