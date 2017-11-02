@@ -60,7 +60,7 @@
     "mkdirp": "0.5.1",
     "mocha": "4.0.1",
     "openlayers": "4.4.2",
-    "phantomjs-prebuilt": "2.1.15",
+    "phantomjs-prebuilt": "2.1.16",
     "sinon": "4.0.1"
   },
   "greenkeeper": {
