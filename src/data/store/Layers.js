@@ -154,7 +154,8 @@ Ext.define('GeoExt.data.store.Layers', {
             if (evt.key === 'title') {
                 record.set('title', layer.get('title'));
             } else {
-                this.fireEvent('update', this, record, Ext.data.Record.EDIT);
+                this.fireEvent('update', this, record, Ext.data.Record.EDIT,
+                    null, {});
             }
         }
     },
