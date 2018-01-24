@@ -44,7 +44,7 @@
   },
   "dependencies": {},
   "devDependencies": {
-    "browser-sync": "2.23.5",
+    "browser-sync": "2.23.6",
     "coveralls": "3.0.0",
     "eslint": "4.16.0",
     "eslint-config-openlayers": "7.0.0",
