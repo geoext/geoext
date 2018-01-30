@@ -87,19 +87,19 @@ Ext.application({
         // Create viewport and also add a button showing a description with the
         // link to this source code
         var viewport = Ext.create('Ext.TabPanel', {
-            fullscreen : true,
-            ui : 'dark',
-            tabBar : {
-                docked : 'top',
-                layout : {
-                    pack : 'center'
+            fullscreen: true,
+            ui: 'dark',
+            tabBar: {
+                docked: 'top',
+                layout: {
+                    pack: 'center'
                 }
             },
-            items : [
+            items: [
                 mapPanel1,
                 mapPanel2,
                 {
-                    xtype : 'toolbar',
+                    xtype: 'toolbar',
                     docked: 'bottom',
                     items: [
                         {
@@ -114,8 +114,8 @@ Ext.application({
         });
 
         // close the modal description when clicking mask
-        viewport.mon(Ext.getBody(), 'click', function(el, e){
+        viewport.mon(Ext.getBody(), 'click', function(el, e) {
             description.close(description.closeAction);
-        }, viewport, { delegate: '.x-mask' });
+        }, viewport, {delegate: '.x-mask'});
     }
 });

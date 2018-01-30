@@ -69,11 +69,11 @@ Ext.application({
         });
 
         // handler for showing / hiding of layers via layer list
-        onSelect = function (grid, record) {
+        var onSelect = function(grid, record) {
             var layer = record.getOlLayer();
             layer.setVisible(true);
         };
-        onDeselect = function (grid, record) {
+        var onDeselect = function(grid, record) {
             var layer = record.getOlLayer();
             layer.setVisible(false);
         };
@@ -82,11 +82,11 @@ Ext.application({
         layerList = Ext.create('Ext.grid.Grid', {
             title: 'Layer List',
             columns: [
-                {text: 'Name',  dataIndex: 'text', flex: 1},
+                {text: 'Name',  dataIndex: 'text', flex: 1}
             ],
             store: layerStore,
             mode: 'MULTI',
-            striped : false,
+            striped: false,
             listeners: {
                 select: onSelect,
                 deselect: onDeselect
@@ -94,9 +94,9 @@ Ext.application({
         });
 
         // synchronize the initial layer visibility and the list selection
-        layerList.on('show', function () {
+        layerList.on('show', function() {
             var selection = [];
-            layerList.getStore().each(function (rec) {
+            layerList.getStore().each(function(rec) {
                 var layer = rec.getOlLayer();
                 if (layer.getVisible() === true) {
                     selection.push(rec);
@@ -124,19 +124,19 @@ Ext.application({
         // Create viewport and also add a button showing a description with the
         // link to this source code
         var viewport = Ext.create('Ext.TabPanel', {
-            fullscreen : true,
-            ui : 'dark',
-            tabBar : {
-                docked : 'top',
-                layout : {
-                    pack : 'center'
+            fullscreen: true,
+            ui: 'dark',
+            tabBar: {
+                docked: 'top',
+                layout: {
+                    pack: 'center'
                 }
             },
-            items : [
+            items: [
                 mapPanel,
                 layerList,
                 {
-                    xtype : 'toolbar',
+                    xtype: 'toolbar',
                     docked: 'bottom',
                     items: [
                         {
@@ -151,8 +151,8 @@ Ext.application({
         });
 
         // close the modal description when clicking mask
-        viewport.mon(Ext.getBody(), 'click', function(el, e){
+        viewport.mon(Ext.getBody(), 'click', function(el, e) {
             description.close(description.closeAction);
-        }, viewport, { delegate: '.x-mask' });
+        }, viewport, {delegate: '.x-mask'});
     }
 });
