@@ -200,6 +200,13 @@ Ext.define('GeoExt.data.serializer.Vector', {
                 var geometryType = geometry.getType();
                 var geojsonFeature = format.writeFeatureObject(feature);
 
+                // remove parent feature references as they break serialization
+                // later on
+                if (geojsonFeature.properties &&
+                        geojsonFeature.properties.parentFeature) {
+                    geojsonFeature.properties.parentFeature = undefined;
+                }
+
                 var styles = null;
                 var styleFunction = feature.getStyleFunction();
                 if (Ext.isDefined(styleFunction)) {
@@ -211,6 +218,9 @@ Ext.define('GeoExt.data.serializer.Vector', {
                     }
                 }
 
+                if (!Ext.isArray(styles)) {
+                    styles = [styles];
+                }
                 if (!Ext.isEmpty(styles)) {
                     geoJsonFeatures.push(geojsonFeature);
                     if (Ext.isEmpty(geojsonFeature.properties)) {
