@@ -82,7 +82,7 @@ Ext.application({
         layerList = Ext.create('Ext.grid.Grid', {
             title: 'Layer List',
             columns: [
-                {text: 'Name',  dataIndex: 'text', flex: 1}
+                {text: 'Name', dataIndex: 'text', flex: 1}
             ],
             store: layerStore,
             mode: 'MULTI',

@@ -78,13 +78,11 @@ Ext.define('GeoExt.data.store.OlObjects', {
          */
         remove: function(store, records, index) {
             var coll = store.olCollection;
-            var length = records.length;
-            var i;
 
             store.__updating = true;
-            for (i = 0; i < length; i++) {
-                coll.removeAt(index);
-            }
+            Ext.each(records, function(rec) {
+                coll.remove(rec.olObject);
+            });
             store.__updating = false;
         }
     },
@@ -109,53 +107,12 @@ Ext.define('GeoExt.data.store.OlObjects', {
         config.data = this.olCollection.getArray();
 
         this.callParent([config]);
-
-        this.olCollection.on('add', this.onOlCollectionAdd, this);
-        this.olCollection.on('remove', this.onOlCollectionRemove, this);
-    },
-
-    /**
-     * Forwards changes to the `ol.Collection` to the Ext.data.Store.
-     *
-     * @param {ol.CollectionEvent} evt The event emitted by the `ol.Collection`.
-     * @private
-     */
-    onOlCollectionAdd: function(evt) {
-        var target = evt.target;
-        var element = evt.element;
-        var idx = Ext.Array.indexOf(target.getArray(), element);
-
-        if (!this.__updating) {
-            this.insert(idx, element);
-        }
-    },
-
-    /**
-     * Forwards changes to the `ol.Collection` to the Ext.data.Store.
-     *
-     * @param {ol.CollectionEvent} evt The event emitted by the `ol.Collection`.
-     * @private
-     */
-    onOlCollectionRemove: function(evt) {
-        var element = evt.element;
-        var idx = this.findBy(function(rec) {
-            return rec.olObject === element;
-        });
-
-        if (idx !== -1) {
-            if (!this.__updating) {
-                this.removeAt(idx);
-            }
-        }
     },
 
     /**
      * @inheritdoc
      */
     destroy: function() {
-        this.olCollection.un('add', this.onCollectionAdd, this);
-        this.olCollection.un('remove', this.onCollectionRemove, this);
-
         delete this.olCollection;
 
         this.callParent(arguments);

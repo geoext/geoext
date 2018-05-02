@@ -60,35 +60,6 @@ describe('GeoExt.data.store.OlObjects', function() {
             });
         });
 
-        describe('adding and removing items from the collection', function() {
-
-            it('will have records of collection items added', function() {
-                var olObj = new ol.Object();
-
-                expect(store.getCount()).to.be(0);
-
-                collection.push(new ol.Object());
-                expect(store.getCount()).to.be(1);
-
-                collection.push([new ol.Object(), new ol.Object()]);
-                expect(store.getCount()).to.be(3);
-
-                collection.insertAt(0, olObj);
-                expect(collection.item(0)).to.be(olObj);
-                expect(store.getAt(0).olObject).to.be(olObj);
-            });
-
-            it('will not have records of collection items that are removed',
-                function() {
-                    collection.push(new ol.Object());
-                    expect(store.getCount()).to.be(1);
-
-                    collection.removeAt(0);
-                    expect(store.getCount()).to.be(0);
-                }
-            );
-        });
-
         describe('adding and removing records from the store', function() {
 
             it('the collection will have items of the added records',
