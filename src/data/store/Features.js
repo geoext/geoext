@@ -152,12 +152,50 @@ Ext.define('GeoExt.data.store.Features', {
             me.drawFeaturesOnMap();
         }
 
+        if (cfg.features instanceof ol.Collection) {
+            this.olCollection.on('add', this.onOlCollectionAdd, this);
+            this.olCollection.on('remove', this.onOlCollectionRemove, this);
+        }
         me.bindLayerEvents();
 
         if (me.passThroughFilter === true) {
             me.on('filterchange', me.onFilterChange);
         }
+    },
 
+    /**
+     * Forwards changes to the `ol.Collection` to the Ext.data.Store.
+     *
+     * @param {ol.CollectionEvent} evt The event emitted by the `ol.Collection`.
+     * @private
+     */
+    onOlCollectionAdd: function(evt) {
+        var target = evt.target;
+        var element = evt.element;
+        var idx = Ext.Array.indexOf(target.getArray(), element);
+
+        if (!this.__updating) {
+            this.insert(idx, element);
+        }
+    },
+
+    /**
+     * Forwards changes to the `ol.Collection` to the Ext.data.Store.
+     *
+     * @param {ol.CollectionEvent} evt The event emitted by the `ol.Collection`.
+     * @private
+     */
+    onOlCollectionRemove: function(evt) {
+        var element = evt.element;
+        var idx = this.findBy(function(rec) {
+            return rec.olObject === element;
+        });
+
+        if (idx !== -1) {
+            if (!this.__updating) {
+                this.removeAt(idx);
+            }
+        }
     },
 
     applyFields: function(fields) {
@@ -199,6 +237,11 @@ Ext.define('GeoExt.data.store.Features', {
      * @protected
      */
     destroy: function() {
+        if (this.olCollection) {
+            this.olCollection.un('add', this.onCollectionAdd, this);
+            this.olCollection.un('remove', this.onCollectionRemove, this);
+        }
+
         var me = this;
 
         me.unbindLayerEvents();

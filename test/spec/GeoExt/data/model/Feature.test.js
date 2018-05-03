@@ -26,7 +26,7 @@ describe('GeoExt.data.model.Feature', function() {
 
     describe('#getFeature', function() {
         var feat;
-        var  rec;
+        var rec;
         beforeEach(function() {
             feat = new ol.Feature();
             rec = Ext.create('GeoExt.data.model.Feature', feat);
