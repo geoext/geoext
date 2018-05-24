@@ -6,7 +6,7 @@ Follow these instructions to build your first GeoExt 3 application, using Sencha
 * ExtJS GPL 6.2.0 (ext.version.number=6.2.0.981)
 * GeoExt 3 (2016-10-20)
 
-We will create a basic GeoExt 3 based universal app. A universal app should use both the classic and modern toolkit to work on desktop and mobile browsers. At the end of this exercise, you should have an application displaying a OL3 map on a panel, both on the desktop and mobile browser.
+We will create a basic GeoExt 3 based universal app. A universal app should use both the classic and modern toolkit to work on desktop and mobile browsers. At the end of this exercise, you should have an application displaying a OpenLayers 4 map on a panel, both on the desktop and mobile browser.
 
 ## ExtJS Universal App
 
@@ -78,7 +78,7 @@ Adjust the `classpath` property in your ``app.json`` like below.
     "app",
     "${toolkit.name}/src",
     "./lib/geoext3/src"
-]
+],
 ```
 
 #### Use GeoExt 3 as ExtJS package
