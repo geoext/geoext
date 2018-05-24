@@ -12,7 +12,7 @@ In order to develop GeoExt 3 you'll need certain things on your machine:
 
 * [`git`](https://git-scm.com)
 * [Node.js & `npm`](https://nodejs.org/en/)
-* [`jsduck`](https://github.com/senchalabs/jsduck])
+* [`jsduck`](https://github.com/senchalabs/jsduck)
 
 Additionally, if you want to reuse the GeoExt 3 library in your Sencha
 applications, you'll need the Sencha CMD tool. See the
