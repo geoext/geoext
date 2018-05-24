@@ -267,7 +267,7 @@ The file `app.json` must be adjusted before we can build the application.
 
 Two small changes are necessary.
 
-#### Add the OpenLayers 3 library
+#### Add the OpenLayers 4 library
 
 The application needs the OpenLayers library to work. Add this dependency to the `js` property.
 
