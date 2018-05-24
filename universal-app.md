@@ -297,7 +297,7 @@ and css file
     ],
 ```
 
-This includes all OpenLayers 3 functionality. After this exercise, you can consider [creating a custom build](https://openlayers.org/en/v4.3.2/doc/tutorials/custom-builds.html) to create a smaller OL3 library, adjusted to only what you need.
+This includes all OpenLayers 4 functionality. After this exercise, you can consider [creating a custom build](https://openlayers.org/en/v4.3.2/doc/tutorials/custom-builds.html) to create a smaller OpenLayers 4 library, adjusted to only what you need.
 
 ### Build and test the app
 
