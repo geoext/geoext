@@ -292,7 +292,11 @@ Ext.define('GeoExt.data.MapfishPrintProvider', {
         var url = this.getUrl();
         var fillRecordAndFireEvent = function() {
             this.capabilityRec = store.getAt(0);
-            this.fireEvent('ready', this);
+            if (!this.capabilityRec) {
+                this.fireEvent('error', this);
+            } else {
+                this.fireEvent('ready', this);
+            }
         };
         if (capabilities) { // if capability object is passed
             store = Ext.create('Ext.data.JsonStore', {
