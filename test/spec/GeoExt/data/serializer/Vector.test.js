@@ -255,19 +255,28 @@ describe('GeoExt.data.serializer.Vector', function() {
         it('serializes as expected', function() {
             var vecSerializer = GeoExt.data.serializer.Vector;
 
-            var styleId0 = vecSerializer.getUid(style0);
-            var styleId1 = vecSerializer.getUid(style1);
-            var styleId2 = vecSerializer.getUid(style2);
-            var styleId3 = vecSerializer.getUid(style3);
-            var styleId4 = vecSerializer.getUid(style4);
+            var styleId0P = vecSerializer.getUid(style0, 'Point');
+            var styleId0L = vecSerializer.getUid(style0, 'LineString');
+            var styleId1 = vecSerializer.getUid(style1, 'LineString');
+            var styleId2 = vecSerializer.getUid(style2, 'Polygon');
+            var styleId3 = vecSerializer.getUid(style3, 'Point');
+            var styleId4 = vecSerializer.getUid(style4, 'Point');
 
             var expectedStyle = {
                 version: 2
             };
-            expectedStyle['[_gx3_style_0 = \'' + styleId0 + '\']'] = {
+            expectedStyle['[_gx3_style_0 = \'' + styleId0P + '\']'] = {
                 symbolizers: [{
                     type: 'point',
                     pointRadius: 1,
+                    strokeColor: '#010101',
+                    strokeOpacity: 0.1,
+                    strokeWidth: 1
+                }]
+            };
+            expectedStyle['[_gx3_style_0 = \'' + styleId0L + '\']'] = {
+                symbolizers: [{
+                    type: 'line',
                     strokeColor: '#010101',
                     strokeOpacity: 0.1,
                     strokeWidth: 1
@@ -318,13 +327,13 @@ describe('GeoExt.data.serializer.Vector', function() {
             // the expected properties of feature0
             var properties0 = {
                 'foo': '0',
-                '_gx3_style_0': styleId0
+                '_gx3_style_0': styleId0P
             };
 
             // the expected properties of feature1
             var properties1 = {
                 'foo': '1',
-                '_gx3_style_0': styleId0,
+                '_gx3_style_0': styleId0L,
                 '_gx3_style_1': styleId1
             };
 
@@ -433,7 +442,7 @@ describe('GeoExt.data.serializer.Vector', function() {
                     })
                 })
             });
-            var styleUid = GeoExt.data.serializer.Vector.getUid(style);
+            var styleUid = GeoExt.data.serializer.Vector.getUid(style, 'Point');
             feat.setStyle(function() {
                 return [style];
             });
