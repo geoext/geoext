@@ -227,7 +227,7 @@ Ext.define('GeoExt.data.serializer.Vector', {
                         geojsonFeature.properties = {};
                     }
                     Ext.each(styles, function(style, j) {
-                        var styleId = me.getUid(style);
+                        var styleId = me.getUid(style, geometryType);
                         var featureStyleProp = me.FEAT_STYLE_PREFIX + j;
                         me.encodeVectorStyle(
                             mapfishStyleObject,
@@ -575,14 +575,15 @@ Ext.define('GeoExt.data.serializer.Vector', {
          * happened in a previous call.
          *
          * @param {Object} obj The object to get the uid of.
+         * @param {String} geometrType The geometryType for the style.
          * @return {String} The uid of the object.
          * @private
          */
-        getUid: function(obj) {
+        getUid: function(obj, geometryType) {
             if (!Ext.isObject(obj)) {
                 Ext.raise('Cannot get uid of non-object.');
             }
-            var key = this.GX_UID_PROPERTY;
+            var key = this.GX_UID_PROPERTY + '-' + geometryType;
             if (!Ext.isDefined(obj[key])) {
                 obj[key] = Ext.id();
             }
