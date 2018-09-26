@@ -575,7 +575,7 @@ Ext.define('GeoExt.data.serializer.Vector', {
          * happened in a previous call.
          *
          * @param {Object} obj The object to get the uid of.
-         * @param {String} geometrType The geometryType for the style.
+         * @param {String} geometryType The geometryType for the style.
          * @return {String} The uid of the object.
          * @private
          */
@@ -583,7 +583,10 @@ Ext.define('GeoExt.data.serializer.Vector', {
             if (!Ext.isObject(obj)) {
                 Ext.raise('Cannot get uid of non-object.');
             }
-            var key = this.GX_UID_PROPERTY + '-' + geometryType;
+            var key = this.GX_UID_PROPERTY;
+            if (geometryType) {
+                key += '-' + geometryType;
+            }
             if (!Ext.isDefined(obj[key])) {
                 obj[key] = Ext.id();
             }
