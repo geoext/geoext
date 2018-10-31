@@ -78,8 +78,9 @@ Ext.define('GeoExt.component.OverviewMap', {
 
     // <debug>
     symbols: [
-        // For ol4 support we can no longer require this symbol
+        // For ol4 support we can no longer require this symbols:
         // 'ol.animation.pan',
+        // 'ol.Map#beforeRender',
         'ol.Collection',
         'ol.Feature',
         'ol.Feature#setGeometry',
@@ -97,7 +98,6 @@ Ext.define('GeoExt.component.OverviewMap', {
         'ol.layer.Vector#getSource',
         'ol.Map',
         'ol.Map#addLayer',
-        'ol.Map#beforeRender',
         'ol.Map#getView',
         'ol.Map#on',
         'ol.Map#updateSize',
