@@ -107,6 +107,22 @@ Ext.define('GeoExt.component.Map', {
      * @param {ol.MapBrowserEvent} olEvt The MapBrowserEvent event.
      */
 
+    /**
+     * @event aftermapmove
+     *
+     * Triggered when the 'moveend' event of the underlying OpenLayers map is
+     * fired.
+     *
+     * @param {GeoExt.component.Map} this
+     * @param {ol.Map} olMap The OpenLayers map firing the original 'moveend'
+     *     event
+     * @param {ol.MapEvent} olEvt The original OpenLayers event
+     */
+
+    stateEvents: [
+        'aftermapmove'
+    ],
+
     config: {
         /**
          * A configured map or a configuration object for the map constructor.
@@ -198,6 +214,8 @@ Ext.define('GeoExt.component.Map', {
             storeId: me.getId() + '-store',
             map: me.getMap()
         });
+
+        me.bindStateOlEvents();
 
         me.on('resize', me.onResize, me);
     },
@@ -501,5 +519,62 @@ Ext.define('GeoExt.component.Map', {
      */
     setView: function(view) {
         this.getMap().setView(view);
+    },
+
+    /**
+     * Forwards the OpenLayers events so they become usable in the #statedEvents
+     * array and a possible `GeoExt.state.PermalinkProvider` can change the
+     * state when one of the events gets fired.
+     */
+    bindStateOlEvents: function() {
+        var me = this;
+        var olMap = me.getMap();
+        olMap.on('moveend', function(evt) {
+            me.fireEvent('aftermapmove', me, olMap, evt);
+        });
+    },
+
+    /**
+     * Returns the state of the map as keyed object. The following keys will be
+     * available:
+     *
+     * * `center`
+     * * `zoom`
+     * * `rotation`
+     *
+     * @return {Object} The state object
+     * @private
+     */
+    getState: function() {
+        var me = this;
+        var view = me.getMap().getView();
+        return {
+            zoom: view.getZoom(),
+            center: view.getCenter(),
+            rotation: view.getRotation()
+        };
+    },
+
+    /**
+     * Apply the provided map state object. The following keys are interpreted:
+     *
+     * * `center`
+     * * `zoom`
+     * * `rotation`
+     *
+     * @param  {Object} mapState The state object
+     */
+    applyState: function(mapState) {
+        // exit if no map state is provided
+        if (!Ext.isObject(mapState)) {
+            return;
+        }
+
+        var me = this;
+        var view = me.getMap().getView();
+
+        view.setCenter(mapState.center);
+        view.setZoom(mapState.zoom);
+        view.setRotation(mapState.rotation);
     }
 });
