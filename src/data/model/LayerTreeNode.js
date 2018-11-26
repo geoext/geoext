@@ -54,6 +54,12 @@ Ext.define('GeoExt.data.model.LayerTreeNode', {
         name: '__toggleMode',
         type: 'string',
         defaultValue: 'classic'
+    }, {
+        name: 'iconCls',
+        type: 'string',
+        convert: function(v, record) {
+            return record.getOlLayerProp('iconCls');
+        }
     }],
 
     proxy: {
