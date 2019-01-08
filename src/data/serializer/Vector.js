@@ -392,9 +392,16 @@ Ext.define('GeoExt.data.serializer.Vector', {
             } else if (imageStyle instanceof ol.style.Icon) {
                 var src = imageStyle.getSrc();
                 if (Ext.isDefined(src)) {
+                    var img = imageStyle.getImage();
+                    var canvas = document.createElement('canvas');
+                    canvas.width = img.naturalWidth;
+                    canvas.height = img.naturalHeight;
+                    canvas.getContext('2d').drawImage(img, 0, 0);
+                    var format = 'image/' + src.match(/\.(\w+)$/)[1];
                     symbolizer = {
                         type: 'point',
-                        externalGraphic: src
+                        externalGraphic: canvas.toDataURL(),
+                        graphicFormat: format
                     };
                     var rotation = imageStyle.getRotation();
                     if (rotation !== 0) {
