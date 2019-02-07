@@ -457,7 +457,7 @@ describe('GeoExt.data.MapfishPrintProvider', function() {
         describe('layouts', function() {
             it('creates a store for layouts', function(done) {
                 var provider = Ext.create('GeoExt.data.MapfishPrintProvider', {
-                    url: 'http://webmapcenter.de/print-servlet-3.1.2/' +
+                    url: 'https://apps.terrestris.de/print-servlet-3.1.2/' +
                         'print/geoext/capabilities.json',
                     listeners: {
                         ready: function() {
@@ -477,7 +477,7 @@ describe('GeoExt.data.MapfishPrintProvider', function() {
         describe('formats', function() {
             it('creates a store for formats', function(done) {
                 Ext.create('GeoExt.data.MapfishPrintProvider', {
-                    url: 'http://webmapcenter.de/print-servlet-3.1.2/' +
+                    url: 'https://apps.terrestris.de/print-servlet-3.1.2/' +
                         'print/geoext/capabilities.json',
                     listeners: {
                         ready: function() {
@@ -496,7 +496,7 @@ describe('GeoExt.data.MapfishPrintProvider', function() {
         describe('attributes', function() {
             it('creates a store for attributes', function(done) {
                 Ext.create('GeoExt.data.MapfishPrintProvider', {
-                    url: 'http://webmapcenter.de/print-servlet-3.1.2/' +
+                    url: 'https://apps.terrestris.de/print-servlet-3.1.2/' +
                         'print/geoext/capabilities.json',
                     listeners: {
                         ready: function() {
