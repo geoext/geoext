@@ -152,7 +152,7 @@ Ext.application({
                     };
                     Ext.create('Ext.form.Panel', {
                         standardSubmit: true,
-                        url: 'http://webmapcenter.de/print-servlet-3.1.2/' +
+                        url: 'https://apps.terrestris.de/print-servlet-3.1.2/' +
                             'print/geoext/buildreport.pdf',
                         method: 'POST',
                         items: [
@@ -168,7 +168,7 @@ Ext.application({
         };
 
         Ext.create('GeoExt.data.MapfishPrintProvider', {
-            url: 'http://webmapcenter.de/print-servlet-3.1.2/' +
+            url: 'https://apps.terrestris.de/print-servlet-3.1.2/' +
                     'print/geoext/capabilities.json',
             listeners: {
                 ready: onPrintProviderReady
