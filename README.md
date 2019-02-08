@@ -75,21 +75,23 @@ To help with your first GeoExt 3 project, follow the instructions provided to bu
 
 ### Classic Toolkit
 
-* [Basic map component](https://rawgit.com/geoext/geoext3/master/examples/component/map.html)
-* [Overview component](https://rawgit.com/geoext/geoext3/master/examples/component/overviewMap.html)
-* [Basic TreePanel](https://rawgit.com/geoext/geoext3/master/examples/tree/panel.html)
-* [Legends in Treepanels](https://rawgit.com/geoext/geoext3/master/examples/tree/tree-legend-simple.html)
+https://geoext.github.io/geoext3/master/examples/component/map.html
+
+* [Basic map component](https://geoext.github.io/geoext3/master/examples/component/map.html)
+* [Overview component](https://geoext.github.io/geoext3/master/examples/component/overviewMap.html)
+* [Basic TreePanel](https://geoext.github.io/geoext3/master/examples/tree/panel.html)
+* [Legends in Treepanels](https://geoext.github.io/geoext3/master/examples/tree/tree-legend-simple.html)
 * [Basic print with Mapfish v3](http://rawgit.com/geoext/geoext3/master/examples/print/basic-mapfish.html)
-* [Popup on a map component](https://rawgit.com/geoext/geoext3/master/examples/popup/gx-popup.html)
-* [FeatureGrid component](https://rawgit.com/geoext/geoext3/master/examples/features/grid.html)
-* [Interactively filtered heatmap](https://rawgit.com/geoext/geoext3/master/examples/filtered-heatmap/filtered-heatmap.html)
-* [FeatureRenderer component](https://rawgit.com/geoext/geoext3/master/examples/renderer/renderer.html)
-* [MapView form](https://rawgit.com/geoext/geoext3/master/examples/mapviewform/mapviewform.html)
+* [Popup on a map component](https://geoext.github.io/geoext3/master/examples/popup/gx-popup.html)
+* [FeatureGrid component](https://geoext.github.io/geoext3/master/examples/features/grid.html)
+* [Interactively filtered heatmap](https://geoext.github.io/geoext3/master/examples/filtered-heatmap/filtered-heatmap.html)
+* [FeatureRenderer component](https://geoext.github.io/geoext3/master/examples/renderer/renderer.html)
+* [MapView form](https://geoext.github.io/geoext3/master/examples/mapviewform/mapviewform.html)
 
 ### Modern Toolkit
 
-* [Basic map component ](https://rawgit.com/geoext/geoext3/master/examples/modern-map/modern-map.html)
-* [LayerList component ](https://rawgit.com/geoext/geoext3/master/examples/modern-layerlist/modern-layerlist.html)
+* [Basic map component ](https://geoext.github.io/geoext3/master/examples/modern-map/modern-map.html)
+* [LayerList component ](https://geoext.github.io/geoext3/master/examples/modern-layerlist/modern-layerlist.html)
 
 
 ## Want to contribute? Yes, please 😀
