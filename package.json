@@ -58,7 +58,7 @@
     "karma-sinon": "1.0.5",
     "log-update": "2.3.0",
     "mkdirp": "0.5.1",
-    "mocha": "6.0.0",
+    "mocha": "6.0.2",
     "openlayers": "4.6.5",
     "phantomjs-prebuilt": "2.1.16",
     "sinon": "7.2.4"
