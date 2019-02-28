@@ -217,6 +217,13 @@ Ext.define('GeoExt.data.serializer.Vector', {
                 var geometryType = geometry.getType();
                 var geojsonFeature = format.writeFeatureObject(feature);
 
+                // remove parent feature references as they break serialization
+                // later on
+                if (geojsonFeature.properties &amp;&amp;
+                        geojsonFeature.properties.parentFeature) {
+                    geojsonFeature.properties.parentFeature = undefined;
+                }
+
                 var styles = null;
                 var styleFunction = feature.getStyleFunction();
                 if (Ext.isDefined(styleFunction)) {
@@ -227,13 +234,17 @@ Ext.define('GeoExt.data.serializer.Vector', {
                         styles = styleFunction.call(layer, feature, viewRes);
                     }
                 }
-                if (styles !== null &amp;&amp; styles.length &gt; 0) {
+
+                if (!Ext.isArray(styles)) {
+                    styles = [styles];
+                }
+                if (!Ext.isEmpty(styles)) {
                     geoJsonFeatures.push(geojsonFeature);
                     if (Ext.isEmpty(geojsonFeature.properties)) {
                         geojsonFeature.properties = {};
                     }
                     Ext.each(styles, function(style, j) {
-                        var styleId = me.getUid(style);
+                        var styleId = me.getUid(style, geometryType);
                         var featureStyleProp = me.FEAT_STYLE_PREFIX + j;
                         me.encodeVectorStyle(
                             mapfishStyleObject,
@@ -345,7 +356,7 @@ Ext.define('GeoExt.data.serializer.Vector', {
          * @private
          */
         encodeVectorStylePolygon: function(symbolizers, fillStyle,
-              strokeStyle) {
+            strokeStyle) {
             var symbolizer = {
                 type: 'polygon'
             };
@@ -398,9 +409,16 @@ Ext.define('GeoExt.data.serializer.Vector', {
             } else if (imageStyle instanceof ol.style.Icon) {
                 var src = imageStyle.getSrc();
                 if (Ext.isDefined(src)) {
+                    var img = imageStyle.getImage();
+                    var canvas = document.createElement('canvas');
+                    canvas.width = img.naturalWidth;
+                    canvas.height = img.naturalHeight;
+                    canvas.getContext('2d').drawImage(img, 0, 0);
+                    var format = 'image/' + src.match(/\.(\w+)$/)[1];
                     symbolizer = {
                         type: 'point',
-                        externalGraphic: src
+                        externalGraphic: canvas.toDataURL(),
+                        graphicFormat: format
                     };
                     var rotation = imageStyle.getRotation();
                     if (rotation !== 0) {
@@ -581,14 +599,18 @@ Ext.define('GeoExt.data.serializer.Vector', {
          * happened in a previous call.
          *
          * @param {Object} obj The object to get the uid of.
+         * @param {String} geometryType The geometryType for the style.
          * @return {String} The uid of the object.
          * @private
          */
-        getUid: function(obj) {
+        getUid: function(obj, geometryType) {
             if (!Ext.isObject(obj)) {
                 Ext.raise('Cannot get uid of non-object.');
             }
             var key = this.GX_UID_PROPERTY;
+            if (geometryType) {
+                key += '-' + geometryType;
+            }
             if (!Ext.isDefined(obj[key])) {
                 obj[key] = Ext.id();
             }

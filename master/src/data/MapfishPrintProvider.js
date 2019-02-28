@@ -54,7 +54,7 @@ Ext.define('GeoExt.data.MapfishPrintProvider', {
         url: ''
     },
 
-    statics: {
+    inheritableStatics: {
         /**
          * An array of objects specifying a serializer and a connected
          * OpenLayers class. This should not be manipulated by hand, but rather
@@ -96,7 +96,7 @@ Ext.define('GeoExt.data.MapfishPrintProvider', {
             Ext.each(available, function(candidate, idx) {
                 if (candidate.serializerCls === serializerCls) {
                     index = idx;
-                    return false;  // break early
+                    return false; // break early
                 }
             });
             if (Ext.isDefined(index)) {
@@ -162,9 +162,9 @@ Ext.define('GeoExt.data.MapfishPrintProvider', {
             inputLayers.forEach(function(layer) {
                 if (layer instanceof ol.layer.Group) {
                     Ext.each(me.getLayerArray(layer.getLayers()),
-                    function(subLayer) {
-                        outputLayers.push(subLayer);
-                    });
+                        function(subLayer) {
+                            outputLayers.push(subLayer);
+                        });
                 } else {
                     outputLayers.push(layer);
                 }
@@ -292,7 +292,11 @@ Ext.define('GeoExt.data.MapfishPrintProvider', {
         var url = this.getUrl();
         var fillRecordAndFireEvent = function() {
             this.capabilityRec = store.getAt(0);
-            this.fireEvent('ready', this);
+            if (!this.capabilityRec) {
+                this.fireEvent('error', this);
+            } else {
+                this.fireEvent('ready', this);
+            }
         };
         if (capabilities) { // if capability object is passed
             store = Ext.create('Ext.data.JsonStore', {

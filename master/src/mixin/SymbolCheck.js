@@ -58,7 +58,7 @@
  */
 Ext.define('GeoExt.mixin.SymbolCheck', {
     extend: 'Ext.Mixin',
-    statics: {
+    inheritableStatics: {
 
         /**
          * An object that we will use to store already looked up references in.

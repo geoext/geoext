@@ -14,6 +14,46 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 /**
+ * A utility class for detecting if the OpenLayers version is 3.x.x or 4.x.x.
+ *
+ * @class GeoExt.util.Version
+ */
+Ext.define('GeoExt.util.Version', {
+    statics: {
+        /**
+        * As OpenLayers itself doesn't has any version methods we check for
+        * functionality that is only supported in ol3.
+         * @return {boolean} true if ol version is 3.x.x false if 4.x.x
+         */
+        isOl3: function() {
+            return !!(ol.animation && ol.Map.prototype.beforeRender);
+        },
+        /**
+         * Determine if the loaded version of OpenLayers is v.4.x.x.
+         * @return {boolean} true if ol version is 4.x.x false if 3.x.x
+         */
+        isOl4: function() {
+            return !this.isOl3();
+        }
+    }
+});
+
+/* Copyright (c) 2015-2017 The Open Source Geospatial Foundation
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+/**
  * A utility class providing methods to check for symbols of OpenLayers we
  * depend upon.
  *
@@ -58,7 +98,7 @@
  */
 Ext.define('GeoExt.mixin.SymbolCheck', {
     extend: 'Ext.Mixin',
-    statics: {
+    inheritableStatics: {
         /**
          * An object that we will use to store already looked up references in.
          *
@@ -257,6 +297,9 @@ Ext.define('GeoExt.mixin.SymbolCheck', {
 Ext.define('GeoExt.component.FeatureRenderer', {
     extend: 'Ext.Component',
     alias: 'widget.gx_renderer',
+    requires: [
+        'GeoExt.util.Version'
+    ],
     mixins: [
         'GeoExt.mixin.SymbolCheck'
     ],
@@ -360,7 +403,7 @@ Ext.define('GeoExt.component.FeatureRenderer', {
          */
         symbolType: 'Polygon'
     },
-    statics: {
+    inheritableStatics: {
         /**
          * Determines the style for the given feature record.
          *
@@ -604,7 +647,12 @@ Ext.define('GeoExt.component.FeatureRenderer', {
             ];
         me.el.setSize(Math.round(width), Math.round(height));
         me.map.updateSize();
-        me.map.getView().fit(bounds, me.map.getSize());
+        // Check for backwards compatibility
+        if (GeoExt.util.Version.isOl3()) {
+            me.map.getView().fit(bounds, me.map.getSize());
+        } else {
+            me.map.getView().fit(bounds);
+        }
     },
     /**
      * We're setting the symbolizers on the feature.
@@ -1014,7 +1062,7 @@ Ext.define('GeoExt.data.store.Layers', {
             if (evt.key === 'title') {
                 record.set('title', layer.get('title'));
             } else {
-                this.fireEvent('update', this, record, Ext.data.Record.EDIT);
+                this.fireEvent('update', this, record, Ext.data.Record.EDIT, null, {});
             }
         }
     },
@@ -1178,6 +1226,7 @@ Ext.define('GeoExt.data.store.Layers', {
      * @param {Ext.data.Model} record The model instance that was updated.
      * @param {String} operation The operation, either Ext.data.Model.EDIT,
      *     Ext.data.Model.REJECT or Ext.data.Model.COMMIT.
+     * @private
      */
     onStoreUpdate: function(store, record, operation) {
         if (operation === Ext.data.Record.EDIT) {
@@ -1322,7 +1371,8 @@ Ext.define('GeoExt.component.Map', {
         'widget.gx_component_map'
     ],
     requires: [
-        'GeoExt.data.store.Layers'
+        'GeoExt.data.store.Layers',
+        'GeoExt.util.Version'
     ],
     mixins: [
         'GeoExt.mixin.SymbolCheck'
@@ -1373,6 +1423,20 @@ Ext.define('GeoExt.component.Map', {
      *
      * @param {ol.MapBrowserEvent} olEvt The MapBrowserEvent event.
      */
+    /**
+     * @event aftermapmove
+     *
+     * Triggered when the 'moveend' event of the underlying OpenLayers map is
+     * fired.
+     *
+     * @param {GeoExt.component.Map} this
+     * @param {ol.Map} olMap The OpenLayers map firing the original 'moveend'
+     *     event
+     * @param {ol.MapEvent} olEvt The original OpenLayers event
+     */
+    stateEvents: [
+        'aftermapmove'
+    ],
     config: {
         /**
          * A configured map or a configuration object for the map constructor.
@@ -1458,6 +1522,7 @@ Ext.define('GeoExt.component.Map', {
             storeId: me.getId() + '-store',
             map: me.getMap()
         });
+        me.bindStateOlEvents();
         me.on('resize', me.onResize, me);
     },
     /**
@@ -1663,7 +1728,12 @@ Ext.define('GeoExt.component.Map', {
      * @param {ol.Extent} extent The extent as `ol.Extent`.
      */
     setExtent: function(extent) {
-        this.getView().fit(extent, this.getMap().getSize());
+        // Check for backwards compatibility
+        if (GeoExt.util.Version.isOl3()) {
+            this.getView().fit(extent, this.getMap().getSize());
+        } else {
+            this.getView().fit(extent);
+        }
     },
     /**
      * Returns the layers of the map.
@@ -1722,6 +1792,58 @@ Ext.define('GeoExt.component.Map', {
      */
     setView: function(view) {
         this.getMap().setView(view);
+    },
+    /**
+     * Forwards the OpenLayers events so they become usable in the #statedEvents
+     * array and a possible `GeoExt.state.PermalinkProvider` can change the
+     * state when one of the events gets fired.
+     */
+    bindStateOlEvents: function() {
+        var me = this;
+        var olMap = me.getMap();
+        olMap.on('moveend', function(evt) {
+            me.fireEvent('aftermapmove', me, olMap, evt);
+        });
+    },
+    /**
+     * Returns the state of the map as keyed object. The following keys will be
+     * available:
+     *
+     * * `center`
+     * * `zoom`
+     * * `rotation`
+     *
+     * @return {Object} The state object
+     * @private
+     */
+    getState: function() {
+        var me = this;
+        var view = me.getMap().getView();
+        return {
+            zoom: view.getZoom(),
+            center: view.getCenter(),
+            rotation: view.getRotation()
+        };
+    },
+    /**
+     * Apply the provided map state object. The following keys are interpreted:
+     *
+     * * `center`
+     * * `zoom`
+     * * `rotation`
+     *
+     * @param  {Object} mapState The state object
+     */
+    applyState: function(mapState) {
+        // exit if no map state is provided
+        if (!Ext.isObject(mapState)) {
+            return;
+        }
+        var me = this;
+        var view = me.getMap().getView();
+        view.setCenter(mapState.center);
+        view.setZoom(mapState.zoom);
+        view.setRotation(mapState.rotation);
     }
 });
 
@@ -1795,11 +1917,16 @@ Ext.define('GeoExt.component.OverviewMap', {
         'widget.gx_overviewmap',
         'widget.gx_component_overviewmap'
     ],
+    requires: [
+        'GeoExt.util.Version'
+    ],
     mixins: [
         'GeoExt.mixin.SymbolCheck'
     ],
     symbols: [
-        'ol.animation.pan',
+        // For ol4 support we can no longer require this symbols:
+        // 'ol.animation.pan',
+        // 'ol.Map#beforeRender',
         'ol.Collection',
         'ol.Feature',
         'ol.Feature#setGeometry',
@@ -1819,7 +1946,6 @@ Ext.define('GeoExt.component.OverviewMap', {
         'ol.layer.Vector#getSource',
         'ol.Map',
         'ol.Map#addLayer',
-        'ol.Map#beforeRender',
         'ol.Map#getView',
         'ol.Map#on',
         'ol.Map#updateSize',
@@ -1837,7 +1963,7 @@ Ext.define('GeoExt.component.OverviewMap', {
         'ol.View#setCenter',
         'ol.View#un'
     ],
-    statics: {
+    inheritableStatics: {
         /**
          * Returns an object with geometries representing the extent of the
          * passed map and the top left point.
@@ -2142,12 +2268,12 @@ Ext.define('GeoExt.component.OverviewMap', {
         if (!dragInteraction) {
             return;
         }
+        dragInteraction.setActive(false);
         me.getMap().removeInteraction(dragInteraction);
         dragInteraction.un('translatestart', me.disableBoxUpdate, me);
         dragInteraction.un('translating', me.repositionAnchorFeature, me);
         dragInteraction.un('translateend', me.recenterParentFromBox, me);
         dragInteraction.un('translateend', me.enableBoxUpdate, me);
-        dragInteraction.setActive(false);
         me.dragInteraction = null;
     },
     /**
@@ -2174,18 +2300,25 @@ Ext.define('GeoExt.component.OverviewMap', {
         var overviewView = overviewMap.getView();
         var overviewProjection = overviewView.getProjection();
         var currentMapCenter = parentView.getCenter();
-        var panAnimation = ol.animation.pan({
-                duration: me.getRecenterDuration(),
-                source: currentMapCenter
-            });
         var boxExtent = me.boxFeature.getGeometry().getExtent();
         var boxCenter = ol.extent.getCenter(boxExtent);
-        parentMap.beforeRender(panAnimation);
         // transform if necessary
         if (!ol.proj.equivalent(parentProjection, overviewProjection)) {
             boxCenter = ol.proj.transform(boxCenter, overviewProjection, parentProjection);
         }
-        parentView.setCenter(boxCenter);
+        // Check for backwards compatibility
+        if (GeoExt.util.Version.isOl3()) {
+            var panAnimation = ol.animation.pan({
+                    duration: me.getRecenterDuration(),
+                    source: currentMapCenter
+                });
+            parentMap.beforeRender(panAnimation);
+            parentView.setCenter(boxCenter);
+        } else {
+            parentView.animate({
+                center: boxCenter
+            });
+        }
     },
     /**
      * Called when a property of the parent maps view changes.
@@ -2214,17 +2347,24 @@ Ext.define('GeoExt.component.OverviewMap', {
         var overviewMap = me.getMap();
         var overviewView = overviewMap.getView();
         var overviewProjection = overviewView.getProjection();
-        var panAnimation = ol.animation.pan({
-                duration: me.getRecenterDuration(),
-                source: currentMapCenter
-            });
         var newCenter = evt.coordinate;
         // transform if necessary
         if (!ol.proj.equivalent(parentProjection, overviewProjection)) {
             newCenter = ol.proj.transform(newCenter, overviewProjection, parentProjection);
         }
-        parentMap.beforeRender(panAnimation);
-        parentView.setCenter(newCenter);
+        // Check for backwards compatibility
+        if (GeoExt.util.Version.isOl3()) {
+            var panAnimation = ol.animation.pan({
+                    duration: me.getRecenterDuration(),
+                    source: currentMapCenter
+                });
+            parentMap.beforeRender(panAnimation);
+            parentView.setCenter(newCenter);
+        } else {
+            parentView.animate({
+                center: newCenter
+            });
+        }
     },
     /**
      * Updates the Geometry of the extentLayer.
@@ -2276,9 +2416,16 @@ Ext.define('GeoExt.component.OverviewMap', {
                 var parentExtentProjected = ol.proj.transformExtent(parentExtent, parentProjection, overviewProjection);
                 // call fit to assure that resolutions are available on
                 // overviewView
-                overviewView.fit(parentExtentProjected, me.getMap().getSize(), {
-                    constrainResolution: false
-                });
+                // Check for backwards compatibility
+                if (GeoExt.util.Version.isOl3()) {
+                    overviewView.fit(parentExtentProjected, me.getMap().getSize(), {
+                        constrainResolution: false
+                    });
+                } else {
+                    overviewView.fit(parentExtentProjected, {
+                        constrainResolution: false
+                    });
+                }
                 overviewView.set('resolution', me.getMagnification() * overviewView.getResolution());
             }
         }
@@ -2799,7 +2946,7 @@ Ext.define('GeoExt.data.MapfishPrintProvider', {
         capabilities: null,
         url: ''
     },
-    statics: {
+    inheritableStatics: {
         /**
          * An array of objects specifying a serializer and a connected
          * OpenLayers class. This should not be manipulated by hand, but rather
@@ -3017,7 +3164,11 @@ Ext.define('GeoExt.data.MapfishPrintProvider', {
         var url = this.getUrl();
         var fillRecordAndFireEvent = function() {
                 this.capabilityRec = store.getAt(0);
-                this.fireEvent('ready', this);
+                if (!this.capabilityRec) {
+                    this.fireEvent('error', this);
+                } else {
+                    this.fireEvent('ready', this);
+                }
             };
         if (capabilities) {
             // if capability object is passed
@@ -3080,7 +3231,7 @@ Ext.define('GeoExt.data.model.OlObject', {
         'ol.Object#get',
         'ol.Object#set'
     ],
-    statics: {
+    inheritableStatics: {
         /**
          * Gets a reference to an ol contructor function.
          *
@@ -3277,6 +3428,13 @@ Ext.define('GeoExt.data.model.LayerTreeNode', {
             name: '__toggleMode',
             type: 'string',
             defaultValue: 'classic'
+        },
+        {
+            name: 'iconCls',
+            type: 'string',
+            convert: function(v, record) {
+                return record.getOlLayerProp('iconCls');
+            }
         }
     ],
     proxy: {
@@ -3804,6 +3962,11 @@ Ext.define('GeoExt.data.serializer.Vector', {
                 }
                 var geometryType = geometry.getType();
                 var geojsonFeature = format.writeFeatureObject(feature);
+                // remove parent feature references as they break serialization
+                // later on
+                if (geojsonFeature.properties && geojsonFeature.properties.parentFeature) {
+                    geojsonFeature.properties.parentFeature = undefined;
+                }
                 var styles = null;
                 var styleFunction = feature.getStyleFunction();
                 if (Ext.isDefined(styleFunction)) {
@@ -3814,13 +3977,18 @@ Ext.define('GeoExt.data.serializer.Vector', {
                         styles = styleFunction.call(layer, feature, viewRes);
                     }
                 }
-                if (styles !== null && styles.length > 0) {
+                if (!Ext.isArray(styles)) {
+                    styles = [
+                        styles
+                    ];
+                }
+                if (!Ext.isEmpty(styles)) {
                     geoJsonFeatures.push(geojsonFeature);
                     if (Ext.isEmpty(geojsonFeature.properties)) {
                         geojsonFeature.properties = {};
                     }
                     Ext.each(styles, function(style, j) {
-                        var styleId = me.getUid(style);
+                        var styleId = me.getUid(style, geometryType);
                         var featureStyleProp = me.FEAT_STYLE_PREFIX + j;
                         me.encodeVectorStyle(mapfishStyleObject, geometryType, style, styleId, featureStyleProp);
                         geojsonFeature.properties[featureStyleProp] = styleId;
@@ -3960,9 +4128,16 @@ Ext.define('GeoExt.data.serializer.Vector', {
             } else if (imageStyle instanceof ol.style.Icon) {
                 var src = imageStyle.getSrc();
                 if (Ext.isDefined(src)) {
+                    var img = imageStyle.getImage();
+                    var canvas = document.createElement('canvas');
+                    canvas.width = img.naturalWidth;
+                    canvas.height = img.naturalHeight;
+                    canvas.getContext('2d').drawImage(img, 0, 0);
+                    var format = 'image/' + src.match(/\.(\w+)$/)[1];
                     symbolizer = {
                         type: 'point',
-                        externalGraphic: src
+                        externalGraphic: canvas.toDataURL(),
+                        graphicFormat: format
                     };
                     var rotation = imageStyle.getRotation();
                     if (rotation !== 0) {
@@ -4125,14 +4300,18 @@ Ext.define('GeoExt.data.serializer.Vector', {
          * happened in a previous call.
          *
          * @param {Object} obj The object to get the uid of.
+         * @param {String} geometryType The geometryType for the style.
          * @return {String} The uid of the object.
          * @private
          */
-        getUid: function(obj) {
+        getUid: function(obj, geometryType) {
             if (!Ext.isObject(obj)) {
                 Ext.raise('Cannot get uid of non-object.');
             }
             var key = this.GX_UID_PROPERTY;
+            if (geometryType) {
+                key += '-' + geometryType;
+            }
             if (!Ext.isDefined(obj[key])) {
                 obj[key] = Ext.id();
             }
@@ -4282,11 +4461,11 @@ Ext.define('GeoExt.data.serializer.WMTS', {
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 /**
-  * A serializer for layers that have an `ol.source.XYZ` source.
-  * Sources with an tileUrlFunction are currently not supported.
-  *
-  * @class GeoExt.data.serializer.XYZ
-  */
+ * A serializer for layers that have an `ol.source.XYZ` source.
+ * Sources with an tileUrlFunction are currently not supported.
+ *
+ * @class GeoExt.data.serializer.XYZ
+ */
 Ext.define('GeoExt.data.serializer.XYZ', {
     extend: 'GeoExt.data.serializer.Base',
     mixins: [
@@ -4415,6 +4594,7 @@ Ext.define('GeoExt.data.store.OlObjects', {
         /**
          * Forwards changes on the Ext.data.Store to the ol.Collection.
          *
+         * @private
          * @inheritdoc
          */
         add: function(store, records, index) {
@@ -4430,16 +4610,15 @@ Ext.define('GeoExt.data.store.OlObjects', {
         /**
          * Forwards changes on the Ext.data.Store to the ol.Collection.
          *
+         * @private
          * @inheritdoc
          */
         remove: function(store, records, index) {
             var coll = store.olCollection;
-            var length = records.length;
-            var i;
             store.__updating = true;
-            for (i = 0; i < length; i++) {
-                coll.removeAt(index);
-            }
+            Ext.each(records, function(rec) {
+                coll.remove(rec.olObject);
+            });
             store.__updating = false;
         }
     },
@@ -4462,44 +4641,11 @@ Ext.define('GeoExt.data.store.OlObjects', {
         this.callParent([
             config
         ]);
-        this.olCollection.on('add', this.onOlCollectionAdd, this);
-        this.olCollection.on('remove', this.onOlCollectionRemove, this);
-    },
-    /**
-     * Forwards changes to the `ol.Collection` to the Ext.data.Store.
-     *
-     * @param {ol.CollectionEvent} evt The event emitted by the `ol.Collection`.
-     */
-    onOlCollectionAdd: function(evt) {
-        var target = evt.target;
-        var element = evt.element;
-        var idx = Ext.Array.indexOf(target.getArray(), element);
-        if (!this.__updating) {
-            this.insert(idx, element);
-        }
-    },
-    /**
-     * Forwards changes to the `ol.Collection` to the Ext.data.Store.
-     *
-     * @param {ol.CollectionEvent} evt The event emitted by the `ol.Collection`.
-     */
-    onOlCollectionRemove: function(evt) {
-        var element = evt.element;
-        var idx = this.findBy(function(rec) {
-                return rec.olObject === element;
-            });
-        if (idx !== -1) {
-            if (!this.__updating) {
-                this.removeAt(idx);
-            }
-        }
     },
     /**
      * @inheritdoc
      */
     destroy: function() {
-        this.olCollection.un('add', this.onCollectionAdd, this);
-        this.olCollection.un('remove', this.onCollectionRemove, this);
         delete this.olCollection;
         this.callParent(arguments);
     }
@@ -4566,8 +4712,8 @@ Ext.define('GeoExt.data.store.Features', {
      */
     map: null,
     /**
-     * Setting this flag to true will create a vector #layer with the given
-     * #features and adds it to the given #map (if available).
+     * Setting this flag to `true` will create a vector #layer with the
+     * given #features and adds it to the given #map (if available).
      *
      * @cfg {Boolean}
      */
@@ -4593,6 +4739,15 @@ Ext.define('GeoExt.data.store.Features', {
      * @cfg {ol.Collection}
      */
     features: null,
+    /**
+     * Setting this flag to true the filter of the store will be
+     * applied to the underlying vector #layer.
+     * This will only have an effect if the source of the #layer is NOT
+     * configured with an 'url' parameter.
+     *
+     * @cfg {Boolean}
+     */
+    passThroughFilter: false,
     /**
      * Constructs the feature store.
      *
@@ -4632,7 +4787,45 @@ Ext.define('GeoExt.data.store.Features', {
         if (me.createLayer === true && !me.layer) {
             me.drawFeaturesOnMap();
         }
+        if (cfg.features instanceof ol.Collection) {
+            this.olCollection.on('add', this.onOlCollectionAdd, this);
+            this.olCollection.on('remove', this.onOlCollectionRemove, this);
+        }
         me.bindLayerEvents();
+        if (me.passThroughFilter === true) {
+            me.on('filterchange', me.onFilterChange);
+        }
+    },
+    /**
+     * Forwards changes to the `ol.Collection` to the Ext.data.Store.
+     *
+     * @param {ol.CollectionEvent} evt The event emitted by the `ol.Collection`.
+     * @private
+     */
+    onOlCollectionAdd: function(evt) {
+        var target = evt.target;
+        var element = evt.element;
+        var idx = Ext.Array.indexOf(target.getArray(), element);
+        if (!this.__updating) {
+            this.insert(idx, element);
+        }
+    },
+    /**
+     * Forwards changes to the `ol.Collection` to the Ext.data.Store.
+     *
+     * @param {ol.CollectionEvent} evt The event emitted by the `ol.Collection`.
+     * @private
+     */
+    onOlCollectionRemove: function(evt) {
+        var element = evt.element;
+        var idx = this.findBy(function(rec) {
+                return rec.olObject === element;
+            });
+        if (idx !== -1) {
+            if (!this.__updating) {
+                this.removeAt(idx);
+            }
+        }
     },
     applyFields: function(fields) {
         var me = this;
@@ -4668,6 +4861,10 @@ Ext.define('GeoExt.data.store.Features', {
      * @protected
      */
     destroy: function() {
+        if (this.olCollection) {
+            this.olCollection.un('add', this.onCollectionAdd, this);
+            this.olCollection.un('remove', this.onCollectionRemove, this);
+        }
         var me = this;
         me.unbindLayerEvents();
         if (me.map && me.layerCreated === true) {
@@ -4748,6 +4945,31 @@ Ext.define('GeoExt.data.store.Features', {
                 delete me._removing;
             }
         }
+    },
+    /**
+     * Handles the 'filterchange'-event.
+     * Applies the filter of this store to the underlying layer.
+     * @private
+     */
+    onFilterChange: function() {
+        var me = this;
+        if (me.layer && me.layer.getSource() instanceof ol.source.Vector) {
+            if (!me._filtering) {
+                me._filtering = true;
+                me.unbindLayerEvents();
+                // collect the filtered features in the store
+                var filteredFeatures = [];
+                me.each(function(rec) {
+                    filteredFeatures.push(rec.getFeature());
+                });
+                // apply the filtered to the underlying layer / collection
+                me.layer.getSource().clear();
+                me.layer.getSource().addFeatures(filteredFeatures);
+                me.olCollection = new ol.Collection(filteredFeatures);
+                me.bindLayerEvents();
+                delete me._filtering;
+            }
+        }
     }
 });
 
@@ -4772,7 +4994,7 @@ Ext.define('GeoExt.data.store.Features', {
  * @class GeoExt.util.Layer
  */
 Ext.define('GeoExt.util.Layer', {
-    statics: {
+    inheritableStatics: {
         /**
          * A utility method to find the `ol.layer.Group` which is the direct
          * parent of the passed layer. Searching starts at the passed
@@ -4897,7 +5119,7 @@ Ext.define('GeoExt.data.store.LayersTree', {
         /**
          * A string which we'll us for child nodes to detect if they are removed
          * because their parent collapsed just recently. See the private
-         * method #onBeforeGroupNodeCollapse for an explanation.
+         * method #onBeforeGroupNodeToggle for an explanation.
          *
          * @private
          */
@@ -5018,7 +5240,8 @@ Ext.define('GeoExt.data.store.LayersTree', {
             layerOrGroup = me.getLayerGroup();
         }
         if (layerOrGroup instanceof ol.layer.Group) {
-            removedNode.un('beforecollapse', me.onBeforeGroupNodeCollapse);
+            removedNode.un('beforeexpand', me.onBeforeGroupNodeToggle);
+            removedNode.un('beforecollapse', me.onBeforeGroupNodeToggle);
             me.unbindGroupLayerCollectionEvents(layerOrGroup);
         }
         var group = GeoExt.util.Layer.findParentGroup(layerOrGroup, me.getLayerGroup());
@@ -5082,7 +5305,7 @@ Ext.define('GeoExt.data.store.LayersTree', {
         }
         // check if the layer is possibly already at the desired index:
         var currentLayerInGroupIdx = GeoExt.util.Layer.getLayerIndex(layer, group);
-        if (currentLayerInGroupIdx !== insertIdx) {
+        if (currentLayerInGroupIdx !== insertIdx && !Ext.Array.contains(groupLayers.getArray(), layer)) {
             me.suspendCollectionEvents();
             groupLayers.insertAt(insertIdx, layer);
             me.resumeCollectionEvents();
@@ -5120,8 +5343,9 @@ Ext.define('GeoExt.data.store.LayersTree', {
         // 5. insert a new layer node at the specified index to that node
         var layerNode = parentNode.insertChild(layerIdx, layerOrGroup);
         if (layerOrGroup instanceof ol.layer.Group) {
-            // See onBeforeGroupNodeCollapse for an explanation why we have this
-            layerNode.on('beforecollapse', me.onBeforeGroupNodeCollapse, me);
+            // See onBeforeGroupNodeToggle for an explanation why we have this
+            layerNode.on('beforeexpand', me.onBeforeGroupNodeToggle, me);
+            layerNode.on('beforecollapse', me.onBeforeGroupNodeToggle, me);
             var childLayers = layerOrGroup.getLayers().getArray();
             Ext.each(childLayers, me.addLayerNode, me, me.inverseLayerOrder);
         }
@@ -5137,7 +5361,7 @@ Ext.define('GeoExt.data.store.LayersTree', {
      * @param {Ext.data.NodeInterface} node The collapsible folder node.
      * @private
      */
-    onBeforeGroupNodeCollapse: function(node) {
+    onBeforeGroupNodeToggle: function(node) {
         var keyRemoveOptOut = this.self.KEY_COLLAPSE_REMOVE_OPT_OUT;
         node.cascadeBy(function(child) {
             child[keyRemoveOptOut] = true;
@@ -5239,6 +5463,141 @@ Ext.define('GeoExt.data.store.LayersTree', {
      */
     resumeCollectionEvents: function() {
         this.collectionEventsSuspended = false;
+    }
+});
+
+/* Copyright (c) 2015-2018 The Open Source Geospatial Foundation
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+/**
+ * The permalink provider.
+ *
+ * Sample code displaying a new permalink each time the map is moved:
+ *
+ *     @example preview
+ *     // create permalink provider
+ *     var permalinkProvider = Ext.create('GeoExt.state.PermalinkProvider', {});
+ *     // set it in the state manager
+ *     Ext.state.Manager.setProvider(permalinkProvider);
+ *
+ *     // create a map panel, and make it stateful
+ *     var mapComponent = Ext.create('GeoExt.component.Map', {
+ *         stateful: true,
+ *         stateId: 'gx_mapstate',
+ *         map: new ol.Map({
+ *             layers: [
+ *                 new ol.layer.Tile({
+ *                     source: new ol.source.OSM()
+ *                 })
+ *             ],
+ *             view: new ol.View({
+ *                 center: ol.proj.fromLonLat([-8.751278, 40.611368]),
+ *                 zoom: 12
+ *             })
+ *         })
+ *     });
+ *     var mapPanel = Ext.create('Ext.panel.Panel', {
+ *         title: 'GeoExt.component.Map Example',
+ *         height: 200,
+ *         items: [mapComponent],
+ *         renderTo: Ext.getBody()
+ *     });
+ *     // display permalink hash each time state is changed
+ *     permalinkProvider.on({
+ *         statechange: function(provider, name, value) {
+ *             alert(provider.getPermalinkHash());
+ *         }
+ *     });
+ *
+ * @class GeoExt.state.PermalinkProvider
+ */
+Ext.define('GeoExt.state.PermalinkProvider', {
+    extend: 'Ext.state.Provider',
+    requires: [],
+    alias: 'state.gx_permalinkprovider',
+    /**
+     * Current map state object.
+     *
+     * @property {Object}
+     * @private
+     */
+    mapState: null,
+    constructor: function() {
+        var me = this;
+        me.callParent(arguments);
+        if (window.location.hash !== '') {
+            me.mapState = me.readPermalinkHash(window.location.hash);
+        }
+    },
+    /**
+     * Create a state object from a URL hash.
+     * The hash to be in the form `#map=12/-1035528.44/7073659.19/0`
+     *
+     * @param {String} plHash The URL hash to get the state from
+     * @return {Object} The state object
+     * @private
+     */
+    readPermalinkHash: function(plHash) {
+        var mapState;
+        // try to restore center, zoom-level and rotation from the URL
+        var hash = plHash.replace('#map=', '');
+        var parts = hash.split('/');
+        if (parts.length === 4) {
+            mapState = {
+                zoom: parseInt(parts[0], 10),
+                center: [
+                    parseFloat(parts[1]),
+                    parseFloat(parts[2])
+                ],
+                rotation: parseFloat(parts[3])
+            };
+        }
+        return mapState;
+    },
+    /**
+     * Returns the URL hash part with current zoom-level, center and rotation
+     * corresponding to the current state.
+     *
+     * @param {Boolean} doRound Flag if coords should be rounded to 2
+     *     digits or not
+     * @return {String} The hash part of the permalink
+     */
+    getPermalinkHash: function(doRound) {
+        var me = this;
+        var mapState = me.mapState;
+        var centerX = mapState.center[0];
+        var centerY = mapState.center[1];
+        if (doRound) {
+            centerX = Math.round(centerX * 100) / 100;
+            centerY = Math.round(centerY * 100) / 100;
+        }
+        var hash = '#map=' + mapState.zoom + '/' + centerX + '/' + centerY + '/' + mapState.rotation;
+        return hash;
+    },
+    /**
+     * Sets the value for a key.
+     *
+     * @param {String} name The key name
+     * @param {Object} value The value to set
+     */
+    set: function(name, value) {
+        var me = this;
+        // keep our mapState object in sync with the state
+        me.mapState = value;
+        // call 'set' of super class
+        me.callParent(arguments);
     }
 });
 

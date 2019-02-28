@@ -80,7 +80,7 @@ Ext.define('GeoExt.data.store.LayersTree', {
         /**
          * A string which we'll us for child nodes to detect if they are removed
          * because their parent collapsed just recently. See the private
-         * method #onBeforeGroupNodeCollapse for an explanation.
+         * method #onBeforeGroupNodeToggle for an explanation.
          *
          * @private
          */
@@ -216,7 +216,8 @@ Ext.define('GeoExt.data.store.LayersTree', {
             layerOrGroup = me.getLayerGroup();
         }
         if (layerOrGroup instanceof ol.layer.Group) {
-            removedNode.un('beforecollapse', me.onBeforeGroupNodeCollapse);
+            removedNode.un('beforeexpand', me.onBeforeGroupNodeToggle);
+            removedNode.un('beforecollapse', me.onBeforeGroupNodeToggle);
             me.unbindGroupLayerCollectionEvents(layerOrGroup);
         }
         var group = GeoExt.util.Layer.findParentGroup(
@@ -292,7 +293,8 @@ Ext.define('GeoExt.data.store.LayersTree', {
         var currentLayerInGroupIdx = GeoExt.util.Layer.getLayerIndex(
             layer, group
         );
-        if (currentLayerInGroupIdx !== insertIdx) {
+        if (currentLayerInGroupIdx !== insertIdx &&
+            !Ext.Array.contains(groupLayers.getArray(), layer)) {
             me.suspendCollectionEvents();
             groupLayers.insertAt(insertIdx, layer);
             me.resumeCollectionEvents();
@@ -338,8 +340,9 @@ Ext.define('GeoExt.data.store.LayersTree', {
         var layerNode = parentNode.insertChild(layerIdx, layerOrGroup);
 
         if (layerOrGroup instanceof ol.layer.Group) {
-            // See onBeforeGroupNodeCollapse for an explanation why we have this
-            layerNode.on('beforecollapse', me.onBeforeGroupNodeCollapse, me);
+            // See onBeforeGroupNodeToggle for an explanation why we have this
+            layerNode.on('beforeexpand', me.onBeforeGroupNodeToggle, me);
+            layerNode.on('beforecollapse', me.onBeforeGroupNodeToggle, me);
 
             var childLayers = layerOrGroup.getLayers().getArray();
             Ext.each(childLayers, me.addLayerNode, me, me.inverseLayerOrder);
@@ -357,7 +360,7 @@ Ext.define('GeoExt.data.store.LayersTree', {
      * @param {Ext.data.NodeInterface} node The collapsible folder node.
      * @private
      */
-    onBeforeGroupNodeCollapse: function(node) {
+    onBeforeGroupNodeToggle: function(node) {
         var keyRemoveOptOut = this.self.KEY_COLLAPSE_REMOVE_OPT_OUT;
         node.cascadeBy(function(child) {
             child[keyRemoveOptOut] = true;

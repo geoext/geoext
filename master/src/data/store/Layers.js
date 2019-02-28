@@ -154,7 +154,8 @@ Ext.define('GeoExt.data.store.Layers', {
             if (evt.key === 'title') {
                 record.set('title', layer.get('title'));
             } else {
-                this.fireEvent('update', this, record, Ext.data.Record.EDIT);
+                this.fireEvent('update', this, record, Ext.data.Record.EDIT,
+                    null, {});
             }
         }
     },
@@ -323,6 +324,7 @@ Ext.define('GeoExt.data.store.Layers', {
      * @param {Ext.data.Model} record The model instance that was updated.
      * @param {String} operation The operation, either Ext.data.Model.EDIT,
      *     Ext.data.Model.REJECT or Ext.data.Model.COMMIT.
+     * @private
      */
     onStoreUpdate: function(store, record, operation) {
         if (operation === Ext.data.Record.EDIT) {

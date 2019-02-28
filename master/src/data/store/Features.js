@@ -67,8 +67,8 @@ Ext.define('GeoExt.data.store.Features', {
     map: null,
 
     /**
-     * Setting this flag to true will create a vector #layer with the given
-     * #features and adds it to the given #map (if available).
+     * Setting this flag to `true` will create a vector #layer with the
+     * given #features and adds it to the given #map (if available).
      *
      * @cfg {Boolean}
      */
@@ -97,6 +97,16 @@ Ext.define('GeoExt.data.store.Features', {
      * @cfg {ol.Collection}
      */
     features: null,
+
+    /**
+     * Setting this flag to true the filter of the store will be
+     * applied to the underlying vector #layer.
+     * This will only have an effect if the source of the #layer is NOT
+     * configured with an 'url' parameter.
+     *
+     * @cfg {Boolean}
+     */
+    passThroughFilter: false,
 
 
     /**
@@ -142,7 +152,50 @@ Ext.define('GeoExt.data.store.Features', {
             me.drawFeaturesOnMap();
         }
 
+        if (cfg.features instanceof ol.Collection) {
+            this.olCollection.on('add', this.onOlCollectionAdd, this);
+            this.olCollection.on('remove', this.onOlCollectionRemove, this);
+        }
         me.bindLayerEvents();
+
+        if (me.passThroughFilter === true) {
+            me.on('filterchange', me.onFilterChange);
+        }
+    },
+
+    /**
+     * Forwards changes to the `ol.Collection` to the Ext.data.Store.
+     *
+     * @param {ol.CollectionEvent} evt The event emitted by the `ol.Collection`.
+     * @private
+     */
+    onOlCollectionAdd: function(evt) {
+        var target = evt.target;
+        var element = evt.element;
+        var idx = Ext.Array.indexOf(target.getArray(), element);
+
+        if (!this.__updating) {
+            this.insert(idx, element);
+        }
+    },
+
+    /**
+     * Forwards changes to the `ol.Collection` to the Ext.data.Store.
+     *
+     * @param {ol.CollectionEvent} evt The event emitted by the `ol.Collection`.
+     * @private
+     */
+    onOlCollectionRemove: function(evt) {
+        var element = evt.element;
+        var idx = this.findBy(function(rec) {
+            return rec.olObject === element;
+        });
+
+        if (idx !== -1) {
+            if (!this.__updating) {
+                this.removeAt(idx);
+            }
+        }
     },
 
     applyFields: function(fields) {
@@ -184,6 +237,11 @@ Ext.define('GeoExt.data.store.Features', {
      * @protected
      */
     destroy: function() {
+        if (this.olCollection) {
+            this.olCollection.un('add', this.onCollectionAdd, this);
+            this.olCollection.un('remove', this.onCollectionRemove, this);
+        }
+
         var me = this;
 
         me.unbindLayerEvents();
@@ -272,6 +330,38 @@ Ext.define('GeoExt.data.store.Features', {
                 me._removing = true;
                 me.remove(record);
                 delete me._removing;
+            }
+        }
+    },
+
+    /**
+     * Handles the 'filterchange'-event.
+     * Applies the filter of this store to the underlying layer.
+     * @private
+     */
+    onFilterChange: function() {
+        var me = this;
+        if (me.layer && me.layer.getSource() instanceof ol.source.Vector) {
+            if (!me._filtering) {
+
+                me._filtering = true;
+
+                me.unbindLayerEvents();
+
+                // collect the filtered features in the store
+                var filteredFeatures = [];
+                me.each(function(rec) {
+                    filteredFeatures.push(rec.getFeature());
+                });
+
+                // apply the filtered to the underlying layer / collection
+                me.layer.getSource().clear();
+                me.layer.getSource().addFeatures(filteredFeatures);
+                me.olCollection = new ol.Collection(filteredFeatures);
+
+                me.bindLayerEvents();
+
+                delete me._filtering;
             }
         }
     }
