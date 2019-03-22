@@ -273,7 +273,7 @@ The application needs the OpenLayers library to work. Add this dependency to the
 
 ```
   "js": [{
-      "path": "https://openlayers.org/en/v4.3.2/build/ol.js",
+      "path": "https://openlayers.org/en/v4.6.5/build/ol.js",
       "remote": true
     }, {
       "path": "app.js",
@@ -285,7 +285,7 @@ and css file
 
 ```
     "css": [
-        {"path": "https://openlayers.org/en/v4.3.2/css/ol.css" , "remote": true},
+        {"path": "https://openlayers.org/en/v4.6.5/css/ol.css" , "remote": true},
         {
             // this entry uses an ant variable that is the calculated
             // value of the generated output css file for the app,
@@ -297,7 +297,7 @@ and css file
     ],
 ```
 
-This includes all OpenLayers 4 functionality. After this exercise, you can consider [creating a custom build](https://openlayers.org/en/v4.3.2/doc/tutorials/custom-builds.html) to create a smaller OpenLayers 4 library, adjusted to only what you need.
+This includes all OpenLayers 4 functionality. After this exercise, you can consider [creating a custom build](https://openlayers.org/en/v4.6.5/doc/tutorials/custom-builds.html) to create a smaller OpenLayers 4 library, adjusted to only what you need.
 
 ### Build and test the app
 
