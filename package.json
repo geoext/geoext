@@ -61,7 +61,7 @@
     "mocha": "6.0.2",
     "openlayers": "4.6.5",
     "phantomjs-prebuilt": "2.1.16",
-    "sinon": "7.2.7"
+    "sinon": "7.3.1"
   },
   "greenkeeper": {
     "ignore": []
