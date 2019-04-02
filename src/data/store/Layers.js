@@ -417,12 +417,14 @@ Ext.define('GeoExt.data.store.Layers', {
     },
 
     /**
-     * Unbinds listeners by calling #unbind prior to being destroyed.
+     * Unbinds listeners by calling #unbindMap (thus #unbindLayers) prior to
+     * being destroyed.
      *
      * @private
      */
     destroy: function() {
-        this.unbind();
+        // unbindMap calls unbindLayers
+        this.unbindMap();
         this.callParent();
     },
 
