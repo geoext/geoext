@@ -56,7 +56,14 @@ Ext.define('GeoExt.data.store.Layers', {
          *
          * @cfg {ol.Map/Object} map
          */
-        map: null
+        map: null,
+
+        /**
+         * A configured map or a configuration object for the map constructor.
+         *
+         * @cfg {ol.Collection<ol.layer.Base>} layers
+         */
+        layers: null
     },
 
     /**
@@ -71,34 +78,39 @@ Ext.define('GeoExt.data.store.Layers', {
 
         if (config.map) {
             this.bindMap(config.map);
+        } else if (config.layers) {
+            this.bindLayers(config.layers);
         }
     },
 
     /**
-     * Bind this store to a map instance; once bound, the store is synchronized
-     * with the map and vice-versa.
+     * Bind this store to a collection of layers; once bound, the store is
+     * synchronized with the layer collection and vice-versa.
      *
-     * @param {ol.Map} map The map instance.
+     * @param  {ol.Collection<ol.layer.Base>} layers The layer collection.
+     * @param  {ol.Map} map Optional map from which the layers were derived
      */
-    bindMap: function(map) {
+    bindLayers: function(layers, map) {
         var me = this;
 
-        if (!me.map) {
-            me.map = map;
+        if (!me.layers) {
+            me.layers = layers;
         }
 
-        if (map instanceof ol.Map) {
-            var mapLayers = map.getLayers();
-            mapLayers.forEach(function(layer) {
-                me.loadRawData(layer, true);
-            });
-
-            mapLayers.forEach(function(layer) {
-                layer.on('propertychange', me.onChangeLayer, me);
-            });
-            mapLayers.on('add', me.onAddLayer, me);
-            mapLayers.on('remove', me.onRemoveLayer, me);
+        if (me.layers instanceof ol.layer.Group) {
+            me.layers = me.layers.getLayers();
         }
+
+        var mapLayers = me.layers;
+        mapLayers.forEach(function(layer) {
+            me.loadRawData(layer, true);
+        });
+
+        mapLayers.forEach(function(layer) {
+            layer.on('propertychange', me.onChangeLayer, me);
+        });
+        mapLayers.on('add', me.onAddLayer, me);
+        mapLayers.on('remove', me.onRemoveLayer, me);
 
         me.on({
             'load': me.onLoad,
@@ -117,14 +129,33 @@ Ext.define('GeoExt.data.store.Layers', {
     },
 
     /**
-     * Unbind this store from the map it is currently bound.
+     * Bind this store to a map instance; once bound, the store is synchronized
+     * with the map and vice-versa.
+     *
+     * @param {ol.Map} map The map instance.
      */
-    unbindMap: function() {
+    bindMap: function(map) {
         var me = this;
 
-        if (me.map && me.map.getLayers()) {
-            me.map.getLayers().un('add', me.onAddLayer, me);
-            me.map.getLayers().un('remove', me.onRemoveLayer, me);
+        if (!me.map) {
+            me.map = map;
+        }
+
+        if (map instanceof ol.Map) {
+            var mapLayers = map.getLayers();
+            me.bindLayers(mapLayers, map);
+        }
+    },
+
+    /**
+     * Unbind this store from the layer collection it is currently bound.
+     */
+    unbindLayers: function() {
+        var me = this;
+
+        if (me.layers) {
+            me.layers.un('add', me.onAddLayer, me);
+            me.layers.un('remove', me.onRemoveLayer, me);
         }
         me.un('load', me.onLoad, me);
         me.un('clear', me.onClear, me);
@@ -133,6 +164,15 @@ Ext.define('GeoExt.data.store.Layers', {
         me.un('update', me.onStoreUpdate, me);
 
         me.data.un('replace', me.onReplace, me);
+    },
+
+    /**
+     * Unbind this store from the map it is currently bound.
+     */
+    unbindMap: function() {
+        var me = this;
+
+        me.unbindLayers();
 
         me.map = null;
     },
@@ -168,7 +208,7 @@ Ext.define('GeoExt.data.store.Layers', {
      */
     onAddLayer: function(evt) {
         var layer = evt.element;
-        var index = this.map.getLayers().getArray().indexOf(layer);
+        var index = this.layers.getArray().indexOf(layer);
         var me = this;
         layer.on('propertychange', me.onChangeLayer, me);
         if (!me._adding) {
@@ -215,10 +255,10 @@ Ext.define('GeoExt.data.store.Layers', {
             }
             if (!me._addRecords) {
                 me._removing = true;
-                me.map.getLayers().forEach(function(layer) {
+                me.layers.forEach(function(layer) {
                     layer.un('propertychange', me.onChangeLayer, me);
                 });
-                me.map.getLayers().clear();
+                me.layers.getLayers().clear();
                 delete me._removing;
             }
             var len = records.length;
@@ -229,7 +269,7 @@ Ext.define('GeoExt.data.store.Layers', {
                     layers[i].on('propertychange', me.onChangeLayer, me);
                 }
                 me._adding = true;
-                me.map.getLayers().extend(layers);
+                me.layers.extend(layers);
                 delete me._adding;
             }
         }
@@ -244,10 +284,10 @@ Ext.define('GeoExt.data.store.Layers', {
     onClear: function() {
         var me = this;
         me._removing = true;
-        me.map.getLayers().forEach(function(layer) {
+        me.layers.forEach(function(layer) {
             layer.un('propertychange', me.onChangeLayer, me);
         });
-        me.map.getLayers().clear();
+        me.layers.clear();
         delete me._removing;
     },
 
@@ -270,9 +310,9 @@ Ext.define('GeoExt.data.store.Layers', {
                 layer = records[i].getOlLayer();
                 layer.on('propertychange', me.onChangeLayer, me);
                 if (index === 0) {
-                    me.map.getLayers().push(layer);
+                    me.layers.push(layer);
                 } else {
-                    me.map.getLayers().insertAt(index, layer);
+                    me.layers.insertAt(index, layer);
                 }
             }
             delete me._adding;
@@ -307,7 +347,7 @@ Ext.define('GeoExt.data.store.Layers', {
                 layer = record.getOlLayer();
                 found = false;
                 layer.un('propertychange', me.onChangeLayer, me);
-                me.map.getLayers().forEach(compareFunc);
+                me.layers.forEach(compareFunc);
                 if (found) {
                     me._removing = true;
                     me.removeMapLayer(record);
@@ -345,7 +385,7 @@ Ext.define('GeoExt.data.store.Layers', {
      * @private
      */
     removeMapLayer: function(record) {
-        this.map.getLayers().remove(record.getOlLayer());
+        this.layers.remove(record.getOlLayer());
     },
 
     /**
