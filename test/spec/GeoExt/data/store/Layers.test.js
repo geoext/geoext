@@ -253,6 +253,38 @@ describe('GeoExt.data.store.Layers', function() {
             });
         });
 
+        describe('function "destroy"', function() {
+            var store;
+            var map;
+            var layer;
+            beforeEach(function() {
+                layer = new ol.layer.Vector();
+                var layer2 = new ol.layer.Vector();
+                map = new ol.Map({
+                    layers: [layer, layer2]
+                });
+                store = Ext.create('GeoExt.data.store.Layers', {map: map});
+            });
+
+            it('exists', function() {
+                expect(store.destroy).not.to.be(undefined);
+            });
+
+            it('unbinds events an destroys store', function() {
+                store.destroy();
+                expect(store.map).to.be(null);
+                // exemplary check "remove" event to ensure the events are
+                // unregistered
+                expect(function() {
+                    map.removeLayer(layer);
+                }).not.to.throwException();
+                // map layers remain untouched
+                expect(map.getLayers().getLength()).to.be(1);
+                // store is empty now
+                expect(store.getCount()).to.be(0);
+            });
+        });
+
     });
 
 });
