@@ -183,6 +183,76 @@ describe('GeoExt.data.store.Layers', function() {
             });
         });
 
+        describe('"clear" event', function() {
+            var store;
+            var map;
+            beforeEach(function() {
+                var layer = new ol.layer.Vector();
+                map = new ol.Map({
+                    layers: [layer]
+                });
+
+                store = Ext.create('GeoExt.data.store.Layers', {
+                    map: map
+                });
+            });
+
+            it('clears the store and the layer collection', function() {
+                store.removeAll();
+                expect(store.getCount()).to.be(0);
+                expect(map.getLayers().getLength()).to.be(0);
+            });
+        });
+
+        describe('"add" event', function() {
+            var store;
+            var map;
+            beforeEach(function() {
+                var layer = new ol.layer.Vector();
+                map = new ol.Map({
+                    layers: [layer]
+                });
+
+                store = Ext.create('GeoExt.data.store.Layers', {
+                    map: map
+                });
+            });
+
+            it('adds the layer to layer collection', function() {
+                var newLayer = new ol.layer.Vector();
+                var layerRec = Ext.create('GeoExt.data.model.Layer', newLayer);
+                store.add(layerRec);
+                expect(store.getCount()).to.be(2);
+                expect(map.getLayers().getLength()).to.be(2);
+            });
+        });
+
+        describe('"remove" event', function() {
+            var store;
+            var map;
+            var layer;
+            var layer2;
+            beforeEach(function() {
+                layer = new ol.layer.Vector();
+                layer2 = new ol.layer.Vector();
+                map = new ol.Map({
+                    layers: [layer, layer2]
+                });
+
+                store = Ext.create('GeoExt.data.store.Layers', {
+                    map: map
+                });
+            });
+
+            it('removes the layer from layer collection', function() {
+                var layerRec = store.getByLayer(layer);
+                store.remove(layerRec);
+                expect(store.getCount()).to.be(1);
+                expect(map.getLayers().getLength()).to.be(1);
+                expect(map.getLayers().getArray()[0]).to.be(layer2);
+            });
+        });
+
     });
 
 });
