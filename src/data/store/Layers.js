@@ -14,8 +14,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 /**
- * A store that synchronizes a layers array of an OpenLayers.Map with a
- * layer store holding GeoExt.data.model.layer.Base instances.
+ * A store that synchronizes a collection of layers (e.g. of an OpenLayers.Map)
+ * with a layer store holding GeoExt.data.model.Layer instances.
  *
  * @class GeoExt.data.store.Layers
  */
@@ -52,14 +52,14 @@ Ext.define('GeoExt.data.store.Layers', {
 
     config: {
         /**
-         * A configured map or a configuration object for the map constructor.
+         * An OL map instance, whose layers will be managed by the store.
          *
-         * @cfg {ol.Map/Object} map
+         * @cfg {ol.Map} map
          */
         map: null,
 
         /**
-         * A configured map or a configuration object for the map constructor.
+         * A collection of OL layer objects, which will be managed by the store.
          *
          * @cfg {ol.Collection<ol.layer.Base>} layers
          */
