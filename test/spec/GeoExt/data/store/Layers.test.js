@@ -8,11 +8,35 @@ describe('GeoExt.data.store.Layers', function() {
         });
 
         describe('constructor', function() {
-            it('throws if no map component provided', function() {
+            it('throws if no map component or layers are provided', function() {
                 expect(function() {
                     Ext.create('GeoExt.data.store.Layers');
                 }).to.throwException();
             });
+        });
+    });
+
+    describe('function "bindLayers"', function() {
+        var store;
+        var map;
+        beforeEach(function() {
+            var layer = new ol.layer.Vector();
+            map = new ol.Map({
+                layers: [layer]
+            });
+            store =
+              Ext.create('GeoExt.data.store.Layers', {layers: map.getLayers()});
+        });
+
+        it('exists', function() {
+            expect(store.bindLayers).not.to.be(undefined);
+        });
+
+        it('couples store to layer collection', function() {
+            var newLayer = new ol.layer.Vector();
+            map.getLayers().push(newLayer);
+            expect(map.getLayers().getLength()).to.be(2);
+            expect(store.getCount()).to.be(2);
         });
     });
 
@@ -33,6 +57,31 @@ describe('GeoExt.data.store.Layers', function() {
 
         it('applies the map correctly', function() {
             expect(store.map).to.be(map);
+        });
+    });
+
+    describe('function "unbindLayers"', function() {
+        var store;
+        var map;
+        beforeEach(function() {
+            var layer = new ol.layer.Vector();
+            map = new ol.Map({
+                layers: [layer]
+            });
+            store =
+              Ext.create('GeoExt.data.store.Layers', {layers: map.getLayers()});
+        });
+
+        it('exists', function() {
+            expect(store.unbindLayers).not.to.be(undefined);
+        });
+
+        it('decouples store from layer collection', function() {
+            store.unbindLayers();
+            var newLayer = new ol.layer.Vector();
+            map.getLayers().push(newLayer);
+            expect(map.getLayers().getLength()).to.be(2);
+            expect(store.getCount()).to.be(1);
         });
     });
 
