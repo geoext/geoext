@@ -81,7 +81,7 @@ describe('GeoExt.util.OGCFilter', function() {
                     return 'lt';
                 },
                 getValue: function() {
-                    return new Date(1554501600000);
+                    return new Date('2019-04-06');
                 },
                 isDateValue: true
             }, {
@@ -92,7 +92,7 @@ describe('GeoExt.util.OGCFilter', function() {
                     return 'gt';
                 },
                 getValue: function() {
-                    return new Date(1554069600000);
+                    return new Date('2019-04-01');
                 },
                 isDateValue: true
             }
