@@ -45,26 +45,21 @@ Ext.application({
                     'request=GetFeature&' +
                     'typeName=dwd:Warngebiete_Kreise&' +
                     'outputFormat=application/json';
-                var xhr = new XMLHttpRequest();
-                xhr.onload = function() {
-                    if (xhr.status == 200) {
+                var method = 'GET';
+                if (wfsGetFeatureFilter) {
+                    method = 'POST';
+                    params += '&filter=' + wfsGetFeatureFilter;
+                }
+                Ext.Ajax.request({
+                    method: method,
+                    url: url,
+                    params: params,
+                    success: function(response) {
                         wfsSource.addFeatures(
                             wfsSource.getFormat().readFeatures(
-                                xhr.responseText));
+                                response.responseText));
                     }
-                };
-                if (wfsGetFeatureFilter) {
-                    params += '&filter=' + wfsGetFeatureFilter;
-                    xhr.open('POST', url);
-                    xhr.setRequestHeader(
-                        'Content-type',
-                        'application/x-www-form-urlencoded'
-                    );
-                    xhr.send(params);
-                } else {
-                    xhr.open('GET', url + params);
-                    xhr.send();
-                }
+                });
             }
         });
         var wfsLayer = new ol.layer.Vector({
@@ -173,13 +168,13 @@ Ext.application({
             listeners: {
                 'filterchange': function(rec, filters) {
                     var wmsFilter = GeoExt.util.OGCFilter.
-                        getOGCWMSFilterFromExtJSFilter(filters);
+                        getOgcWmsFilterFromExtJsFilter(filters);
                     wmsLayer.getSource().updateParams({
                         filter: wmsFilter,
                         cacheBuster: Math.random()
                     });
                     wfsGetFeatureFilter = GeoExt.util.OGCFilter.
-                        getOGCWFSFilterFromExtJSFilter(filters, 'And', '2.0.0');
+                        getOgcWfsFilterFromExtJsFilter(filters, 'And', '2.0.0');
                     wfsLayer.getSource().clear();
                     wfsLayer.getSource().refresh();
                 }

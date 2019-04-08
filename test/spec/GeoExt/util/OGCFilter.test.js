@@ -14,69 +14,85 @@ describe('GeoExt.util.OGCFilter', function() {
 
         var filters = [
             {
-                config: {
-                    operator: 'like',
-                    property: 'NAME'
+                getProperty: function() {
+                    return 'NAME';
+                },
+                getOperator: function() {
+                    return 'like';
                 },
                 getValue: function() {
                     return 'd';
                 }
             }, {
-                config: {
-                    operator: 'in',
-                    property: '"WARNCELLID"'
+                getProperty: function() {
+                    return 'WARNCELLID';
+                },
+                getOperator: function() {
+                    return 'in';
                 },
                 getValue: function() {
                     return [105120000, 105124000, 105158000];
                 }
             }, {
-                config: {
-                    operator: 'eq',
-                    property: '"WARNCELLID"'
+                getProperty: function() {
+                    return 'WARNCELLID';
+                },
+                getOperator: function() {
+                    return 'eq';
                 },
                 getValue: function() {
                     return 105124000;
                 }
             }, {
-                config: {
-                    operator: 'ne',
-                    property: '"WARNCELLID"'
+                getProperty: function() {
+                    return 'WARNCELLID';
+                },
+                getOperator: function() {
+                    return 'ne';
                 },
                 getValue: function() {
                     return 105124001;
                 }
             }, {
-                config: {
-                    operator: '==',
-                    property: '"BOOLFIELD"'
+                getProperty: function() {
+                    return 'BOOLFIELD';
+                },
+                getOperator: function() {
+                    return '==';
                 },
                 getValue: function() {
                     return true;
                 }
             }, {
-                config: {
-                    operator: '!==',
-                    property: '"BOOLFIELD"'
+                getProperty: function() {
+                    return 'BOOLFIELD';
+                },
+                getOperator: function() {
+                    return '!==';
                 },
                 getValue: function() {
                     return false;
                 }
             }, {
-                config: {
-                    operator: 'lt',
-                    property: '"PROCESSTIME"'
+                getProperty: function() {
+                    return 'PROCESSTIME';
+                },
+                getOperator: function() {
+                    return 'lt';
                 },
                 getValue: function() {
-                    return 1554501600000;
+                    return new Date(1554501600000);
                 },
                 isDateValue: true
             }, {
-                config: {
-                    operator: 'gt',
-                    property: '"PROCESSTIME"'
+                getProperty: function() {
+                    return 'PROCESSTIME';
+                },
+                getOperator: function() {
+                    return 'gt';
                 },
                 getValue: function() {
-                    return 1554069600000;
+                    return new Date(1554069600000);
                 },
                 isDateValue: true
             }
@@ -92,34 +108,42 @@ describe('GeoExt.util.OGCFilter', function() {
                 '</PropertyIsLike>' +
                 '<Or>' +
                 '<PropertyIsEqualTo>' +
-                    '<PropertyName>"WARNCELLID"</PropertyName>' +
+                    '<PropertyName>WARNCELLID</PropertyName>' +
                     '<Literal>105120000</Literal>' +
                 '</PropertyIsEqualTo>' +
                 '<PropertyIsEqualTo>' +
-                    '<PropertyName>"WARNCELLID"</PropertyName>' +
+                    '<PropertyName>WARNCELLID</PropertyName>' +
                     '<Literal>105124000</Literal>' +
                 '</PropertyIsEqualTo>' +
                 '<PropertyIsEqualTo>' +
-                    '<PropertyName>"WARNCELLID"</PropertyName>' +
+                    '<PropertyName>WARNCELLID</PropertyName>' +
                     '<Literal>105158000</Literal>' +
                 '</PropertyIsEqualTo>' +
                 '</Or>' +
                 '<PropertyIsEqualTo>' +
-                    '<PropertyName>"WARNCELLID"</PropertyName>' +
+                    '<PropertyName>WARNCELLID</PropertyName>' +
                     '<Literal>105124000</Literal>' +
                 '</PropertyIsEqualTo>' +
                 '<PropertyIsNotEqualTo>' +
-                    '<PropertyName>"WARNCELLID"</PropertyName>' +
+                    '<PropertyName>WARNCELLID</PropertyName>' +
                     '<Literal>105124001</Literal>' +
                 '</PropertyIsNotEqualTo>' +
                 '<PropertyIsEqualTo>' +
-                    '<PropertyName>"BOOLFIELD"</PropertyName>' +
+                    '<PropertyName>BOOLFIELD</PropertyName>' +
                     '<Literal>true</Literal>' +
                 '</PropertyIsEqualTo>' +
                 '<PropertyIsNotEqualTo>' +
-                    '<PropertyName>"BOOLFIELD"</PropertyName>' +
+                    '<PropertyName>BOOLFIELD</PropertyName>' +
                     '<Literal>false</Literal>' +
                 '</PropertyIsNotEqualTo>' +
+                '<PropertyIsLessThan>' +
+                  '<PropertyName>PROCESSTIME</PropertyName>' +
+                  '<Literal>2019-04-06</Literal>' +
+                '</PropertyIsLessThan>' +
+                '<PropertyIsGreaterThan>' +
+                  '<PropertyName>PROCESSTIME</PropertyName>' +
+                  '<Literal>2019-04-01</Literal>' +
+                '</PropertyIsGreaterThan>' +
               '</And>' +
             '</Filter>';
 
@@ -133,34 +157,42 @@ describe('GeoExt.util.OGCFilter', function() {
                 '</PropertyIsLike>' +
                 '<Or>' +
                 '<PropertyIsEqualTo>' +
-                    '<PropertyName>"WARNCELLID"</PropertyName>' +
+                    '<PropertyName>WARNCELLID</PropertyName>' +
                     '<Literal>105120000</Literal>' +
                 '</PropertyIsEqualTo>' +
                 '<PropertyIsEqualTo>' +
-                    '<PropertyName>"WARNCELLID"</PropertyName>' +
+                    '<PropertyName>WARNCELLID</PropertyName>' +
                     '<Literal>105124000</Literal>' +
                 '</PropertyIsEqualTo>' +
                 '<PropertyIsEqualTo>' +
-                    '<PropertyName>"WARNCELLID"</PropertyName>' +
+                    '<PropertyName>WARNCELLID</PropertyName>' +
                     '<Literal>105158000</Literal>' +
                 '</PropertyIsEqualTo>' +
                 '</Or>' +
                 '<PropertyIsEqualTo>' +
-                    '<PropertyName>"WARNCELLID"</PropertyName>' +
+                    '<PropertyName>WARNCELLID</PropertyName>' +
                     '<Literal>105124000</Literal>' +
                 '</PropertyIsEqualTo>' +
                 '<PropertyIsNotEqualTo>' +
-                    '<PropertyName>"WARNCELLID"</PropertyName>' +
+                    '<PropertyName>WARNCELLID</PropertyName>' +
                     '<Literal>105124001</Literal>' +
                 '</PropertyIsNotEqualTo>' +
                 '<PropertyIsEqualTo>' +
-                    '<PropertyName>"BOOLFIELD"</PropertyName>' +
+                    '<PropertyName>BOOLFIELD</PropertyName>' +
                     '<Literal>true</Literal>' +
                 '</PropertyIsEqualTo>' +
                 '<PropertyIsNotEqualTo>' +
-                    '<PropertyName>"BOOLFIELD"</PropertyName>' +
+                    '<PropertyName>BOOLFIELD</PropertyName>' +
                     '<Literal>false</Literal>' +
                 '</PropertyIsNotEqualTo>' +
+                '<PropertyIsLessThan>' +
+                  '<PropertyName>PROCESSTIME</PropertyName>' +
+                  '<Literal>2019-04-06</Literal>' +
+                '</PropertyIsLessThan>' +
+                '<PropertyIsGreaterThan>' +
+                  '<PropertyName>PROCESSTIME</PropertyName>' +
+                  '<Literal>2019-04-01</Literal>' +
+                '</PropertyIsGreaterThan>' +
               '</And>' +
             '</Filter>';
 
@@ -174,34 +206,42 @@ describe('GeoExt.util.OGCFilter', function() {
                 '</PropertyIsLike>' +
                 '<Or>' +
                 '<PropertyIsEqualTo>' +
-                    '<ValueReference>"WARNCELLID"</ValueReference>' +
+                    '<ValueReference>WARNCELLID</ValueReference>' +
                     '<Literal>105120000</Literal>' +
                 '</PropertyIsEqualTo>' +
                 '<PropertyIsEqualTo>' +
-                    '<ValueReference>"WARNCELLID"</ValueReference>' +
+                    '<ValueReference>WARNCELLID</ValueReference>' +
                     '<Literal>105124000</Literal>' +
                 '</PropertyIsEqualTo>' +
                 '<PropertyIsEqualTo>' +
-                    '<ValueReference>"WARNCELLID"</ValueReference>' +
+                    '<ValueReference>WARNCELLID</ValueReference>' +
                     '<Literal>105158000</Literal>' +
                 '</PropertyIsEqualTo>' +
                 '</Or>' +
                 '<PropertyIsEqualTo>' +
-                    '<ValueReference>"WARNCELLID"</ValueReference>' +
+                    '<ValueReference>WARNCELLID</ValueReference>' +
                     '<Literal>105124000</Literal>' +
                 '</PropertyIsEqualTo>' +
                 '<PropertyIsNotEqualTo>' +
-                    '<ValueReference>"WARNCELLID"</ValueReference>' +
+                    '<ValueReference>WARNCELLID</ValueReference>' +
                     '<Literal>105124001</Literal>' +
                 '</PropertyIsNotEqualTo>' +
                 '<PropertyIsEqualTo>' +
-                    '<ValueReference>"BOOLFIELD"</ValueReference>' +
+                    '<ValueReference>BOOLFIELD</ValueReference>' +
                     '<Literal>true</Literal>' +
                 '</PropertyIsEqualTo>' +
                 '<PropertyIsNotEqualTo>' +
-                    '<ValueReference>"BOOLFIELD"</ValueReference>' +
+                    '<ValueReference>BOOLFIELD</ValueReference>' +
                     '<Literal>false</Literal>' +
                 '</PropertyIsNotEqualTo>' +
+                '<PropertyIsLessThan>' +
+                  '<ValueReference>PROCESSTIME</ValueReference>' +
+                  '<Literal>2019-04-06</Literal>' +
+                '</PropertyIsLessThan>' +
+                '<PropertyIsGreaterThan>' +
+                  '<ValueReference>PROCESSTIME</ValueReference>' +
+                  '<Literal>2019-04-01</Literal>' +
+                '</PropertyIsGreaterThan>' +
               '</And>' +
             '</Filter>';
 
@@ -248,15 +288,14 @@ describe('GeoExt.util.OGCFilter', function() {
           '</wfs:GetFeature>';
 
 
-        describe('#getOGCWMSFilterFromExtJSFilter', function() {
+        describe('#getOgcWmsFilterFromExtJsFilter', function() {
 
             it('is defined', function() {
-                expect(GeoExt.util.OGCFilter.getOGCWMSFilterFromExtJSFilter).
+                expect(GeoExt.util.OGCFilter.getOgcWmsFilterFromExtJsFilter).
                     to.be.a('function');
             });
-
             var wmsFilter = GeoExt.util.OGCFilter.
-                getOGCWMSFilterFromExtJSFilter(filters);
+                getOgcWmsFilterFromExtJsFilter(filters);
 
             it('returns a valid XML', function() {
                 var parser = new DOMParser();
@@ -275,15 +314,15 @@ describe('GeoExt.util.OGCFilter', function() {
 
         });
 
-        describe('#getOGCWFSFilterFromExtJSFilter', function() {
+        describe('#getOgcWfsFilterFromExtJsFilter', function() {
 
             it('is defined', function() {
-                expect(GeoExt.util.OGCFilter.getOGCWFSFilterFromExtJSFilter).
+                expect(GeoExt.util.OGCFilter.getOgcWfsFilterFromExtJsFilter).
                     to.be.a('function');
             });
 
             var wfsFilter = GeoExt.util.OGCFilter.
-                getOGCWFSFilterFromExtJSFilter(filters);
+                getOgcWfsFilterFromExtJsFilter(filters);
 
             it('returns a valid XML for WFS 1.0.0', function() {
                 var parser = new DOMParser();
@@ -301,7 +340,7 @@ describe('GeoExt.util.OGCFilter', function() {
             });
 
             var wfs2Filter = GeoExt.util.OGCFilter.
-                getOGCWFSFilterFromExtJSFilter(filters, 'And', '2.0.0');
+                getOgcWfsFilterFromExtJsFilter(filters, 'And', '2.0.0');
 
             it('returns a valid XML for WFS 2.0.0', function() {
                 var parser = new DOMParser();
@@ -320,16 +359,16 @@ describe('GeoExt.util.OGCFilter', function() {
 
         });
 
-        describe('#getOGCFilterFromExtJSFilter', function() {
+        describe('#getOgcFilterFromExtJsFilter', function() {
             it('is defined', function() {
-                expect(GeoExt.util.OGCFilter.getOGCWFSFilterFromExtJSFilter).
+                expect(GeoExt.util.OGCFilter.getOgcWfsFilterFromExtJsFilter).
                     to.be.a('function');
             });
 
             it('throws with invalid filter array', function() {
                 var filters;
                 try {
-                    filters = GeoExt.util.OGCFilter.getOGCFilterFromExtJSFilter(
+                    filters = GeoExt.util.OGCFilter.getOgcFilterFromExtJsFilter(
                         null, 'wms');
                 } catch (e) {
                     expect(filters).to.be(undefined);
