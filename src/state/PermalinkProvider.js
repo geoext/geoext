@@ -148,4 +148,8 @@ Ext.define('GeoExt.state.PermalinkProvider', {
         // call 'set' of super class
         me.callParent(arguments);
     }
+}, function() {
+    if (!Ext.state || !Ext.state.Provider) {
+        Ext.define('Ext.state.Provider', {});
+    }
 });
