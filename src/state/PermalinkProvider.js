@@ -16,6 +16,9 @@
 /**
  * The permalink provider.
  *
+ * CAUTION: This class is only usable in applications using the classic toolkit
+ *          of ExtJS 6.
+ *
  * Sample code displaying a new permalink each time the map is moved:
  *
  *     @example preview
