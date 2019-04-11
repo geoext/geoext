@@ -16,6 +16,9 @@
 /**
  * The permalink provider.
  *
+ * CAUTION: This class is only usable in applications using the classic toolkit
+ *          of ExtJS 6.
+ *
  * Sample code displaying a new permalink each time the map is moved:
  *
  *     @example preview
@@ -147,5 +150,9 @@ Ext.define('GeoExt.state.PermalinkProvider', {
         me.mapState = value;
         // call 'set' of super class
         me.callParent(arguments);
+    }
+}, function() {
+    if (!Ext.state || !Ext.state.Provider) {
+        Ext.define('Ext.state.Provider', {});
     }
 });
