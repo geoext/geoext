@@ -89,12 +89,18 @@ describe('GeoExt.form.field.GeocoderComboBox', function() {
             it('centers the map to coordinate', function() {
                 var record = {
                     get: function() {
-                        return [0, 0];
+                        return [1, 1];
                     }
                 };
                 geocoderCombo.onSelect(geocoderCombo, record);
-                expect(Math.round(olMap.getView().getCenter()[0])).to.be(0);
-                expect(Math.round(olMap.getView().getCenter()[1])).to.be(0);
+                expect(
+                    Math.round(olMap.getView().getCenter()[0])
+                // EPSG:3857
+                ).to.be(111319);
+                expect(
+                    Math.round(olMap.getView().getCenter()[1])
+                // EPSG:3857
+                ).to.be(111325);
             });
 
             it('centers the map to extent', function() {

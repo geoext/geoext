@@ -245,9 +245,7 @@ Ext.define('GeoExt.form.field.GeocoderComboBox', {
         var me = this;
         var geom;
         if (coordOrExtent.length === 2) {
-
             geom = new ol.geom.Point(coordOrExtent);
-
         } else if (coordOrExtent.length === 4) {
             geom = ol.geom.Polygon.fromExtent(coordOrExtent);
         }
