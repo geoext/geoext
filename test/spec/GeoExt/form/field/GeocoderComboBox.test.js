@@ -63,11 +63,34 @@ describe('GeoExt.form.field.GeocoderComboBox', function() {
             ).to.be(true);
         });
 
-        it('locationLayer is created if not configured', function() {
-            expect(
-                geocoderCombo.locationLayer instanceof ol.layer.Vector
-            ).to.be(true);
+        describe('locationLayer', function() {
+            var style;
+            beforeEach(function() {
+                style = new ol.style.Style({
+                    stroke: new ol.style.Stroke({
+                        color: 'red'
+                    })
+                });
+                geocoderCombo =
+                  Ext.create('GeoExt.form.field.GeocoderComboBox', {
+                      locationLayerStyle: style
+                  });
+            });
+            it('is created if not configured', function() {
+                expect(
+                    geocoderCombo.locationLayer instanceof ol.layer.Vector
+                ).to.be(true);
+            });
+
+            it('has the right style if configured', function() {
+                var locStyle = geocoderCombo.locationLayer.getStyle();
+                expect(locStyle instanceof ol.style.Style).to.be(true);
+                expect(
+                    locStyle.getStroke().getColor()
+                ).to.be(style.getStroke().getColor());
+            });
         });
+
     });
 
     describe('event handling', function() {

@@ -36,7 +36,12 @@ Ext.application({
                 width: 300,
                 url: 'https://nominatim.openstreetmap.org/search?format=json',
                 map: olMap,
-                showLocationOnMap: true
+                showLocationOnMap: true,
+                locationLayerStyle: new ol.style.Style({
+                    stroke: new ol.style.Stroke({
+                        color: 'red'
+                    })
+                })
             }]
         });
 

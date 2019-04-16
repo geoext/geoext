@@ -62,6 +62,14 @@ Ext.define('GeoExt.form.field.GeocoderComboBox', {
     locationLayer: null,
 
     /**
+     * The style of the #locationLayer. Only has an effect if the layer is not
+     * passed in while creation.
+     *
+     * @cfg {ol.style.Style}
+     */
+    locationLayerStyle: null,
+
+    /**
      * The store used for this combo box. Default is a
      * store with  the url configured as #url
      * config.
@@ -184,7 +192,9 @@ Ext.define('GeoExt.form.field.GeocoderComboBox', {
 
         if (!me.locationLayer) {
             me.locationLayer = new ol.layer.Vector({
-                source: new ol.source.Vector()
+                source: new ol.source.Vector(),
+                style: me.locationLayerStyle !== null ?
+                    me.locationLayerStyle : undefined
             });
 
             if (me.map) {
