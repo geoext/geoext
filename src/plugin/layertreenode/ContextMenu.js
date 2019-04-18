@@ -26,9 +26,6 @@
 Ext.define('GeoExt.plugin.layertreenode.ContextMenu', {
     extend: 'Ext.plugin.Abstract',
     alias: 'plugin.gx_layertreenode_contextmenu',
-    requires: [
-
-    ],
 
     /**
      * The UI component to be rendered when the LayerTreeNode is right clicked.
