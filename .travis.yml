@@ -10,7 +10,7 @@ install:
   - gem install jsduck
 script:
   - npm test
-  #- ./ci/create-sencha-package.sh
+  - ./ci/create-sencha-package.sh
 after_success:
   - npm run-script coveralls
   - ./ci/update-gh-pages.sh
