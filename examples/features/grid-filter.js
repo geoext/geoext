@@ -2,6 +2,7 @@ Ext.require([
     'Ext.container.Container',
     'Ext.panel.Panel',
     'Ext.grid.Panel',
+    'Ext.grid.filters.Filters',
     'GeoExt.component.Map',
     'GeoExt.data.store.Features',
     'GeoExt.util.OGCFilter'
