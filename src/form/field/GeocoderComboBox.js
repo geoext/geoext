@@ -327,9 +327,9 @@ Ext.define('GeoExt.form.field.GeocoderComboBox', {
         }
     }
 }, function() {
-    if (!Ext.form && !Ext.form.field && !Ext.form.field.ComboBox) {
+    if (!Ext.form || !Ext.form.field || !Ext.form.field.ComboBox) {
         // empty stub to avoid error in class loader when using this in
         // app built ontop of modern toolkit
-        Ext.define('Ext.form.field.ComboBox');
+        Ext.define('Ext.form.field.ComboBox', {});
     }
 });
