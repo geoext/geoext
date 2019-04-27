@@ -17,7 +17,7 @@
  * A component that renders an `ol.Map` and that can be used in any ExtJS
  * layout.
  *
- * An example: A map component rendered insiide of a panel:
+ * An example: A map component rendered inside of a panel:
  *
  *     @example preview
  *     var mapComponent = Ext.create('GeoExt.component.Map', {
