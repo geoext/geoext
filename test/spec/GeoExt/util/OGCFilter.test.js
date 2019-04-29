@@ -374,6 +374,12 @@ describe('GeoExt.util.OGCFilter', function() {
                     expect(filters).to.be(undefined);
                 }
             });
+
+            it('returns null if called with empty filters array', function() {
+                var got = GeoExt.util.OGCFilter.getOgcFilterFromExtJsFilter(
+                    [], 'wms');
+                expect(got).to.be(null);
+            });
         });
 
         describe('#getOgcFilter', function() {
