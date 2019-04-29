@@ -124,7 +124,9 @@ Ext.define('GeoExt.util.OGCFilter', {
                   '"Ext.grid.filters.filter"');
                 return;
             }
-
+            if (Ext.isEmpty(filters)) {
+                return null;
+            }
             var omitNamespaces = false;
             // filters for WMS layers need to omit the namespaces
             if (!Ext.isEmpty(type) && type.toLowerCase() === 'wms') {
