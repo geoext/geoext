@@ -114,7 +114,7 @@ Ext.define('GeoExt.util.OGCFilter', {
          *   filters. Can be 'and' or 'or'
          * @param {string} wfsVersion The WFS version to use, either `1.0.0`,
          *   `1.1.0` or `2.0.0`
-         * @return {string} the OGC Filter as XML tring
+         * @return {string} The OGC Filter as XML String
          */
         getOgcFilterFromExtJsFilter: function(filters, type, combinator,
             wfsVersion) {
@@ -133,32 +133,61 @@ Ext.define('GeoExt.util.OGCFilter', {
                 omitNamespaces = true;
             }
             var ogcFilters = [];
+            var ogcUtil = GeoExt.util.OGCFilter;
+            var filterBody;
+
             Ext.each(filters, function(filter) {
-                var property = filter.getProperty();
-                var operator = filter.getOperator();
-                var value = filter.getValue();
-                if (Ext.isEmpty(property) || Ext.isEmpty(operator) ||
-                    Ext.isEmpty(value)) {
-                    Ext.Logger.warn('Skipping a filter as some values ' +
-                        'seem to be undefined');
-                    return;
+                filterBody = ogcUtil.getOgcFilterBodyFromExtJsFilterObject(
+                    filter, wfsVersion);
+                if (filterBody) {
+                    ogcFilters.push(filterBody);
                 }
-                if (filter.isDateValue) {
-                    if (filter.getDateFormat) {
-                        value = Ext.Date.format(
-                            filter.getValue(),
-                            filter.getDateFormat()
-                        );
-                    } else {
-                        value = Ext.Date.format(filter.getValue(), 'Y-m-d');
-                    }
-                }
-                ogcFilters.push(GeoExt.util.OGCFilter.getOgcFilter(
-                    property, operator, value, wfsVersion));
             });
-            var combinedFilters = GeoExt.util.OGCFilter.combineFilters(
+            return ogcUtil.combineFilters(
                 ogcFilters, combinator, omitNamespaces, wfsVersion);
-            return combinedFilters;
+        },
+
+        /**
+         * Converts given ExtJS grid-filter to an OGC compliant filter
+         * body content.
+         * @param {Ext.grid.filters.filter} filter Instance of
+         *   `Ext.grid.filters.filter` which should be converted to OGC filter
+         * @param {string} wfsVersion The WFS version to use, either `1.0.0`,
+         *   `1.1.0` or `2.0.0`
+         * @return {string} The OGC Filter body as XML String
+         */
+        getOgcFilterBodyFromExtJsFilterObject: function(filter, wfsVersion) {
+            if (!Ext.isDefined(filter)) {
+                Ext.Logger.error('Invalid filter argument given to ' +
+                    'GeoExt.util.OGCFilter. You need to pass an instance of ' +
+                    '"Ext.grid.filters.filter"');
+                return;
+            }
+
+            var property = filter.getProperty();
+            var operator = filter.getOperator();
+            var value = filter.getValue();
+
+            if (Ext.isEmpty(property) || Ext.isEmpty(operator) ||
+                Ext.isEmpty(value)) {
+                Ext.Logger.warn('Skipping a filter as some values ' +
+                    'seem to be undefined');
+                return;
+            }
+
+            if (filter.isDateValue) {
+                if (filter.getDateFormat) {
+                    value = Ext.Date.format(
+                        filter.getValue(),
+                        filter.getDateFormat()
+                    );
+                } else {
+                    value = Ext.Date.format(filter.getValue(), 'Y-m-d');
+                }
+            }
+
+            return GeoExt.util.OGCFilter.getOgcFilter(
+                property, operator, value, wfsVersion);
         },
 
         /**
