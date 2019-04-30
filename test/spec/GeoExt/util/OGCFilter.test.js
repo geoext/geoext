@@ -382,6 +382,25 @@ describe('GeoExt.util.OGCFilter', function() {
             });
         });
 
+        describe('#getOgcFilterBodyFromExtJsFilterObject', function() {
+            it('is defined', function() {
+                var ogcUtil = GeoExt.util.OGCFilter;
+                expect(ogcUtil.getOgcFilterBodyFromExtJsFilterObject).
+                    to.be.a('function');
+            });
+
+            it('throws with invalid filter', function() {
+                var filter;
+                var ogcUtil = GeoExt.util.OGCFilter;
+                try {
+                    filter = ogcUtil.getOgcFilterBodyFromExtJsFilterObject(
+                        null, 'wms');
+                } catch (e) {
+                    expect(filter).to.be(undefined);
+                }
+            });
+        });
+
         describe('#getOgcFilter', function() {
             it('is defined', function() {
                 expect(GeoExt.util.OGCFilter.getOgcFilter).
