@@ -50,6 +50,20 @@ Just clone the repository into your project (manually or as a `git submodule`, e
 
 In the snippet above, `lib/geoext3` is a clone of the GeoExt repo.
 
+GeoExt also offers components, which are only compatible with the classic
+toolkit of ExtJS (e.g. `StateProvider` or `GeocoderCombo`).
+In case you want to use them you also have to add the `classic` folder to the
+`classpath`. So your complete `classpath` definition could look like below:
+
+```javascript
+    "classpath": [
+        "app",
+        "${toolkit.name}/src",
+        "./lib/geoext3/src",
+        "./lib/geoext3/classic"
+    ]
+```
+
 ### Alternatively: As a `sencha cmd` package
 
 The released versions of GeoExt 3 are published as [ExtJS package](http://docs.sencha.com/cmd/6.x/cmd_packages/cmd_packages.html). They can be used as any other ExtJS package, taking advantage of Sencha cmd.
