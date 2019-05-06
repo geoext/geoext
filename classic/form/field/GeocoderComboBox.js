@@ -80,6 +80,14 @@ Ext.define('GeoExt.form.field.GeocoderComboBox', {
     store: null,
 
     /**
+     * The property in the JSON response of the geocoding service used in
+     * the store's proxy as root object.
+     *
+     * @cfg {String}
+     */
+    proxyRootProperty: null,
+
+    /**
      * The field to display in the combobox result. Default is
      * "name" for instant use with the default store for this component.
      *
@@ -184,7 +192,8 @@ Ext.define('GeoExt.form.field.GeocoderComboBox', {
                     type: 'ajax',
                     url: me.url,
                     reader: {
-                        type: 'json'
+                        type: 'json',
+                        rootProperty: me.proxyRootProperty
                     }
                 }
             });
