@@ -43,6 +43,7 @@ describe('GeoExt.form.field.GeocoderComboBox', function() {
 
         it('are correctly defined (with defaults)', function() {
             expect(geocoderCombo.map).to.be(null);
+            expect(geocoderCombo.proxyRootProperty).to.be(null);
             expect(geocoderCombo.displayField).to.be('name');
             expect(geocoderCombo.displayValueMapping).to.be('display_name');
             expect(geocoderCombo.valueField).to.be('extent');
@@ -57,10 +58,27 @@ describe('GeoExt.form.field.GeocoderComboBox', function() {
             expect(geocoderCombo.showLocationOnMap).to.be(true);
         });
 
-        it('store is created if not configured', function() {
-            expect(
-                geocoderCombo.store instanceof Ext.data.JsonStore
-            ).to.be(true);
+        describe('store', function() {
+            beforeEach(function() {
+                geocoderCombo =
+                  Ext.create('GeoExt.form.field.GeocoderComboBox', {
+                      proxyRootProperty: 'foo'
+                  });
+            });
+            it('is created if not configured', function() {
+                expect(
+                    geocoderCombo.store instanceof Ext.data.JsonStore
+                ).to.be(true);
+            });
+
+            it('proxyRootProperty is correctly applied to reader of store',
+                function() {
+                    var reader = geocoderCombo.store.getProxy().getReader();
+                    expect(
+                        reader.getRootProperty()
+                    ).to.be('foo');
+                }
+            );
         });
 
         describe('locationLayer', function() {
