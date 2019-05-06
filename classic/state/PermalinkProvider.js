@@ -1,4 +1,4 @@
-/* Copyright (c) 2015-2018 The Open Source Geospatial Foundation
+/* Copyright (c) 2015-2019 The Open Source Geospatial Foundation
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -150,9 +150,5 @@ Ext.define('GeoExt.state.PermalinkProvider', {
         me.mapState = value;
         // call 'set' of super class
         me.callParent(arguments);
-    }
-}, function() {
-    if (!Ext.state || !Ext.state.Provider) {
-        Ext.define('Ext.state.Provider', {});
     }
 });
