@@ -35,7 +35,12 @@ module.exports = function(config) {
             // GeoExt source files
             {
                 pattern: 'src/**/*.js',
-                included: false
+                included: true
+            },
+            // GeoExt classic toolkit source files
+            {
+                pattern: 'classic/**/*.js',
+                included: true
             },
             // GeoExt tests specs
             'test/spec/GeoExt/**/*.test.js'
