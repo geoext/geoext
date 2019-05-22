@@ -28,7 +28,7 @@
   },
   "scripts": {
     "build": "npm run test && npm run clean:dist && copyfiles -V --exclude 'resources/external/**' -a 'classic/**' 'src/**' 'sass/**' 'resources/**' README.md LICENSE LICENSE-FAQ.md COMMERCIAL-LICENCE.md package.json dist/",
-    "clean": "rm -rf coverage apidoc",
+    "clean": "rimraf coverage apidoc",
     "clean:dist": "rimraf ./dist/*",
     "postinstall": "node ./bin/fetch-external-resources.js",
     "lint": "eslint src/ examples/ && eslint -c test/.eslintrc test/",
@@ -66,6 +66,7 @@
     "np": "5.0.2",
     "openlayers": "4.6.5",
     "phantomjs-prebuilt": "2.1.16",
+    "rimraf": "2.6.3",
     "sinon": "7.3.2"
   },
   "greenkeeper": {
