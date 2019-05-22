@@ -1,6 +1,6 @@
 {
   "namespace": "GeoExt3",
-  "name": "@geoext/geoext3",
+  "name": "@geoext/geoext",
   "type": "code",
   "creator": "GeoExt Contributors",
   "summary": "GIS Package for ExtJS",
