@@ -32,7 +32,7 @@ You will find examples, API documentation (with and without inherited functional
 
 ## How to use GeoExt 3 inside your Sencha app
 
-You can use GeoExt 3 either via an `npm install @geoext/geoext3` in your application folder, or (if you want the latest and greatest), you can use it from a `git clone` of this repository.
+You can use GeoExt 3 either via an `npm install @geoext/geoext` in your application folder, or (if you want the latest and greatest), you can use it from a `git clone` of this repository.
 
 ### Configuring your apps classpath
 
