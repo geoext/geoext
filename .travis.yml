@@ -3,14 +3,11 @@ node_js: "stable"
 env:
   global:
     secure: "GHK4yb1Xb9rjV9pK9NtrA9ckRv7cz98w6Ihc20MlEwUK3zaQw7l1fvQ8GjrkG4nYY3trhZQn1bmsQ5Raip+o3PQ/tUasa3nEiAKYHnzrgCoNhPOBTGDCwpllstpM75P5jpY7Ap0Dt/QBm1joOyznLDJ91oKe3Vra5UYwMHFAqhA="
-before_install:
-  - ./ci/create-sencha-environment.sh
 install:
   - npm install
   - gem install jsduck
 script:
   - npm test
-  #- ./ci/create-sencha-package.sh
 after_success:
   - npm run-script coveralls
   - ./ci/update-gh-pages.sh

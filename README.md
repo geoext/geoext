@@ -32,13 +32,14 @@ You will find examples, API documentation (with and without inherited functional
 
 ## How to use GeoExt 3 inside your Sencha app
 
-You can use GeoExt 3 either via the `sencha cmd` package mechanism, or (if you want the latest and greatest), you can use it from a `git clone` of this repository.
+You can use GeoExt 3 either via an `npm install @geoext/geoext3` in your application folder, or (if you want the latest and greatest), you can use it from a `git clone` of this repository.
 
-We usually tend to go the `git` way, so we have full control over which state of GeoExt is in our apps.
+### Configuring your apps classpath
 
-### Recommended: From a `git clone` of the repository
-
-Just clone the repository into your project (manually or as a `git submodule`, e.g.) and adjust the `classpath` in you `app.json` like below.
+You will have to adjust the `classpath` in you `app.json` to include geoext3, like below.
+Depending on how you retrieved the code from the step before, you will have to adapt the path.
+When you installed geoext3 via npm, the path needs to look like `./node_modules/@geoext/geoext3/src`.
+Else it will be the folder where you cloned the repository into.
 
 ```javascript
     "classpath": [
@@ -48,7 +49,7 @@ Just clone the repository into your project (manually or as a `git submodule`, e
     ]
 ```
 
-In the snippet above, `lib/geoext3` is a clone of the GeoExt repo.
+In the snippet above, `lib/geoext3` is a `git clone` of the GeoExt repo.
 
 GeoExt also offers components, which are only compatible with the classic
 toolkit of ExtJS (e.g. `StateProvider` or `GeocoderCombo`).
@@ -62,25 +63,6 @@ In case you want to use them you also have to add the `classic` folder to the
         "./lib/geoext3/src",
         "./lib/geoext3/classic"
     ]
-```
-
-### Alternatively: As a `sencha cmd` package
-
-The released versions of GeoExt 3 are published as [ExtJS package](http://docs.sencha.com/cmd/6.x/cmd_packages/cmd_packages.html). They can be used as any other ExtJS package, taking advantage of Sencha cmd.
-
-In a terminal where you have the `sencha cmd` available, issue:
-
-```
-sencha package repo add GeoExt http://geoext.github.io/geoext3/cmd/pkgs
-```
-
-To use this package in a Sencha app just add "GeoExt" to the "requires"-array
-in your `app.json`:
-
-```javascript
-    "requires": [
-        "GeoExt"
-    ],
 ```
 
 To help with your first GeoExt 3 project, follow the instructions provided to build a [GeoExt 3 Universal app](universal-app.md). This app runs on the desktop and on mobile.
