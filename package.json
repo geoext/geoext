@@ -27,7 +27,7 @@
     "url": "https://github.com/geoext/geoext3.git"
   },
   "scripts": {
-    "build": "npm run test && npm run clean:dist && copyfiles -V --exclude 'resources/external/**' -a 'classic/**' 'src/**' 'sass/**' 'resources/**' README.md LICENSE LICENSE-FAQ.md COMMERCIAL-LICENCE.md package.json dist/",
+    "build": "npm run test && npm run clean:dist && copyfiles -V --exclude 'resources/external/**' -a 'bin/**' 'classic/**' 'src/**' 'sass/**' 'resources/**' README.md LICENSE LICENSE-FAQ.md COMMERCIAL-LICENCE.md package.json dist/",
     "clean": "rimraf coverage apidoc",
     "clean:dist": "rimraf ./dist/*",
     "postinstall": "node ./bin/fetch-external-resources.js",
