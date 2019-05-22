@@ -45,7 +45,10 @@
     "generate:docs": "jsduck --config jsduck.json",
     "release": "npm run build && np --no-yarn --contents dist && git push https://github.com/geoext/geoext3.git master --tags"
   },
-  "dependencies": {},
+  "dependencies": {
+    "log-update": "3.2.0",
+    "mkdirp": "0.5.1"
+  },
   "devDependencies": {
     "browser-sync": "2.26.5",
     "copyfiles": "2.1.0",
@@ -60,8 +63,6 @@
     "karma-mocha": "1.3.0",
     "karma-phantomjs-launcher": "1.0.4",
     "karma-sinon": "1.0.5",
-    "log-update": "3.2.0",
-    "mkdirp": "0.5.1",
     "mocha": "6.1.4",
     "np": "5.0.2",
     "openlayers": "4.6.5",
