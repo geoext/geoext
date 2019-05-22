@@ -38,7 +38,7 @@ You can use GeoExt 3 either via an `npm install @geoext/geoext` in your applicat
 
 You will have to adjust the `classpath` in you `app.json` to include geoext3, like below.
 Depending on how you retrieved the code from the step before, you will have to adapt the path.
-When you installed geoext3 via npm, the path needs to look like `./node_modules/@geoext/geoext3/src`.
+When you installed geoext3 via npm, the path needs to look like `./node_modules/@geoext/geoext/src`.
 Else it will be the folder where you cloned the repository into.
 
 ```javascript
