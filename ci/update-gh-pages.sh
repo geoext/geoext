@@ -30,14 +30,11 @@ fi
 # default is master…
 SUB_FOLDER_NAME=$TRAVIS_BRANCH;
 DOC_SUFFIX="-dev"
-PUBLISH_SENCHA_PACKAGE="false"
 
 if [ "$TRAVIS_TAG" != "" ]; then
     # … but if we are building for a tag, let's use this as folder name
     SUB_FOLDER_NAME=$TRAVIS_TAG
     DOC_SUFFIX=""
-    # … only publish the tagged versions
-    PUBLISH_SENCHA_PACKAGE="true"
 fi
 
 DOCS_DIR=$SUB_FOLDER_NAME/docs
@@ -72,20 +69,7 @@ git clone --branch $GH_PAGES_BRANCH $GH_PAGES_REPO $GH_PAGES_DIR
 
 cd $GH_PAGES_DIR
 
-
-# 1. Update GeoExt package
-if [ "$PUBLISH_SENCHA_PACKAGE" == "true" ]; then
-    echo "Sencha package building is currently disabled."
-    # mkdir -p cmd/pkgs/$GEOEXT_PACKAGE_NAME
-    # rm -Rf cmd/pkgs/$GEOEXT_PACKAGE_NAME/$GEOEXT_PACKAGE_VERSION
-    # cp -r $INSTALL_DIR/../repo/pkgs/$GEOEXT_PACKAGE_NAME/$GEOEXT_PACKAGE_VERSION cmd/pkgs/$GEOEXT_PACKAGE_NAME
-    # # TODO the files catalog.json should better be updated, instead of overwritten…
-    # cp $INSTALL_DIR/../repo/pkgs/catalog.json cmd/pkgs/
-    # cp $INSTALL_DIR/../repo/pkgs/$GEOEXT_PACKAGE_NAME/catalog.json cmd/pkgs/$GEOEXT_PACKAGE_NAME
-fi
-
-# 2.
-# 2.1 examples, resources & src copied from repo
+# 1. examples, resources & src copied from repo
 for RAW_CP_DIR in $RAW_CP_DIRS
 do
     mkdir -p $SUB_FOLDER_NAME/$RAW_CP_DIR
@@ -93,13 +77,8 @@ do
     cp -r $TRAVIS_BUILD_DIR/$RAW_CP_DIR/* $SUB_FOLDER_NAME/$RAW_CP_DIR
 done
 
-# 2.2 copy created resources from build process
-cp $GEOEXT_IN_SENCHA_WS_FOLDER/build/$GEOEXT_PACKAGE_NAME.js $SUB_FOLDER_NAME
-cp $GEOEXT_IN_SENCHA_WS_FOLDER/build/$GEOEXT_PACKAGE_NAME-debug.js $SUB_FOLDER_NAME
-
-
-# 3. Update the API docs
-# 3.1 … without ExtJS
+# 2. Update the API docs
+# 2.1 … without ExtJS
 mkdir -p $DOCS_DIR # for the API-docs without ExtJS classes
 rm -Rf $DOCS_DIR/* # remove any content from previous runs
 jsduck \
@@ -108,7 +87,7 @@ jsduck \
      --title="$GEOEXT_PACKAGE_NAME $GEOEXT_PACKAGE_VERSION$DOC_SUFFIX Documentation" \
      --warnings="-inheritdoc"
 
-# 3.2 … with ExtJS
+# 2.2 … with ExtJS
 mkdir -p $DOCS_W_EXT_DIR # for the API-docs without ExtJS classes
 rm -Rf $DOCS_W_EXT_DIR/* # remove any content from previous runs
 jsduck \
@@ -119,9 +98,7 @@ jsduck \
      "$DOWN_DIR/ext-$SENCHA_EXTJS_VERSION/packages/core/src/" \
      "$DOWN_DIR/ext-$SENCHA_EXTJS_VERSION/classic/classic/src/"
 
-# 4. done.
-
-# Next: add, commit and push
+# 3. Add, commit and push
 git add --all
 git commit -m "$GH_PAGES_COMMIT_MSG"
 git push --quiet $GH_PAGES_REPO_AUTHENTICATED $GH_PAGES_BRANCH
