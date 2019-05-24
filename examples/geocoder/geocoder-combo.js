@@ -1,6 +1,13 @@
 Ext.require([
-    'GeoExt.form.field.GeocoderComboBox'
+    'Ext.Viewport',
+    'Ext.panel.Panel',
+    'GeoExt.component.Map'
 ]);
+
+// load components, which are only compatible with the classic toolkit
+Ext.Loader.loadScript({
+    url: '../../classic/form/field/GeocoderComboBox.js'
+});
 
 var olMap;
 var mapComponent;
