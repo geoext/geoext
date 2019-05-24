@@ -416,6 +416,27 @@ describe('GeoExt.util.OGCFilter', function() {
                     expect(filter).to.be(undefined);
                 }
             });
+
+            it('supports lte filter', function() {
+                var filter = GeoExt.util.OGCFilter.getOgcFilter(
+                    'humpty-dumpty', 'lte', 4711
+                );
+                var expected = '<PropertyIsLessThanOrEqualTo>'
+                    + '<PropertyName>humpty-dumpty</PropertyName>'
+                    + '<Literal>4711</Literal>'
+                    + '</PropertyIsLessThanOrEqualTo>';
+                expect(filter).to.be(expected);
+            });
+            it('supports gte filter', function() {
+                var filter = GeoExt.util.OGCFilter.getOgcFilter(
+                    'humpty-dumpty', 'gte', 4711
+                );
+                var expected = '<PropertyIsGreaterThanOrEqualTo>'
+                    + '<PropertyName>humpty-dumpty</PropertyName>'
+                    + '<Literal>4711</Literal>'
+                    + '</PropertyIsGreaterThanOrEqualTo>';
+                expect(filter).to.be(expected);
+            });
         });
 
         describe('#buildWfsGetFeatureWithFilter', function() {

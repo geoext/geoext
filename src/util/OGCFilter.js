@@ -263,8 +263,14 @@ Ext.define('GeoExt.util.OGCFilter', {
             case 'lt':
                 ogcFilterType = 'PropertyIsLessThan';
                 break;
+            case 'lte':
+                ogcFilterType = 'PropertyIsLessThanOrEqualTo';
+                break;
             case 'gt':
                 ogcFilterType = 'PropertyIsGreaterThan';
+                break;
+            case 'gte':
+                ogcFilterType = 'PropertyIsGreaterThanOrEqualTo';
                 break;
             case 'like':
                 value = '*' + value + '*';
