@@ -1,9 +1,13 @@
 Ext.require([
     'Ext.panel.Panel',
     'Ext.Viewport',
-    'GeoExt.state.PermalinkProvider',
     'GeoExt.component.Map'
 ]);
+
+// load components, which are only compatible with the classic toolkit
+Ext.Loader.loadScript({
+    url: '../../classic/state/PermalinkProvider.js'
+});
 
 var olMap;
 var mapComponent;
