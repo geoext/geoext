@@ -24,25 +24,16 @@ Ext.define('GeoExt.toolbar.WfsPaging', {
     xtype: 'gx_wfspaging_toolbar',
 
     /**
-     * @private
-     */
-    initComponent: function() {
-        var me = this;
-
-        me.callParent();
-
-        me.on('added', me.onAddedToParent, me);
-    },
-
-    /**
-     * Handles the 'added' event.
      * Ensures that the 'gx-wfsstoreload' event of the WFS store is bound to the
-     * onLoad function of this toolbar.
+     * onLoad function of this toolbar once we have the store bound.
+     *
      * @private
+     * @param  {Ext.Component} owner The owner component
+     * @param  {Ext.data.Store} store The store
      */
-    onAddedToParent: function() {
+    onOwnerStoreChange: function(owner, store) {
         var me = this;
-        // ensure the paging toolbar is updated once the store is loaded
+        me.callParent(arguments);
         me.store.on('gx-wfsstoreload', me.onLoad, me);
     }
 });
