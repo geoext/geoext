@@ -154,6 +154,32 @@ Ext.define('GeoExt.data.store.WfsFeatures', {
     },
 
     /**
+     * Detects the total amount of features (without paging) of the given
+     * WFS response. The detectioin is based on the response format (currently
+     * GeoJSON and GML >=v3 are supported).
+     *
+     * @private
+     * @param  {Object} wfsResponse The XMLHttpRequest object
+     * @return {Integer}            Total amount of features
+     */
+    getTotalFeatureCount: function(wfsResponse) {
+        var me = this;
+        var totalCount = -1;
+        if (me.outputFormat.indexOf('application/json') !== -1) {
+            var respJson = Ext.decode(wfsResponse.responseText);
+            totalCount = respJson.numberMatched;
+        } else {
+            var xml = wfsResponse.responseXML;
+            if (xml && xml.firstChild) {
+                var total = xml.firstChild.getAttribute('numberMatched');
+                totalCount = parseInt(total, 10);
+            }
+        }
+
+        return totalCount;
+    },
+
+    /**
      * Loads the data from the connected WFS.
      * @private
      */
@@ -190,17 +216,18 @@ Ext.define('GeoExt.data.store.WfsFeatures', {
             method: 'GET',
             params: params,
             success: function(response) {
-                var respJson = Ext.decode(response.responseText);
-
-                // set number of total features (needed for paging)
-                me.totalCount = respJson.numberMatched;
 
                 if (!me.format) {
                     Ext.Logger.warn('No format given for WfsFeatureStore. ' +
                         'Skip parsing feature data.');
                     return;
                 }
-                var wfsFeats = me.format.readFeatures(respJson);
+
+                // set number of total features (needed for paging)
+                me.totalCount = me.getTotalFeatureCount(response);
+
+                // parse WFS response to OL features
+                var wfsFeats = me.format.readFeatures(response.responseText);
 
                 // set data for store
                 me.setData(wfsFeats);
