@@ -142,7 +142,7 @@ describe('GeoExt.data.store.WfsFeatures', function() {
             }
             store = null;
             map = null;
-            TestUtil.teardownTestDiv();
+            TestUtil.teardownTestDiv(div);
         });
 
         it('creates a new layer on the given map', function() {
