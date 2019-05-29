@@ -22,6 +22,8 @@ Ext.application({
             model: 'GeoExt.data.model.Feature',
             passThroughFilter: true,
             createLayer: true,
+            layerAttribution: '| <a href="https://www.dwd.de/"> ' +
+                'Source: Deutscher Wetterdienst</a>',
             url: 'https://maps.dwd.de/geoserver/dwd/ows?',
             version: '2.0.0',
             typeName: 'dwd:Warngebiete_Kreise',
@@ -78,10 +80,9 @@ Ext.application({
                     source: new ol.source.TileWMS({
                         url: 'https://ows.terrestris.de/osm-gray/service',
                         params: {'LAYERS': 'OSM-WMS', 'TILED': true},
-                        attributions: [new ol.Attribution({
-                            html: '<a href="https://www.openstreetmap.org/' +
+                        attributions:
+                            '<a href="https://www.openstreetmap.org/' +
                             'copyright">OpenStreetMap contributors</a>'
-                        })]
                     })
                 }),
                 // WFS Layer
@@ -98,7 +99,6 @@ Ext.application({
         });
         var mapPanel = Ext.create('Ext.panel.Panel', {
             region: 'center',
-            height: 400,
             layout: 'fit',
             items: [mapComponent]
         });

@@ -32,6 +32,8 @@ Ext.define('GeoExt.data.store.WfsFeatures', {
 
     /**
      * The 'version' param value used in the WFS request.
+     * This should be '2.0.0' or higher at least if the paging mechanism
+     * should be used.
      * @cfg {String}
      */
     version: '2.0.0',
@@ -49,7 +51,7 @@ Ext.define('GeoExt.data.store.WfsFeatures', {
     typeName: null,
 
     /**
-     * The 'typeName' param value used in the WFS request.
+     * The 'outputFormat' param value used in the WFS request.
      * @cfg {String}
      */
     outputFormat: 'application/json',
@@ -83,6 +85,13 @@ Ext.define('GeoExt.data.store.WfsFeatures', {
      * @cfg {ol.format.Feature}
      */
     format: null,
+
+    /**
+     * The attribution added to the created vector layer source. Only has an
+     * effect if #createLayer is set to `true`
+     * @cfg {String}
+     */
+    layerAttribution: null,
 
     /**
      * Constructs the WFS feature store.
@@ -120,7 +129,8 @@ Ext.define('GeoExt.data.store.WfsFeatures', {
         if (createLayer) {
             // the WFS vector layer showing the WFS features on the map
             me.source = new ol.source.Vector({
-                features: []
+                features: [],
+                attributions: me.layerAttribution
             });
             me.layer = new ol.layer.Vector({
                 source: me.source,

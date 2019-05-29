@@ -24,9 +24,11 @@ describe('GeoExt.data.store.WfsFeatures', function() {
 
     describe('configs and properties', function() {
         var store;
+        var dataPath = (typeof __karma__ === 'undefined' ? '' : 'base/test/');
+        var url = dataPath + 'data/wfs_mock.geojson';
         beforeEach(function() {
             store = Ext.create('GeoExt.data.store.WfsFeatures', {
-                url: 'foo'
+                url: url
             });
         });
         afterEach(function() {
@@ -116,8 +118,7 @@ describe('GeoExt.data.store.WfsFeatures', function() {
         var dataPath = (typeof __karma__ === 'undefined' ? '' : 'base/test/');
         var url = dataPath + 'data/wfs_mock.geojson';
         beforeEach(function() {
-            div = document.createElement('div');
-            document.body.appendChild(div);
+            div = TestUtil.setupTestDiv();
             map = new ol.Map({
                 target: div,
                 layers: [],
@@ -141,8 +142,7 @@ describe('GeoExt.data.store.WfsFeatures', function() {
             }
             store = null;
             map = null;
-            document.body.removeChild(div);
-            div = null;
+            TestUtil.teardownTestDiv();
         });
 
         it('creates a new layer on the given map', function() {
