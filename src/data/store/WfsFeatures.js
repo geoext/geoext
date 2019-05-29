@@ -155,7 +155,7 @@ Ext.define('GeoExt.data.store.WfsFeatures', {
 
     /**
      * Detects the total amount of features (without paging) of the given
-     * WFS response. The detectioin is based on the response format (currently
+     * WFS response. The detection is based on the response format (currently
      * GeoJSON and GML >=v3 are supported).
      *
      * @private
@@ -165,15 +165,21 @@ Ext.define('GeoExt.data.store.WfsFeatures', {
     getTotalFeatureCount: function(wfsResponse) {
         var me = this;
         var totalCount = -1;
-        if (me.outputFormat.indexOf('application/json') !== -1) {
-            var respJson = Ext.decode(wfsResponse.responseText);
-            totalCount = respJson.numberMatched;
-        } else {
-            var xml = wfsResponse.responseXML;
-            if (xml && xml.firstChild) {
-                var total = xml.firstChild.getAttribute('numberMatched');
-                totalCount = parseInt(total, 10);
+
+        try {
+            if (me.outputFormat.indexOf('application/json') !== -1) {
+                var respJson = Ext.decode(wfsResponse.responseText);
+                totalCount = respJson.numberMatched;
+            } else {
+                var xml = wfsResponse.responseXML;
+                if (xml && xml.firstChild) {
+                    var total = xml.firstChild.getAttribute('numberMatched');
+                    totalCount = parseInt(total, 10);
+                }
             }
+        } catch (e) {
+            Ext.Logger.warn('Error while detecting total feature count from ' +
+                'WFS response');
         }
 
         return totalCount;
