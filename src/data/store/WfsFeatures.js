@@ -200,10 +200,10 @@ Ext.define('GeoExt.data.store.WfsFeatures', {
             outputFormat: me.outputFormat
         };
 
-        // send the sortBy parameter only when remoteSort is true 
+        // send the sortBy parameter only when remoteSort is true
         // as it is not supported by all WFS servers
         if (me.remoteSort === true) {
-            params.sortBy = me.sortBy
+            params.sortBy = me.sortBy;
         }
 
         // apply paging parameters if necessary
