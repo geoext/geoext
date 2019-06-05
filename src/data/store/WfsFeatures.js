@@ -99,7 +99,7 @@ Ext.define('GeoExt.data.store.WfsFeatures', {
      * @param {Object} config The configuration object.
      * @private
      */
-    constructor: function(config) {
+    constructor: function (config) {
         var me = this;
 
         config = config || {};
@@ -162,7 +162,7 @@ Ext.define('GeoExt.data.store.WfsFeatures', {
      * @param  {Object} wfsResponse The XMLHttpRequest object
      * @return {Integer}            Total amount of features
      */
-    getTotalFeatureCount: function(wfsResponse) {
+    getTotalFeatureCount: function (wfsResponse) {
         var me = this;
         var totalCount = -1;
 
@@ -189,7 +189,7 @@ Ext.define('GeoExt.data.store.WfsFeatures', {
      * Loads the data from the connected WFS.
      * @private
      */
-    loadWfs: function() {
+    loadWfs: function () {
         var me = this;
         var url = me.url;
         var params = {
@@ -197,14 +197,19 @@ Ext.define('GeoExt.data.store.WfsFeatures', {
             version: me.version,
             request: me.request,
             typeName: me.typeName,
-            outputFormat: me.outputFormat,
-            sortBy: me.sortBy
+            outputFormat: me.outputFormat
         };
+
+        // send the sortBy parameter only when remoteSort is true 
+        // as it is not supported by all WFS servers
+        if (me.remoteSort === true) {
+            params.sortBy = me.sortBy
+        }
 
         // apply paging parameters if necessary
         if (me.pageSize) {
             var fromRecord =
-              ((me.currentPage - 1) * me.pageSize) + me.startIndexOffset;
+                ((me.currentPage - 1) * me.pageSize) + me.startIndexOffset;
             me.startIndex = fromRecord;
             params.startIndex = me.startIndex;
             params.count = me.pageSize;
@@ -221,7 +226,7 @@ Ext.define('GeoExt.data.store.WfsFeatures', {
             url: url,
             method: 'GET',
             params: params,
-            success: function(response) {
+            success: function (response) {
 
                 if (!me.format) {
                     Ext.Logger.warn('No format given for WfsFeatureStore. ' +
@@ -246,7 +251,7 @@ Ext.define('GeoExt.data.store.WfsFeatures', {
 
                 me.fireEvent('gx-wfsstoreload', me);
             },
-            failure: function(response) {
+            failure: function (response) {
                 Ext.Logger.warn('Error while requesting features from WFS: ' +
                     response.responseText + ' Status: ' + response.status);
             }
