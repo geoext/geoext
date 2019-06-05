@@ -25,6 +25,12 @@ Ext.define('GeoExt.data.store.WfsFeatures', {
     ],
 
     /**
+     * Default to using server side sorting
+     * @config {Boolean}
+     */
+    remoteSort: true,
+
+    /**
      * The 'service' param value used in the WFS request.
      * @cfg {String}
      */
