@@ -25,6 +25,12 @@ Ext.define('GeoExt.data.store.WfsFeatures', {
     ],
 
     /**
+     * Default to using server side sorting
+     * @config {Boolean}
+     */
+    remoteSort: true,
+
+    /**
      * The 'service' param value used in the WFS request.
      * @cfg {String}
      */
@@ -197,14 +203,19 @@ Ext.define('GeoExt.data.store.WfsFeatures', {
             version: me.version,
             request: me.request,
             typeName: me.typeName,
-            outputFormat: me.outputFormat,
-            sortBy: me.sortBy
+            outputFormat: me.outputFormat
         };
+
+        // send the sortBy parameter only when remoteSort is true
+        // as it is not supported by all WFS servers
+        if (me.remoteSort === true) {
+            params.sortBy = me.sortBy;
+        }
 
         // apply paging parameters if necessary
         if (me.pageSize) {
             var fromRecord =
-              ((me.currentPage - 1) * me.pageSize) + me.startIndexOffset;
+                ((me.currentPage - 1) * me.pageSize) + me.startIndexOffset;
             me.startIndex = fromRecord;
             params.startIndex = me.startIndex;
             params.count = me.pageSize;
