@@ -82,6 +82,13 @@ Ext.define('GeoExt.selection.FeatureModel', {
     selectedFeatureAttr: 'gx_selected',
 
     /**
+     * Indicates if a map click handler has been registered on init.
+     * @private
+     * @property {Boolean}
+     */
+    mapClickRegistered: false,
+
+    /**
      * Prepare several connected objects once the selection model is ready.
      *
      * @private
@@ -102,8 +109,10 @@ Ext.define('GeoExt.selection.FeatureModel', {
             }
         }
 
-        // bind several OL events
-        me.bindOlEvents();
+        if (!me._destroying) {
+            // bind several OL events since this is not called while destroying
+            me.bindOlEvents();
+        }
     },
 
     /**
@@ -123,6 +132,31 @@ Ext.define('GeoExt.selection.FeatureModel', {
         // create a map click listener for connected vector layer
         if (me.mapSelection && me.layer && me.map) {
             me.map.on('singleclick', me.onFeatureClick, me);
+            me.mapClickRegistered = true;
+        }
+    },
+
+    /**
+     * Unbinds several events that were registered on the OL objects in this
+     * class (see #bindOlEvents).
+     *
+     * @private
+     */
+    unbindOlEvents: function() {
+        var me = this;
+
+        if (me.selectedFeatures) {
+            // change style of selected feature
+            me.selectedFeatures.un('add', me.onSelectFeatAdd, me);
+
+            // reset style of no more selected feature
+            me.selectedFeatures.un('remove', me.onSelectFeatRemove, me);
+        }
+
+        // create a map click listener for connected vector layer
+        if (me.mapClickRegistered) {
+            me.map.un('singleclick', me.onFeatureClick, me);
+            me.mapClickRegistered = false;
         }
     },
 
@@ -234,5 +268,25 @@ Ext.define('GeoExt.selection.FeatureModel', {
         }
 
         me.callParent(arguments);
+    },
+
+    /**
+     * Ovrwrite parent's destroy method in order to unregister the OL events,
+     * that were added on init.
+     * Needed due to the lack of destroy event of the parent class.
+     *
+     * @private
+     */
+    destroy: function() {
+        var me = this;
+
+        // unfortunately callParent triggers the bindComponent method, so we
+        // have to know if we are in the process of destroying or not.
+        me._destroying = true;
+
+        me.unbindOlEvents();
+        me.callParent(arguments);
+
+        me._destroying = false;
     }
 });
