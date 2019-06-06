@@ -111,7 +111,7 @@ Ext.define('GeoExt.selection.FeatureModel', {
         // detect a layer from the store if not passed in
         if (!me.layer || !me.layer instanceof ol.layer.Vector) {
             var store = me.getStore();
-            if (store && store.getLayer() &&
+            if (store && store.getLayer && store.getLayer() &&
                 store.getLayer() instanceof ol.layer.Vector) {
                 me.layer = store.getLayer();
             }
@@ -271,12 +271,12 @@ Ext.define('GeoExt.selection.FeatureModel', {
 
     /**
      * Overwrites the onSelectChange function of the father class.
-     * Ensures that the selected feature are added / removed to / from
+     * Ensures that the selected feature is added / removed to / from
      * #selectedFeatures lookup object.
      *
      * @private
      * @param  {GeoExt.data.model.Feature} record Selected / deselected record
-     * @param  {Boolean} isSelected Record id selected or deselected
+     * @param  {Boolean} isSelected Record is selected or deselected
      */
     onSelectChange: function(record, isSelected) {
         var me = this;
