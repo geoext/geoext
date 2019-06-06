@@ -153,15 +153,13 @@ Ext.define('GeoExt.selection.FeatureModel', {
     unbindOlEvents: function() {
         var me = this;
 
+        // remove 'add' / 'remove' listener from selected feature collection
         if (me.selectedFeatures) {
-            // change style of selected feature
             me.selectedFeatures.un('add', me.onSelectFeatAdd, me);
-
-            // reset style of no more selected feature
             me.selectedFeatures.un('remove', me.onSelectFeatRemove, me);
         }
 
-        // create a map click listener for connected vector layer
+        // remove 'singleclick' listener for connected vector layer
         if (me.mapClickRegistered) {
             me.map.un('singleclick', me.onFeatureClick, me);
             me.mapClickRegistered = false;
@@ -206,6 +204,7 @@ Ext.define('GeoExt.selection.FeatureModel', {
             if (fid && me.existingFeatStyles[fid]) {
                 // restore existing feature style
                 feat.setStyle(me.existingFeatStyles[fid]);
+                delete me.existingFeatStyles[fid];
             } else {
                 // reset feature style, so layer style gets active
                 feat.setStyle();
@@ -295,7 +294,7 @@ Ext.define('GeoExt.selection.FeatureModel', {
     },
 
     /**
-     * Ovrwrite parent's destroy method in order to unregister the OL events,
+     * Overwrites parent's destroy method in order to unregister the OL events,
      * that were added on init.
      * Needed due to the lack of destroy event of the parent class.
      *
@@ -322,6 +321,6 @@ Ext.define('GeoExt.selection.FeatureModel', {
      */
     getRandomFid: function() {
         // current timestamp plus a random int between 0 and 10
-        return new Date().getTime() + Math.floor(Math.random() * 11);
+        return new Date().getTime() + '' +  Math.floor(Math.random() * 11);
     }
 });
