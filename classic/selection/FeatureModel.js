@@ -74,6 +74,14 @@ Ext.define('GeoExt.selection.FeatureModel', {
     }),
 
     /**
+     * Lookup to preserve existing feature styles. Used to restore feature style
+     * when select style is removed.
+     * @private
+     * @property {Object}
+     */
+    existingFeatStyles: {},
+
+    /**
      * The attribute key to mark an OL feature as selected.
      * @cfg {String}
      * @property
@@ -162,7 +170,8 @@ Ext.define('GeoExt.selection.FeatureModel', {
 
     /**
      * Handles 'add' event of #selectedFeatures.
-     * Ensures that added feature gets the #selectStyle.
+     * Ensures that added feature gets the #selectStyle and preserves an
+     * possibly existing feature style.
      *
      * @private
      * @param  {ol.Collection.Event} evt OL event object
@@ -171,6 +180,13 @@ Ext.define('GeoExt.selection.FeatureModel', {
         var me = this;
         var feat = evt.element;
         if (feat) {
+            if (feat.getStyle()) {
+                // we have to preserve the existing feature style
+                var fid = feat.getId() || me.getRandomFid();
+                me.existingFeatStyles[fid] = feat.getStyle();
+                feat.setId(fid);
+            }
+            // apply select style
             feat.setStyle(me.selectStyle);
         }
     },
@@ -183,9 +199,17 @@ Ext.define('GeoExt.selection.FeatureModel', {
      * @param  {ol.Collection.Event} evt OL event object
      */
     onSelectFeatRemove: function(evt) {
+        var me = this;
         var feat = evt.element;
         if (feat) {
-            feat.setStyle();
+            var fid = feat.getId();
+            if (fid && me.existingFeatStyles[fid]) {
+                // restore existing feature style
+                feat.setStyle(me.existingFeatStyles[fid]);
+            } else {
+                // reset feature style, so layer style gets active
+                feat.setStyle();
+            }
         }
     },
 
@@ -288,5 +312,16 @@ Ext.define('GeoExt.selection.FeatureModel', {
         me.callParent(arguments);
 
         me._destroying = false;
+    },
+
+    /**
+     * Returns a random feature ID.
+     *
+     * @private
+     * @return {String} Random feature ID
+     */
+    getRandomFid: function() {
+        // current timestamp plus a random int between 0 and 10
+        return new Date().getTime() + Math.floor(Math.random() * 11);
     }
 });

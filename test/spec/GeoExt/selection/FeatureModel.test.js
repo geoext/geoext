@@ -197,6 +197,24 @@ describe('GeoExt.selection.FeatureModel', function() {
             selFeatStyle = selFeat.getStyle();
             expect(selFeatStyle).to.be(undefined);
         });
+
+        it('deselection restores a possibly exist. feature style', function() {
+            var existingFeatStyle = new ol.style.Style({
+                image: new ol.style.Circle({
+                    radius: 16,
+                    fill: new ol.style.Fill({
+                        color: 'green'
+                    })
+                })
+            });
+            selFeat.setStyle(existingFeatStyle);
+
+            grid.getView().setSelection(selRec);
+            grid.getView().deselect([selRec]);
+
+            var selFeatStyle = selFeat.getStyle();
+            expect(selFeatStyle).to.be(existingFeatStyle);
+        });
     });
 
     describe('selection / deselection of multi. features by grid', function() {
