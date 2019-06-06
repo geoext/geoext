@@ -64,7 +64,7 @@
     "karma-phantomjs-launcher": "1.0.4",
     "karma-sinon": "1.0.5",
     "mocha": "6.1.4",
-    "np": "5.0.2",
+    "np": "5.0.3",
     "openlayers": "4.6.5",
     "phantomjs-prebuilt": "2.1.16",
     "rimraf": "2.6.3",
