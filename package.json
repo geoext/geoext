@@ -50,7 +50,7 @@
     "mkdirp": "0.5.1"
   },
   "devDependencies": {
-    "browser-sync": "2.26.6",
+    "browser-sync": "2.26.7",
     "copyfiles": "2.1.0",
     "coveralls": "3.0.4",
     "eslint": "5.16.0",
