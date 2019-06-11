@@ -222,8 +222,12 @@ Ext.define('GeoExt.form.field.GeocoderComboBox', {
 
     setMap: function(map) {
         var me = this;
-        me.map = map;
-        me.map.addLayer(me.locationLayer);
+        if (map) {
+            me.map = map;
+            if (me.locationLayer) {
+                me.map.addLayer(me.locationLayer);
+            }
+        }
     },
 
     /**
