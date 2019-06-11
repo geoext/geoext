@@ -43,138 +43,138 @@ Ext.define('GeoExt.form.field.GeocoderComboBox', {
     mixins: [
         'GeoExt.mixin.SymbolCheck'
     ],
+    config: {
+        /**
+         * The OpenLayers map to work on. If not provided the selection of an
+         * address has no effect.
+         *
+         * @cfg {ol.Map}
+         */
+        map: null,
 
-    /**
-     * The OpenLayers map to work on. If not provided the selection of an
-     * address would have no effect.
-     *
-     * @cfg {ol.Map}
-     */
-    map: null,
+        /**
+         * Vector layer to visualize the selected address.
+         * Will be created if not provided.
+         *
+         * @cfg {ol.layer.Vector}
+         * @property {ol.layer.Vector}
+         */
+        locationLayer: null,
 
-    /**
-     * Vector layer to visualize the selected address.
-     * Will be created if not provided.
-     *
-     * @cfg {ol.layer.Vector}
-     * @property {ol.layer.Vector}
-     */
-    locationLayer: null,
+        /**
+         * The style of the #locationLayer. Only has an effect if the layer is not
+         * set on creation.
+         *
+         * @cfg {ol.style.Style}
+         */
+        locationLayerStyle: null,
 
-    /**
-     * The style of the #locationLayer. Only has an effect if the layer is not
-     * passed in while creation.
-     *
-     * @cfg {ol.style.Style}
-     */
-    locationLayerStyle: null,
+        /**
+         * The store used for this combo box. Default is a
+         * store with  the url configured as #url
+         * config.
+         *
+         * @cfg {Ext.data.JsonStore}
+         * @propery {Ext.data.JsonStore}
+         */
+        store: null,
 
-    /**
-     * The store used for this combo box. Default is a
-     * store with  the url configured as #url
-     * config.
-     *
-     * @cfg {Ext.data.JsonStore}
-     * @propery {Ext.data.JsonStore}
-     */
-    store: null,
+        /**
+         * The property in the JSON response of the geocoding service used in
+         * the store's proxy as root object.
+         *
+         * @cfg {String}
+         */
+        proxyRootProperty: null,
 
-    /**
-     * The property in the JSON response of the geocoding service used in
-     * the store's proxy as root object.
-     *
-     * @cfg {String}
-     */
-    proxyRootProperty: null,
+        /**
+         * The field to display in the combobox result. Default is
+         * "name" for instant use with the default store for this component.
+         *
+         * @cfg {String}
+         */
+        displayField: 'name',
 
-    /**
-     * The field to display in the combobox result. Default is
-     * "name" for instant use with the default store for this component.
-     *
-     * @cfg {String}
-     */
-    displayField: 'name',
+        /**
+         * The field in the GeoCoder service response to be used as mapping for the
+         * 'name' field in the #store.
+         * Ignored when a store is passed in.
+         *
+         * @cfg {String}
+         */
+        displayValueMapping: 'display_name',
 
-    /**
-     * The field in the GeoCoder service repsonse to be used as mapping for the
-     * 'name' field in the #store.
-     * Ignored when a store is passed in.
-     *
-     * @cfg {String}
-     */
-    displayValueMapping: 'display_name',
+        /**
+         * Field from selected record to use when the combo's
+         * #getValue method is called. Default is "extent". This field is
+         * should contain an ol.Extent.
+         * By setting this to 'coordinate' a field containing an ol.Coordinate is used.
+         *
+         * @cfg {String}
+         */
+        valueField: 'extent',
 
-    /**
-     * Field from selected record to use when the combo's
-     * #getValue method is called. Default is "extent". This field is
-     * supposed to contain an ol.Extent.
-     * By setting this to 'coordinate' a field holding an ol.Coordinate is used.
-     *
-     * @cfg {String}
-     */
-    valueField: 'extent',
+        /**
+         * The query parameter for the user entered search text.
+         * Default is 'q' for instant use with OSM Nominatim.
+         *
+         * @cfg {String}
+         */
+        queryParam: 'q',
 
-    /**
-     * The query parameter for the user entered search text.
-     * Default is 'q' for instant use with OSM Nominatim.
-     *
-     * @cfg {String}
-     */
-    queryParam: 'q',
+        /**'Search'
+         * Text to display for an empty field.
+         *
+         * @cfg {String}
+         */
+        emptyText: 'Search a location',
 
-    /**'Search'
-     * Text to display for an empty field.
-     *
-     * @cfg {String}
-     */
-    emptyText: 'Search a location',
+        /**
+         * Minimum number of entered characters to trigger a search.
+         *
+         * @cfg {Number}
+         */
+        minChars: 3,
 
-    /**
-     * Minimum number of entered characters to trigger a search.
-     *
-     * @cfg {Number}
-     */
-    minChars: 3,
+        /**
+         * Delay before the search occurs in ms.
+         *
+         * @cfg {Number}
+         */
+        queryDelay: 100,
 
-    /**
-     * Delay before the search occurs in ms.
-     *
-     * @cfg {Number}
-     */
-    queryDelay: 100,
+        /**
+         * URL template for querying the geocoding service. If a store is
+         * configured, this will be ignored. Note that the #queryParam will be used
+         * to append the user's combo box input to the url.
+         *
+         * @cfg {String}
+         */
+        url: 'https://nominatim.openstreetmap.org/search?format=json',
 
-    /**
-     * URL template for querying the geocoding service. If a store is
-     * configured, this will be ignored. Note that the #queryParam will be used
-     * to append the user's combo box input to the url.
-     *
-     * @cfg {String}
-     */
-    url: 'https://nominatim.openstreetmap.org/search?format=json',
+        /**
+         * The SRS used by the geocoder service.
+         *
+         * @cfg {String}
+         */
+        srs: 'EPSG:4326',
 
-    /**
-     * The SRS used by the geocoder service.
-     *
-     * @cfg {String}
-     */
-    srs: 'EPSG:4326',
+        /**
+         * Zoom level when zooming to a location (#valueField='coordinate')
+         * Not used when zooming to extent.
+         *
+         * @cfg {Number}
+         */
+        zoom: 10,
 
-    /**
-     * Zoom level when zooming to a location (#valueField='coordinate')
-     * Not used when zooming to extent.
-     *
-     * @cfg {Number}
-     */
-    zoom: 10,
-
-    /**
-     * Flag to steer if selected address feature is drawn on #map
-     * (by #locationLayer).
-     *
-     * @cfg {Boolean}
-     */
-    showLocationOnMap: true,
-
+        /**
+         * Flag to set if feature for the selected address is drawn on #map
+         * (by #locationLayer).
+         *
+         * @cfg {Boolean}
+         */
+        showLocationOnMap: true,
+    },
     /**
      * @private
      */
