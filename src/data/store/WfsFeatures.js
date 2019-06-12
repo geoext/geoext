@@ -101,18 +101,19 @@ Ext.define('GeoExt.data.store.WfsFeatures', {
 
     /**
      * Cache the total number of features be queried from when the store is
-     * first loaded to use for the remaining life of the store. 
+     * first loaded to use for the remaining life of the store.
      * This uses resultType=hits to get the number of features and can improve
      * performance rather than calculating on each request. It should be used
-     * for read-only layers, or when the server does not return the feature count
-     * on each request.
+     * for read-only layers, or when the server does not return the
+     * feature count on each request.
      * @cfg {Boolean}
      */
     cacheFeatureCount: false,
 
     /**
-    * The outputFormat sent with the resultType=hits request. Defaults to GML3 as
-    * many servers do not support this request type when using application/json. 
+    * The outputFormat sent with the resultType=hits request.
+    * Defaults to GML3 as some WFS servers do not support this
+    * request type when using application/json.
     * Only has an effect if #cacheFeatureCount is set to `true`
     * @cfg {Boolean}
     */
@@ -193,10 +194,9 @@ Ext.define('GeoExt.data.store.WfsFeatures', {
      * @return {Integer}            Total amount of features
      */
     getTotalFeatureCount: function(wfsResponse) {
-        var me = this;
         var totalCount = -1;
         // get the response type from the header
-        var contentType = wfsResponse.getResponseHeader("Content-Type");
+        var contentType = wfsResponse.getResponseHeader('Content-Type');
 
         try {
             if (contentType.indexOf('application/json') !== -1) {
@@ -219,7 +219,7 @@ Ext.define('GeoExt.data.store.WfsFeatures', {
     },
 
     /**
-     * Gets the number of features for the WFS typeName 
+     * Gets the number of features for the WFS typeName
      * using resultType=hits and caches it so it only needs to be calculated
      * the first time the store is used.
      * @private
