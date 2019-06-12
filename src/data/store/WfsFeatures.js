@@ -26,7 +26,7 @@ Ext.define('GeoExt.data.store.WfsFeatures', {
 
     /**
      * Default to using server side sorting
-     * @config {Boolean}
+     * @cfg {Boolean}
      */
     remoteSort: true,
 
@@ -100,6 +100,25 @@ Ext.define('GeoExt.data.store.WfsFeatures', {
     layerAttribution: null,
 
     /**
+     * Cache the total number of features be queried from when the store is
+     * first loaded to use for the remaining life of the store. 
+     * This uses resultType=hits to get the number of features and can improve
+     * performance rather than calculating on each request. It should be used
+     * for read-only layers, or when the server does not return the feature count
+     * on each request.
+     * @cfg {Boolean}
+     */
+    cacheFeatureCount: false,
+
+    /**
+    * The outputFormat sent with the resultType=hits request. Defaults to GML3 as
+    * many servers do not support this request type when using application/json. 
+    * Only has an effect if #cacheFeatureCount is set to `true`
+    * @cfg {Boolean}
+    */
+    featureCountOutputFormat: 'gml3',
+
+    /**
      * Constructs the WFS feature store.
      *
      * @param {Object} config The configuration object.
@@ -146,8 +165,13 @@ Ext.define('GeoExt.data.store.WfsFeatures', {
             me.layerCreated = true;
         }
 
-        // initally load the WFS data
-        me.loadWfs();
+        if (me.cacheFeatureCount === true) {
+            me.cacheTotalFeatureCount();
+        } else {
+            // initial load of the WFS data
+            me.loadWfs();
+        }
+
 
         // before the store gets re-loaded (e.g. by a paging toolbar) we trigger
         // the re-loading of the WFS, so the data keeps in sync
@@ -171,12 +195,15 @@ Ext.define('GeoExt.data.store.WfsFeatures', {
     getTotalFeatureCount: function(wfsResponse) {
         var me = this;
         var totalCount = -1;
+        // get the response type from the header
+        var contentType = wfsResponse.getResponseHeader("Content-Type");
 
         try {
-            if (me.outputFormat.indexOf('application/json') !== -1) {
+            if (contentType.indexOf('application/json') !== -1) {
                 var respJson = Ext.decode(wfsResponse.responseText);
                 totalCount = respJson.numberMatched;
             } else {
+                // assume GML
                 var xml = wfsResponse.responseXML;
                 if (xml && xml.firstChild) {
                     var total = xml.firstChild.getAttribute('numberMatched');
@@ -189,6 +216,43 @@ Ext.define('GeoExt.data.store.WfsFeatures', {
         }
 
         return totalCount;
+    },
+
+    /**
+     * Gets the number of features for the WFS typeName 
+     * using resultType=hits and caches it so it only needs to be calculated
+     * the first time the store is used.
+     * @private
+     */
+    cacheTotalFeatureCount: function() {
+
+        var me = this;
+        var url = me.url;
+        me.cachedTotalCount = 0;
+
+        var params = {
+            service: me.service,
+            version: me.version,
+            request: me.request,
+            typeName: me.typeName,
+            outputFormat: me.featureCountOutputFormat,
+            resultType: 'hits'
+        };
+
+        Ext.Ajax.request({
+            url: url,
+            method: 'GET',
+            params: params,
+            success: function(response) {
+                // set number of total features (needed for paging)
+                me.cachedTotalCount = me.getTotalFeatureCount(response);
+                me.loadWfs();
+            },
+            failure: function(response) {
+                Ext.Logger.warn('Error while requesting features from WFS: ' +
+                    response.responseText + ' Status: ' + response.status);
+            }
+        });
     },
 
     /**
@@ -240,8 +304,13 @@ Ext.define('GeoExt.data.store.WfsFeatures', {
                     return;
                 }
 
-                // set number of total features (needed for paging)
-                me.totalCount = me.getTotalFeatureCount(response);
+                if (me.cacheFeatureCount === true) {
+                    // me.totalCount is reset to 0 on each load so reset it here
+                    me.totalCount = me.cachedTotalCount;
+                } else {
+                    // set number of total features (needed for paging)
+                    me.totalCount = me.getTotalFeatureCount(response);
+                }
 
                 // parse WFS response to OL features
                 var wfsFeats = me.format.readFeatures(response.responseText);
