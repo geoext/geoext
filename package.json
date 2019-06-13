@@ -52,6 +52,8 @@
     "sinon": "7.3.2"
   },
   "greenkeeper": {
-    "ignore": []
+    "ignore": [
+      "eslint-config-openlayers"
+    ]
   }
 }
