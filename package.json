@@ -1,4 +1,5 @@
 {
+  "### npm related confguration follows": "",
   "name": "@geoext/geoext",
   "description": "GeoExt is Open Source and enables building desktop-like GIS applications through the web. It is a JavaScript framework that combines the GIS functionality of OpenLayers with the user interface savvy of the ExtJS library provided by Sencha.",
   "license": "GPL-3.0",
@@ -55,5 +56,27 @@
     "ignore": [
       "eslint-config-openlayers"
     ]
-  }
+  },
+  "### sencha package related confguration follows": "",
+  "namespace": "GeoExt3",
+  "type": "code",
+  "creator": "GeoExt Contributors",
+  "summary": "GIS Package for ExtJS",
+  "detailedDescription": "GeoExt is Open Source and enables building desktop-like GIS applications through the web. It is a JavaScript framework that combines the GIS functionality of OpenLayers with the user interface savvy of the ExtJS library provided by Sencha.",
+  "version": "3.2.0",
+  "compatVersion": "3.0.0",
+  "format": "1",
+  "slicer": {
+    "js": [
+      {
+        "path": "${package.dir}/sass/example/custom.js",
+        "isWidgetManifest": true
+      }
+    ]
+  },
+  "output": "${package.dir}/build",
+  "local": true,
+  "theme": "theme-neptune",
+  "requires": [],
+  "toolkit": "classic"
 }
