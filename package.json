@@ -1,13 +1,39 @@
 {
   "### npm related confguration follows": "",
   "name": "@geoext/geoext",
+  "author": {
+    "name": "GeoExt Contributors"
+  },
+  "contributors": [
+    {
+      "name": "GeoExt Contributors"
+    }
+  ],
   "description": "GeoExt is Open Source and enables building desktop-like GIS applications through the web. It is a JavaScript framework that combines the GIS functionality of OpenLayers with the user interface savvy of the ExtJS library provided by Sencha.",
+  "keywords": [
+    "GIS",
+    "OpenLayers",
+    "ExtJS"
+  ],
+  "homepage": "https://geoext.github.io/geoext3/",
   "license": "GPL-3.0",
   "version": "3.2.0",
   "repository": {
     "type": "git",
     "url": "https://github.com/geoext/geoext3.git"
   },
+  "bugs": {
+    "url": "https://github.com/geoext/geoext3/issues"
+  },
+  "files": [
+    "classic/",
+    "resources/",
+    "src/",
+    "LICENSE",
+    "LICENSE-FAQ.md",
+    "package.json",
+    "README.md"
+  ],
   "scripts": {
     "build": "npm run test && npm run clean:dist && copyfiles -V --exclude 'resources/external/**' -a 'bin/**' 'classic/**' 'src/**' 'sass/**' 'resources/**' README.md LICENSE LICENSE-FAQ.md COMMERCIAL-LICENCE.md package.json dist/",
     "clean": "rimraf coverage apidoc",
@@ -27,8 +53,7 @@
     "generate:docs": "jsduck --config jsduck.json",
     "release": "npm run build && np --no-yarn --contents dist && git push https://github.com/geoext/geoext3.git master --tags"
   },
-  "dependencies": {
-  },
+  "dependencies": {},
   "devDependencies": {
     "browser-sync": "2.26.7",
     "copyfiles": "2.1.0",
@@ -57,13 +82,15 @@
       "eslint-config-openlayers"
     ]
   },
+  "engines": {
+    "node": ">= 8"
+  },
   "### sencha package related confguration follows": "",
   "namespace": "GeoExt3",
   "type": "code",
   "creator": "GeoExt Contributors",
   "summary": "GIS Package for ExtJS",
   "detailedDescription": "GeoExt is Open Source and enables building desktop-like GIS applications through the web. It is a JavaScript framework that combines the GIS functionality of OpenLayers with the user interface savvy of the ExtJS library provided by Sencha.",
-  "version": "3.2.0",
   "compatVersion": "3.0.0",
   "format": "1",
   "slicer": {
