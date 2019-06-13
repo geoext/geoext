@@ -213,21 +213,15 @@ Ext.define('GeoExt.form.field.GeocoderComboBox', {
 
         me.callParent(arguments);
 
+        if (me.getMap()) {
+            me.getMap().addLayer(me.locationLayer);
+        }
+
         me.on({
             select: this.onSelect,
             focus: me.onFocus,
             scope: me
         });
-    },
-
-    setMap: function(map) {
-        var me = this;
-        if (map) {
-            me.map = map;
-            if (me.locationLayer) {
-                me.map.addLayer(me.locationLayer);
-            }
-        }
     },
 
     /**
