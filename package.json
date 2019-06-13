@@ -1,40 +1,48 @@
 {
-  "namespace": "GeoExt3",
+  "### npm related confguration follows": "",
   "name": "@geoext/geoext",
-  "type": "code",
-  "creator": "GeoExt Contributors",
-  "summary": "GIS Package for ExtJS",
-  "detailedDescription": "GeoExt is Open Source and enables building desktop-like GIS applications through the web. It is a JavaScript framework that combines the GIS functionality of OpenLayers with the user interface savvy of the ExtJS library provided by Sencha.",
+  "author": {
+    "name": "GeoExt Contributors"
+  },
+  "contributors": [
+    {
+      "name": "GeoExt Contributors"
+    }
+  ],
+  "description": "GeoExt is Open Source and enables building desktop-like GIS applications through the web. It is a JavaScript framework that combines the GIS functionality of OpenLayers with the user interface savvy of the ExtJS library provided by Sencha.",
+  "keywords": [
+    "GIS",
+    "OpenLayers",
+    "ExtJS"
+  ],
+  "homepage": "https://geoext.github.io/geoext3/",
   "license": "GPL-3.0",
   "version": "3.2.0",
-  "compatVersion": "3.0.0",
-  "format": "1",
-  "slicer": {
-    "js": [
-      {
-        "path": "${package.dir}/sass/example/custom.js",
-        "isWidgetManifest": true
-      }
-    ]
-  },
-  "output": "${package.dir}/build",
-  "local": true,
-  "theme": "theme-neptune",
-  "requires": [],
-  "toolkit": "classic",
   "repository": {
     "type": "git",
     "url": "https://github.com/geoext/geoext3.git"
   },
+  "bugs": {
+    "url": "https://github.com/geoext/geoext3/issues"
+  },
+  "files": [
+    "classic/",
+    "resources/",
+    "src/",
+    "LICENSE",
+    "LICENSE-FAQ.md",
+    "package.json",
+    "README.md"
+  ],
   "scripts": {
     "build": "npm run test && npm run clean:dist && copyfiles -V --exclude 'resources/external/**' -a 'bin/**' 'classic/**' 'src/**' 'sass/**' 'resources/**' README.md LICENSE LICENSE-FAQ.md COMMERCIAL-LICENCE.md package.json dist/",
     "clean": "rimraf coverage apidoc",
     "clean:dist": "rimraf ./dist/*",
-    "postinstall": "node ./bin/fetch-external-resources.js",
     "lint": "eslint src/ examples/ && eslint -c test/.eslintrc test/",
     "lint:fix": "eslint --fix src/ examples/ && eslint --fix -c test/.eslintrc test/",
-    "pretest": "npm run-script lint",
+    "pretest": "npm run-script test:fetch-external && npm run-script lint",
     "test": "karma start test/karma.conf.js --single-run",
+    "test:fetch-external": "node ./bin/fetch-external-resources.js",
     "test:debug": "karma start test/karma.conf.js --single-run --debug",
     "test:coverage": "karma start test/karma.conf.js --single-run --reporters coverage",
     "test:watch": "karma start test/karma.conf.js",
@@ -45,10 +53,7 @@
     "generate:docs": "jsduck --config jsduck.json",
     "release": "npm run build && np --no-yarn --contents dist && git push https://github.com/geoext/geoext3.git master --tags"
   },
-  "dependencies": {
-    "log-update": "3.2.0",
-    "mkdirp": "0.5.1"
-  },
+  "dependencies": {},
   "devDependencies": {
     "browser-sync": "2.26.7",
     "copyfiles": "2.1.0",
@@ -63,6 +68,8 @@
     "karma-mocha": "1.3.0",
     "karma-phantomjs-launcher": "1.0.4",
     "karma-sinon": "1.0.5",
+    "log-update": "3.2.0",
+    "mkdirp": "0.5.1",
     "mocha": "6.1.4",
     "np": "5.0.3",
     "openlayers": "4.6.5",
@@ -71,6 +78,32 @@
     "sinon": "7.3.2"
   },
   "greenkeeper": {
-    "ignore": []
-  }
+    "ignore": [
+      "eslint-config-openlayers"
+    ]
+  },
+  "engines": {
+    "node": ">= 8"
+  },
+  "### sencha package related confguration follows": "",
+  "namespace": "GeoExt3",
+  "type": "code",
+  "creator": "GeoExt Contributors",
+  "summary": "GIS Package for ExtJS",
+  "detailedDescription": "GeoExt is Open Source and enables building desktop-like GIS applications through the web. It is a JavaScript framework that combines the GIS functionality of OpenLayers with the user interface savvy of the ExtJS library provided by Sencha.",
+  "compatVersion": "3.0.0",
+  "format": "1",
+  "slicer": {
+    "js": [
+      {
+        "path": "${package.dir}/sass/example/custom.js",
+        "isWidgetManifest": true
+      }
+    ]
+  },
+  "output": "${package.dir}/build",
+  "local": true,
+  "theme": "theme-neptune",
+  "requires": [],
+  "toolkit": "classic"
 }
