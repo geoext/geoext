@@ -1,5 +1,8 @@
 Ext.Loader.syncRequire(['GeoExt.data.store.WfsFeatures']);
 
+before(TestUtil.disableLogger);
+after(TestUtil.enableLogger);
+
 describe('GeoExt.data.store.WfsFeatures', function() {
 
     describe('basics', function() {

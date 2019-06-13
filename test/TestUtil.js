@@ -136,10 +136,36 @@
         teardownTestDiv(createdObjs.mapDiv);
     }
 
+    /**
+     * Disables output via calls to Ext.Logger-methods.
+     */
+    function disableLogger() {
+        var origLog = Ext.Logger.log;
+        var origError = Ext.Logger.error;
+        Ext.Logger.log = function() {};
+        Ext.Logger.error = function() {};
+        Ext.Logger.log.orig = origLog;
+        Ext.Logger.error.orig = origError;
+    }
+
+    /**
+     * Renables output via calls to Ext.Logger-methods.
+     */
+    function enableLogger() {
+        if (Ext.Logger.log.orig) {
+            Ext.Logger.log = Ext.Logger.log.orig;
+        }
+        if (Ext.Logger.error.orig) {
+            Ext.Logger.error = Ext.Logger.error.orig;
+        }
+    }
+
     global.TestUtil = {
         setupTestDiv: setupTestDiv,
         teardownTestDiv: teardownTestDiv,
         setupTestObjects: setupTestObjects,
-        teardownTestObjects: teardownTestObjects
+        teardownTestObjects: teardownTestObjects,
+        disableLogger: disableLogger,
+        enableLogger: enableLogger
     };
 }(this));
