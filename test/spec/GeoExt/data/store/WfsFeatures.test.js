@@ -165,8 +165,12 @@ describe('GeoExt.data.store.WfsFeatures', function() {
 
     describe('sorting', function() {
 
+        var dataPath = (typeof __karma__ === 'undefined' ? '' : 'base/test/');
+        var url = dataPath + 'data/wfs_mock.geojson';
+
         it('sorters are created', function() {
             var store = Ext.create('GeoExt.data.store.WfsFeatures', {
+                url: url,
                 sorters: [{
                     property: 'foo',
                     direction: 'ASC'
@@ -183,6 +187,7 @@ describe('GeoExt.data.store.WfsFeatures', function() {
 
         it('creates sort string', function() {
             var store = Ext.create('GeoExt.data.store.WfsFeatures', {
+                url: url,
                 sorters: [{
                     property: 'foo',
                     direction: 'ASC'
@@ -194,6 +199,7 @@ describe('GeoExt.data.store.WfsFeatures', function() {
 
         it('creates multiple sorters string', function() {
             var store = Ext.create('GeoExt.data.store.WfsFeatures', {
+                url: url,
                 sorters: [{
                     property: 'foo',
                     direction: 'ASC'
