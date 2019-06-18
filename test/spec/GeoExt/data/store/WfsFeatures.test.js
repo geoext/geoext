@@ -204,12 +204,12 @@ describe('GeoExt.data.store.WfsFeatures', function() {
                     property: 'foo',
                     direction: 'ASC'
                 }, {
-                    property: 'foo',
+                    property: 'bar',
                     direction: 'DESC'
                 }]
             });
 
-            expect(store.createSortByParameter()).to.be('foo A, foo D');
+            expect(store.createSortByParameter()).to.be('foo A,bar D');
         });
     });
 });
