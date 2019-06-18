@@ -216,8 +216,8 @@ Ext.define('GeoExt.data.store.WfsFeatures', {
      * Sends the sortBy parameter to the WFS Server
      * If multiple sorters are specified then multiple fields are
      * sent to the server.
-     * Ascending sorts appends +A and descending sorts +D
-     * E.g. sortBy=attribute1+D,attribute1+A
+     * Ascending sorts will append A and descending sorts D
+     * E.g. sortBy=attribute1 D,attribute2 A
      * @private
      * @return {String} The sortBy string
      */
@@ -228,7 +228,7 @@ Ext.define('GeoExt.data.store.WfsFeatures', {
         var direction;
         var property;
 
-        Ext.each(me.getSorters().items, function(sorter) {
+        me.getSorters().each(function(sorter) {
             // direction will be either A from ASC or D from DESC
             direction = sorter.getDirection().charAt(0);
             property = sorter.getProperty();

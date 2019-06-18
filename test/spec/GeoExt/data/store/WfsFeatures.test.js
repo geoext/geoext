@@ -178,9 +178,9 @@ describe('GeoExt.data.store.WfsFeatures', function() {
             });
 
             var sorters = store.getSorters();
-            expect(sorters.items.length).to.be(1);
+            expect(sorters.length).to.be(1);
 
-            var sorter = sorters.items[0];
+            var sorter = sorters.getAt(0);
             expect(sorter.getProperty()).to.be('foo');
             expect(sorter.getDirection()).to.be('ASC');
         });
