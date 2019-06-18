@@ -194,7 +194,7 @@ describe('GeoExt.data.store.WfsFeatures', function() {
                 }]
             });
 
-            expect(store.createSortByParameter().to.be('foo A'));
+            expect(store.createSortByParameter()).to.be('foo A');
         });
 
         it('creates multiple sorters string', function() {
@@ -209,7 +209,7 @@ describe('GeoExt.data.store.WfsFeatures', function() {
                 }]
             });
 
-            expect(store.createSortByParameter().to.be('foo A, foo D'));
+            expect(store.createSortByParameter()).to.be('foo A, foo D');
         });
     });
 });
