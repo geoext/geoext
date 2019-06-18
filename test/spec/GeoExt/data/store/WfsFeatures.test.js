@@ -170,7 +170,7 @@ describe('GeoExt.data.store.WfsFeatures', function() {
                 sorters: [{
                     property: 'foo',
                     direction: 'ASC'
-                }],
+                }]
             });
 
             var sorters = store.getSorters();
@@ -186,7 +186,7 @@ describe('GeoExt.data.store.WfsFeatures', function() {
                 sorters: [{
                     property: 'foo',
                     direction: 'ASC'
-                }],
+                }]
             });
 
             expect(store.createSortByParameter().to.be('foo A'));
@@ -200,7 +200,7 @@ describe('GeoExt.data.store.WfsFeatures', function() {
                 }, {
                     property: 'foo',
                     direction: 'DESC'
-                }],
+                }]
             });
 
             expect(store.createSortByParameter().to.be('foo A, foo D'));
