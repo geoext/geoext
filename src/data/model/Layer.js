@@ -162,8 +162,8 @@ Ext.define('GeoExt.data.model.Layer', {
      * returned.
      *
      * @param  {string} prop         The property key.
-     * @param  {object} defaultValue The optional default value.
-     * @return {object}              The returned property.
+     * @param  {Object} defaultValue The optional default value.
+     * @return {Object}              The returned property.
      */
     getOlLayerProp: function(prop, defaultValue) {
         var layer = this.getOlLayer();

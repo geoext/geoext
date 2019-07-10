@@ -75,7 +75,7 @@ Ext.define('GeoExt.form.field.GeocoderComboBox', {
      * config.
      *
      * @cfg {Ext.data.JsonStore}
-     * @propery {Ext.data.JsonStore}
+     * @property {Ext.data.JsonStore}
      */
     store: null,
 

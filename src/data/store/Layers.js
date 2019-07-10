@@ -59,9 +59,10 @@ Ext.define('GeoExt.data.store.Layers', {
         map: null,
 
         /**
-         * A collection of OL layer objects, which will be managed by the store.
+         * A collection of ol.layer.Base objects, which will be managed by
+         * the store.
          *
-         * @cfg {ol.Collection<ol.layer.Base>} layers
+         * @cfg {ol.Collection} layers
          */
         layers: null
     },
@@ -87,7 +88,7 @@ Ext.define('GeoExt.data.store.Layers', {
      * Bind this store to a collection of layers; once bound, the store is
      * synchronized with the layer collection and vice-versa.
      *
-     * @param  {ol.Collection<ol.layer.Base>} layers The layer collection.
+     * @param  {ol.Collection} layers The layer collection (`ol.layer.Base`).
      * @param  {ol.Map} map Optional map from which the layers were derived
      */
     bindLayers: function(layers, map) {

@@ -27,8 +27,9 @@ Ext.define('GeoExt.selection.FeatureModel', {
     alias: 'selection.featuremodel',
 
     /**
-     * The currently selected features.
-     * @property {ol.Collection<ol.Feature>}
+     * The currently selected features (`ol.Collection` containing `ol.Feature`
+     * instances).
+     * @property {ol.Collection}
      */
     selectedFeatures: null,
 
