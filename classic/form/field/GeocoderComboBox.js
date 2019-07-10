@@ -25,8 +25,8 @@
  *   * extent - `ol.Extent` The extent of the matching address
  *   * bounds - `ol.Coordinate` The point coordinate of the matching address
  *
- * CAUTION: This class is only usable in applications using the classic toolkit
- *          of ExtJS 6.
+ * **CAUTION: This class is only usable in applications using the classic
+ * toolkit of ExtJS 6.**
  *
  * @class GeoExt.form.field.GeocoderComboBox
  */

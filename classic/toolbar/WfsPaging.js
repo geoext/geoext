@@ -14,8 +14,11 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 /**
- * A paging toolbar which can be used in combionation with a OGC WFS by using
+ * A paging toolbar which can be used in combination with a OGC WFS by using
  * the `GeoExt.data.store.WfsFeatures` class.
+ *
+ * **CAUTION: This class is only usable in applications using the classic
+ * toolkit of ExtJS 6.**
  *
  * @class GeoExt.toolbar.WfsPaging
  */
