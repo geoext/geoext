@@ -75,8 +75,8 @@ Ext.define('GeoExt.util.OGCFilter', {
         /**
          * Given an array of ExtJS grid-filters, this method will return an OGC
          * compliant filter which can be used for WMS requests
-         * @param {Ext.grid.filters.filter[]} filters array containing all
-         *   `Ext.grid.filters.filter` that should be converted
+         * @param {Ext.util.Filter[]} filters array containing all
+         *   `Ext.util.Filter` that should be converted
          * @param {string} combinator The combinator used for combining multiple
          *   filters. Can be 'and' or 'or'
          * @return {string} The OGC Filter XML
@@ -89,8 +89,8 @@ Ext.define('GeoExt.util.OGCFilter', {
         /**
          * Given an array of ExtJS grid-filters, this method will return an OGC
          * compliant filter which can be used for WFS requests
-         * @param {Ext.grid.filters.filter[]} filters array containing all
-         *   `Ext.grid.filters.filter` that should be converted
+         * @param {Ext.util.Filter[]} filters array containing all
+         *   `Ext.util.Filter` that should be converted
          * @param {string} combinator The combinator used for combining multiple
          *   filters. Can be 'and' or 'or'
          * @param {string} wfsVersion The WFS version to use, either `1.0.0`,
@@ -106,8 +106,8 @@ Ext.define('GeoExt.util.OGCFilter', {
         /**
          * Given an ExtJS grid-filter, this method will return an OGC compliant
          * filter which can be used for WMS or WFS queries
-         * @param {Ext.grid.filters.filter[]} filters array containing all
-         *   `Ext.grid.filters.filter` that should be converted
+         * @param {Ext.util.Filter[]} filters array containing all
+         *   `Ext.util.Filter` that should be converted
          * @param {string} type The OGC type we will be using, can be
          *   `wms` or `wfs`
          * @param {string} combinator The combinator used for combining multiple
@@ -121,7 +121,7 @@ Ext.define('GeoExt.util.OGCFilter', {
             if (!Ext.isDefined(filters) || !Ext.isArray(filters)) {
                 Ext.Logger.error('Invalid filter argument given to ' +
                   'GeoExt.util.OGCFilter. You need to pass an array of ' +
-                  '"Ext.grid.filters.filter"');
+                  '"Ext.util.Filter"');
                 return;
             }
             if (Ext.isEmpty(filters)) {
@@ -150,8 +150,8 @@ Ext.define('GeoExt.util.OGCFilter', {
         /**
          * Converts given ExtJS grid-filter to an OGC compliant filter
          * body content.
-         * @param {Ext.grid.filters.filter} filter Instance of
-         *   `Ext.grid.filters.filter` which should be converted to OGC filter
+         * @param {Ext.util.Filter} filter Instance of
+         *   `Ext.util.Filter` which should be converted to OGC filter
          * @param {string} wfsVersion The WFS version to use, either `1.0.0`,
          *   `1.1.0` or `2.0.0`
          * @return {string} The OGC Filter body as XML String
@@ -160,7 +160,7 @@ Ext.define('GeoExt.util.OGCFilter', {
             if (!Ext.isDefined(filter)) {
                 Ext.Logger.error('Invalid filter argument given to ' +
                     'GeoExt.util.OGCFilter. You need to pass an instance of ' +
-                    '"Ext.grid.filters.filter"');
+                    '"Ext.util.Filter"');
                 return;
             }
 
@@ -193,8 +193,8 @@ Ext.define('GeoExt.util.OGCFilter', {
         /**
          * Returns a GetFeature XML body containing the filters
          * which can be used to directly request the features
-         * @param {Ext.grid.filters.filter[]} filters array containing all
-         *   `Ext.grid.filters.filter` that should be converted
+         * @param {Ext.util.Filter[]} filters array containing all
+         *   `Ext.util.Filter` that should be converted
          * @param {string} combinator The combinator used for combining multiple
          *   filters. Can be 'and' or 'or'
          * @param {string} wfsVersion The WFS version to use, either `1.0.0`,
@@ -324,7 +324,7 @@ Ext.define('GeoExt.util.OGCFilter', {
          * Combines the passed filters with an `<And>` or `<Or>` and
          * returns them.
          *
-         * @param {array} filters The filters to join.
+         * @param {Array} filters The filters to join.
          * @param {string} combinator The combinator to use, should be
          *     either `And` (the default) or `Or`.
          * @param {boolean} omitNamespaces Indicates if namespaces

@@ -196,7 +196,6 @@ Ext.define('GeoExt.component.FeatureRenderer', {
          *     styler for.
          * @return {ol.style.Style[]|ol.style.Style} The style(s) applied to the
          *     given feature record.
-         * @public
          */
         determineStyle: function(record) {
             var feature = record.getFeature();

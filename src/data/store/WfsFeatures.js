@@ -191,7 +191,7 @@ Ext.define('GeoExt.data.store.WfsFeatures', {
      *
      * @private
      * @param  {Object} wfsResponse The XMLHttpRequest object
-     * @return {Integer}            Total amount of features
+     * @return {Number}            Total amount of features
      */
     getTotalFeatureCount: function(wfsResponse) {
         var totalCount = -1;

@@ -50,7 +50,7 @@
     "start": "browser-sync start --server --directory --files 'src, classic, test, examples'",
     "coveralls": "cat coverage/lcov.info | coveralls",
     "generate:example": "node bin/example-generator/index.js",
-    "generate:docs": "jsduck --config jsduck.json",
+    "generate:docs": "rimraf docs/ && jsduck --config jsduck.json",
     "release": "npm run build && np --no-yarn --contents dist && git push https://github.com/geoext/geoext3.git master --tags"
   },
   "dependencies": {},

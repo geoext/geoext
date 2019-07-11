@@ -17,6 +17,9 @@
   * A row selection model which enables automatic selection of features
   * in the map when rows are selected in the grid and vice-versa.
   *
+  * **CAUTION: This class is only usable in applications using the classic
+  * toolkit of ExtJS 6.**
+  *
   * @class GeoExt.selection.FeatureModel
   */
 Ext.define('GeoExt.selection.FeatureModel', {
@@ -24,8 +27,9 @@ Ext.define('GeoExt.selection.FeatureModel', {
     alias: 'selection.featuremodel',
 
     /**
-     * The currently selected features.
-     * @property {ol.Collection<ol.Feature>}
+     * The currently selected features (`ol.Collection` containing `ol.Feature`
+     * instances).
+     * @property {ol.Collection}
      */
     selectedFeatures: null,
 
