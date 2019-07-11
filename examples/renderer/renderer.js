@@ -1,4 +1,3 @@
-/* global document */
 var redStroke = new ol.style.Stroke({color: 'red', width: 2});
 var redFill = new ol.style.Fill({color: [255, 0, 0, 0.25]});
 var red = new ol.style.Style({
