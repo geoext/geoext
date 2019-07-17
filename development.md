@@ -32,7 +32,10 @@ There are a number of preconfigured scripts that can be executed via
 
 * `clean` removes generated files and folders.
 * `lint` checks code for linting errors.
-* `test` runs the headless test suite.
+* `test` runs the headless test suite. This will also download some external
+resources if needed. If you do not want a progress bar being rendered during
+the download phase, just set the environment variable `NO_DOWNLOAD_PROGRESS`
+to `true` like so: `NO_DOWNLOAD_PROGRESS=true npm test`.
 * `test:debug` runs the headless test suite with ExtJS in debug mode.
 * `test:coverage` runs the headless test suite only outputting coverage files.
 * `test:watch` runs the test suite when changes in the `src` or `test`
