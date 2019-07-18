@@ -70,7 +70,7 @@
     "karma-sinon": "1.0.5",
     "log-update": "3.2.0",
     "mkdirp": "0.5.1",
-    "mocha": "6.1.4",
+    "mocha": "6.2.0",
     "np": "5.0.3",
     "openlayers": "4.6.5",
     "phantomjs-prebuilt": "2.1.16",
