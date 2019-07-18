@@ -6,6 +6,10 @@ var path = require('path');
 var url = require('url');
 var logUpdate = require('log-update');
 
+// Make the progress bar configurable with an environment variable, default
+// is to show the progressbar while downloading
+var showProgress = process.env.NO_DOWNLOAD_PROGRESS === 'true' ? false : true;
+
 /**
  * The frames for the progressbar.
  * @type {Array}
@@ -38,17 +42,21 @@ var logProgress = function(totalSteps, runningMsg) {
             if (totalSteps <= 0) {
                 return;
             }
-            progressInterval = setInterval(function() {
-                var frame = progressFrames[frameIdx++ % progressFrames.length];
-                logUpdate('  ' + frame + ' ' + runningMsg);
-            }, 100);
+            if (showProgress) {
+                progressInterval = setInterval(function() {
+                    var frame = progressFrames[frameIdx++ % progressFrames.length];
+                    logUpdate('  ' + frame + ' ' + runningMsg);
+                }, 100);
+            }
         },
         oneDoneCheckIfAllDone: function(stepDescription, ok, allDoneCb) {
             finishedSteps++;
             logUpdate((ok ? '  ✔ ' : '  ✖ ') + stepDescription);
             logUpdate.done();
             if (finishedSteps >= totalSteps) {
-                clearInterval(progressInterval);
+                if (progressInterval) {
+                    clearInterval(progressInterval);
+                }
                 allDoneCb();
             }
         }
