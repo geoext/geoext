@@ -295,8 +295,17 @@ Ext.define('GeoExt.util.OGCFilter', {
                     '</PropertyIsEqualTo>';
                 });
                 ogcFilterType = '<' + ogcFilterType + '>';
+
+                var inFilter;
                 closingTag = Ext.String.insert(ogcFilterType, '/', 1);
-                return ogcFilterType + filters + closingTag;
+
+                // only use an Or filter when there are multiple values
+                if (values.length > 1) {
+                    inFilter = ogcFilterType + filters + closingTag;
+                } else {
+                    inFilter = filters;
+                }
+                return inFilter;
             default:
                 Ext.Logger.warn('Method `getOgcFilter` could not ' +
                     'handle the given operator: ' + operator);
