@@ -161,7 +161,7 @@ describe('GeoExt.data.store.WfsFeatures', function() {
 
         it('layerOptions have been set correctly', function() {
             var layer = store.getLayer();
-            expect(layer.getOpacity().to.be(0.7));
+            expect(layer.getOpacity()).to.be(0.7);
         });
 
         it('removes the autocreated layer once the store is destroyed',
