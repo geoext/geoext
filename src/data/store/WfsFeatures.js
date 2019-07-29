@@ -100,6 +100,13 @@ Ext.define('GeoExt.data.store.WfsFeatures', {
     layerAttribution: null,
 
     /**
+     * Additional OpenLayers properties to apply to the created vector layer source. Only has an
+     * effect if #createLayer is set to `true`
+     * @cfg {String}
+     */
+    layerOptions: null,
+
+    /**
      * Cache the total number of features be queried from when the store is
      * first loaded to use for the remaining life of the store.
      * This uses resultType=hits to get the number of features and can improve
@@ -158,10 +165,17 @@ Ext.define('GeoExt.data.store.WfsFeatures', {
                 features: [],
                 attributions: me.layerAttribution
             });
-            me.layer = new ol.layer.Vector({
+
+            var layerOptions = {
                 source: me.source,
                 style: me.style
-            });
+            }
+
+            if (me.layerOptions) {
+                Ext.applyIf(layerOptions, me.layerOptions);
+            }
+
+            me.layer = new ol.layer.Vector(layerOptions);
 
             me.layerCreated = true;
         }

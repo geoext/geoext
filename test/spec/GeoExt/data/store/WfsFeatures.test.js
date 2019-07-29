@@ -134,6 +134,9 @@ describe('GeoExt.data.store.WfsFeatures', function() {
                 url: url,
                 map: map,
                 createLayer: true,
+                layerOptions: {
+                    opacity: 0.7
+                },
                 format: new ol.format.GeoJSON({
                     featureProjection: 'EPSG:3857'
                 })
@@ -154,6 +157,11 @@ describe('GeoExt.data.store.WfsFeatures', function() {
 
         it('creates the layer which is retrievable via #getLayer', function() {
             expect(store.getLayer()).to.be(map.getLayers().item(0));
+        });
+
+        it('layerOptions have been set correctly', function() {
+            var layer = store.getLayer();
+            expect(layer.getOpacity().to.be(0.7));
         });
 
         it('removes the autocreated layer once the store is destroyed',
