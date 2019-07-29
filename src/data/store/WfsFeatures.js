@@ -100,8 +100,8 @@ Ext.define('GeoExt.data.store.WfsFeatures', {
     layerAttribution: null,
 
     /**
-     * Additional OpenLayers properties to apply to the created vector layer source. Only has an
-     * effect if #createLayer is set to `true`
+     * Additional OpenLayers properties to apply to the created vector layer.
+     * Only has an effect if #createLayer is set to `true`
      * @cfg {String}
      */
     layerOptions: null,
@@ -169,7 +169,7 @@ Ext.define('GeoExt.data.store.WfsFeatures', {
             var layerOptions = {
                 source: me.source,
                 style: me.style
-            }
+            };
 
             if (me.layerOptions) {
                 Ext.applyIf(layerOptions, me.layerOptions);
