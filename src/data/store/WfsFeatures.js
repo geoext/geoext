@@ -324,11 +324,12 @@ Ext.define('GeoExt.data.store.WfsFeatures', {
                     me.source.addFeatures(wfsFeats);
                 }
 
-                me.fireEvent('gx-wfsstoreload', me);
+                me.fireEvent('gx-wfsstoreload', me, wfsFeats, true);
             },
             failure: function(response) {
                 Ext.Logger.warn('Error while requesting features from WFS: ' +
                     response.responseText + ' Status: ' + response.status);
+                me.fireEvent('gx-wfsstoreload', me, null, false);
             }
 
         });
