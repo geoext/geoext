@@ -27,8 +27,8 @@ run `npm install` in the project root once after checking out from GitHub.
 
 ## Provided `npm` scripts
 
-There are a number of preconfigured scripts that can be executed via
-`npm run-script TARGET` from the base directory of the repository:
+There are a number of preconfigured scripts, listed in package.json, that can be 
+executed via `npm run-script TARGET` from the base directory of the repository:
 
 * `clean` removes generated files and folders.
 * `lint` checks code for linting errors.
@@ -49,7 +49,7 @@ to the source code are detected, the browser page is reloaded (end via
 [Coveralls.io](https://coveralls.io/github/geoext/geoext3)
 * `generate:example`generates a sample application in the examples folder. Use
 this to start a new feature example for GeoExt3.
-* `generate:doc` generates an API documentation that you can access in the
+* `generate:docs` generates an API documentation that you can access in the
 browser via `/apidocs/index.html`. (requires the external `jsduck` command)
 
 Make sure to run `npm install` before using these scripts as this will install
