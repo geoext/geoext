@@ -75,7 +75,7 @@
     "openlayers": "4.6.5",
     "phantomjs-prebuilt": "2.1.16",
     "rimraf": "2.6.3",
-    "sinon": "7.3.2"
+    "sinon": "7.4.1"
   },
   "greenkeeper": {
     "ignore": [
