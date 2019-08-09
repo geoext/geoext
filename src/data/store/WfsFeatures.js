@@ -63,12 +63,6 @@ Ext.define('GeoExt.data.store.WfsFeatures', {
     outputFormat: 'application/json',
 
     /**
-     * The 'sortBy' param value used in the WFS request.
-     * @cfg {String}
-     */
-    sortBy: null,
-
-    /**
      * The 'startIndex' param value used in the WFS request.
      * @cfg {String}
      */
@@ -233,6 +227,32 @@ Ext.define('GeoExt.data.store.WfsFeatures', {
     },
 
     /**
+     * Sends the sortBy parameter to the WFS Server
+     * If multiple sorters are specified then multiple fields are
+     * sent to the server.
+     * Ascending sorts will append ASC and descending sorts DESC
+     * E.g. sortBy=attribute1 DESC,attribute2 ASC
+     * @private
+     * @return {String} The sortBy string
+     */
+    createSortByParameter: function() {
+
+        var me = this;
+        var sortStrings = [];
+        var direction;
+        var property;
+
+        me.getSorters().each(function(sorter) {
+            // direction will be ASC or DESC
+            direction = sorter.getDirection();
+            property = sorter.getProperty();
+            sortStrings.push(Ext.String.format('{0} {1}', property, direction));
+        });
+
+        return sortStrings.join(',');
+    },
+
+    /**
      * Gets the number of features for the WFS typeName
      * using resultType=hits and caches it so it only needs to be calculated
      * the first time the store is used.
@@ -287,7 +307,10 @@ Ext.define('GeoExt.data.store.WfsFeatures', {
         // send the sortBy parameter only when remoteSort is true
         // as it is not supported by all WFS servers
         if (me.remoteSort === true) {
-            params.sortBy = me.sortBy;
+            var sortBy = me.createSortByParameter();
+            if (sortBy) {
+                params.sortBy = sortBy;
+            }
         }
 
         // apply paging parameters if necessary
