@@ -21,7 +21,8 @@
 Ext.define('GeoExt.data.store.WfsFeatures', {
     extend: 'GeoExt.data.store.Features',
     mixins: [
-        'GeoExt.mixin.SymbolCheck'
+        'GeoExt.mixin.SymbolCheck',
+        'GeoExt.util.OGCFilter'
     ],
 
     /**
@@ -29,6 +30,24 @@ Ext.define('GeoExt.data.store.WfsFeatures', {
      * @cfg {Boolean}
      */
     remoteSort: true,
+
+    /**
+     * Default to using server side filtering
+     * @cfg {Boolean}
+     */
+    remoteFilter: true,
+
+    /**
+     * Default logical comperator to combine filters sent to WFS
+     * @cfg {String}
+     */
+    logicalFilterCombinator: 'And',
+
+    /**
+      * Default request method to use in AJAX requests
+      * @cfg {String}
+      */
+    requestMethod: 'GET',
 
     /**
      * The 'service' param value used in the WFS request.
@@ -181,7 +200,6 @@ Ext.define('GeoExt.data.store.WfsFeatures', {
             me.loadWfs();
         }
 
-
         // before the store gets re-loaded (e.g. by a paging toolbar) we trigger
         // the re-loading of the WFS, so the data keeps in sync
         me.on('beforeload', me.loadWfs, me);
@@ -236,7 +254,6 @@ Ext.define('GeoExt.data.store.WfsFeatures', {
      * @return {String} The sortBy string
      */
     createSortByParameter: function() {
-
         var me = this;
         var sortStrings = [];
         var direction;
@@ -253,13 +270,38 @@ Ext.define('GeoExt.data.store.WfsFeatures', {
     },
 
     /**
+     * Create filter parameter string (according to Filter Encoding standard)
+     * based on the given instances in filters ({Ext.util.FilterCollection}) of
+     * the store.
+     *
+     * @private
+     * @return {String} The filter XML encoded as string
+     */
+    createOgcFilter: function() {
+        var me = this;
+        var filters = [];
+        me.getFilters().each(function(item) {
+            filters.push(item);
+        });
+        if (filters.length === 0) {
+            return null;
+        }
+        var wfsGetFeatureFilter = GeoExt.util.OGCFilter.
+            getOgcWfsFilterFromExtJsFilter(
+                filters,
+                me.logicalFilterCombinator,
+                me.version
+            );
+        return wfsGetFeatureFilter;
+    },
+
+    /**
      * Gets the number of features for the WFS typeName
      * using resultType=hits and caches it so it only needs to be calculated
      * the first time the store is used.
      * @private
      */
     cacheTotalFeatureCount: function() {
-
         var me = this;
         var url = me.url;
         me.cachedTotalCount = 0;
@@ -290,6 +332,18 @@ Ext.define('GeoExt.data.store.WfsFeatures', {
     },
 
     /**
+     * Handles the 'filterchange'-event.
+     * Reload data using updated filter config.
+     * @private
+     */
+    onFilterChange: function() {
+        var me = this;
+        if (me.getFilters() && me.getFilters().length > 0) {
+            me.loadWfs();
+        }
+    },
+
+    /**
      * Loads the data from the connected WFS.
      * @private
      */
@@ -310,6 +364,14 @@ Ext.define('GeoExt.data.store.WfsFeatures', {
             var sortBy = me.createSortByParameter();
             if (sortBy) {
                 params.sortBy = sortBy;
+            }
+        }
+
+        // create filter string if remoteFilter is activated
+        if (me.remoteFilter === true) {
+            var filter = me.createOgcFilter();
+            if (filter) {
+                params.filter = filter;
             }
         }
 
