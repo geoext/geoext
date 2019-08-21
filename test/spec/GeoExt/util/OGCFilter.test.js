@@ -439,6 +439,68 @@ describe('GeoExt.util.OGCFilter', function() {
                     + '</PropertyIsGreaterThanOrEqualTo>';
                 expect(filter).to.be(expected);
             });
+
+            it('supports spatial filters for WFS 1.x', function() {
+                var wfsVersion = '1.1.0';
+                var coords = [[16, 48], [19, 9]];
+                var epsg = 'EPSG:4326';
+                var geometry = new ol.geom.LineString(coords);
+                var propertyName = 'nice-geometry-attribute';
+                var topologicalOperators = {
+                    'intersect': 'Intersects',
+                    'within': 'Within',
+                    'contains': 'Contains',
+                    'equals': 'Equals',
+                    'disjoint': 'Disjoint',
+                    'crosses': 'Crosses',
+                    'touches': 'Touches',
+                    'overlaps': 'Overlaps'
+                };
+
+                Ext.iterate(topologicalOperators, function(key, val) {
+                    var filter = GeoExt.util.OGCFilter.getOgcFilter(
+                        propertyName, key, geometry, wfsVersion, epsg
+                    );
+
+                    var gmlElement = '<LineString' +
+                        ' xmlns="http://www.opengis.net/gml"' +
+                        ' srsName="EPSG:4326"><posList srsDimension="2">' +
+                        '48 16 9 19</posList></LineString>';
+
+                    var expected = Ext.String.format(
+                        GeoExt.util.OGCFilter.spatialFilterWfs1xXmlTpl,
+                        val,
+                        propertyName,
+                        gmlElement
+                    );
+
+                    expect(filter).to.equal(expected);
+                });
+
+            });
+
+            it('supports bbox filters', function() {
+                var wfsVersion = '1.1.0';
+                var coords = [[16, 48], [19, 9]];
+                var epsg = 'EPSG:4326';
+                var geometry = new ol.geom.LineString(coords);
+                var propertyName = 'nice-geometry-attribute';
+                var expected = '<BBOX>' +
+                    '    <PropertyName>' + propertyName + '</PropertyName>' +
+                    '    <gml:Envelope' +
+                    '        xmlns:gml="http://www.opengis.net/gml" srsName="'
+                    + epsg + '">' +
+                    '        <gml:lowerCorner>16 9</gml:lowerCorner>' +
+                    '        <gml:upperCorner>19 48</gml:upperCorner>' +
+                    '    </gml:Envelope>' +
+                    '</BBOX>';
+
+                var filter = GeoExt.util.OGCFilter.getOgcFilter(
+                    propertyName, 'bbox', geometry, wfsVersion, epsg
+                );
+
+                expect(filter).to.equal(expected);
+            });
         });
 
         describe('#buildWfsGetFeatureWithFilter', function() {
