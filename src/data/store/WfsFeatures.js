@@ -317,7 +317,7 @@ Ext.define('GeoExt.data.store.WfsFeatures', {
 
         Ext.Ajax.request({
             url: url,
-            method: 'GET',
+            method: me.requestMethod,
             params: params,
             success: function(response) {
                 // set number of total features (needed for paging)
@@ -393,7 +393,7 @@ Ext.define('GeoExt.data.store.WfsFeatures', {
         // request features from WFS
         Ext.Ajax.request({
             url: url,
-            method: 'GET',
+            method: me.requestMethod,
             params: params,
             success: function(response) {
 
