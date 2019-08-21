@@ -72,7 +72,7 @@ Ext.define('GeoExt.util.OGCFilter', {
             '</wfs:GetFeature>',
 
         /**
-         * The template fopr spatial filters used in WFS 1.x.0 queries
+         * The template for spatial filters used in WFS 1.x.0 queries
          */
         spatialFilterWfs1xXmlTpl: '<{0}>' +
             '<PropertyName>{1}</PropertyName>' +
@@ -80,12 +80,24 @@ Ext.define('GeoExt.util.OGCFilter', {
             '</{0}>',
 
         /**
-         * The template fopr spatial filters used in WFS 2.0.0 queries
+         * The template for spatial filters used in WFS 2.0.0 queries
          */
         spatialFilterWfs2xXmlTpl: '<{0}>' +
             '<ValueReference>{1}</ValueReference>' +
             '{2}' +
             '</{0}>',
+
+        /**
+         * The template for spatial bbox filters used in WFS 1.x.0 queries
+         */
+        spatialFilterBBoxTpl: '<BBOX>' +
+        '    <PropertyName>{0}</PropertyName>' +
+        '    <gml:Envelope' +
+        '        xmlns:gml="http://www.opengis.net/gml" srsName="{1}">' +
+        '        <gml:lowerCorner>{2} {3}</gml:lowerCorner>' +
+        '        <gml:upperCorner>{4} {5}</gml:upperCorner>' +
+        '    </gml:Envelope>' +
+        '</BBOX>',
 
         /**
          * Given an array of ExtJS grid-filters, this method will return an OGC
@@ -389,17 +401,16 @@ Ext.define('GeoExt.util.OGCFilter', {
                 lly = value[1];
                 urx = value[2];
                 ury = value[3];
-                return '<BBOX>' +
-                    '    <PropertyName>' + property + '</PropertyName>' +
-                    '    <gml:Envelope' +
-                    '        xmlns:gml="http://www.opengis.net/gml" ' +
-                            'srsName="' + srsName + '">' +
-                    '        <gml:lowerCorner>' + llx + ' ' + lly +
-                            '</gml:lowerCorner>' +
-                    '        <gml:upperCorner>' + urx + ' ' + ury +
-                            '</gml:upperCorner>' +
-                    '    </gml:Envelope>' +
-                    '</BBOX>';
+
+                return Ext.String.format(
+                    GeoExt.util.OGCFilter.spatialFilterBBoxTpl,
+                    property,
+                    srsName,
+                    llx,
+                    lly,
+                    urx,
+                    ury
+                );
             default:
                 Ext.Logger.warn('Method `getOgcFilter` could not ' +
                     'handle the given operator: ' + operator);
