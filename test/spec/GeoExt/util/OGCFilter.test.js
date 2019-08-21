@@ -148,7 +148,8 @@ describe('GeoExt.util.OGCFilter', function() {
             '</Filter>';
 
         var expectedWFS1xFilter =
-            '<Filter xmlns="http://www.opengis.net/ogc">' +
+            '<Filter xmlns="http://www.opengis.net/ogc" ' +
+            'xmlns:gml="http://www.opengis.net/gml">' +
               '<And>' +
                 '<PropertyIsLike wildCard="*" singleChar="." escape="!" ' +
                 'matchCase="false">' +
@@ -197,7 +198,8 @@ describe('GeoExt.util.OGCFilter', function() {
             '</Filter>';
 
         var expectedWFS2Filter =
-            '<Filter xmlns="http://www.opengis.net/fes/2.0">' +
+            '<Filter xmlns="http://www.opengis.net/fes/2.0" ' +
+                'xmlns:gml="http://www.opengis.net/gml">' +
               '<And>' +
                 '<PropertyIsLike wildCard="*" singleChar="." escape="!" ' +
                 'matchCase="false">' +
