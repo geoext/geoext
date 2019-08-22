@@ -13,36 +13,36 @@ var olMap;
 var gridWest;
 var featStore;
 var wmsLayer;
-var drawSelectPolygonInteraction;
+var drawQueryInteraction;
 var activeFilters = [];
 var spatialOperators = Ext.create('Ext.data.Store', {
-    fields: ['abbreviation', 'name'],
+    fields: ['value', 'name'],
     data: [{
-        abbreviation: 'intersect',
+        value: 'intersect',
         name: 'Intersects'
     }, {
-        abbreviation: 'within',
+        value: 'within',
         name: 'Within'
     }, {
-        abbreviation: 'equals',
+        value: 'equals',
         name: 'Equals'
     }, {
-        abbreviation: 'contains',
+        value: 'contains',
         name: 'Contains'
     }, {
-        abbreviation: 'disjoint',
+        value: 'disjoint',
         name: 'Disjoint'
     }, {
-        abbreviation: 'touches',
+        value: 'touches',
         name: 'Touches'
     }, {
-        abbreviation: 'crosses',
+        value: 'crosses',
         name: 'Crosses'
     }, {
-        abbreviation: 'overlaps',
+        value: 'overlaps',
         name: 'Overlaps'
     }, {
-        abbreviation: 'bbox',
+        value: 'bbox',
         name: 'BBOX'
     }]
 });
@@ -87,12 +87,12 @@ Ext.application({
         });
 
         // create and prepare draw interaction
-        drawSelectPolygonInteraction = new ol.interaction.Draw({
+        drawQueryInteraction = new ol.interaction.Draw({
             type: 'Polygon'
         });
-        drawSelectPolygonInteraction.setActive(false);
-        drawSelectPolygonInteraction.on('drawend', this.onDrawEnd, this);
-        olMap.addInteraction(drawSelectPolygonInteraction);
+        drawQueryInteraction.setActive(false);
+        drawQueryInteraction.on('drawend', this.onDrawEnd, this);
+        olMap.addInteraction(drawQueryInteraction);
 
         // create feature store
         featStore = Ext.create('GeoExt.data.store.WfsFeatures', {
@@ -132,7 +132,7 @@ Ext.application({
                 store: spatialOperators,
                 queryMode: 'local',
                 displayField: 'name',
-                valueField: 'abbreviation',
+                valueField: 'value',
                 value: 'intersect',
                 margin: '0 5 0 0',
                 onChange: function(val) {
@@ -271,22 +271,29 @@ Ext.application({
         }
     },
 
-    createDrawInteraction: function(val, check) {
-        if (check) {
-            val = 'Polygon';
+    /**
+     * Create an instance of {ol.interaction.Draw} used to draw geometry used
+     * for spatial query
+     * @param {string} geometryType The geometry type
+     * @param {boolean} changedFromOperatorCombo Has interaction to be recreated
+     *    due to a change in operatorCombo
+     */
+    createDrawInteraction: function(geometryType, changedFromOperatorCombo) {
+        if (changedFromOperatorCombo) {
+            geometryType = 'Polygon';
             Ext.toast('Polygon is used in draw interaction');
         }
-        olMap.removeInteraction(drawSelectPolygonInteraction);
-        drawSelectPolygonInteraction = new ol.interaction.Draw({
-            type: val !== 'bbox' ? val : 'Circle',
-            geometryFunction: val === 'bbox' ?
+        olMap.removeInteraction(drawQueryInteraction);
+        drawQueryInteraction = new ol.interaction.Draw({
+            type: geometryType !== 'bbox' ? geometryType : 'Circle',
+            geometryFunction: geometryType === 'bbox' ?
                 ol.interaction.Draw.createBox() :
                 undefined
         });
-        drawSelectPolygonInteraction.on('drawend',
+        drawQueryInteraction.on('drawend',
             FeatureGridWithSpatialFilter.app.onDrawEnd,
             FeatureGridWithSpatialFilter.app
         );
-        olMap.addInteraction(drawSelectPolygonInteraction);
+        olMap.addInteraction(drawQueryInteraction);
     }
 });
