@@ -148,7 +148,8 @@ describe('GeoExt.util.OGCFilter', function() {
             '</Filter>';
 
         var expectedWFS1xFilter =
-            '<Filter xmlns="http://www.opengis.net/ogc">' +
+            '<Filter xmlns="http://www.opengis.net/ogc" ' +
+            'xmlns:gml="http://www.opengis.net/gml">' +
               '<And>' +
                 '<PropertyIsLike wildCard="*" singleChar="." escape="!" ' +
                 'matchCase="false">' +
@@ -197,7 +198,8 @@ describe('GeoExt.util.OGCFilter', function() {
             '</Filter>';
 
         var expectedWFS2Filter =
-            '<Filter xmlns="http://www.opengis.net/fes/2.0">' +
+            '<Filter xmlns="http://www.opengis.net/fes/2.0" ' +
+                'xmlns:gml="http://www.opengis.net/gml">' +
               '<And>' +
                 '<PropertyIsLike wildCard="*" singleChar="." escape="!" ' +
                 'matchCase="false">' +
@@ -437,6 +439,68 @@ describe('GeoExt.util.OGCFilter', function() {
                     + '</PropertyIsGreaterThanOrEqualTo>';
                 expect(filter).to.be(expected);
             });
+
+            it('supports spatial filters for WFS 1.x', function() {
+                var wfsVersion = '1.1.0';
+                var coords = [[16, 48], [19, 9]];
+                var epsg = 'EPSG:4326';
+                var geometry = new ol.geom.LineString(coords);
+                var propertyName = 'nice-geometry-attribute';
+                var topologicalOperators = {
+                    'intersect': 'Intersects',
+                    'within': 'Within',
+                    'contains': 'Contains',
+                    'equals': 'Equals',
+                    'disjoint': 'Disjoint',
+                    'crosses': 'Crosses',
+                    'touches': 'Touches',
+                    'overlaps': 'Overlaps'
+                };
+
+                Ext.iterate(topologicalOperators, function(key, val) {
+                    var filter = GeoExt.util.OGCFilter.getOgcFilter(
+                        propertyName, key, geometry, wfsVersion, epsg
+                    );
+
+                    var gmlElement = '<LineString' +
+                        ' xmlns="http://www.opengis.net/gml"' +
+                        ' srsName="EPSG:4326"><posList srsDimension="2">' +
+                        '48 16 9 19</posList></LineString>';
+
+                    var expected = Ext.String.format(
+                        GeoExt.util.OGCFilter.spatialFilterWfs1xXmlTpl,
+                        val,
+                        propertyName,
+                        gmlElement
+                    );
+
+                    expect(filter).to.equal(expected);
+                });
+
+            });
+
+            it('supports bbox filters', function() {
+                var wfsVersion = '1.1.0';
+                var coords = [[16, 48], [19, 9]];
+                var epsg = 'EPSG:4326';
+                var geometry = new ol.geom.LineString(coords);
+                var propertyName = 'nice-geometry-attribute';
+                var expected = '<BBOX>' +
+                    '    <PropertyName>' + propertyName + '</PropertyName>' +
+                    '    <gml:Envelope' +
+                    '        xmlns:gml="http://www.opengis.net/gml" srsName="'
+                    + epsg + '">' +
+                    '        <gml:lowerCorner>16 9</gml:lowerCorner>' +
+                    '        <gml:upperCorner>19 48</gml:upperCorner>' +
+                    '    </gml:Envelope>' +
+                    '</BBOX>';
+
+                var filter = GeoExt.util.OGCFilter.getOgcFilter(
+                    propertyName, 'bbox', geometry, wfsVersion, epsg
+                );
+
+                expect(filter).to.equal(expected);
+            });
         });
 
         describe('#buildWfsGetFeatureWithFilter', function() {
@@ -485,6 +549,33 @@ describe('GeoExt.util.OGCFilter', function() {
 
             it('contains all filters for WFS 2.0.0', function() {
                 expect(xml20).to.be(expectedGetFeature20Filter);
+            });
+
+        });
+
+        describe('#createSpatialFilter', function() {
+            it('is defined', function() {
+                expect(GeoExt.util.OGCFilter.createSpatialFilter).
+                    to.be.a('function');
+            });
+
+            it('returns null for invalid operator type', function() {
+                var wrongOperator = 'NOT_VALID';
+                var result = GeoExt.util.OGCFilter.
+                    createSpatialFilter(wrongOperator);
+                expect(result).to.be(null);
+            });
+
+            it('returns a valid spatial filter', function() {
+                var coords = [[16, 48], [19, 9]];
+                var epsg = 'EPSG:4326';
+                var geometry = new ol.geom.LineString(coords);
+                var propertyName = 'nice-geometry-attribute';
+                var operator = 'intersect';
+
+                var result = GeoExt.util.OGCFilter.
+                    createSpatialFilter(operator, propertyName, geometry, epsg);
+                expect(result).not.to.be(null);
             });
 
         });

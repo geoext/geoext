@@ -71,6 +71,48 @@ Ext.define('GeoExt.util.OGCFilter', {
                 '</wfs:Query>' +
             '</wfs:GetFeature>',
 
+        /**
+         * The template for spatial filters used in WFS 1.x.0 queries
+         */
+        spatialFilterWfs1xXmlTpl: '<{0}>' +
+            '<PropertyName>{1}</PropertyName>' +
+            '{2}' +
+            '</{0}>',
+
+        /**
+         * The template for spatial filters used in WFS 2.0.0 queries
+         */
+        spatialFilterWfs2xXmlTpl: '<{0}>' +
+            '<ValueReference>{1}</ValueReference>' +
+            '{2}' +
+            '</{0}>',
+
+        /**
+         * The template for spatial bbox filters used in WFS 1.x.0 queries
+         */
+        spatialFilterBBoxTpl: '<BBOX>' +
+        '    <PropertyName>{0}</PropertyName>' +
+        '    <gml:Envelope' +
+        '        xmlns:gml="http://www.opengis.net/gml" srsName="{1}">' +
+        '        <gml:lowerCorner>{2} {3}</gml:lowerCorner>' +
+        '        <gml:upperCorner>{4} {5}</gml:upperCorner>' +
+        '    </gml:Envelope>' +
+        '</BBOX>',
+
+        /**
+         * The list of supported topological and spatial filter operators
+         */
+        topologicalOrSpatialFilterOperators: [
+            'intersect',
+            'within',
+            'contains',
+            'equals',
+            'disjoint',
+            'crosses',
+            'touches',
+            'overlaps',
+            'bbox'
+        ],
 
         /**
          * Given an array of ExtJS grid-filters, this method will return an OGC
@@ -167,6 +209,10 @@ Ext.define('GeoExt.util.OGCFilter', {
             var property = filter.getProperty();
             var operator = filter.getOperator();
             var value = filter.getValue();
+            var srsName;
+            if (filter.type === 'spatial') {
+                srsName = filter.srsName;
+            }
 
             if (Ext.isEmpty(property) || Ext.isEmpty(operator) ||
                 Ext.isEmpty(value)) {
@@ -187,7 +233,7 @@ Ext.define('GeoExt.util.OGCFilter', {
             }
 
             return GeoExt.util.OGCFilter.getOgcFilter(
-                property, operator, value, wfsVersion);
+                property, operator, value, wfsVersion, srsName);
         },
 
         /**
@@ -226,9 +272,10 @@ Ext.define('GeoExt.util.OGCFilter', {
          * @param {*} value The value for the filter
          * @param {string} wfsVersion The WFS version to use, either `1.0.0`,
          *   `1.1.0` or `2.0.0`
+         * @param {string} srsName The code for the projection
          * @return {string} The OGC filter.
          */
-        getOgcFilter: function(property, operator, value, wfsVersion) {
+        getOgcFilter: function(property, operator, value, wfsVersion, srsName) {
             if (Ext.isEmpty(property) || Ext.isEmpty(operator) ||
                 Ext.isEmpty(value)) {
                 Ext.Logger.error('Invalid argument given to method ' +
@@ -244,8 +291,10 @@ Ext.define('GeoExt.util.OGCFilter', {
             }
 
             // always replace surrounding quotes
-            value = value.toString().replace(/(^['])/g, '');
-            value = value.toString().replace(/([']$)/g, '');
+            if (!(value instanceof ol.geom.Geometry)) {
+                value = value.toString().replace(/(^['])/g, '');
+                value = value.toString().replace(/([']$)/g, '');
+            }
 
             switch (operator) {
             case '==':
@@ -283,11 +332,14 @@ Ext.define('GeoExt.util.OGCFilter', {
                 return likeFilter;
             case 'in':
                 ogcFilterType = 'Or';
-                // cleanup brackets and quotes
-                value = value.replace(/([()'])/g, '');
-                var values = value.split(',');
+                var values = value;
+                if (!Ext.isArray(value)) {
+                    // cleanup brackets and quotes
+                    value = value.replace(/([()'])/g, '');
+                    values = value.split(',');
+                }
                 var filters = '';
-                Ext.each(values, function(val) {
+                Ext.each(values || value, function(val) {
                     filters +=
                     '<PropertyIsEqualTo>' +
                       '<' + propName + '>' + property + '</' + propName + '>' +
@@ -298,7 +350,6 @@ Ext.define('GeoExt.util.OGCFilter', {
 
                 var inFilter;
                 closingTag = Ext.String.insert(ogcFilterType, '/', 1);
-
                 // only use an Or filter when there are multiple values
                 if (values.length > 1) {
                     inFilter = ogcFilterType + filters + closingTag;
@@ -306,6 +357,75 @@ Ext.define('GeoExt.util.OGCFilter', {
                     inFilter = filters;
                 }
                 return inFilter;
+            case 'intersect':
+            case 'within':
+            case 'contains':
+            case 'equals':
+            case 'disjoint':
+            case 'crosses':
+            case 'touches':
+            case 'overlaps':
+                switch (operator) {
+                case 'equals':
+                    ogcFilterType = 'Equals';
+                    break;
+                case 'contains':
+                    ogcFilterType = 'Contains';
+                    break;
+                case 'within':
+                    ogcFilterType = 'Within';
+                    break;
+                case 'disjoint':
+                    ogcFilterType = 'Disjoint';
+                    break;
+                case 'touches':
+                    ogcFilterType = 'Touches';
+                    break;
+                case 'crosses':
+                    ogcFilterType = 'Crosses';
+                    break;
+                case 'overlaps':
+                    ogcFilterType = 'Overlaps';
+                    break;
+                case 'intersect':
+                    ogcFilterType = 'Intersects';
+                    break;
+                default:
+                    Ext.Logger.warn('Method `getOgcFilter` could not ' +
+                        'handle the given topological operator: ' +
+                        operator);
+                    return;
+                }
+                var gmlElement = GeoExt.util.OGCFilter
+                    .getGmlElementForGeometry(value, srsName, wfsVersion);
+
+                var spatialTpl = wfsVersion !== '2.0.0' ?
+                    GeoExt.util.OGCFilter.spatialFilterWfs1xXmlTpl :
+                    GeoExt.util.OGCFilter.spatialFilterWfs2xXmlTpl;
+
+                return Ext.String.format(
+                    spatialTpl,
+                    ogcFilterType,
+                    property,
+                    gmlElement
+                );
+            case 'bbox':
+                var llx; var lly; var urx; var ury;
+                value = value.getExtent();
+                llx = value[0];
+                lly = value[1];
+                urx = value[2];
+                ury = value[3];
+
+                return Ext.String.format(
+                    GeoExt.util.OGCFilter.spatialFilterBBoxTpl,
+                    property,
+                    srsName,
+                    llx,
+                    lly,
+                    urx,
+                    ury
+                );
             default:
                 Ext.Logger.warn('Method `getOgcFilter` could not ' +
                     'handle the given operator: ' + operator);
@@ -327,6 +447,31 @@ Ext.define('GeoExt.util.OGCFilter', {
                 closingTag
             );
             return filter;
+        },
+
+        /**
+         * Returns a serialized geometry in GML3 format
+         * @param {ol.geometry.Geometry} geometry The geometry to serialize
+         * @param {String} srsName The epsg code to use to serialization
+         * @return {string} The serialized geometry in GML3 format
+         */
+        getGmlElementForGeometry: function(geometry, srsName) {
+            var format = new  ol.format.GML3({
+                srsName: srsName
+            });
+            var geometryNode = format.writeGeometryNode(geometry, {
+                dataProjection: srsName
+            });
+            if (!geometryNode) {
+                Ext.Logger.warn('Could not serialize geometry');
+                return null;
+            }
+
+            var childNodes = geometryNode.children || geometryNode.childNodes;
+            var serializer = new XMLSerializer();
+            var serializedValue = serializer
+                .serializeToString(childNodes[0]);
+            return serializedValue;
         },
 
         /**
@@ -353,7 +498,8 @@ Ext.define('GeoExt.util.OGCFilter', {
                 ns = 'fes/2.0';
             }
             parts.push('<Filter' + (omitNamespaces ? '' :
-                ' xmlns="http://www.opengis.net/' + ns + '"') + '>');
+                ' xmlns="http://www.opengis.net/' + ns + '"' +
+                ' xmlns:gml="http://www.opengis.net/gml"') + '>');
 
             if (numFilters > 1) {
                 parts.push('<' + combineWith + '>');
@@ -369,6 +515,32 @@ Ext.define('GeoExt.util.OGCFilter', {
 
             parts.push('</' + 'Filter>');
             return parts.join('');
+        },
+
+        /**
+         * Create an instance of {Ext.util.Filter} that contains the required
+         * information on spatial filter, e.g. operator and geometry
+         *
+         * @param {string} operator The spatial / toplogical operator
+         * @param {string} typeName The name of geometry field
+         * @param {ol.geom.Geometry} value The geometry to use for filtering
+         * @param {string} srsName The EPSG code of the geometry
+         *
+         * @return {Ext.util.Filter} A 'spatial' {Ext.util.Filter}
+         */
+        createSpatialFilter: function(operator, typeName, value, srsName) {
+            if (!Ext.Array.contains(GeoExt.util.OGCFilter.
+                topologicalOrSpatialFilterOperators, operator)) {
+                return null;
+            }
+            // construct an instance of Filter
+            return new Ext.util.Filter({
+                type: 'spatial',
+                srsName: srsName,
+                operator: operator,
+                property: typeName,
+                value: value
+            });
         }
     }
 });
