@@ -100,6 +100,21 @@ Ext.define('GeoExt.util.OGCFilter', {
         '</BBOX>',
 
         /**
+         * The list of supported topological and spatial filter operators
+         */
+        topologicalOrSpatialFilterOperators: [
+            'intersect',
+            'within',
+            'contains',
+            'equals',
+            'disjoint',
+            'crosses',
+            'touches',
+            'overlaps',
+            'bbox'
+        ],
+
+        /**
          * Given an array of ExtJS grid-filters, this method will return an OGC
          * compliant filter which can be used for WMS requests
          * @param {Ext.util.Filter[]} filters array containing all
@@ -447,9 +462,15 @@ Ext.define('GeoExt.util.OGCFilter', {
             var geometryNode = format.writeGeometryNode(geometry, {
                 dataProjection: srsName
             });
-            var serizalizer = new XMLSerializer();
-            var serializedValue = serizalizer
-                .serializeToString(geometryNode.children[0]);
+            if (!geometryNode) {
+                Ext.Logger.warn('Could not serialize geometry');
+                return null;
+            }
+
+            var childNodes = geometryNode.children || geometryNode.childNodes;
+            var serializer = new XMLSerializer();
+            var serializedValue = serializer
+                .serializeToString(childNodes[0]);
             return serializedValue;
         },
 
@@ -494,6 +515,32 @@ Ext.define('GeoExt.util.OGCFilter', {
 
             parts.push('</' + 'Filter>');
             return parts.join('');
+        },
+
+        /**
+         * Create an instance of {Ext.util.Filter} that contains the required
+         * information on spatial filter, e.g. operator and geometry
+         *
+         * @param {string} operator The spatial / toplogical operator
+         * @param {string} typeName The name of geometry field
+         * @param {ol.geom.Geometry} value The geometry to use for filtering
+         * @param {string} srsName The EPSG code of the geometry
+         *
+         * @return {Ext.util.Filter} A 'spatial' {Ext.util.Filter}
+         */
+        createSpatialFilter: function(operator, typeName, value, srsName) {
+            if (!Ext.Array.contains(GeoExt.util.OGCFilter.
+                topologicalOrSpatialFilterOperators, operator)) {
+                return null;
+            }
+            // construct an instance of Filter
+            return new Ext.util.Filter({
+                type: 'spatial',
+                srsName: srsName,
+                operator: operator,
+                property: typeName,
+                value: value
+            });
         }
     }
 });

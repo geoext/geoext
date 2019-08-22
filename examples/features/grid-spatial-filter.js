@@ -50,7 +50,7 @@ var spatialOperators = Ext.create('Ext.data.Store', {
 Ext.application({
     name: 'FeatureGridWithSpatialFilter',
     launch: function() {
-        // also add an WMS layer to show the support
+        // add an WMS layer to show the support
         // via `filter` request parameter
         wmsLayer = new ol.layer.Tile({
             source: new ol.source.TileWMS({
@@ -94,7 +94,7 @@ Ext.application({
         drawSelectPolygonInteraction.on('drawend', this.onDrawEnd, this);
         olMap.addInteraction(drawSelectPolygonInteraction);
 
-        // create feature store by passing a layer
+        // create feature store
         featStore = Ext.create('GeoExt.data.store.WfsFeatures', {
             model: 'GeoExt.data.model.Feature',
             passThroughFilter: true,
@@ -257,17 +257,18 @@ Ext.application({
             query('combobox[name="spatialOperatorsCombo"]')[0];
         var operator = spatialOperatorsCombo.getValue();
 
-        // construct an instance of Filter
-        var extFilter = new Ext.util.Filter({
-            type: 'spatial',
-            srsName: olMap.getView().getProjection().getCode(),
-            operator: operator,
-            property: typeName,
-            value: geometry
-        });
+        // Create an instance of the spatial filter
+        var extFilter = GeoExt.util.OGCFilter.createSpatialFilter(
+            operator,
+            typeName,
+            geometry,
+            olMap.getView().getProjection().getCode()
+        );
 
-        featStore.addFilter(extFilter);
-        this.refreshFilters();
+        if (extFilter) {
+            featStore.addFilter(extFilter);
+            this.refreshFilters();
+        }
     },
 
     createDrawInteraction: function(val, check) {

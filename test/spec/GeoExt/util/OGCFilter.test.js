@@ -553,6 +553,33 @@ describe('GeoExt.util.OGCFilter', function() {
 
         });
 
+        describe('#createSpatialFilter', function() {
+            it('is defined', function() {
+                expect(GeoExt.util.OGCFilter.createSpatialFilter).
+                    to.be.a('function');
+            });
+
+            it('returns null for invalid operator type', function() {
+                var wrongOperator = 'NOT_VALID';
+                var result = GeoExt.util.OGCFilter.
+                    createSpatialFilter(wrongOperator);
+                expect(result).to.be(null);
+            });
+
+            it('returns a valid spatial filter', function() {
+                var coords = [[16, 48], [19, 9]];
+                var epsg = 'EPSG:4326';
+                var geometry = new ol.geom.LineString(coords);
+                var propertyName = 'nice-geometry-attribute';
+                var operator = 'intersect';
+
+                var result = GeoExt.util.OGCFilter.
+                    createSpatialFilter(operator, propertyName, geometry, epsg);
+                expect(result).not.to.be(null);
+            });
+
+        });
+
     });
 
 });
