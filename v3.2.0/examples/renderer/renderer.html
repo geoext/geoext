@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>GeoExt.component.FeatureRenderer Example</title>
+    <link rel="stylesheet" type="text/css" href="../lib/ol/ol.css">
+    <link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/extjs/6.2.0/classic/theme-crisp/resources/theme-crisp-all.css"/>
+    <style type="text/css">
+         #swatches {
+            padding: 1em;
+        }
+        #swatches td {
+            border: 1px solid #ccc;
+            text-align: center;
+            margin: 0 auto;
+            padding: 0.5em;
+        }
+        #wkt {
+            width: 400px;
+            height: 100px;
+        }
+        #symbolizers {
+            width: 400px;
+            height: 150px;
+        }
+    </style>
+</head>
+<body>
+    <div id='description'>
+        <p>
+            This example shows how to use the <code>GeoExt.component.FeatureRenderer</code>
+            class.
+        </p>
+        <p>
+            Have a look at <a href="renderer.js">renderer.js</a> to see how this is
+            done.
+        </p>
+        </div>
+        <table id="swatches">
+            <tbody>
+                <tr><td>&nbsp;</td><td>point</td><td>line</td><td>polygon</td><td>text</td></tr>
+                <tr>
+                    <td>default</td>
+                    <td id="point_default"></td>
+                    <td id="line_default"></td>
+                    <td id="poly_default"></td>
+                    <td id="text_default">n/a</td>
+                </tr><tr>
+                    <td>red</td>
+                    <td id="point_red"></td>
+                    <td id="line_red"></td>
+                    <td id="poly_red"></td>
+                    <td id="text_red">n/a</td>
+                </tr><tr>
+                    <td>custom</td>
+                    <td id="point_custom"></td>
+                    <td id="line_custom"></td>
+                    <td id="poly_custom"></td>
+                    <td id="text_custom"></td>
+                </tr><tr>
+                    <td>stacked</td>
+                    <td id="point_stacked"></td>
+                    <td id="line_stacked"></td>
+                    <td id="poly_stacked"></td>
+                    <td id="text_stacked"></td>
+                </tr>
+            </tbody>
+        </table>
+        <h2>Text-graphic</h2>
+        Text and graphic combined<div id="text-graphic" style="width:30px;height:30px"></div>
+        Text only<div id="text-only" style="width:30px;height:30px"></div>
+        Graphic only<div id="graphic-only" style="width:30px;height:30px"></div>
+        <h2>Custom Feature Rendering</h2>
+        <p>You can render any ol.Feature object with a FeatureRenderer.
+        Use the inputs below to modify the well-known text and symbolizer.  These
+        will be used to render a feature in a new window.</p><br>
+        <label for="wkt">Geometry Well-Known Text</label><br>
+        <textarea id="wkt">
+            POLYGON((1 30, -33 10, -39 -21, 1 -41, 23 -22, 27 15, 1 30), (0 10, -14 0, -4 -24, 12 -8, 0 10))
+        </textarea><br><br>
+        <label for="symbolizers">Feature Symbolizers</label><br>
+        <textarea id="symbolizers">
+            new ol.style.Style({
+                fill: new ol.style.Fill({color: "yellow"}),
+                stroke: new ol.style.Stroke({color: "blue", width: 1}),
+                image: new ol.style.Circle({
+                    fill: new ol.style.Fill({color: "yellow"}),
+                    stroke: new ol.style.Stroke({color: "blue", width: 1}),
+                    radius: 5
+                })
+            })
+        </textarea><br>
+        <button id="render">render</button>
+        <script src="../lib/ol/ol.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/extjs/6.2.0/ext-all.js"></script>
+        <script>
+            Ext.Loader.setConfig({
+                enabled: true,
+                disableCaching: false,
+                paths: {
+                    'GeoExt': '../../src/'
+                }
+            });
+        </script>
+        <script src="renderer.js"></script>
+    </body>
+</html>

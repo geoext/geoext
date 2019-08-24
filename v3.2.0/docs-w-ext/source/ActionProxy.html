@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <title>The source code</title>
+  <link href="../resources/prettify/prettify.css" type="text/css" rel="stylesheet" />
+  <script type="text/javascript" src="../resources/prettify/prettify.js"></script>
+  <style type="text/css">
+    .highlight { display: block; background-color: #ddd; }
+  </style>
+  <script type="text/javascript">
+    function highlight() {
+      document.getElementById(location.hash.replace(/#/, "")).className = "highlight";
+    }
+  </script>
+</head>
+<body onload="prettyPrint(); highlight();">
+  <pre class="prettyprint lang-js"><span id='Ext-grid-column-ActionProxy'>/**
+</span> * @private
+ * A Class which encapsulates individual action items within an ActionColumn and
+ * acts as a proxy for various Component methods to allow ActionColumn items to be 
+ * manipulated en masse by the {@link Ext.Action}s used to create them.
+ */
+Ext.define('Ext.grid.column.ActionProxy', {
+<span id='Ext-grid-column-ActionProxy-method-constructor'>    constructor: function(column, item, itemIndex) {
+</span>        this.column = column;
+        this.item = item;
+        this.itemIndex = itemIndex;
+    },
+
+<span id='Ext-grid-column-ActionProxy-method-setHandler'>    setHandler: function(handler) {
+</span>        this.item.handler = handler;
+    },
+
+<span id='Ext-grid-column-ActionProxy-method-setDisabled'>    setDisabled: function(disabled) {
+</span>        if (disabled) {
+            this.column.disableAction(this.itemIndex);
+        } else {
+            this.column.enableAction(this.itemIndex);
+        }
+    },
+
+<span id='Ext-grid-column-ActionProxy-method-setIconCls'>    setIconCls: function(iconCls) {
+</span>        this.item.iconCls = iconCls;
+        this.column.getView().refreshView();
+    },
+
+<span id='Ext-grid-column-ActionProxy-method-setIconGlyph'>    setIconGlyph: function(glyph) {
+</span>        this.item.glyph = glyph;
+        this.column.getView().refreshView();
+    },
+    
+<span id='Ext-grid-column-ActionProxy-method-setHidden'>    setHidden: function(hidden) {
+</span>        this.item.hidden = hidden;
+        this.column.getView().refreshView();
+    },
+
+<span id='Ext-grid-column-ActionProxy-method-setVisible'>    setVisible: function(visible) {
+</span>        this.setHidden(!visible);
+    },
+
+<span id='Ext-grid-column-ActionProxy-method-on'>    on: function() {
+</span>        // Allow the Action to attach its destroy listener.
+        return this.column.on.apply(this.column, arguments);
+    }
+});</pre>
+</body>
+</html>

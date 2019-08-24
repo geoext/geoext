@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <title>The source code</title>
+  <link href="../resources/prettify/prettify.css" type="text/css" rel="stylesheet" />
+  <script type="text/javascript" src="../resources/prettify/prettify.js"></script>
+  <style type="text/css">
+    .highlight { display: block; background-color: #ddd; }
+  </style>
+  <script type="text/javascript">
+    function highlight() {
+      document.getElementById(location.hash.replace(/#/, "")).className = "highlight";
+    }
+  </script>
+</head>
+<body onload="prettyPrint(); highlight();">
+  <pre class="prettyprint lang-js"><span id='Ext-data-field-Number'>/**
+</span> */
+Ext.define('Ext.data.field.Number', {
+    extend: 'Ext.data.field.Integer',
+
+    alias: [
+        'data.field.float',
+        'data.field.number'
+    ],
+
+<span id='Ext-data-field-Number-property-isIntegerField'>    isIntegerField: false,
+</span><span id='Ext-data-field-Number-property-isNumberField'>    isNumberField: true,
+</span><span id='Ext-data-field-Number-property-numericType'>    numericType: 'float',
+</span>
+<span id='Ext-data-field-Number-property-getNumber'>    getNumber: Ext.identityFn,
+</span>
+<span id='Ext-data-field-Number-method-parse'>    parse: function(v) {
+</span>        return parseFloat(String(v).replace(this.stripRe, ''));
+    }
+});
+</pre>
+</body>
+</html>

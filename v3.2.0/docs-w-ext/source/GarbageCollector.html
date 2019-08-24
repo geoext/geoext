@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <title>The source code</title>
+  <link href="../resources/prettify/prettify.css" type="text/css" rel="stylesheet" />
+  <script type="text/javascript" src="../resources/prettify/prettify.js"></script>
+  <style type="text/css">
+    .highlight { display: block; background-color: #ddd; }
+  </style>
+  <script type="text/javascript">
+    function highlight() {
+      document.getElementById(location.hash.replace(/#/, "")).className = "highlight";
+    }
+  </script>
+</head>
+<body onload="prettyPrint(); highlight();">
+  <pre class="prettyprint lang-js"><span id='Ext-dom-GarbageCollector'>/**
+</span> * Garbage collector for Ext.dom.Element instances.  Automatically cleans up Elements
+ * that are no longer in the dom, but were not properly destroyed using
+ * {@link Ext.dom.Element#destroy destroy()}.  Recommended practice is for Components to
+ * clean up their own elements, but the GarbageCollector runs on regularly scheduled
+ * intervals to attempt to clean up orphaned Elements that may have slipped through the cracks.
+ * @private
+ */
+Ext.define('Ext.dom.GarbageCollector', {
+    singleton: true,
+
+<span id='Ext-dom-GarbageCollector-property-interval'>    /**
+</span>     * @property {Number}
+     * The interval at which to run Element garbage collection. Set this property directly
+     * to tune the interval.
+     *
+     *     Ext.dom.GarbageCollector.interval = 60000; // run garbage collection every one minute
+     */
+    interval: 30000,
+
+<span id='Ext-dom-GarbageCollector-method-constructor'>    constructor: function() {
+</span>        var me = this;
+
+        me.lastTime = Ext.now();
+        me.onTick = me.onTick.bind(me);
+
+        me.resume();
+    },
+
+<span id='Ext-dom-GarbageCollector-method-collect'>    /**
+</span>     * Collects orphaned Ext.dom.Elements by removing their listeners and evicting them
+     * from the cache.  Runs on a regularly scheduled {@link #interval} but can be called
+     * directly to force garbage collection.
+     * @return {String[]} An array containing the IDs of the elements that were garbage
+     * collected, prefixed by their tag names.  Only applies in dev mode.  Returns nothing
+     * in a production build.
+     */
+    collect: function() {
+        var me = this,
+            cache = Ext.cache,
+            eid, dom, el, t, isGarbage, tagName;
+        
+        //&lt;debug&gt;
+        var collectedIds = [];
+        //&lt;/debug&gt;
+
+        for (eid in cache) {
+            if (!cache.hasOwnProperty(eid)) {
+                continue;
+            }
+
+            el = cache[eid];
+
+            if (el.skipGarbageCollection) {
+                continue;
+            }
+
+            dom = el.dom;
+
+            //&lt;debug&gt;
+            // Should always have a DOM node
+            if (!dom) {
+                Ext.raise('Missing DOM node in element garbage collection: ' + eid);
+            }
+            //&lt;/debug&gt;
+            
+            try {
+                // In IE, accessing any properties of the window object of an orphaned iframe
+                // can result in a &quot;Permission Denied&quot; error.  The same error also occurs
+                // when accessing any properties of orphaned documentElement or body inside
+                // of an iframe (documentElement and body become orphaned when the iframe
+                // contentWindow is unloaded)
+                isGarbage = Ext.isGarbage(dom);
+            } catch (e) {
+                // if an error was thrown in isGarbage it is most likely because we are
+                // dealing with an inaccessible window or documentElement inside an orphaned
+                // iframe in IE.  In this case we can't do anything except remove the
+                // cache entry.
+                delete cache[eid];
+                //&lt;debug&gt;
+                collectedIds.push('#' + el.id);
+                //&lt;/debug&gt;
+                continue;
+            }
+            
+            if (isGarbage) {
+                if (el &amp;&amp; el.dom) {
+                    //&lt;debug&gt;
+                    tagName = el.dom.tagName;
+                    //&lt;/debug&gt;
+                    el.collect();
+                    //&lt;debug&gt;
+                    collectedIds.push((tagName ? tagName : '') + '#' + el.id);
+                    //&lt;/debug&gt;
+                }
+            }
+        }
+        //&lt;feature legacyBrowser&gt;
+        // Cleanup IE Object leaks
+        if (Ext.isIE9m) {
+            t = {};
+            for (eid in cache) {
+                if (cache.hasOwnProperty(eid)) {
+                    t[eid] = cache[eid];
+                }
+            }
+            Ext.cache = Ext.dom.Element.cache = t;
+        }
+        //&lt;/feature&gt;
+
+        me.lastTime = Ext.now();
+
+        //&lt;debug&gt;
+        return collectedIds;
+        //&lt;/debug&gt;
+    },
+
+<span id='Ext-dom-GarbageCollector-method-onTick'>    onTick: function () {
+</span>        this.timerId = null;
+
+        if (Ext.enableGarbageCollector) {
+            this.collect();
+        }
+
+        this.resume();
+    },
+
+<span id='Ext-dom-GarbageCollector-method-pause'>    /**
+</span>     * Pauses the timer and stops garbage collection
+     */
+    pause: function() {
+        var timerId = this.timerId;
+
+        if (timerId) {
+            this.timerId = null;
+            clearTimeout(timerId);
+        }
+    },
+
+<span id='Ext-dom-GarbageCollector-method-resume'>    /**
+</span>     * Resumes garbage collection at the specified {@link #interval}
+     */
+    resume: function () {
+        var me = this,
+            lastTime = me.lastTime;
+
+        if (Ext.enableGarbageCollector &amp;&amp; (Ext.now() - lastTime) &gt; me.interval) {
+            me.collect();
+        }
+
+        if (!me.timerId) {
+            me.timerId = Ext.defer(me.onTick, me.interval);
+        }
+    }
+});
+</pre>
+</body>
+</html>

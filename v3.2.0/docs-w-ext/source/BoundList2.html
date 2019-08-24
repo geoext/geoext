@@ -1,0 +1,445 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <title>The source code</title>
+  <link href="../resources/prettify/prettify.css" type="text/css" rel="stylesheet" />
+  <script type="text/javascript" src="../resources/prettify/prettify.js"></script>
+  <style type="text/css">
+    .highlight { display: block; background-color: #ddd; }
+  </style>
+  <script type="text/javascript">
+    function highlight() {
+      document.getElementById(location.hash.replace(/#/, "")).className = "highlight";
+    }
+  </script>
+</head>
+<body onload="prettyPrint(); highlight();">
+  <pre class="prettyprint lang-js"><span id='Ext-view-BoundList'>/**
+</span> * An internally used DataView for {@link Ext.form.field.ComboBox ComboBox}.
+ */
+Ext.define('Ext.view.BoundList', {
+    extend: 'Ext.view.View',
+    alias: 'widget.boundlist',
+    alternateClassName: 'Ext.BoundList',
+    requires: [
+        'Ext.view.BoundListKeyNav',
+        'Ext.layout.component.BoundList', 
+        'Ext.toolbar.Paging'
+    ],
+
+    mixins: [
+        'Ext.mixin.Queryable'
+    ],
+
+<span id='Ext-view-BoundList-cfg-pageSize'>    /**
+</span>     * @cfg {Number} [pageSize=0]
+     * If greater than `0`, a {@link Ext.toolbar.Paging} is displayed at the bottom of the list and store
+     * queries will execute with page {@link Ext.data.operation.Read#start start} and
+     * {@link Ext.data.operation.Read#limit limit} parameters.
+     */
+    pageSize: 0,
+
+<span id='Ext-view-BoundList-cfg-displayField'>    /**
+</span>     * @cfg {String} [displayField=&quot;&quot;]
+     * The field from the store to show in the view.
+     */
+
+<span id='Ext-view-BoundList-property-pagingToolbar'>    /**
+</span>     * @property {Ext.toolbar.Paging} pagingToolbar
+     * A reference to the PagingToolbar instance in this view. Only populated if {@link #pageSize} is greater
+     * than zero and the BoundList has been rendered.
+     */
+
+    baseCls: Ext.baseCSSPrefix + 'boundlist',
+<span id='Ext-view-BoundList-cfg-itemCls'>    itemCls: Ext.baseCSSPrefix + 'boundlist-item',
+</span><span id='Ext-view-BoundList-property-listItemCls'>    listItemCls: '',
+</span><span id='Ext-view-BoundList-cfg-shadow'>    shadow: false,
+</span><span id='Ext-view-BoundList-cfg-trackOver'>    trackOver: true,
+</span>
+<span id='Ext-view-BoundList-cfg-preserveScrollOnRefresh'>    preserveScrollOnRefresh: true,
+</span><span id='Ext-view-BoundList-property-enableInitialSelection'>    enableInitialSelection: false,
+</span><span id='Ext-view-BoundList-property-refreshSelmodelOnRefresh'>    refreshSelmodelOnRefresh: true,
+</span>
+<span id='Ext-view-BoundList-cfg-componentLayout'>    componentLayout: 'boundlist',
+</span>
+<span id='Ext-view-BoundList-cfg-navigationModel'>    navigationModel: 'boundlist',
+</span>
+<span id='Ext-view-BoundList-cfg-scrollable'>    scrollable: true,
+</span>    
+<span id='Ext-view-BoundList-property-ariaEl'>    ariaEl: 'listEl',
+</span><span id='Ext-view-BoundList-cfg-tabIndex'>    tabIndex: -1,
+</span>
+<span id='Ext-view-BoundList-cfg-childEls'>    childEls: [
+</span>        'listWrap', 'listEl'
+    ],
+    
+<span id='Ext-view-BoundList-cfg-renderTpl'>    renderTpl: [
+</span>        '&lt;div id=&quot;{id}-listWrap&quot; data-ref=&quot;listWrap&quot;',
+                ' class=&quot;{baseCls}-list-ct ', Ext.dom.Element.unselectableCls, '&quot;&gt;',
+            '&lt;ul id=&quot;{id}-listEl&quot; data-ref=&quot;listEl&quot; class=&quot;', Ext.baseCSSPrefix, 'list-plain&quot;',
+                '&lt;tpl foreach=&quot;ariaAttributes&quot;&gt; {$}=&quot;{.}&quot;&lt;/tpl&gt;',
+            '&gt;',
+            '&lt;/ul&gt;',
+        '&lt;/div&gt;',
+        '{%',
+            'var pagingToolbar=values.$comp.pagingToolbar;',
+            'if (pagingToolbar) {',
+                'Ext.DomHelper.generateMarkup(pagingToolbar.getRenderTree(), out);',
+            '}',
+        '%}',
+        {
+            disableFormats: true
+        }
+    ],
+
+<span id='Ext-view-BoundList-cfg-tpl'>    /**
+</span>     * @cfg {String/Ext.XTemplate} tpl
+     * A String or Ext.XTemplate instance to apply to inner template.
+     *
+     * {@link Ext.view.BoundList} is used for the dropdown list of 
+     * {@link Ext.form.field.ComboBox}. To customize the template you can set the tpl on 
+     * the combobox config object:
+     *
+     *     Ext.create('Ext.form.field.ComboBox', {
+     *         fieldLabel   : 'State',
+     *         queryMode    : 'local',
+     *         displayField : 'text',
+     *         valueField   : 'abbr',
+     *         store        : Ext.create('StateStore', {
+     *             fields : ['abbr', 'text'],
+     *             data   : [
+     *                 {&quot;abbr&quot;:&quot;AL&quot;, &quot;name&quot;:&quot;Alabama&quot;},
+     *                 {&quot;abbr&quot;:&quot;AK&quot;, &quot;name&quot;:&quot;Alaska&quot;},
+     *                 {&quot;abbr&quot;:&quot;AZ&quot;, &quot;name&quot;:&quot;Arizona&quot;}
+     *                 //...
+     *             ]
+     *         }),
+     *         // Template for the dropdown menu.
+     *         // Note the use of the &quot;x-list-plain&quot; and &quot;x-boundlist-item&quot; class,
+     *         // this is required to make the items selectable.
+     *         tpl: Ext.create('Ext.XTemplate',
+     *             '&lt;ul class=&quot;x-list-plain&quot;&gt;&lt;tpl for=&quot;.&quot;&gt;',
+     *                 '&lt;li role=&quot;option&quot; class=&quot;x-boundlist-item&quot;&gt;{abbr} - {name}&lt;/li&gt;',
+     *             '&lt;/tpl&gt;&lt;/ul&gt;'
+     *         ),
+     *     });
+     *
+     * Defaults to:
+     *
+     *     Ext.create('Ext.XTemplate',
+     *         '&lt;ul&gt;&lt;tpl for=&quot;.&quot;&gt;',
+     *             '&lt;li role=&quot;option&quot; class=&quot;' + itemCls + '&quot;&gt;' + me.getInnerTpl(me.displayField) + '&lt;/li&gt;',
+     *         '&lt;/tpl&gt;&lt;/ul&gt;'
+     *     );
+     *
+     */
+
+<span id='Ext-view-BoundList-cfg-focusOnToFront'>     // Override because on non-touch devices, the bound field
+</span>     // retains focus so that typing may narrow the list.
+     // Only when the show is triggered by a touch does the BoundList
+     // get explicitly focused so that the keyboard does not appear.
+    focusOnToFront: false,
+<span id='Ext-view-BoundList-cfg-alignOnScroll'>    alignOnScroll: false,
+</span>
+<span id='Ext-view-BoundList-method-initComponent'>    initComponent: function() {
+</span>        var me = this,
+            baseCls = me.baseCls,
+            itemCls = me.itemCls;
+
+        me.selectedItemCls = baseCls + '-selected';
+        if (me.trackOver) {
+            me.overItemCls = baseCls + '-item-over';
+        }
+        me.itemSelector = '.' + itemCls;
+
+        if (me.floating) {
+            me.addCls(baseCls + '-floating');
+        }
+
+        if (!me.tpl) {
+            // should be setting aria-posinset based on entire set of data
+            // not filtered set
+            me.generateTpl();
+        } else if (!me.tpl.isTemplate) {
+            me.tpl = new Ext.XTemplate(me.tpl);
+        }
+
+        if (me.pageSize) {
+            me.pagingToolbar = me.createPagingToolbar();
+        }
+
+        me.callParent();
+    },
+
+<span id='Ext-view-BoundList-method-generateTpl'>    /**
+</span>     * Allow tpl to be generated programmatically to respond to changes in displayField
+     * @private
+     */
+    generateTpl: function () {
+        var me = this;
+
+        me.tpl = new Ext.XTemplate(
+            '&lt;tpl for=&quot;.&quot;&gt;',
+                '&lt;li role=&quot;option&quot; unselectable=&quot;on&quot; class=&quot;' + me.itemCls + '&quot;&gt;' + me.getInnerTpl(me.displayField) + '&lt;/li&gt;',
+            '&lt;/tpl&gt;'
+        );
+    },
+
+<span id='Ext-view-BoundList-method-setDisplayField'>    /**
+</span>     * Updates the display field for this view. This will automatically trigger
+     * an regeneration of the tpl so that the updated displayField can be used
+     * @param {String} displayField
+     */
+    setDisplayField: function (displayField) {
+        this.displayField = displayField;
+        this.generateTpl();
+    },
+
+<span id='Ext-view-BoundList-method-getRefOwner'>    getRefOwner: function() {
+</span>        return this.pickerField || this.callParent();
+    },
+
+<span id='Ext-view-BoundList-method-getRefItems'>    getRefItems: function() {
+</span>        var result = this.callParent(),
+            toolbar = this.pagingToolbar;
+        
+        if (toolbar) {
+            result.push(toolbar);
+        }
+        return result;
+    },
+
+<span id='Ext-view-BoundList-method-createPagingToolbar'>    createPagingToolbar: function() {
+</span>        var me = this;
+        
+        return new Ext.toolbar.Paging({
+            id: me.id + '-paging-toolbar',
+            pageSize: me.pageSize,
+            store: me.dataSource,
+            border: false,
+            ownerCt: me,
+            ownerLayout: me.getComponentLayout()
+        });
+    },
+
+<span id='Ext-view-BoundList-method-getNodeContainer'>    getNodeContainer: function() {
+</span>        return this.listEl;
+    },
+
+<span id='Ext-view-BoundList-method-refresh'>    refresh: function() {
+</span>        var me = this,
+            tpl = me.tpl;
+
+        // Allow access to the context for XTemplate scriptlets
+        tpl.field = me.pickerField;
+        tpl.store = me.store;
+        me.callParent();
+        tpl.field = tpl.store = null;
+        
+        if (!me.ariaStaticRoles[me.ariaRole]) {
+            me.refreshAriaAttributes();
+        }
+
+        // The view selectively removes item nodes, so the toolbar
+        // will be preserved in the DOM
+    },
+    
+<span id='Ext-view-BoundList-method-refreshAriaAttributes'>    refreshAriaAttributes: function() {
+</span>        var me = this,
+            store = me.store,
+            selModel = me.getSelectionModel(),
+            multiSelect, totalCount, nodes, node, record, index, i, len;
+        
+        // When the store is filtered or paged, we want to let the Assistive Technology
+        // users know that there are more records than currently displayed. This is not
+        // a requirement when the whole dataset fits the DOM.
+        // Note that it is possible for the store to be filtered but not fit the DOM.
+        // In that case we use filtered count as the set size.
+        totalCount = store.isFiltered() ? store.getCount() : store.getTotalCount() || store.getCount();
+        nodes = me.getNodes();
+        
+        multiSelect = me.pickerField &amp;&amp; me.pickerField.multiSelect;
+        
+        for (i = 0, len = nodes.length; i &lt; len; i++) {
+            node = nodes[i];
+            record = null;
+            
+            if (totalCount !== len) {
+                record = me.getRecord(node);
+                index = store.indexOf(record);
+                
+                node.setAttribute('aria-setsize', totalCount);
+                node.setAttribute('aria-posinset', index);
+            }
+            
+            // For single-select combos aria-selected must be undefined
+            if (multiSelect) {
+                record = record || me.getRecord(node);
+                node.setAttribute('aria-selected', selModel.isSelected(record));
+            }
+        }
+    },
+
+<span id='Ext-view-BoundList-method-bindStore'>    bindStore: function(store, initial) {
+</span>        var toolbar = this.pagingToolbar;
+
+        this.callParent(arguments);
+        if (toolbar) {
+            toolbar.bindStore(store, initial);
+        }
+    },
+
+<span id='Ext-view-BoundList-method-getInnerTpl'>    /**
+</span>     * A method that returns the inner template for displaying items in the list.
+     * This method is useful to override when using a more complex display value, for example
+     * inserting an icon along with the text.
+     *
+     * The XTemplate is created with a reference to the owning form field in the `field` property to provide access
+     * to context. For example to highlight the currently typed value, the getInnerTpl may be configured into a
+     * ComboBox as part of the {@link Ext.form.field.ComboBox#listConfig listConfig}:
+     *
+     *    listConfig: {
+     *        getInnerTpl: function() {
+     *            return '{[values.name.replace(this.field.getRawValue(), &quot;&lt;b&gt;&quot; + this.field.getRawValue() + &quot;&lt;/b&gt;&quot;)]}';
+     *        }
+     *    }
+     * @param {String} displayField The {@link #displayField} for the BoundList.
+     * @return {String} The inner template
+     */
+    getInnerTpl: function(displayField) {
+        return '{' + displayField + '}';
+    },
+    
+<span id='Ext-view-BoundList-method-onShow'>    onShow: function() {
+</span>        var field = this.pickerField;
+        this.callParent();
+
+        // If the input field is not focused, then focus it.
+        if (field &amp;&amp; field.rendered &amp;&amp; !field.hasFocus) {
+            field.focus();
+        }
+    },
+
+<span id='Ext-view-BoundList-method-afterComponentLayout'>    afterComponentLayout: function(width, height, oldWidth, oldHeight) {
+</span>        var field = this.pickerField;
+
+        this.callParent([width, height, oldWidth, oldHeight]);
+
+        // Bound list may change size, so realign on layout
+        // **if the field is an Ext.form.field.Picker which has alignPicker!**
+        if (field &amp;&amp; field.alignPicker) {
+            field.alignPicker();
+        }
+    },
+    
+<span id='Ext-view-BoundList-method-onItemSelect'>    onItemSelect: function(record) {
+</span>        var me = this,
+            node;
+        
+        node = me.callParent([record]);
+        
+        if (node) {
+            if (me.ariaSelectable) {
+                node.setAttribute('aria-selected', 'true');
+            }
+            else {
+                node.removeAttribute('aria-selected');
+            }
+        }
+        
+        return node;
+    },
+    
+<span id='Ext-view-BoundList-method-onItemDeselect'>    onItemDeselect: function(record) {
+</span>        var me = this,
+            node;
+        
+        node = me.callParent([record]);
+        
+        if (node &amp;&amp; me.ariaSelectable) {
+            if (me.pickerField &amp;&amp; me.pickerField.multiSelect) {
+                node.setAttribute('aria-selected', 'false');
+            }
+            else {
+                node.removeAttribute('aria-selected');
+            }
+        }
+        
+        return node;
+    },
+
+<span id='Ext-view-BoundList-method-onItemClick'>    // Clicking on an already selected item collapses the picker
+</span>    onItemClick: function(record) {
+        // The selection change events won't fire when clicking on the selected element. Detect it here.
+        var me = this,
+            field = me.pickerField,
+            valueField, selected;
+
+        if (!field) {
+            return;
+        }
+
+        valueField = field.valueField;
+        selected = me.getSelectionModel().getSelection();
+
+        if (!field.multiSelect &amp;&amp; selected.length) {
+            selected = selected[0];
+            // Not all pickerField's have a collapse API, i.e. Ext.ux.form.MultiSelect.
+            if (selected &amp;&amp; field.isEqual(record.get(valueField), selected.get(valueField)) &amp;&amp; field.collapse) {
+                field.collapse();
+            }
+        }
+    },
+
+<span id='Ext-view-BoundList-method-onContainerClick'>    onContainerClick: function(e) {
+</span>        var toolbar = this.pagingToolbar,
+            clientRegion;
+        
+        // Ext.view.View template method
+        // Do not continue to process the event as a container click if it is within the pagingToolbar
+        if (toolbar &amp;&amp; toolbar.rendered &amp;&amp; e.within(toolbar.el)) {
+            return false;
+        }
+        
+        // IE10 and IE11 will fire pointer events when user drags listWrap scrollbars,
+        // which may result in selection being reset.
+        if (Ext.isIE10 || Ext.isIE11) {
+            clientRegion = this.listWrap.getClientRegion();
+            
+            if (!e.getPoint().isContainedBy(clientRegion)) {
+                return false;
+            }
+        }
+    },
+
+<span id='Ext-view-BoundList-method-doDestroy'>    doDestroy: function() {
+</span>        this.pagingToolbar = Ext.destroy(this.pagingToolbar);
+        
+        this.callParent();
+    },
+
+<span id='Ext-view-BoundList-property-privates'>    privates: {
+</span>        getTargetEl: function() {
+            return this.listEl;
+        },
+
+        getOverflowEl: function() {
+            return this.listWrap;
+        },
+
+        // Do the job of a container layout at this point even though we are not a Container.
+        finishRenderChildren: function () {
+            var toolbar = this.pagingToolbar;
+
+            this.callParent(arguments);
+
+            if (toolbar) {
+                toolbar.finishRender();
+            }
+        }
+    }
+});
+</pre>
+</body>
+</html>

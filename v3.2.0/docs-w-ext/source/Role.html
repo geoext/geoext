@@ -1,0 +1,587 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <title>The source code</title>
+  <link href="../resources/prettify/prettify.css" type="text/css" rel="stylesheet" />
+  <script type="text/javascript" src="../resources/prettify/prettify.js"></script>
+  <style type="text/css">
+    .highlight { display: block; background-color: #ddd; }
+  </style>
+  <script type="text/javascript">
+    function highlight() {
+      document.getElementById(location.hash.replace(/#/, "")).className = "highlight";
+    }
+  </script>
+</head>
+<body onload="prettyPrint(); highlight();">
+  <pre class="prettyprint lang-js"><span id='Ext-data-schema-Role'>/**
+</span> * @private
+ */
+Ext.define('Ext.data.schema.Role', {
+<span id='Ext-data-schema-Role-property-association'>    /**
+</span>     * @property {Ext.data.schema.Association} association
+     * @readonly
+     */
+
+    isRole: true,
+
+<span id='Ext-data-schema-Role-property-left'>    /**
+</span>     * @property {Boolean} left
+     * @readonly
+     */
+    left: true,
+
+<span id='Ext-data-schema-Role-property-owner'>    /**
+</span>     * @property {Boolean} owner
+     * @readonly
+     */
+    owner: false,
+
+<span id='Ext-data-schema-Role-property-side'>    /**
+</span>     * @property {String} side
+     * @readonly
+     */
+    side: 'left',
+
+<span id='Ext-data-schema-Role-property-isMany'>    /**
+</span>     * @property {Boolean} isMany
+     * @readonly
+     */
+    isMany: false,
+
+<span id='Ext-data-schema-Role-property-cls'>    /**
+</span>     * @property {Ext.Class} cls
+     * The `Ext.data.Model` derived class.
+     * @readonly
+     */
+
+<span id='Ext-data-schema-Role-property-inverse'>    /**
+</span>     * @property {Ext.data.schema.Role} inverse
+     * @readonly
+     */
+
+<span id='Ext-data-schema-Role-property-type'>    /**
+</span>     * @property {String} type
+     * The `{@link Ext.data.Model#entityName}` derived class.
+     * @readonly
+     */
+
+<span id='Ext-data-schema-Role-property-role'>    /**
+</span>     * @property {String} role
+     * @readonly
+     */
+
+    defaultReaderType: 'json',
+
+<span id='Ext-data-schema-Role-property-_internalReadOptions'>    _internalReadOptions: {
+</span>        recordsOnly: true,
+        asRoot: true
+    },
+
+<span id='Ext-data-schema-Role-method-constructor'>    constructor: function (association, config) {
+</span>        var me = this,
+            extra = config.extra;
+
+        Ext.apply(me, config);
+        if (extra) {
+            extra = Ext.apply({}, extra);
+            delete extra.type;
+            Ext.apply(me, extra);
+            delete me.extra;
+        }
+
+        me.association = association;
+
+        // The Association's owner property starts as either &quot;left&quot; or &quot;right&quot; (a string)
+        // and we promote it to a reference to the appropriate Role instance here.
+        if (association.owner === me.side) {
+            association.owner = me;
+            me.owner = true;
+        }
+    },
+
+<span id='Ext-data-schema-Role-method-processUpdate'>    processUpdate: function() {
+</span>        Ext.raise('Only the &quot;many&quot; for an association may be processed. &quot;' + this.role + '&quot; is not valid.');
+    },
+
+<span id='Ext-data-schema-Role-method-processLoad'>    /**
+</span>     * Exclude any locally modified records that don't belong in the store. Include locally
+     * modified records that should be in the store. Also correct any foreign keys that
+     * need to be updated.
+     *
+     * @param {Ext.data.Store} store The store.
+     * @param {Ext.data.Model} associatedEntity The entity that owns the records.
+     * @param {Ext.data.Model[]} records The records to check.
+     * @param {Ext.data.Session} session The session holding the records
+     * @return {Ext.data.Model[]} The corrected set of records.
+     *
+     * @private
+     */
+    processLoad: function(store, associatedEntity, records, session) {
+        return records;
+    },
+
+<span id='Ext-data-schema-Role-method-checkMembership'>    /**
+</span>     * @method
+     *
+     * Check whether a record belongs to any stores when it is added to the session.
+     * 
+     * @param {Ext.data.Session} session The session
+     * @param {Ext.data.Model} record The model being added to the session
+     * @private
+     */
+    checkMembership: Ext.emptyFn,
+
+<span id='Ext-data-schema-Role-method-adoptAssociated'>    /**
+</span>     * Adopt the associated items when a record is adopted.
+     * @param {Ext.data.Model} record The record being adopted.
+     * @param {Ext.data.Session} session The session being adopted into
+     * 
+     * @private
+     */
+    adoptAssociated: function(record, session) {
+        var other = this.getAssociatedItem(record);
+        if (other) {
+            session.adopt(other);
+        }
+    },
+
+<span id='Ext-data-schema-Role-property-S-roleFilterId'>    $roleFilterId: '$associationRoleFilter',
+</span>
+<span id='Ext-data-schema-Role-method-createAssociationStore'>    createAssociationStore: function (session, from, records, isComplete) {
+</span>        var me = this,
+            association = me.association,
+            foreignKeyName = association.getFieldName(),
+            isMany = association.isManyToMany,
+            storeConfig = me.storeConfig,
+            id = from.getId(),
+            config = {
+                // Always want immediate load
+                asynchronousLoad: false,
+                model: me.cls,
+                role: me,
+                session: session,
+                associatedEntity: from,
+                disableMetaChangeEvent: true,
+                pageSize: null,
+                remoteFilter: true,
+                trackRemoved: !session
+            }, store;
+
+        if (isMany) {
+            // For many-to-many associations each role has a field
+            config.filters = [{
+                id: me.$roleFilterId,
+                property: me.inverse.field, // @TODO filterProperty
+                value: id,
+                exactMatch: true
+            }];
+        } else if (foreignKeyName) {
+            config.filters = [{
+                id: me.$roleFilterId,
+                property: foreignKeyName, // @TODO filterProperty
+                value: id,
+                exactMatch: true
+            }];
+            config.foreignKeyName = foreignKeyName;
+        }
+
+        if (storeConfig) {
+            Ext.apply(config, storeConfig);
+        }
+
+        store = Ext.Factory.store(config);
+        
+        me.onStoreCreate(store, session, id);
+
+        if (foreignKeyName || (isMany &amp;&amp; session)) {
+            store.on({
+                scope: me,
+                add: 'onAddToMany',
+                remove: 'onRemoveFromMany',
+                clear: 'onRemoveFromMany'
+            });
+        }
+
+        if (records) {
+            store.loadData(records);
+        }
+        store.complete = !!isComplete;
+
+        return store;
+    },
+
+<span id='Ext-data-schema-Role-method-onStoreCreate'>    onStoreCreate: Ext.emptyFn,
+</span>
+<span id='Ext-data-schema-Role-method-getAssociatedStore'>    getAssociatedStore: function (inverseRecord, options, scope, records, allowInfer) {
+</span>        // Consider the Comment entity with a ticketId to a Ticket entity. The Comment
+        // is on the left (the FK holder's side) so we are implementing the guts of
+        // the comments() method to load the Store of Comment entities. This trek
+        // begins from a Ticket (inverseRecord).
+
+        var me = this,
+            storeName = me.getStoreName(),
+            store = inverseRecord[storeName],
+            session = inverseRecord.session,
+            load = options &amp;&amp; options.reload,
+            source = inverseRecord.$source,
+            isComplete = false,
+            phantom = false,
+            hadSourceStore, args, i, len, raw, 
+            rec, sourceStore, hadRecords;
+
+        if (!store) {
+            if (session) {
+                // We want to check whether we can automatically get the store contents from the parent session.
+                // For this to occur, we need to have a parent in the session, and the store needs to be created
+                // and loaded with the initial dataset.
+                if (source) {
+                    phantom = source.phantom;
+                }
+                
+                if (!records &amp;&amp; source) {
+                    sourceStore = source[storeName];
+                    if (sourceStore &amp;&amp; !sourceStore.isLoading()) {
+                        records = [];
+                        raw = sourceStore.getData().items;
+
+                        for (i = 0, len = raw.length; i &lt; len; ++i) {
+                            rec = raw[i];
+                            records.push(session.getRecord(rec.self, rec.id));
+                        }
+                        isComplete = !!sourceStore.complete;
+                        hadSourceStore = true;
+                    }
+                }
+                if (!hadSourceStore) {
+                    // We'll only hit here if we didn't have a usable source
+                    hadRecords = !!records;
+                    records = me.findRecords(session, inverseRecord, records, allowInfer);
+                    if (!hadRecords &amp;&amp; (!records || !records.length)) {
+                        records = null;
+                    }
+                    isComplete = phantom || hadRecords;
+                }
+            } else {
+                // As long as we had the collection exist, we're complete, even if it's empty.
+                isComplete = !!records;
+            }
+            // If the inverse is a phantom, we can't be loading any data so we're complete
+            store = me.createAssociationStore(session, inverseRecord, records, isComplete || inverseRecord.phantom);
+            store.$source = sourceStore;
+
+            if (!records &amp;&amp; (me.autoLoad || options)) {
+                load = true;
+            }
+
+            inverseRecord[storeName] = store;
+        }
+
+        if (options) {
+            // We need to trigger a load or the store is already loading. Defer
+            // callbacks until that happens
+            if (load || store.isLoading()) {
+                store.on('load', function(store, records, success, operation) {
+                    args = [store, operation];
+                    scope = scope || options.scope || inverseRecord;
+
+                    if (success) {
+                        Ext.callback(options.success, scope, args);
+                    } else {
+                        Ext.callback(options.failure, scope, args);
+                    }
+                    args.push(success);
+                    Ext.callback(options, scope, args);
+                    Ext.callback(options.callback, scope, args);
+                }, null, {single: true});
+            } else {
+                // Trigger straight away
+                args = [store, null];
+                scope = scope || options.scope || inverseRecord;
+
+                Ext.callback(options.success, scope, args);
+                args.push(true);
+                Ext.callback(options, scope, args);
+                Ext.callback(options.callback, scope, args);
+            }
+        }
+
+        if (load &amp;&amp; !store.isLoading()) {
+            store.load();
+        }
+
+        return store;
+    },
+    
+<span id='Ext-data-schema-Role-method-getAssociatedItem'>    /**
+</span>     * Gets the store/record associated with this role from an existing record.
+     * Will only return if the value is loaded.
+     * 
+     * @param {Ext.data.Model} rec The record
+     * 
+     * @return {Ext.data.Model/Ext.data.Store} The associated item. `null` if not loaded.
+     * @private
+     */
+    getAssociatedItem: function(rec) {
+        var key = this.isMany ? this.getStoreName() : this.getInstanceName();
+        return rec[key] || null;
+    },
+
+<span id='Ext-data-schema-Role-method-onDrop'>    onDrop: Ext.emptyFn,
+</span>
+<span id='Ext-data-schema-Role-method-onIdChanged'>    onIdChanged: Ext.emptyFn,
+</span>
+<span id='Ext-data-schema-Role-method-getReaderRoot'>    getReaderRoot: function() {
+</span>        var me = this;
+
+        return me.associationKey ||
+              (me.associationKey = me.association.schema.getNamer().readerRoot(me.role));
+    },
+    
+<span id='Ext-data-schema-Role-method-getReader'>    getReader: function() {
+</span>        var me = this,
+            reader = me.reader,
+            Model = me.cls,
+            useSimpleAccessors = !me.associationKey,
+            root = this.getReaderRoot();
+            
+        if (reader &amp;&amp; !reader.isReader) {
+            if (Ext.isString(reader)) {
+                reader = {
+                    type: reader
+                };
+            }
+            Ext.applyIf(reader, {
+                model: Model,
+                rootProperty: root,
+                useSimpleAccessors: useSimpleAccessors,
+                type: me.defaultReaderType
+            });
+            reader = me.reader = Ext.createByAlias('reader.' + reader.type, reader);
+        }   
+        return reader; 
+    },
+
+<span id='Ext-data-schema-Role-method-getInstanceName'>    getInstanceName: function () {
+</span>        var me = this;
+        return me.instanceName ||
+               (me.instanceName = me.association.schema.getNamer().instanceName(me.role));
+    },
+
+<span id='Ext-data-schema-Role-method-getOldInstanceName'>    getOldInstanceName: function() {
+</span>        return this.oldInstanceName ||
+            (this.oldInstanceName = '$old' + this.getInstanceName());
+    },
+
+<span id='Ext-data-schema-Role-method-getStoreName'>    getStoreName: function () {
+</span>        var me = this;
+        return me.storeName ||
+               (me.storeName = me.association.schema.getNamer().storeName(me.role));
+    },
+    
+<span id='Ext-data-schema-Role-method-constructReader'>    constructReader: function(fromReader) {
+</span>        var me = this,
+            reader = me.getReader(),
+            Model = me.cls,
+            useSimpleAccessors = !me.associationKey,
+            root = me.getReaderRoot(),
+            proxyReader,
+            proxy;
+        
+        // No reader supplied
+        if (!reader) {
+            proxy = Model.getProxy();
+            // if the associated model has a Reader already, use that, otherwise attempt to create a sensible one
+            if (proxy) {
+                proxyReader = proxy.getReader();
+                reader = new proxyReader.self();
+                reader.copyFrom(proxyReader);
+                reader.setRootProperty(root);
+            } else {
+                reader = new fromReader.self({
+                    model: Model,
+                    useSimpleAccessors: useSimpleAccessors,
+                    rootProperty: root
+                });
+            }
+            me.reader = reader;
+        }
+        return reader;
+    },
+    
+<span id='Ext-data-schema-Role-method-read'>    read: function (record, data, fromReader, readOptions) {
+</span>        var reader = this.constructReader(fromReader),
+            root = reader.getRoot(data);
+
+        if (root) {            
+            return reader.readRecords(root, readOptions, this._internalReadOptions);
+        }
+    },
+
+<span id='Ext-data-schema-Role-method-getCallbackOptions'>    getCallbackOptions: function(options, scope, defaultScope) {
+</span>        if (typeof options === 'function') {
+            options = {
+                callback: options,
+                scope: scope || defaultScope
+            };
+        } else if (options) {
+            options = Ext.apply({}, options);
+            options.scope = scope || options.scope || defaultScope;
+        }
+        return options;
+    },
+
+<span id='Ext-data-schema-Role-method-doGetFK'>    doGetFK: function (leftRecord, options, scope) {
+</span>        // Consider the Department entity with a managerId to a User entity. This method
+        // is the guts of the getManager method that we place on the Department entity to
+        // acquire a User entity. We are the &quot;manager&quot; role and that role describes a
+        // User. This method is called, however, given a Department (leftRecord) as the
+        // start of this trek.
+
+        var me           = this,    // the &quot;manager&quot; role
+            cls          = me.cls,  // User
+            foreignKey   = me.association.getFieldName(),  // &quot;managerId&quot;
+            instanceName = me.getInstanceName(),  // &quot;manager&quot;
+            rightRecord  = leftRecord[instanceName], // = department.manager
+            reload       = options &amp;&amp; options.reload,
+            done         = rightRecord !== undefined &amp;&amp; !reload,
+            session      = leftRecord.session,
+            foreignKeyId, args;
+
+        if (!done) {
+            // We don't have the User record yet, so try to get it.
+
+            if (session) {
+                foreignKeyId = leftRecord.get(foreignKey);
+                if (foreignKeyId || foreignKeyId === 0) {
+                    done = session.peekRecord(cls, foreignKeyId, true) &amp;&amp; !reload;
+                    rightRecord = session.getRecord(cls, foreignKeyId, false);
+                } else {
+                    done = true;
+                    leftRecord[instanceName] = rightRecord = null;
+                }
+            } else if (foreignKey) {
+                // The good news is that we do indeed have a FK so we can do a load using
+                // the value of the FK.
+
+                foreignKeyId = leftRecord.get(foreignKey);
+                if (!foreignKeyId &amp;&amp; foreignKeyId !== 0) {
+                    // A value of null ends that hope though... but we still need to do
+                    // some callbacks perhaps.
+                    done = true;
+                    leftRecord[instanceName] = rightRecord = null;
+                } else {
+                    // foreignKeyId is the managerId from the Department (record), so
+                    // make a new User, set its idProperty and load the real record via
+                    // User.load method.
+                    if (!rightRecord) {
+                        // We may be reloading, let's check if we have one.
+                        rightRecord = cls.createWithId(foreignKeyId);
+                    }
+                    // we are not done in this case, so don't set &quot;done&quot;
+                }
+            } else {
+                // Without a FK value by which to request the User record, we cannot do
+                // anything. Declare victory and get out.
+                done = true;
+                rightRecord = null;
+            }
+        } else if (rightRecord) {
+            // If we're still loading, call load again which will handle the extra callbacks.
+            done = !rightRecord.isLoading();
+        }
+
+        if (done) {
+            if (options) {
+                args = [rightRecord, null];
+                scope = scope || options.scope || leftRecord;
+
+                Ext.callback(options.success, scope, args);
+                args.push(true);
+                Ext.callback(options, scope, args);
+                Ext.callback(options.callback, scope, args);
+            }
+        } else {
+            leftRecord[instanceName] = rightRecord;
+            options = me.getCallbackOptions(options, scope, leftRecord);
+            rightRecord.load(options);
+        }
+
+        return rightRecord;
+    },
+
+<span id='Ext-data-schema-Role-method-doSetFK'>    doSetFK: function (leftRecord, rightRecord, options, scope) {
+</span>        // Consider the Department entity with a managerId to a User entity. This method
+        // is the guts of the setManager method that we place on the Department entity to
+        // store the User entity. We are the &quot;manager&quot; role and that role describes a
+        // User. This method is called, however, given a Department (record) and the User
+        // (value).
+
+        var me = this,
+            foreignKey = me.association.getFieldName(),  // &quot;managerId&quot;
+            instanceName = me.getInstanceName(),  // &quot;manager&quot;
+            current = leftRecord[instanceName],
+            inverse = me.inverse,
+            inverseSetter = inverse.setterName,  // setManagerDepartment for User
+            session = leftRecord.session,
+            modified, oldInstanceName;
+
+        if (rightRecord &amp;&amp; rightRecord.isEntity) {
+            if (current !== rightRecord) {
+                oldInstanceName = me.getOldInstanceName();
+                leftRecord[oldInstanceName] = current;
+                leftRecord[instanceName] = rightRecord;
+                if (current &amp;&amp; current.isEntity) {
+                    current[inverse.getInstanceName()] = undefined;
+                }
+                if (foreignKey) {
+                    leftRecord.set(foreignKey, rightRecord.getId());
+                }
+                delete leftRecord[oldInstanceName];
+                leftRecord.onAssociatedRecordSet(rightRecord, me);
+
+                if (inverseSetter) {
+                    // Because the rightRecord has a reference back to the leftRecord
+                    // we pass on to its setter (if there is one). We've already set
+                    // the value on this side so we won't recurse back-and-forth.
+                    rightRecord[inverseSetter](leftRecord);
+                }
+            }
+        } else {
+            // The value we received could just be the id of the rightRecord so we just
+            // need to set the FK accordingly and cleanup any cached references.
+
+            //&lt;debug&gt;
+            if (!foreignKey) {
+                Ext.raise('No foreignKey specified for &quot;' + me.association.left.role +
+                    '&quot; by ' + leftRecord.$className);
+            }
+            //&lt;/debug&gt;
+
+            modified = (leftRecord.changingKey &amp;&amp; !inverse.isMany) || leftRecord.set(foreignKey, rightRecord);
+            // set returns the modifiedFieldNames[] or null if nothing was change
+
+            if (modified &amp;&amp; current &amp;&amp; current.isEntity &amp;&amp; !current.isEqual(current.getId(), rightRecord)) {
+                // If we just modified the FK value and it no longer matches the id of the
+                // record we had cached (ret), remove references from *both* sides:
+                leftRecord[instanceName] = undefined;
+                if (!inverse.isMany) {
+                    current[inverse.getInstanceName()] = undefined;
+                }
+            }
+        }
+
+        if (options) {
+            if (Ext.isFunction(options)) {
+                options = {
+                    callback: options,
+                    scope: scope || leftRecord
+                };
+            }
+            return leftRecord.save(options);
+        }
+    }
+});</pre>
+</body>
+</html>
