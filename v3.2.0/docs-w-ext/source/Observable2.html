@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <title>The source code</title>
+  <link href="../resources/prettify/prettify.css" type="text/css" rel="stylesheet" />
+  <script type="text/javascript" src="../resources/prettify/prettify.js"></script>
+  <style type="text/css">
+    .highlight { display: block; background-color: #ddd; }
+  </style>
+  <script type="text/javascript">
+    function highlight() {
+      document.getElementById(location.hash.replace(/#/, "")).className = "highlight";
+    }
+  </script>
+</head>
+<body onload="prettyPrint(); highlight();">
+  <pre class="prettyprint lang-js"><span id='Ext-util-Observable'>/**
+</span> * A Ext.mixin.Observable subclass that is provided for backward compatibility.
+ * Applications should avoid using this class, and use Ext.mixin.Observable instead.
+ */
+Ext.define('Ext.util.Observable', {
+    extend: 'Ext.mixin.Observable',
+
+<span id='Ext-util-Observable-property-S-applyConfigs'>    // The constructor of Ext.util.Observable instances processes the config object by
+</span>    // calling Ext.apply(this, config); instead of this.initConfig(config);
+    $applyConfigs: true
+}, function(Observable) {
+    var Super = Ext.mixin.Observable;
+
+<span id='Ext-util-Observable-static-method-releaseCapture'>    /**
+</span>     * @method releaseCapture
+     * @static
+     * @inheritdoc Ext.mixin.Observable#releaseCapture
+     */
+    Observable.releaseCapture = Super.releaseCapture;
+
+<span id='Ext-util-Observable-static-method-capture'>    /**
+</span>     * @method capture
+     * @static
+     * @inheritdoc Ext.mixin.Observable#capture
+     */
+    Observable.capture = Super.capture;
+
+<span id='Ext-util-Observable-property-captureArgs'>    /**
+</span>     * @private
+     */
+    Observable.captureArgs = Super.captureArgs;
+
+<span id='Ext-util-Observable-static-method-observe'>    /**
+</span>     * @method observe
+     * @static
+     * @inheritdoc Ext.mixin.Observable#observe
+     */
+    Observable.observe = Observable.observeClass = Super.observe;
+});
+</pre>
+</body>
+</html>

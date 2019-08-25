@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <title>The source code</title>
+  <link href="../resources/prettify/prettify.css" type="text/css" rel="stylesheet" />
+  <script type="text/javascript" src="../resources/prettify/prettify.js"></script>
+  <style type="text/css">
+    .highlight { display: block; background-color: #ddd; }
+  </style>
+  <script type="text/javascript">
+    function highlight() {
+      document.getElementById(location.hash.replace(/#/, "")).className = "highlight";
+    }
+  </script>
+</head>
+<body onload="prettyPrint(); highlight();">
+  <pre class="prettyprint lang-js"><span id='Ext-app-bind-RootStub'>/**
+</span> * This class is the root stub for managing a `ViewModel`.
+ * @private
+ */
+Ext.define('Ext.app.bind.RootStub', {
+    extend: 'Ext.app.bind.AbstractStub',
+    requires: [
+        'Ext.app.bind.LinkStub',
+        'Ext.app.bind.Stub'
+    ],
+
+<span id='Ext-app-bind-RootStub-property-isRootStub'>    isRootStub: true,
+</span>    
+<span id='Ext-app-bind-RootStub-property-depth'>    depth: 0,
+</span>
+<span id='Ext-app-bind-RootStub-method-createRootChild'>    createRootChild: function (name, direct) {
+</span>        var me = this,
+            owner = me.owner,
+            ownerData = owner.getData(),
+            children = me.children,
+            previous = children &amp;&amp; children[name],
+            parentStub = previous ? null : me,
+            parentVM, stub;
+
+        if (direct || ownerData.hasOwnProperty(name) || !(parentVM = owner.getParent())) {
+            stub = new Ext.app.bind.Stub(owner, name, parentStub);
+        } else {
+            stub = new Ext.app.bind.LinkStub(owner, name, previous ? null : parentStub);
+            stub.link('{' + name + '}', parentVM);
+        }
+
+        if (previous) {
+            previous.graft(stub);
+        }
+
+        return stub;
+    },
+    
+<span id='Ext-app-bind-RootStub-method-createStubChild'>    createStubChild: function(name) {
+</span>        return this.createRootChild(name, true);
+    },
+
+<span id='Ext-app-bind-RootStub-method-descend'>    descend: function (path, index) {
+</span>        var me = this,
+            children = me.children,
+            pos = index || 0,
+            name = path[pos++],
+            ret = (children &amp;&amp; children[name]) || me.createRootChild(name);
+
+        if (pos &lt; path.length) {
+            ret = ret.descend(path, pos);
+        }
+
+        return ret;
+    },
+
+<span id='Ext-app-bind-RootStub-method-getFullName'>    getFullName: function () {
+</span>        return this.fullName || (this.fullName = this.owner.id + ':');
+    },
+
+<span id='Ext-app-bind-RootStub-method-getDataObject'>    // The root Stub is associated with the owner's &quot;data&quot; object
+</span>
+    getDataObject: function () {
+        return this.owner.data;
+    },
+
+<span id='Ext-app-bind-RootStub-method-getRawValue'>    getRawValue: function () {
+</span>        return this.owner.data;
+    },
+
+<span id='Ext-app-bind-RootStub-method-getValue'>    getValue: function () {
+</span>        return this.owner.data;
+    },
+
+<span id='Ext-app-bind-RootStub-method-isDescendantOf'>    isDescendantOf: function () {
+</span>        return false;
+    },
+
+<span id='Ext-app-bind-RootStub-method-isLoading'>    isLoading: function () {
+</span>        return false;
+    },
+
+<span id='Ext-app-bind-RootStub-method-set'>    set: function (value) {
+</span>        //&lt;debug&gt;
+        if (!value || value.constructor !== Object) {
+            Ext.raise('Only an object can be set at the root');
+        }
+        //&lt;/debug&gt;
+
+        var me = this,
+            children = me.children || (me.children = {}),
+            owner = me.owner,
+            data = owner.data,
+            parentVM = owner.getParent(),
+            linkStub, stub, v, key;
+
+        for (key in value) {
+            //&lt;debug&gt;
+            if (key.indexOf('.') &gt;= 0) {
+                Ext.raise('Value names cannot contain dots');
+            }
+            //&lt;/debug&gt;
+
+            // Setting the value.
+            // Ensure the Stub exists for the name, and set its value.
+            if ((v = value[key]) !== undefined) {
+                if (!(stub = children[key])) {
+                    stub = new Ext.app.bind.Stub(owner, key, me);
+                } else if (stub.isLinkStub) {
+                    if (!stub.getLinkFormulaStub()) {
+                        // Pass parent=null since we will graft in this new stub to replace us:
+                        linkStub = stub;
+                        stub = new Ext.app.bind.Stub(owner, key);
+                        linkStub.graft(stub);
+                    }
+                }
+
+                stub.set(v);
+            } 
+            // Clearing the value. Delete the data item
+            // Invalidate the Stub if it exists.
+            else if (data.hasOwnProperty(key)) {
+                delete data[key];
+
+                stub = children[key];
+                if (stub) {
+                    if (!stub.isLinkStub &amp;&amp; parentVM) {
+                        stub = me.createRootChild(key);
+                    }
+                    stub.invalidate(true);
+                }
+            }
+        }
+    },
+
+<span id='Ext-app-bind-RootStub-method-schedule'>    schedule: Ext.emptyFn,
+</span>    
+<span id='Ext-app-bind-RootStub-method-unschedule'>    unschedule: Ext.emptyFn
+</span>});
+</pre>
+</body>
+</html>

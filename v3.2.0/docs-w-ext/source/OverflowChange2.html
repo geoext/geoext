@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <title>The source code</title>
+  <link href="../resources/prettify/prettify.css" type="text/css" rel="stylesheet" />
+  <script type="text/javascript" src="../resources/prettify/prettify.js"></script>
+  <style type="text/css">
+    .highlight { display: block; background-color: #ddd; }
+  </style>
+  <script type="text/javascript">
+    function highlight() {
+      document.getElementById(location.hash.replace(/#/, "")).className = "highlight";
+    }
+  </script>
+</head>
+<body onload="prettyPrint(); highlight();">
+  <pre class="prettyprint lang-js"><span id='Ext-util-sizemonitor-OverflowChange'>/**
+</span> * @private
+ */
+Ext.define('Ext.util.sizemonitor.OverflowChange', {
+
+    extend: 'Ext.util.sizemonitor.Abstract',
+
+<span id='Ext-util-sizemonitor-OverflowChange-method-constructor'>    constructor: function(config) {
+</span>        this.onExpand = Ext.Function.bind(this.onExpand, this);
+        this.onShrink = Ext.Function.bind(this.onShrink, this);
+
+        this.callParent(arguments);
+    },
+
+<span id='Ext-util-sizemonitor-OverflowChange-method-getElementConfig'>    getElementConfig: function() {
+</span>        return {
+            reference: 'detectorsContainer',
+            classList: [Ext.baseCSSPrefix + 'size-monitors', 'overflowchanged'],
+            children: [
+                {
+                    reference: 'expandMonitor',
+                    className: 'expand',
+                    children: [{
+                        reference: 'expandHelper'
+                    }]
+                },
+                {
+                    reference: 'shrinkMonitor',
+                    className: 'shrink',
+                    children: [{
+                        reference: 'shrinkHelper'
+                    }]
+                }
+            ]
+        };
+    },
+
+<span id='Ext-util-sizemonitor-OverflowChange-method-bindListeners'>    bindListeners: function(bind) {
+</span>        var method = bind ? 'addEventListener' : 'removeEventListener';
+
+        this.expandMonitor[method](Ext.browser.is.Firefox ? 'underflow' : 'overflowchanged', this.onExpand, true);
+        this.shrinkMonitor[method](Ext.browser.is.Firefox ? 'overflow' : 'overflowchanged', this.onShrink, true);
+    },
+
+<span id='Ext-util-sizemonitor-OverflowChange-method-onExpand'>    onExpand: function(e) {
+</span>        if (Ext.browser.is.Webkit &amp;&amp; e.horizontalOverflow &amp;&amp; e.verticalOverflow) {
+            return;
+        }
+
+        Ext.TaskQueue.requestRead('refresh', this);
+    },
+
+<span id='Ext-util-sizemonitor-OverflowChange-method-onShrink'>    onShrink: function(e) {
+</span>        if (Ext.browser.is.Webkit &amp;&amp; !e.horizontalOverflow &amp;&amp; !e.verticalOverflow) {
+            return;
+        }
+
+        Ext.TaskQueue.requestRead('refresh', this);
+    },
+
+<span id='Ext-util-sizemonitor-OverflowChange-method-refreshMonitors'>    refreshMonitors: function() {
+</span>        if (this.destroying || this.destroyed) {
+            return;
+        }
+
+        var expandHelper = this.expandHelper,
+            shrinkHelper = this.shrinkHelper,
+            contentBounds = this.getContentBounds(),
+            width = contentBounds.width,
+            height = contentBounds.height,
+            style;
+
+        if (expandHelper &amp;&amp; !expandHelper.destroyed) {
+            style = expandHelper.style;
+            style.width = (width + 1) + 'px';
+            style.height = (height + 1) + 'px';
+        }
+
+        if (shrinkHelper &amp;&amp; !shrinkHelper.destroyed) {
+            style = shrinkHelper.style;
+            style.width = width  + 'px';
+            style.height = height + 'px';
+        }
+
+        Ext.TaskQueue.requestRead('refresh', this);
+    },
+    
+<span id='Ext-util-sizemonitor-OverflowChange-method-destroy'>    destroy: function() {
+</span>        // These are closures so Base destructor won't null them
+        this.onExpand = this.onShrink = null;
+        
+        this.callParent();
+    }
+});
+</pre>
+</body>
+</html>
