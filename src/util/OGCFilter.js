@@ -82,10 +82,10 @@ Ext.define('GeoExt.util.OGCFilter', {
         /**
          * The template for spatial filters used in WFS 2.0.0 queries
          */
-        spatialFilterWfs2xXmlTpl: '<{0}>' +
-            '<ValueReference>{1}</ValueReference>' +
+        spatialFilterWfs2xXmlTpl: '<fes:{0}>' +
+            '<fes:ValueReference>{1}</fes:ValueReference>' +
             '{2}' +
-            '</{0}>',
+            '</fes:{0}>',
 
         /**
          * The template for spatial bbox filters used in WFS 1.x.0 queries
@@ -98,6 +98,47 @@ Ext.define('GeoExt.util.OGCFilter', {
         '        <gml:upperCorner>{4} {5}</gml:upperCorner>' +
         '    </gml:Envelope>' +
         '</BBOX>',
+
+        /**
+         * Template string for GML 3.2.1 polygon
+         */
+        gml32PolygonTpl: '<gml:Polygon gml:id="P1" ' +
+            'srsName="urn:ogc:def:crs:{0}" srsDimension="2">' +
+            '<gml:exterior>' +
+                '<gml:LinearRing>' +
+                    '<gml:posList>{1}</gml:posList>' +
+                '</gml:LinearRing>' +
+            '</gml:exterior>' +
+        '</gml:Polygon>',
+
+        /**
+         * Template string for GML 3.2.1 linestring
+         */
+        gml32LineStringTpl: '<gml:LineString gml:id="L1" ' +
+            'srsName="urn:ogc:def:crs:{0}" srsDimension="2">' +
+            '<gml:posList>{1}</gml:posList>' +
+        '</gml:LineString>',
+
+        /**
+         * Template string for GML 3.2.1 point
+         */
+        gml32PointTpl: '<gml:Point gml:id="Pt1" ' +
+        'srsName="urn:ogc:def:crs:{0}" srsDimension="2">' +
+            '<gml:pos>{1}</gml:pos>' +
+        '</gml:Point>',
+
+        /**
+         * The start element for a FE filter instance in version 2.0
+         * as string value
+         */
+        filter20StartElementStr: '<fes:Filter ' +
+            'xsi:schemaLocation="http://www.opengis.net/fes/2.0 ' +
+            'http://schemas.opengis.net/filter/2.0/filterAll.xsd ' +
+            'http://www.opengis.net/gml/3.2 ' +
+            'http://schemas.opengis.net/gml/3.2.1/gml.xsd" ' +
+            'xmlns:fes="http://www.opengis.net/fes/2.0" ' +
+            'xmlns:gml="http://www.opengis.net/gml/3.2" ' +
+            'xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">',
 
         /**
          * The list of supported topological and spatial filter operators
@@ -286,8 +327,9 @@ Ext.define('GeoExt.util.OGCFilter', {
             var ogcFilterType;
             var closingTag;
             var propName = 'PropertyName';
-            if (!Ext.isEmpty(wfsVersion) && wfsVersion === '2.0.0') {
-                propName = 'ValueReference';
+            var isWfs20 = !Ext.isEmpty(wfsVersion) && wfsVersion === '2.0.0';
+            if (isWfs20) {
+                propName = 'fes:ValueReference';
             }
 
             // always replace surrounding quotes
@@ -298,40 +340,49 @@ Ext.define('GeoExt.util.OGCFilter', {
 
             switch (operator) {
             case '==':
-                ogcFilterType = 'PropertyIsEqualTo';
+                ogcFilterType = (isWfs20 ? 'fes:' : '') +
+                    'PropertyIsEqualTo';
                 break;
             case 'eq':
-                ogcFilterType = 'PropertyIsEqualTo';
+                ogcFilterType = (isWfs20 ? 'fes:' : '') +
+                    'PropertyIsEqualTo';
                 break;
             case '!==':
-                ogcFilterType = 'PropertyIsNotEqualTo';
+                ogcFilterType = (isWfs20 ? 'fes:' : '') +
+                    'PropertyIsNotEqualTo';
                 break;
             case 'ne':
-                ogcFilterType = 'PropertyIsNotEqualTo';
+                ogcFilterType = (isWfs20 ? 'fes:' : '') +
+                    'PropertyIsNotEqualTo';
                 break;
             case 'lt':
-                ogcFilterType = 'PropertyIsLessThan';
+                ogcFilterType = (isWfs20 ? 'fes:' : '') +
+                    'PropertyIsLessThan';
                 break;
             case 'lte':
-                ogcFilterType = 'PropertyIsLessThanOrEqualTo';
+                ogcFilterType = (isWfs20 ? 'fes:' : '') +
+                    'PropertyIsLessThanOrEqualTo';
                 break;
             case 'gt':
-                ogcFilterType = 'PropertyIsGreaterThan';
+                ogcFilterType = (isWfs20 ? 'fes:' : '') +
+                    'PropertyIsGreaterThan';
                 break;
             case 'gte':
-                ogcFilterType = 'PropertyIsGreaterThanOrEqualTo';
+                ogcFilterType = (isWfs20 ? 'fes:' : '') +
+                    'PropertyIsGreaterThanOrEqualTo';
                 break;
             case 'like':
                 value = '*' + value + '*';
-                var likeFilter =
-                  '<PropertyIsLike wildCard="*" singleChar="."' +
+                var likeFilterTpl =
+                  '<{0}PropertyIsLike wildCard="*" singleChar="."' +
                     ' escape="!" matchCase="false">' +
                     '<' + propName + '>' + property + '</' + propName + '>' +
-                    '<Literal>' + value + '</Literal>' +
-                  '</PropertyIsLike>';
-                return likeFilter;
+                    '<{0}Literal>' + value + '</{0}Literal>' +
+                  '</{0}PropertyIsLike>';
+                return Ext.String.format(likeFilterTpl,
+                    isWfs20 ? 'fes:' : '');
             case 'in':
-                ogcFilterType = 'Or';
+                ogcFilterType = (isWfs20 ? 'fes:' : '') + 'Or';
                 var values = value;
                 if (!Ext.isArray(value)) {
                     // cleanup brackets and quotes
@@ -341,10 +392,11 @@ Ext.define('GeoExt.util.OGCFilter', {
                 var filters = '';
                 Ext.each(values || value, function(val) {
                     filters +=
-                    '<PropertyIsEqualTo>' +
+                    '<' + (isWfs20 ? 'fes:' : '') + 'PropertyIsEqualTo>' +
                       '<' + propName + '>' + property + '</' + propName + '>' +
-                      '<Literal>' + val + '</Literal>' +
-                    '</PropertyIsEqualTo>';
+                    '<' + (isWfs20 ? 'fes:' : '') + 'Literal>' + val + '</' +
+                        (isWfs20 ? 'fes:' : '') + 'Literal>' +
+                    '</' + (isWfs20 ? 'fes:' : '') + 'PropertyIsEqualTo>';
                 });
                 ogcFilterType = '<' + ogcFilterType + '>';
 
@@ -433,10 +485,13 @@ Ext.define('GeoExt.util.OGCFilter', {
             }
             ogcFilterType = '<' + ogcFilterType + '>';
             closingTag = Ext.String.insert(ogcFilterType, '/', 1);
+            var literalStr = isWfs20 ?
+                '<fes:Literal>{2}</fes:Literal>' :
+                '<Literal>{2}</Literal>';
             var tpl = '' +
                 '{0}' +
                   '<' + propName + '>{1}</' + propName + '>' +
-                  '<Literal>{2}</Literal>' +
+                  literalStr +
                 '{3}';
 
             var filter = Ext.String.format(
@@ -453,10 +508,12 @@ Ext.define('GeoExt.util.OGCFilter', {
          * Returns a serialized geometry in GML3 format
          * @param {ol.geometry.Geometry} geometry The geometry to serialize
          * @param {String} srsName The epsg code to use to serialization
+         * @param {String} wfsVersion The WFS version to use (WFS 2.0.0
+         * requires gml prefix for geometries)
          * @return {string} The serialized geometry in GML3 format
          */
-        getGmlElementForGeometry: function(geometry, srsName) {
-            var format = new  ol.format.GML3({
+        getGmlElementForGeometry: function(geometry, srsName, wfsVersion) {
+            var format = new ol.format.GML3({
                 srsName: srsName
             });
             var geometryNode = format.writeGeometryNode(geometry, {
@@ -467,11 +524,73 @@ Ext.define('GeoExt.util.OGCFilter', {
                 return null;
             }
 
-            var childNodes = geometryNode.children || geometryNode.childNodes;
-            var serializer = new XMLSerializer();
-            var serializedValue = serializer
-                .serializeToString(childNodes[0]);
-            return serializedValue;
+            if (wfsVersion === '2.0.0') {
+                // supported geometries: Point, LineString and Polygon
+                // in case of multigeometries, the first one is used.
+                var geometryType = geometry.getType();
+                var staticMe = GeoExt.util.OGCFilter;
+                var isMulti = geometryType.indexOf('Multi') > -1;
+                switch (geometryType) {
+                case 'Polygon':
+                case 'MultiPolygon':
+                    var coordsPoly = geometry.getCoordinates()[0];
+                    if (isMulti) {
+                        coordsPoly = coordsPoly[0];
+                    }
+                    return Ext.String.format(
+                        staticMe.gml32PolygonTpl,
+                        srsName,
+                        staticMe.flattenCoordinates(coordsPoly)
+                    );
+                case 'LineString':
+                case 'MultiLineString':
+                    var coordsLine = geometry.getCoordinates();
+                    if (isMulti) {
+                        coordsLine = coordsLine[0];
+                    }
+                    return Ext.String.format(
+                        staticMe.gml32LineStringTpl,
+                        srsName,
+                        staticMe.flattenCoordinates(coordsLine)
+                    );
+                case 'Point':
+                case 'MultiPoint':
+                    var coordsPt = geometry.getCoordinates();
+                    if (isMulti) {
+                        coordsPt = coordsPt[0];
+                    }
+                    return Ext.String.format(
+                        staticMe.gml32PointTpl,
+                        srsName,
+                        staticMe.flattenCoordinates(coordsPt)
+                    );
+                default:
+                    return '';
+                }
+            } else {
+                var childNodes = geometryNode.children ||
+                  geometryNode.childNodes;
+                var serializer = new XMLSerializer();
+                var geomNode = childNodes[0];
+                var serializedValue = serializer
+                    .serializeToString(geomNode);
+                return serializedValue;
+            }
+        },
+
+        /**
+         * Reduce an ol.Coordiate array to a string of whitespace
+         * separated coordinate values
+         * @param {ol.Coordiate []} coordArray An array of
+         * coordinates
+         * @return {string} Concatenated array of coordinates
+         */
+        flattenCoordinates: function(coordArray) {
+            return Ext.Array.map(coordArray,
+                function(cp) {
+                    return cp.join(' ');
+                }
+            ).join(' ');
         },
 
         /**
@@ -489,20 +608,29 @@ Ext.define('GeoExt.util.OGCFilter', {
          */
         combineFilters: function(filters, combinator, omitNamespaces,
             wfsVersion) {
+            var staticMe = GeoExt.util.OGCFilter;
             var defaultCombineWith = 'And';
             var combineWith = combinator || defaultCombineWith;
             var numFilters = filters.length;
             var parts = [];
             var ns = omitNamespaces ? '' : 'ogc';
-            if (!Ext.isEmpty(wfsVersion) && wfsVersion === '2.0.0') {
-                ns = 'fes/2.0';
+            var omitNamespaceFromWfsVersion = !wfsVersion ||
+                wfsVersion === '1.0.0';
+            if (!Ext.isEmpty(wfsVersion) && wfsVersion === '2.0.0'
+                && !omitNamespaces) {
+                parts.push(staticMe.filter20StartElementStr);
+            } else {
+                parts.push('<Filter' + (omitNamespaces ? '' :
+                    ' xmlns="http://www.opengis.net/' + ns + '"' +
+                    ' xmlns:gml="http://www.opengis.net/gml"') + '>');
+                omitNamespaceFromWfsVersion = true;
             }
-            parts.push('<Filter' + (omitNamespaces ? '' :
-                ' xmlns="http://www.opengis.net/' + ns + '"' +
-                ' xmlns:gml="http://www.opengis.net/gml"') + '>');
+            parts.push();
 
             if (numFilters > 1) {
-                parts.push('<' + combineWith + '>');
+                parts.push('<' + (omitNamespaces || omitNamespaceFromWfsVersion
+                    ? '' : 'fes:') +
+                    combineWith + '>');
             }
 
             Ext.each(filters, function(filter) {
@@ -510,10 +638,13 @@ Ext.define('GeoExt.util.OGCFilter', {
             });
 
             if (numFilters > 1) {
-                parts.push('</' + combineWith + '>');
+                parts.push('</' + (omitNamespaces || omitNamespaceFromWfsVersion
+                    ? '' : 'fes:') +
+                    combineWith + '>');
             }
 
-            parts.push('</' + 'Filter>');
+            parts.push('</' + (omitNamespaces || omitNamespaceFromWfsVersion ?
+                '' : 'fes:') + 'Filter>');
             return parts.join('');
         },
 
