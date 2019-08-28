@@ -338,38 +338,32 @@ Ext.define('GeoExt.util.OGCFilter', {
                 value = value.toString().replace(/([']$)/g, '');
             }
 
+            var wfsPrefix = (isWfs20 ? 'fes:' : '');
+
             switch (operator) {
             case '==':
-                ogcFilterType = (isWfs20 ? 'fes:' : '') +
-                    'PropertyIsEqualTo';
+                ogcFilterType = wfsPrefix + 'PropertyIsEqualTo';
                 break;
             case 'eq':
-                ogcFilterType = (isWfs20 ? 'fes:' : '') +
-                    'PropertyIsEqualTo';
+                ogcFilterType = wfsPrefix + 'PropertyIsEqualTo';
                 break;
             case '!==':
-                ogcFilterType = (isWfs20 ? 'fes:' : '') +
-                    'PropertyIsNotEqualTo';
+                ogcFilterType = wfsPrefix + 'PropertyIsNotEqualTo';
                 break;
             case 'ne':
-                ogcFilterType = (isWfs20 ? 'fes:' : '') +
-                    'PropertyIsNotEqualTo';
+                ogcFilterType = wfsPrefix + 'PropertyIsNotEqualTo';
                 break;
             case 'lt':
-                ogcFilterType = (isWfs20 ? 'fes:' : '') +
-                    'PropertyIsLessThan';
+                ogcFilterType = wfsPrefix + 'PropertyIsLessThan';
                 break;
             case 'lte':
-                ogcFilterType = (isWfs20 ? 'fes:' : '') +
-                    'PropertyIsLessThanOrEqualTo';
+                ogcFilterType = wfsPrefix + 'PropertyIsLessThanOrEqualTo';
                 break;
             case 'gt':
-                ogcFilterType = (isWfs20 ? 'fes:' : '') +
-                    'PropertyIsGreaterThan';
+                ogcFilterType = wfsPrefix + 'PropertyIsGreaterThan';
                 break;
             case 'gte':
-                ogcFilterType = (isWfs20 ? 'fes:' : '') +
-                    'PropertyIsGreaterThanOrEqualTo';
+                ogcFilterType = wfsPrefix + 'PropertyIsGreaterThanOrEqualTo';
                 break;
             case 'like':
                 value = '*' + value + '*';
@@ -379,10 +373,9 @@ Ext.define('GeoExt.util.OGCFilter', {
                     '<' + propName + '>' + property + '</' + propName + '>' +
                     '<{0}Literal>' + value + '</{0}Literal>' +
                   '</{0}PropertyIsLike>';
-                return Ext.String.format(likeFilterTpl,
-                    isWfs20 ? 'fes:' : '');
+                return Ext.String.format(likeFilterTpl, wfsPrefix);
             case 'in':
-                ogcFilterType = (isWfs20 ? 'fes:' : '') + 'Or';
+                ogcFilterType = wfsPrefix + 'Or';
                 var values = value;
                 if (!Ext.isArray(value)) {
                     // cleanup brackets and quotes
@@ -392,11 +385,11 @@ Ext.define('GeoExt.util.OGCFilter', {
                 var filters = '';
                 Ext.each(values || value, function(val) {
                     filters +=
-                    '<' + (isWfs20 ? 'fes:' : '') + 'PropertyIsEqualTo>' +
+                    '<' + wfsPrefix + 'PropertyIsEqualTo>' +
                       '<' + propName + '>' + property + '</' + propName + '>' +
-                    '<' + (isWfs20 ? 'fes:' : '') + 'Literal>' + val + '</' +
-                        (isWfs20 ? 'fes:' : '') + 'Literal>' +
-                    '</' + (isWfs20 ? 'fes:' : '') + 'PropertyIsEqualTo>';
+                    '<' + wfsPrefix + 'Literal>' + val + '</' +
+                        wfsPrefix + 'Literal>' +
+                    '</' + wfsPrefix + 'PropertyIsEqualTo>';
                 });
                 ogcFilterType = '<' + ogcFilterType + '>';
 
