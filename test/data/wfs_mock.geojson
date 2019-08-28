@@ -3,7 +3,10 @@
   "features": [
     {
       "type": "Feature",
-      "properties": {"foo": 1},
+      "properties": {
+        "foo": 1,
+        "bar": "a"
+      },
       "geometry": {
         "type": "Point",
         "coordinates": [
@@ -14,7 +17,10 @@
     },
     {
       "type": "Feature",
-      "properties": {"foo": 2},
+      "properties": {
+        "foo": 2,
+        "bar": "b"
+      },
       "geometry": {
         "type": "Point",
         "coordinates": [
@@ -25,7 +31,10 @@
     },
     {
       "type": "Feature",
-      "properties": {"foo": 3},
+      "properties": {
+        "foo": 3,
+        "bar": "c"
+      },
       "geometry": {
         "type": "Point",
         "coordinates": [
