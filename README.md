@@ -92,7 +92,7 @@ https://geoext.github.io/geoext3/master/examples/component/map.html
 
 ## Want to contribute? Yes, please 😀
 
-Read the [hints for developers](development.md) to get started. We look forward
+Read the [hints for developers](CONTRIBUTING.md) to get started. We look forward
 to your contributions!
 
 ## Initial Codesprint
