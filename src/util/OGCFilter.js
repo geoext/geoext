@@ -506,17 +506,6 @@ Ext.define('GeoExt.util.OGCFilter', {
          * @return {string} The serialized geometry in GML3 format
          */
         getGmlElementForGeometry: function(geometry, srsName, wfsVersion) {
-            var format = new ol.format.GML3({
-                srsName: srsName
-            });
-            var geometryNode = format.writeGeometryNode(geometry, {
-                dataProjection: srsName
-            });
-            if (!geometryNode) {
-                Ext.Logger.warn('Could not serialize geometry');
-                return null;
-            }
-
             if (wfsVersion === '2.0.0') {
                 // supported geometries: Point, LineString and Polygon
                 // in case of multigeometries, the first one is used.
@@ -561,6 +550,16 @@ Ext.define('GeoExt.util.OGCFilter', {
                     return '';
                 }
             } else {
+                var format = new ol.format.GML3({
+                    srsName: srsName
+                });
+                var geometryNode = format.writeGeometryNode(geometry, {
+                    dataProjection: srsName
+                });
+                if (!geometryNode) {
+                    Ext.Logger.warn('Could not serialize geometry');
+                    return null;
+                }
                 var childNodes = geometryNode.children ||
                   geometryNode.childNodes;
                 var serializer = new XMLSerializer();
