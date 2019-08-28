@@ -176,6 +176,13 @@ Ext.define('GeoExt.form.field.GeocoderComboBox', {
     showLocationOnMap: true,
 
     /**
+     * Flag to restrict nomination query to current map extent
+     *
+     * @cfg {Boolean}
+     */
+    restrictToMapExtent: false,
+
+    /**
      * @private
      */
     initComponent: function() {
@@ -214,10 +221,67 @@ Ext.define('GeoExt.form.field.GeocoderComboBox', {
         me.callParent(arguments);
 
         me.on({
-            select: this.onSelect,
+            unRestrictMapExtent: me.unRestrictExtent,
+            restrictToMapExtent: me.restrictExtent,
+            select: me.onSelect,
             focus: me.onFocus,
             scope: me
         });
+
+        if (me.restrictToMapExtent) {
+            me.restrictExtent();
+        }
+    },
+
+    /**
+     * Handle restriction to viewbox: register moveend event
+     * and update params of AJAX proxy
+     */
+    restrictExtent: function() {
+        var me = this;
+        me.map.on('moveend', me.updateExtraParams, me);
+        me.updateExtraParams();
+    },
+
+    /**
+     * Update viewbox parameter based on the current map extent
+     */
+    updateExtraParams: function() {
+        var me = this;
+        var mapSize = me.map.getSize();
+        var mv = me.map.getView();
+        var extent = mv.calculateExtent(mapSize);
+        var ll = ol.proj.transform([extent[0], extent[1]],
+            'EPSG:3857', 'EPSG:4326');
+        var ur = ol.proj.transform([extent[2], extent[3]],
+            'EPSG:3857', 'EPSG:4326');
+
+        ll = Ext.Array.map(ll, function(val) {
+            return Math.min(Math.max(val, -180), 180);
+        });
+        ur = Ext.Array.map(ur, function(val) {
+            return Math.min(Math.max(val, -180), 180);
+        });
+        var viewBoxStr = [ll.join(','), ur.join(',')].join(',');
+
+        if (me.store && me.store.getProxy()) {
+            me.store.getProxy().setExtraParam('viewbox', viewBoxStr);
+            me.store.getProxy().setExtraParam('bounded', '1');
+        }
+    },
+
+    /**
+     * Remove restriction to viewbox, in particular remove viewbox
+     * and bounded parameters from AJAX proxy and un-register
+     * moveend event from map
+     */
+    unRestrictExtent: function() {
+        var me = this;
+        if (me.store && me.store.getProxy()) {
+            me.store.getProxy().setExtraParam('viewbox', undefined);
+            me.store.getProxy().setExtraParam('bounded', undefined);
+        }
+        me.map.un('moveend', me.updateExtraParams, me);
     },
 
     /**
