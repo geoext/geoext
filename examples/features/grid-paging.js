@@ -28,9 +28,10 @@ Ext.application({
             version: '2.0.0',
             typeName: 'dwd:Warngebiete_Kreise',
             outputFormat: 'application/json',
-            sortBy: 'NAME',
+            sorters: 'NAME',
             startIndex: 0,
             count: 10,
+            remoteSort: true,
             format: new ol.format.GeoJSON({
                 featureProjection: 'EPSG:3857'
             }),

@@ -21,7 +21,8 @@
 Ext.define('GeoExt.data.store.WfsFeatures', {
     extend: 'GeoExt.data.store.Features',
     mixins: [
-        'GeoExt.mixin.SymbolCheck'
+        'GeoExt.mixin.SymbolCheck',
+        'GeoExt.util.OGCFilter'
     ],
 
     /**
@@ -29,6 +30,24 @@ Ext.define('GeoExt.data.store.WfsFeatures', {
      * @cfg {Boolean}
      */
     remoteSort: true,
+
+    /**
+     * Default to using server side filtering
+     * @cfg {Boolean}
+     */
+    remoteFilter: true,
+
+    /**
+     * Default logical comperator to combine filters sent to WFS
+     * @cfg {String}
+     */
+    logicalFilterCombinator: 'And',
+
+    /**
+      * Default request method to use in AJAX requests
+      * @cfg {String}
+      */
+    requestMethod: 'GET',
 
     /**
      * The 'service' param value used in the WFS request.
@@ -63,12 +82,6 @@ Ext.define('GeoExt.data.store.WfsFeatures', {
     outputFormat: 'application/json',
 
     /**
-     * The 'sortBy' param value used in the WFS request.
-     * @cfg {String}
-     */
-    sortBy: null,
-
-    /**
      * The 'startIndex' param value used in the WFS request.
      * @cfg {String}
      */
@@ -98,6 +111,13 @@ Ext.define('GeoExt.data.store.WfsFeatures', {
      * @cfg {String}
      */
     layerAttribution: null,
+
+    /**
+     * Additional OpenLayers properties to apply to the created vector layer.
+     * Only has an effect if #createLayer is set to `true`
+     * @cfg {String}
+     */
+    layerOptions: null,
 
     /**
      * Cache the total number of features be queried from when the store is
@@ -158,10 +178,17 @@ Ext.define('GeoExt.data.store.WfsFeatures', {
                 features: [],
                 attributions: me.layerAttribution
             });
-            me.layer = new ol.layer.Vector({
+
+            var layerOptions = {
                 source: me.source,
                 style: me.style
-            });
+            };
+
+            if (me.layerOptions) {
+                Ext.applyIf(layerOptions, me.layerOptions);
+            }
+
+            me.layer = new ol.layer.Vector(layerOptions);
 
             me.layerCreated = true;
         }
@@ -172,7 +199,6 @@ Ext.define('GeoExt.data.store.WfsFeatures', {
             // initial load of the WFS data
             me.loadWfs();
         }
-
 
         // before the store gets re-loaded (e.g. by a paging toolbar) we trigger
         // the re-loading of the WFS, so the data keeps in sync
@@ -219,13 +245,63 @@ Ext.define('GeoExt.data.store.WfsFeatures', {
     },
 
     /**
+     * Sends the sortBy parameter to the WFS Server
+     * If multiple sorters are specified then multiple fields are
+     * sent to the server.
+     * Ascending sorts will append ASC and descending sorts DESC
+     * E.g. sortBy=attribute1 DESC,attribute2 ASC
+     * @private
+     * @return {String} The sortBy string
+     */
+    createSortByParameter: function() {
+        var me = this;
+        var sortStrings = [];
+        var direction;
+        var property;
+
+        me.getSorters().each(function(sorter) {
+            // direction will be ASC or DESC
+            direction = sorter.getDirection();
+            property = sorter.getProperty();
+            sortStrings.push(Ext.String.format('{0} {1}', property, direction));
+        });
+
+        return sortStrings.join(',');
+    },
+
+    /**
+     * Create filter parameter string (according to Filter Encoding standard)
+     * based on the given instances in filters ({Ext.util.FilterCollection}) of
+     * the store.
+     *
+     * @private
+     * @return {String} The filter XML encoded as string
+     */
+    createOgcFilter: function() {
+        var me = this;
+        var filters = [];
+        me.getFilters().each(function(item) {
+            filters.push(item);
+        });
+        if (filters.length === 0) {
+            return null;
+        }
+        var wfsGetFeatureFilter = GeoExt.util.OGCFilter.
+            getOgcWfsFilterFromExtJsFilter(
+                filters,
+                me.logicalFilterCombinator,
+                me.version
+            );
+        return wfsGetFeatureFilter;
+    },
+
+    /**
      * Gets the number of features for the WFS typeName
      * using resultType=hits and caches it so it only needs to be calculated
      * the first time the store is used.
      * @private
      */
     cacheTotalFeatureCount: function() {
-
         var me = this;
         var url = me.url;
         me.cachedTotalCount = 0;
@@ -241,7 +317,7 @@ Ext.define('GeoExt.data.store.WfsFeatures', {
 
         Ext.Ajax.request({
             url: url,
-            method: 'GET',
+            method: me.requestMethod,
             params: params,
             success: function(response) {
                 // set number of total features (needed for paging)
@@ -253,6 +329,18 @@ Ext.define('GeoExt.data.store.WfsFeatures', {
                     response.responseText + ' Status: ' + response.status);
             }
         });
+    },
+
+    /**
+     * Handles the 'filterchange'-event.
+     * Reload data using updated filter config.
+     * @private
+     */
+    onFilterChange: function() {
+        var me = this;
+        if (me.getFilters() && me.getFilters().length > 0) {
+            me.loadWfs();
+        }
     },
 
     /**
@@ -273,7 +361,18 @@ Ext.define('GeoExt.data.store.WfsFeatures', {
         // send the sortBy parameter only when remoteSort is true
         // as it is not supported by all WFS servers
         if (me.remoteSort === true) {
-            params.sortBy = me.sortBy;
+            var sortBy = me.createSortByParameter();
+            if (sortBy) {
+                params.sortBy = sortBy;
+            }
+        }
+
+        // create filter string if remoteFilter is activated
+        if (me.remoteFilter === true) {
+            var filter = me.createOgcFilter();
+            if (filter) {
+                params.filter = filter;
+            }
         }
 
         // apply paging parameters if necessary
@@ -294,7 +393,7 @@ Ext.define('GeoExt.data.store.WfsFeatures', {
         // request features from WFS
         Ext.Ajax.request({
             url: url,
-            method: 'GET',
+            method: me.requestMethod,
             params: params,
             success: function(response) {
 
