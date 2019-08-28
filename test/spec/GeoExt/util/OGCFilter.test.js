@@ -198,54 +198,60 @@ describe('GeoExt.util.OGCFilter', function() {
             '</Filter>';
 
         var expectedWFS2Filter =
-            '<Filter xmlns="http://www.opengis.net/fes/2.0" ' +
-                'xmlns:gml="http://www.opengis.net/gml">' +
-              '<And>' +
-                '<PropertyIsLike wildCard="*" singleChar="." escape="!" ' +
+            '<fes:Filter ' +
+                'xsi:schemaLocation="http://www.opengis.net/fes/2.0 ' +
+                'http://schemas.opengis.net/filter/2.0/filterAll.xsd ' +
+                'http://www.opengis.net/gml/3.2 ' +
+                'http://schemas.opengis.net/gml/3.2.1/gml.xsd" ' +
+                'xmlns:fes="http://www.opengis.net/fes/2.0" ' +
+                'xmlns:gml="http://www.opengis.net/gml/3.2" ' +
+                'xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">' +
+                '<fes:And>' +
+                '<fes:PropertyIsLike wildCard="*" singleChar="." escape="!" ' +
                 'matchCase="false">' +
-                    '<ValueReference>NAME</ValueReference>' +
-                    '<Literal>*d*</Literal>' +
-                '</PropertyIsLike>' +
-                '<Or>' +
-                '<PropertyIsEqualTo>' +
-                    '<ValueReference>WARNCELLID</ValueReference>' +
-                    '<Literal>105120000</Literal>' +
-                '</PropertyIsEqualTo>' +
-                '<PropertyIsEqualTo>' +
-                    '<ValueReference>WARNCELLID</ValueReference>' +
-                    '<Literal>105124000</Literal>' +
-                '</PropertyIsEqualTo>' +
-                '<PropertyIsEqualTo>' +
-                    '<ValueReference>WARNCELLID</ValueReference>' +
-                    '<Literal>105158000</Literal>' +
-                '</PropertyIsEqualTo>' +
-                '</Or>' +
-                '<PropertyIsEqualTo>' +
-                    '<ValueReference>WARNCELLID</ValueReference>' +
-                    '<Literal>105124000</Literal>' +
-                '</PropertyIsEqualTo>' +
-                '<PropertyIsNotEqualTo>' +
-                    '<ValueReference>WARNCELLID</ValueReference>' +
-                    '<Literal>105124001</Literal>' +
-                '</PropertyIsNotEqualTo>' +
-                '<PropertyIsEqualTo>' +
-                    '<ValueReference>BOOLFIELD</ValueReference>' +
-                    '<Literal>true</Literal>' +
-                '</PropertyIsEqualTo>' +
-                '<PropertyIsNotEqualTo>' +
-                    '<ValueReference>BOOLFIELD</ValueReference>' +
-                    '<Literal>false</Literal>' +
-                '</PropertyIsNotEqualTo>' +
-                '<PropertyIsLessThan>' +
-                  '<ValueReference>PROCESSTIME</ValueReference>' +
-                  '<Literal>2019-04-06</Literal>' +
-                '</PropertyIsLessThan>' +
-                '<PropertyIsGreaterThan>' +
-                  '<ValueReference>PROCESSTIME</ValueReference>' +
-                  '<Literal>2019-04-01</Literal>' +
-                '</PropertyIsGreaterThan>' +
-              '</And>' +
-            '</Filter>';
+                    '<fes:ValueReference>NAME</fes:ValueReference>' +
+                    '<fes:Literal>*d*</fes:Literal>' +
+                '</fes:PropertyIsLike>' +
+                '<fes:Or>' +
+                '<fes:PropertyIsEqualTo>' +
+                    '<fes:ValueReference>WARNCELLID</fes:ValueReference>' +
+                    '<fes:Literal>105120000</fes:Literal>' +
+                '</fes:PropertyIsEqualTo>' +
+                '<fes:PropertyIsEqualTo>' +
+                    '<fes:ValueReference>WARNCELLID</fes:ValueReference>' +
+                    '<fes:Literal>105124000</fes:Literal>' +
+                '</fes:PropertyIsEqualTo>' +
+                '<fes:PropertyIsEqualTo>' +
+                    '<fes:ValueReference>WARNCELLID</fes:ValueReference>' +
+                    '<fes:Literal>105158000</fes:Literal>' +
+                '</fes:PropertyIsEqualTo>' +
+                '</fes:Or>' +
+                '<fes:PropertyIsEqualTo>' +
+                    '<fes:ValueReference>WARNCELLID</fes:ValueReference>' +
+                    '<fes:Literal>105124000</fes:Literal>' +
+                '</fes:PropertyIsEqualTo>' +
+                '<fes:PropertyIsNotEqualTo>' +
+                    '<fes:ValueReference>WARNCELLID</fes:ValueReference>' +
+                    '<fes:Literal>105124001</fes:Literal>' +
+                '</fes:PropertyIsNotEqualTo>' +
+                '<fes:PropertyIsEqualTo>' +
+                    '<fes:ValueReference>BOOLFIELD</fes:ValueReference>' +
+                    '<fes:Literal>true</fes:Literal>' +
+                '</fes:PropertyIsEqualTo>' +
+                '<fes:PropertyIsNotEqualTo>' +
+                    '<fes:ValueReference>BOOLFIELD</fes:ValueReference>' +
+                    '<fes:Literal>false</fes:Literal>' +
+                '</fes:PropertyIsNotEqualTo>' +
+                '<fes:PropertyIsLessThan>' +
+                  '<fes:ValueReference>PROCESSTIME</fes:ValueReference>' +
+                  '<fes:Literal>2019-04-06</fes:Literal>' +
+                '</fes:PropertyIsLessThan>' +
+                '<fes:PropertyIsGreaterThan>' +
+                  '<fes:ValueReference>PROCESSTIME</fes:ValueReference>' +
+                  '<fes:Literal>2019-04-01</fes:Literal>' +
+                '</fes:PropertyIsGreaterThan>' +
+              '</fes:And>' +
+            '</fes:Filter>';
 
         var expectedGetFeature10Filter =
           '<wfs:GetFeature service="WFS" version="1.0.0" outputFormat="JSON" ' +
@@ -352,7 +358,7 @@ describe('GeoExt.util.OGCFilter', function() {
             });
 
             it('concatenates filters with `And`', function() {
-                expect(wfs2Filter).to.contain('<And>');
+                expect(wfs2Filter).to.contain('<fes:And>');
             });
 
             it('contains all filters', function() {
@@ -476,7 +482,45 @@ describe('GeoExt.util.OGCFilter', function() {
 
                     expect(filter).to.equal(expected);
                 });
+            });
 
+            it('supports WFS 2.0.0 - FES 2.0 filters', function() {
+                var wfsVersion = '2.0.0';
+                var coords = [[16, 48], [19, 9]];
+                var epsg = 'EPSG:4326';
+                var geometry = new ol.geom.LineString(coords);
+                var propertyName = 'nice-geometry-attribute';
+                var topologicalOperators = {
+                    'intersect': 'Intersects',
+                    'within': 'Within',
+                    'contains': 'Contains',
+                    'equals': 'Equals',
+                    'disjoint': 'Disjoint',
+                    'crosses': 'Crosses',
+                    'touches': 'Touches',
+                    'overlaps': 'Overlaps'
+                };
+
+                var gmlElement = Ext.String.format(
+                    GeoExt.util.OGCFilter.gml32LineStringTpl,
+                    epsg,
+                    GeoExt.util.OGCFilter.flattenCoordinates(coords)
+                );
+
+                Ext.iterate(topologicalOperators, function(key, val) {
+                    var filter = GeoExt.util.OGCFilter.getOgcFilter(
+                        propertyName, key, geometry, wfsVersion, epsg
+                    );
+
+                    var expected = Ext.String.format(
+                        GeoExt.util.OGCFilter.spatialFilterWfs2xXmlTpl,
+                        val,
+                        propertyName,
+                        gmlElement
+                    );
+
+                    expect(filter).to.equal(expected);
+                });
             });
 
             it('supports bbox filters', function() {

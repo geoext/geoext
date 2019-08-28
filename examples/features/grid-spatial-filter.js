@@ -105,7 +105,7 @@ Ext.application({
             layerAttribution: '| <a href="https://www.dwd.de/"> ' +
                 'Source: Deutscher Wetterdienst</a>',
             url: 'https://maps.dwd.de/geoserver/dwd/ows?',
-            version: '1.1.0',
+            version: '2.0.0',
             typeName: 'dwd:Warngebiete_Kreise',
             outputFormat: 'application/json',
             format: new ol.format.GeoJSON({
