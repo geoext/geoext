@@ -251,10 +251,28 @@ Ext.define('GeoExt.form.field.GeocoderComboBox', {
         var mapSize = me.map.getSize();
         var mv = me.map.getView();
         var extent = mv.calculateExtent(mapSize);
+        me.addMapExtentParams(extent, mv.getProjection());
+    },
+
+    /**
+     * Update map extent params of AJAX proxy.
+     *
+     * By default, 'viewbox' and 'bounded' are updated since Nominatim is the
+     * default geocoder in this class. If no projection is passed the one of
+     * the map view is used.
+     *
+     * @param {ol.Extent} extent The extend to restrict the geocoder to
+     * @param {ol.proj.Projection} projection The projection of given extent
+     */
+    addMapExtentParams: function(extent, projection) {
+        var me = this;
+        if (!projection) {
+            projection = me.map.getView().getProjection();
+        }
         var ll = ol.proj.transform([extent[0], extent[1]],
-            'EPSG:3857', 'EPSG:4326');
+            projection, 'EPSG:4326');
         var ur = ol.proj.transform([extent[2], extent[3]],
-            'EPSG:3857', 'EPSG:4326');
+            projection, 'EPSG:4326');
 
         ll = Ext.Array.map(ll, function(val) {
             return Math.min(Math.max(val, -180), 180);
