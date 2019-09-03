@@ -289,17 +289,28 @@ Ext.define('GeoExt.form.field.GeocoderComboBox', {
     },
 
     /**
-     * Remove restriction to viewbox, in particular remove viewbox
-     * and bounded parameters from AJAX proxy and un-register
-     * moveend event from map
+     * Cleanup if extent restriction is omitted.
+     * -> moveend event from map
+     * -> call removeMapExtentParams to reset params set in store
      */
     unRestrictExtent: function() {
+        var me = this;
+        // unbinding moveend event
+        me.map.un('moveend', me.updateExtraParams, me);
+        // cleanup params in store
+        me.removeMapExtentParams();
+    },
+
+    /**
+     * Remove restriction to viewbox, in particular remove viewbox
+     * and bounded parameters from AJAX proxy for nominatim queries
+     */
+    removeMapExtentParams: function() {
         var me = this;
         if (me.store && me.store.getProxy()) {
             me.store.getProxy().setExtraParam('viewbox', undefined);
             me.store.getProxy().setExtraParam('bounded', undefined);
         }
-        me.map.un('moveend', me.updateExtraParams, me);
     },
 
     /**
