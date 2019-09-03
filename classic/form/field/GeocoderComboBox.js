@@ -176,6 +176,13 @@ Ext.define('GeoExt.form.field.GeocoderComboBox', {
     showLocationOnMap: true,
 
     /**
+     * Flag to restrict nomination query to current map extent
+     *
+     * @cfg {Boolean}
+     */
+    restrictToMapExtent: false,
+
+    /**
      * @private
      */
     initComponent: function() {
@@ -214,10 +221,96 @@ Ext.define('GeoExt.form.field.GeocoderComboBox', {
         me.callParent(arguments);
 
         me.on({
-            select: this.onSelect,
+            unRestrictMapExtent: me.unRestrictExtent,
+            restrictToMapExtent: me.restrictExtent,
+            select: me.onSelect,
             focus: me.onFocus,
             scope: me
         });
+
+        if (me.restrictToMapExtent) {
+            me.restrictExtent();
+        }
+    },
+
+    /**
+     * Handle restriction to viewbox: register moveend event
+     * and update params of AJAX proxy
+     */
+    restrictExtent: function() {
+        var me = this;
+        me.map.on('moveend', me.updateExtraParams, me);
+        me.updateExtraParams();
+    },
+
+    /**
+     * Update viewbox parameter based on the current map extent
+     */
+    updateExtraParams: function() {
+        var me = this;
+        var mapSize = me.map.getSize();
+        var mv = me.map.getView();
+        var extent = mv.calculateExtent(mapSize);
+        me.addMapExtentParams(extent, mv.getProjection());
+    },
+
+    /**
+     * Update map extent params of AJAX proxy.
+     *
+     * By default, 'viewbox' and 'bounded' are updated since Nominatim is the
+     * default geocoder in this class. If no projection is passed the one of
+     * the map view is used.
+     *
+     * @param {ol.Extent} extent The extend to restrict the geocoder to
+     * @param {ol.proj.Projection} projection The projection of given extent
+     */
+    addMapExtentParams: function(extent, projection) {
+        var me = this;
+        if (!projection) {
+            projection = me.map.getView().getProjection();
+        }
+        var ll = ol.proj.transform([extent[0], extent[1]],
+            projection, 'EPSG:4326');
+        var ur = ol.proj.transform([extent[2], extent[3]],
+            projection, 'EPSG:4326');
+
+        ll = Ext.Array.map(ll, function(val) {
+            return Math.min(Math.max(val, -180), 180);
+        });
+        ur = Ext.Array.map(ur, function(val) {
+            return Math.min(Math.max(val, -180), 180);
+        });
+        var viewBoxStr = [ll.join(','), ur.join(',')].join(',');
+
+        if (me.store && me.store.getProxy()) {
+            me.store.getProxy().setExtraParam('viewbox', viewBoxStr);
+            me.store.getProxy().setExtraParam('bounded', '1');
+        }
+    },
+
+    /**
+     * Cleanup if extent restriction is omitted.
+     * -> moveend event from map
+     * -> call removeMapExtentParams to reset params set in store
+     */
+    unRestrictExtent: function() {
+        var me = this;
+        // unbinding moveend event
+        me.map.un('moveend', me.updateExtraParams, me);
+        // cleanup params in store
+        me.removeMapExtentParams();
+    },
+
+    /**
+     * Remove restriction to viewbox, in particular remove viewbox
+     * and bounded parameters from AJAX proxy for nominatim queries
+     */
+    removeMapExtentParams: function() {
+        var me = this;
+        if (me.store && me.store.getProxy()) {
+            me.store.getProxy().setExtraParam('viewbox', undefined);
+            me.store.getProxy().setExtraParam('bounded', undefined);
+        }
     },
 
     /**

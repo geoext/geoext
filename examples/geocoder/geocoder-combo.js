@@ -49,6 +49,20 @@ Ext.application({
                         color: 'red'
                     })
                 })
+            }, {
+                xtype: 'checkboxfield',
+                boxLabel: 'Restrict to map extent',
+                listeners: {
+                    'change': function(cb, val) {
+                        var combo = cb.up().down('gx_geocoder_combo');
+                        if (combo) {
+                            var evtName = val ?
+                                'restrictToMapExtent' :
+                                'unRestrictMapExtent';
+                            combo.fireEvent(evtName);
+                        }
+                    }
+                }
             }]
         });
 
