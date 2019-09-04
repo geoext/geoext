@@ -183,17 +183,25 @@ Ext.define('GeoExt.data.store.Layers', {
      * appropriate record within the store.
      *
      * @param {ol.ObjectEvent} evt The emitted `ol.Object` event.
+     * @param {Function} filterFn An optional filter function
      * @private
      */
-    onChangeLayer: function(evt) {
+    onChangeLayer: function(evt, filterFn) {
         var layer = evt.target;
-        var recordIndex = this.findBy(function(rec) {
-            return rec.getOlLayer() === layer;
-        });
+        var recordIndex = -1;
+        if (Ext.isFunction(filterFn)) {
+            recordIndex = this.findBy(filterFn);
+        } else {
+            recordIndex = this.findBy(function(rec) {
+                return rec.getOlLayer() === layer;
+            });
+        }
         if (recordIndex > -1) {
             var record = this.getAt(recordIndex);
             if (evt.key === 'title') {
                 record.set('title', layer.get('title'));
+            } else if (evt.key === 'description') {
+                record.set('qtip', layer.get('description'));
             } else {
                 this.fireEvent('update', this, record, Ext.data.Record.EDIT,
                     null, {});
