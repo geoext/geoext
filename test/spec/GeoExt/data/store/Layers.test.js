@@ -353,7 +353,10 @@ describe('GeoExt.data.store.Layers', function() {
                 var filterFn = function(rec) {
                     return rec.getOlLayer().get('id').indexOf('another') > -1;
                 };
-                store.onChangeLayer(evt, filterFn);
+                store.setConfig({
+                    changeLayerFilterFunction: filterFn
+                });
+                store.onChangeLayer(evt);
                 var recordIdx = store.findBy(filterFn);
                 var record = store.getAt(recordIdx);
                 expect(record).not.to.be(null);

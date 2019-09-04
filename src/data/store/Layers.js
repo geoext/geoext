@@ -64,7 +64,15 @@ Ext.define('GeoExt.data.store.Layers', {
          *
          * @cfg {ol.Collection} layers
          */
-        layers: null
+        layers: null,
+
+        /**
+         * An optional function called to filter records used in changeLayer
+         * function
+         *
+         * @cfg {Function} changeLayerFilterFn
+         */
+        changeLayerFilterFn: null
     },
 
     /**
@@ -183,15 +191,16 @@ Ext.define('GeoExt.data.store.Layers', {
      * appropriate record within the store.
      *
      * @param {ol.ObjectEvent} evt The emitted `ol.Object` event.
-     * @param {Function} filterFn An optional filter function
      * @private
      */
-    onChangeLayer: function(evt, filterFn) {
+    onChangeLayer: function(evt) {
+        var me = this;
         var layer = evt.target;
         var recordIndex = -1;
-        if (Ext.isFunction(filterFn)) {
-            recordIndex = this.findBy(filterFn);
-        } else {
+        if (Ext.isFunction(me.changeLayerFilterFn.bind(layer))) {
+            recordIndex = this.findBy(me.changeLayerFilterFn.bind(layer));
+        }
+        if (recordIndex === -1) {
             recordIndex = this.findBy(function(rec) {
                 return rec.getOlLayer() === layer;
             });
