@@ -285,6 +285,86 @@ describe('GeoExt.data.store.Layers', function() {
             });
         });
 
+        describe('function "onChangeLayer"', function() {
+            var id = 'nice-id-1909';
+            var store;
+            var map;
+            var layer;
+            var layer2;
+            var layer2Title = 'LAYER 2';
+            beforeEach(function() {
+                layer = new ol.layer.Vector();
+                layer2 = new ol.layer.Vector();
+                layer.set('id', id);
+                layer2.set('id', 'another id');
+                layer2.set('title', layer2Title);
+                map = new ol.Map({
+                    layers: [layer, layer2]
+                });
+                store = Ext.create('GeoExt.data.store.Layers', {map: map});
+            });
+
+            it('exists', function() {
+                expect(store.onChangeLayer).not.to.be(undefined);
+            });
+
+            it('sets title correctly', function() {
+                var title = 'humpty-dumpty';
+                layer.set('title', title);
+                var evt = {
+                    target: layer,
+                    key: 'title'
+                };
+                store.onChangeLayer(evt);
+
+                var recordIdx = store.findBy(function(record) {
+                    return record.getOlLayer().get('id') === id;
+                });
+                var record = store.getAt(recordIdx);
+                expect(record).not.to.be(undefined);
+                expect(record.get('title')).to.be(title);
+            });
+
+            it('sets description / qtip correctly', function() {
+                var description = 'humpty-dumpty';
+                layer.set('description', description);
+                var evt = {
+                    target: layer,
+                    key: 'description'
+                };
+                store.onChangeLayer(evt);
+
+                var recordIdx = store.findBy(function(record) {
+                    return record.getOlLayer().get('id') === id;
+                });
+                var record = store.getAt(recordIdx);
+                expect(record).not.to.be(undefined);
+                expect(record.get('qtip')).to.be(description);
+            });
+
+            it('uses filter function if provided', function() {
+                var title = 'humpty-dumpty';
+                layer.set('title', title);
+
+                var evt = {
+                    target: layer2,
+                    key: 'title'
+                };
+                var filterFn = function(rec) {
+                    return rec.getOlLayer().get('id').indexOf('another') > -1;
+                };
+                store.setConfig({
+                    changeLayerFilterFunction: filterFn
+                });
+                store.onChangeLayer(evt);
+                var recordIdx = store.findBy(filterFn);
+                var record = store.getAt(recordIdx);
+                expect(record).not.to.be(null);
+                expect(record.get('title')).to.be(layer2Title);
+            });
+
+        });
+
     });
 
 });
