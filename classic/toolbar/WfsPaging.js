@@ -29,12 +29,8 @@ Ext.define('GeoExt.toolbar.WfsPaging', {
     /**
      * Ensures that the 'gx-wfsstoreload' event of the WFS store is bound to the
      * onLoad function of this toolbar once we have the store bound.
-     *
-     * @private
-     * @param  {Ext.Component} owner The owner component
-     * @param  {Ext.data.Store} store The store
      */
-    onOwnerStoreChange: function(owner, store) {
+    onBindStore: function() {
         var me = this;
         me.callParent(arguments);
         me.store.on('gx-wfsstoreload', me.onLoad, me);
