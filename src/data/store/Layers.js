@@ -199,8 +199,7 @@ Ext.define('GeoExt.data.store.Layers', {
         var recordIndex = -1;
         if (Ext.isFunction(me.changeLayerFilterFn)) {
             recordIndex = this.findBy(me.changeLayerFilterFn.bind(layer));
-        }
-        if (recordIndex === -1) {
+        } else {
             recordIndex = this.findBy(function(rec) {
                 return rec.getOlLayer() === layer;
             });
