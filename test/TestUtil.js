@@ -1,6 +1,6 @@
 (function(global) {
     /**
-     * Ensures that the `BasiGX.view.component.Map` is available for
+     * Ensures that the `GeoExt.component.Map` is available for
      * instantiation by calling `Ext.Loader.syncRequire` if needed.
      *
      * @private
