@@ -14,6 +14,27 @@ describe('GeoExt.component.Popup', function() {
                 }).to.throwException();
             });
         });
+
+        it('can be created if not render target was specified', function() {
+            var layer = new ol.layer.Tile({
+                source: new ol.source.OSM()
+            });
+            var testObjs = TestUtil.setupTestObjects({
+                mapOpts: {
+                    layers: [layer],
+                    view: new ol.View({
+                        center: [0, 0],
+                        zoom: 2
+                    })
+                }
+            });
+
+            var map = testObjs.map;
+            var testPopup = Ext.create('GeoExt.component.Popup', {
+                map: map
+            });
+            expect(testPopup).not.to.be(undefined);
+        });
     });
 
 });
