@@ -88,10 +88,32 @@ module.exports = function(config) {
 
         // available browser launchers:
         // https://npmjs.org/browse/keyword/karma-launcher
-        browsers: ['PhantomJS'],
+        browsers: [
+            'ChromeNoSandbox',
+            'FirefoxHeadless'
+        ],
 
-        phantomjsLauncher: {
-            flags: ['--load-images=false']
+        // definition of custom browser launchers, especially use headless mode
+        customLaunchers: {
+            ChromeNoSandbox: {
+                base: 'Chrome',
+                flags: [
+                    '--no-sandbox',
+                    '--headless',
+                    '--disable-web-security',
+                    '--disable-gpu',
+                    // Without a remote debugging port, Google Chrome exits
+                    // immediately.
+                    '--remote-debugging-port=9999',
+                    '--remote-debugging-address=1.1.1.1'
+                ]
+            },
+            FirefoxHeadless: {
+                base: 'Firefox',
+                flags: [
+                    '-headless'
+                ]
+            }
         },
 
         // Continuous Integration mode
