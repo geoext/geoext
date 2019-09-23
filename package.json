@@ -75,7 +75,7 @@
     "np": "5.1.0",
     "openlayers": "4.6.5",
     "rimraf": "3.0.0",
-    "sinon": "7.4.2"
+    "sinon": "7.5.0"
   },
   "greenkeeper": {
     "ignore": [
