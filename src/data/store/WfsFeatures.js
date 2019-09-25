@@ -140,6 +140,15 @@ Ext.define('GeoExt.data.store.WfsFeatures', {
     featureCountOutputFormat: 'gml3',
 
     /**
+    * Any currently executing request to the WFS server.
+    * A reference to this is kept so any new requests can
+    * abort the previous request to ensure only the most recently
+    * requested results are returned.
+    * @cfg {Ext.data.request.Ajax}
+    */
+    activeRequest: null,
+
+    /**
      * Constructs the WFS feature store.
      *
      * @param {Object} config The configuration object.
@@ -349,6 +358,11 @@ Ext.define('GeoExt.data.store.WfsFeatures', {
      */
     loadWfs: function() {
         var me = this;
+
+        if (me.activeRequest) {
+            me.activeRequest.abort();
+        }
+
         var url = me.url;
         var params = {
             service: me.service,
@@ -391,7 +405,7 @@ Ext.define('GeoExt.data.store.WfsFeatures', {
         }
 
         // request features from WFS
-        Ext.Ajax.request({
+        me.activeRequest = Ext.Ajax.request({
             url: url,
             method: me.requestMethod,
             params: params,
@@ -432,5 +446,15 @@ Ext.define('GeoExt.data.store.WfsFeatures', {
             }
 
         });
+    },
+
+    onDestroy: function() {
+        var me = this;
+
+        if (me.activeRequest) {
+            me.activeRequest.destroy();
+        }
+
+        me.callParent(arguments);
     }
 });
