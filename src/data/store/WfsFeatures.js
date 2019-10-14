@@ -76,6 +76,12 @@ Ext.define('GeoExt.data.store.WfsFeatures', {
     typeName: null,
 
     /**
+     * The 'srsName' param value used in the WFS request. If not set
+     * it is automatically set to the map projection when available.
+     * @cfg {String}
+     */
+    srsName: null,
+    /**
      * The 'outputFormat' param value used in the WFS request.
      * @cfg {String}
      */
@@ -371,6 +377,16 @@ Ext.define('GeoExt.data.store.WfsFeatures', {
             typeName: me.typeName,
             outputFormat: me.outputFormat
         };
+
+        // add a srsName parameter
+        if (me.srsName) {
+            params.srsName = me.srsName;
+        } else {
+            // if it has not been set manually retrieve from the map
+            if (me.map) {
+                params.srsName = me.map.getView().getProjection().getCode();
+            }
+        }
 
         // send the sortBy parameter only when remoteSort is true
         // as it is not supported by all WFS servers
