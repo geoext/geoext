@@ -366,12 +366,12 @@ describe('GeoExt.util.OGCFilter', function() {
             });
 
             it('throws with invalid filter array', function() {
-                var filters;
+                var f;
                 try {
-                    filters = GeoExt.util.OGCFilter.getOgcFilterFromExtJsFilter(
+                    f = GeoExt.util.OGCFilter.getOgcFilterFromExtJsFilter(
                         null, 'wms');
                 } catch (e) {
-                    expect(filters).to.be(undefined);
+                    expect(f).to.be(undefined);
                 }
             });
 

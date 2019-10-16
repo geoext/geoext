@@ -87,7 +87,7 @@ Ext.application({
                 },
                 attributions: [new ol.Attribution({
                     html: '<a href="https://www.dwd.de">' +
-                      'Copyright: © Deutscher Wetterdienst</a>'
+                        'Copyright: © Deutscher Wetterdienst</a>'
                 })]
             })
         });
@@ -207,9 +207,9 @@ Ext.application({
 
     /**
      * Loads the data for the initial fill of vectorlayer / grid
-     * @param {ol.source.Vector} vectorSource The vector source
+     * @param {ol.source.Vector} source The vector source
      */
-    getData: function(vectorSource) {
+    getData: function(source) {
         Ext.Ajax.request({
             method: 'POST',
             url: 'https://maps.dwd.de/geoserver/dwd/ows?',
@@ -230,7 +230,7 @@ Ext.application({
                 features.forEach(function(f) {
                     f.set('PROCESSTIME', new Date(f.get('PROCESSTIME')));
                 });
-                vectorSource.addFeatures(features);
+                source.addFeatures(features);
             }
         });
     }
