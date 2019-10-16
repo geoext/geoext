@@ -65,7 +65,9 @@ Ext.define('GeoExt.data.store.OlObjects', {
 
             store.__updating = true;
             for (i = 0; i < length; i++) {
-                coll.insertAt(index + i, records[i].olObject);
+                if(!Ext.Array.contains(store.olCollection.getArray(), records[i].olObject)) {
+                    coll.insertAt(index + i, records[i].olObject);
+                }
             }
             store.__updating = false;
         },
