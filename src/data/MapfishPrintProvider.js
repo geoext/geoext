@@ -210,7 +210,8 @@ Ext.define('GeoExt.data.MapfishPrintProvider', {
 
                 var serializer = this.findSerializerBySource(source);
                 if (serializer) {
-                    serialized = serializer.serialize(layer, source, viewRes, mapComponent.map);
+                    serialized = serializer.serialize(layer, source, viewRes,
+                        mapComponent.map);
                     serializedLayers.push(serialized);
                 }
             }, this);
