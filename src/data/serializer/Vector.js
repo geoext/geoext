@@ -181,13 +181,13 @@ Ext.define('GeoExt.data.serializer.Vector', {
         /**
          * @inheritdoc
          */
-        serialize: function(layer, source, viewRes) {
+        serialize: function(layer, source, viewRes, map) {
             var me = this;
             me.validateSource(source);
-            var map = Ext.ComponentQuery.query('gx_map')[0];
             var extent;
+
             if (map) {
-                extent = map.map.getView().calculateExtent();
+                extent = map.getView().calculateExtent();
             }
             var format = me.format;
             var geoJsonFeatures = [];
