@@ -10,7 +10,6 @@ docs/
 coverage/
 resources/external/
 src_instrumented/
-package-lock.json
 
 __download/
 __install/
