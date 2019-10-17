@@ -181,17 +181,21 @@ Ext.define('GeoExt.data.serializer.Vector', {
         /**
          * @inheritdoc
          */
-        serialize: function(layer, source, viewRes) {
+        serialize: function(layer, source, viewRes, map) {
             var me = this;
             me.validateSource(source);
-            var features = source.getFeatures();
+            var extent;
+
+            if (map) {
+                extent = map.getView().calculateExtent();
+            }
             var format = me.format;
             var geoJsonFeatures = [];
             var mapfishStyleObject = {
                 version: 2
             };
 
-            Ext.each(features, function(feature) {
+            var processFeatures = function(feature) {
                 var geometry = feature.getGeometry();
                 if (Ext.isEmpty(geometry)) {
                     // no need to encode features with no geometry
@@ -239,7 +243,12 @@ Ext.define('GeoExt.data.serializer.Vector', {
                         geojsonFeature.properties[featureStyleProp] = styleId;
                     });
                 }
-            });
+            };
+            if (extent) {
+                source.forEachFeatureInExtent(extent, processFeatures);
+            } else {
+                Ext.each(source.getFeatures(), processFeatures);
+            }
 
             var serialized;
 
