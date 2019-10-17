@@ -295,9 +295,9 @@ Ext.define('GeoExt.util.OGCFilter', {
                 filters, combinator, wfsVersion);
             var tpl = GeoExt.util.OGCFilter.wfs100GetFeatureXmlTpl;
             if (wfsVersion && wfsVersion === '1.1.0') {
-                tpl =  GeoExt.util.OGCFilter.wfs110GetFeatureXmlTpl;
+                tpl = GeoExt.util.OGCFilter.wfs110GetFeatureXmlTpl;
             } else if (wfsVersion && wfsVersion === '2.0.0') {
-                tpl =  GeoExt.util.OGCFilter.wfs200GetFeatureXmlTpl;
+                tpl = GeoExt.util.OGCFilter.wfs200GetFeatureXmlTpl;
             }
             return Ext.String.format(
                 tpl,
