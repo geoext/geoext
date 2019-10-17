@@ -184,14 +184,15 @@ Ext.define('GeoExt.data.serializer.Vector', {
         serialize: function(layer, source, viewRes) {
             var me = this;
             me.validateSource(source);
-            var features = source.getFeatures();
+            var map = Ext.ComponentQuery.query('gx_map')[0];
+            var extent = map.map.getView().calculateExtent();
             var format = me.format;
             var geoJsonFeatures = [];
             var mapfishStyleObject = {
                 version: 2
             };
 
-            Ext.each(features, function(feature) {
+            source.forEachFeatureInExtent(extent, function(feature) {
                 var geometry = feature.getGeometry();
                 if (Ext.isEmpty(geometry)) {
                     // no need to encode features with no geometry
