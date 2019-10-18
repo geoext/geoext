@@ -71,7 +71,7 @@
     "karma-sinon": "1.0.5",
     "log-update": "3.3.0",
     "mkdirp": "0.5.1",
-    "mocha": "6.2.1",
+    "mocha": "6.2.2",
     "np": "5.1.1",
     "openlayers": "4.6.5",
     "rimraf": "3.0.0",
