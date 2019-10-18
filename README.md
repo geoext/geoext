@@ -99,3 +99,11 @@ to your contributions!
 ## Initial Codesprint
 
 To kickstart the new GeoExt 3 project a code sprint has been done in Bonn from 17th to 19th of June 2015. For more informations check the following links:  [Code sprint WIKI page](https://github.com/geoext/geoext3/wiki/GeoExt-3-Codesprint), [Official blog post of code sprint day 1](http://geoext.blogspot.de/2015/06/geoext-is-getting-3.html), [Official blog post of the code sprint days 2 and 3](http://geoext.blogspot.de/2015/06/geoext-3-codesprint-day-2-and-3.html)
+
+---------
+
+<a href="https://www.osgeo.org/projects/geoext/">
+<img src="https://geoext.github.io/geoext3/website-resources/img/OSGeo_community.png" alt="OSGeo Community Project" width="200" />
+</a>
+
+GeoExt is an OSGeo Community project
