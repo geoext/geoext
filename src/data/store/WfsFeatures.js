@@ -464,7 +464,7 @@ Ext.define('GeoExt.data.store.WfsFeatures', {
         });
     },
 
-    onDestroy: function() {
+    doDestroy: function() {
         var me = this;
 
         if (me.activeRequest) {
