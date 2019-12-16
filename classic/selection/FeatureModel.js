@@ -26,40 +26,42 @@ Ext.define('GeoExt.selection.FeatureModel', {
     extend: 'Ext.selection.RowModel',
     alias: 'selection.featuremodel',
 
-    /**
-     * The currently selected features (`ol.Collection` containing `ol.Feature`
-     * instances).
-     * @property {ol.Collection}
-     */
-    selectedFeatures: null,
+    config: {
+        /**
+         * The connected vector layer.
+         * @cfg {ol.layer.Vector}
+         * @property {ol.layer.Vector}
+         */
+        layer: null,
 
-    /**
-     * The connected vector layer.
-     * @cfg {ol.layer.Vector}
-     * @property {ol.layer.Vector}
-     */
-    layer: null,
+        /**
+         * The OpenLayers map we work with
+         * @cfg {ol.Map}
+         */
+        map: null,
 
-    /**
-     * The OpenLayers map we work on
-     * @cfg {ol.Map}
-     */
-    map: null,
+        /**
+         * Set to true to create a click handler on the map selecting a clicked
+         * object in the #layer.
+         * @cfg {Boolean}
+         */
+        mapSelection: false,
 
-    /**
-     * Set to true to create a click handler on the map selecting a clicked
-     * object in the #layer.
-     * @cfg {Boolean}
-     */
-    mapSelection: false,
-
-    /**
-     * The default style for the selected features.
-     * @cfg {ol.style.Style}
-     */
-    selectStyle: new ol.style.Style({
-        image: new ol.style.Circle({
-            radius: 6,
+        /**
+         * The default style for the selected features.
+         * @cfg {ol.style.Style}
+         */
+        selectStyle: new ol.style.Style({
+            image: new ol.style.Circle({
+                radius: 6,
+                fill: new ol.style.Fill({
+                    color: 'rgba(255,255,255,0.8)'
+                }),
+                stroke: new ol.style.Stroke({
+                    color: 'darkblue',
+                    width: 2
+                })
+            }),
             fill: new ol.style.Fill({
                 color: 'rgba(255,255,255,0.8)'
             }),
@@ -67,15 +69,8 @@ Ext.define('GeoExt.selection.FeatureModel', {
                 color: 'darkblue',
                 width: 2
             })
-        }),
-        fill: new ol.style.Fill({
-            color: 'rgba(255,255,255,0.8)'
-        }),
-        stroke: new ol.style.Stroke({
-            color: 'darkblue',
-            width: 2
         })
-    }),
+    },
 
     /**
      * Lookup to preserve existing feature styles. Used to restore feature style
@@ -86,6 +81,13 @@ Ext.define('GeoExt.selection.FeatureModel', {
     existingFeatStyles: {},
 
     /**
+     * Indicates if a map click handler has been registered on init.
+     * @private
+     * @property {Boolean}
+     */
+    mapClickRegistered: false,
+
+    /**
      * The attribute key to mark an OL feature as selected.
      * @cfg {String}
      * @property
@@ -94,11 +96,11 @@ Ext.define('GeoExt.selection.FeatureModel', {
     selectedFeatureAttr: 'gx_selected',
 
     /**
-     * Indicates if a map click handler has been registered on init.
-     * @private
-     * @property {Boolean}
+     * The currently selected features (`ol.Collection` containing `ol.Feature`
+     * instances).
+     * @property {ol.Collection}
      */
-    mapClickRegistered: false,
+    selectedFeatures: null,
 
     /**
      * Prepare several connected objects once the selection model is ready.
