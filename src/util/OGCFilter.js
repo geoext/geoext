@@ -342,27 +342,29 @@ Ext.define('GeoExt.util.OGCFilter', {
 
             switch (operator) {
             case '==':
-                ogcFilterType = wfsPrefix + 'PropertyIsEqualTo';
-                break;
+            case '=':
             case 'eq':
                 ogcFilterType = wfsPrefix + 'PropertyIsEqualTo';
                 break;
             case '!==':
-                ogcFilterType = wfsPrefix + 'PropertyIsNotEqualTo';
-                break;
+            case '!=':
             case 'ne':
                 ogcFilterType = wfsPrefix + 'PropertyIsNotEqualTo';
                 break;
             case 'lt':
+            case '<':
                 ogcFilterType = wfsPrefix + 'PropertyIsLessThan';
                 break;
             case 'lte':
+            case '<=':
                 ogcFilterType = wfsPrefix + 'PropertyIsLessThanOrEqualTo';
                 break;
             case 'gt':
+            case '>':
                 ogcFilterType = wfsPrefix + 'PropertyIsGreaterThan';
                 break;
             case 'gte':
+            case '>=':
                 ogcFilterType = wfsPrefix + 'PropertyIsGreaterThanOrEqualTo';
                 break;
             case 'like':
