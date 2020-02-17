@@ -131,7 +131,7 @@ describe('GeoExt.data.store.WfsFeatures', function() {
                 }
             });
         });
-        
+
         it('propertyName is set', function() {
 
             Ext.create('GeoExt.data.store.WfsFeatures', {
