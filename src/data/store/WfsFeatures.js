@@ -100,6 +100,13 @@ Ext.define('GeoExt.data.store.WfsFeatures', {
     count: null,
 
     /**
+     * A comma-separated list of property names to retrieve
+     * from the server. If left as null all properties are returned.
+     * @cfg {String}
+     */
+    propertyName: null,
+
+    /**
      * Offset to add to the #startIndex in the WFS request.
      * @cfg {Number}
      */
@@ -377,6 +384,11 @@ Ext.define('GeoExt.data.store.WfsFeatures', {
             typeName: me.typeName,
             outputFormat: me.outputFormat
         };
+
+        // add a propertyName parameter if set
+        if (me.propertyName !== null) {
+            params.propertyName = me.propertyName;
+        }
 
         // add a srsName parameter
         if (me.srsName) {
