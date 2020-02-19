@@ -110,6 +110,48 @@ describe('GeoExt.data.store.WfsFeatures', function() {
         });
     });
 
+    describe('load with propertyName', function() {
+        var dataPath = (typeof __karma__ === 'undefined' ? '' : 'base/test/');
+        var url = dataPath + 'data/wfs_mock.geojson';
+
+        it('by default propertyName is undefined', function() {
+
+            Ext.create('GeoExt.data.store.WfsFeatures', {
+                url: url,
+                format: new ol.format.GeoJSON({
+                    featureProjection: 'EPSG:3857'
+                }),
+                listeners: {
+                    'gx-wfsstoreload-beforeload': function(str, params) {
+                        expect(params.propertyName).to.be(undefined);
+                    },
+                    'gx-wfsstoreload': function(str) {
+                        expect(str.getCount()).to.be(3);
+                    }
+                }
+            });
+        });
+
+        it('propertyName is set', function() {
+
+            Ext.create('GeoExt.data.store.WfsFeatures', {
+                url: url,
+                format: new ol.format.GeoJSON({
+                    featureProjection: 'EPSG:3857'
+                }),
+                propertyName: 'foo,bar',
+                listeners: {
+                    'gx-wfsstoreload-beforeload': function(str, params) {
+                        expect(params.propertyName).to.be('foo,bar');
+                    },
+                    'gx-wfsstoreload': function(str) {
+                        expect(str.getCount()).to.be(3);
+                    }
+                }
+            });
+        });
+    });
+
     describe('config option "createLayer"', function() {
         var store;
         var div;
