@@ -59,7 +59,7 @@
  * @class GeoExt.state.PermalinkProvider
  */
 Ext.define('GeoExt.state.PermalinkProvider', {
-    extend: 'Ext.state.Provider',
+    extend: 'Ext.state.CookieProvider',
     requires: [],
 
     alias: 'state.gx_permalinkprovider',
@@ -147,7 +147,11 @@ Ext.define('GeoExt.state.PermalinkProvider', {
     set: function(name, value) {
         var me = this;
         // keep our mapState object in sync with the state
-        me.mapState = value;
+        if (value.center != undefined
+            && value.zoom != undefined
+            && value.rotation != undefined) {
+            me.mapState = value;
+        }
         // call 'set' of super class
         me.callParent(arguments);
     }
