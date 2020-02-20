@@ -216,10 +216,12 @@ Ext.define('GeoExt.data.store.WfsFeatures', {
         }
 
         if (me.cacheFeatureCount === true) {
-            me.cacheTotalFeatureCount();
+            me.cacheTotalFeatureCount(!me.autoLoad);
         } else {
-            // initial load of the WFS data
-            me.loadWfs();
+            if (me.autoLoad) {
+                // initial load of the WFS data
+                me.loadWfs();
+            }
         }
 
         // before the store gets re-loaded (e.g. by a paging toolbar) we trigger
@@ -321,9 +323,11 @@ Ext.define('GeoExt.data.store.WfsFeatures', {
      * Gets the number of features for the WFS typeName
      * using resultType=hits and caches it so it only needs to be calculated
      * the first time the store is used.
+     *
+     * @param  {Boolean} skipLoad Avoids loading the store if set to `true`
      * @private
      */
-    cacheTotalFeatureCount: function() {
+    cacheTotalFeatureCount: function(skipLoad) {
         var me = this;
         var url = me.url;
         me.cachedTotalCount = 0;
@@ -344,7 +348,9 @@ Ext.define('GeoExt.data.store.WfsFeatures', {
             success: function(response) {
                 // set number of total features (needed for paging)
                 me.cachedTotalCount = me.getTotalFeatureCount(response);
-                me.loadWfs();
+                if (!skipLoad) {
+                    me.loadWfs();
+                }
             },
             failure: function(response) {
                 Ext.Logger.warn('Error while requesting features from WFS: ' +
