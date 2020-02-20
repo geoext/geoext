@@ -26,6 +26,13 @@ Ext.define('GeoExt.data.store.WfsFeatures', {
     ],
 
     /**
+     * If autoLoad is true, this store's loadWfs method is automatically called
+     * after creation.
+     * @cfg {Boolean}
+     */
+    autoLoad: true,
+
+    /**
      * Default to using server side sorting
      * @cfg {Boolean}
      */
