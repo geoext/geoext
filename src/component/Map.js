@@ -156,7 +156,18 @@ Ext.define('GeoExt.component.Map', {
          *
          * @cfg {Number} pointerRestPixelTolerance The tolerance in pixels.
          */
-        pointerRestPixelTolerance: 3
+        pointerRestPixelTolerance: 3,
+
+        /**
+         * List of css selectors for the element(s) on which neither
+         * the pointerrest event, nor the pointerrestout event
+         * should be fired.
+         *
+         * @cfg {String[]} ignorePointerRestSelectors The css selectors
+         *      on which no `pointerrest` and `pointerrestout` events
+         *      should be fired.
+         */
+        ignorePointerRestSelectors: []
     },
 
     /**
@@ -256,6 +267,10 @@ Ext.define('GeoExt.component.Map', {
         var tolerance = me.getPointerRestPixelTolerance();
         var pixel = olEvt.pixel;
 
+        if (me.isMouseOverIgnoreEl(olEvt)) {
+            return;
+        }
+
         if (!me.isMouseOverMapEl) {
             me.fireEvent('pointerrestout', olEvt);
             return;
@@ -277,6 +292,26 @@ Ext.define('GeoExt.component.Map', {
         // a new pointerrest event, the second argument (the 'original' pointer
         // pixel) must be null, as we start from a totally new position
         me.fireEvent('pointerrest', olEvt, null);
+    },
+
+    /**
+     * Checks if the mouse is positioned over
+     * an ignore element.
+     * @return {Boolean} Whether the mouse is positioned over an ignore element.
+     */
+    isMouseOverIgnoreEl: function() {
+        var me = this;
+        var selectors = me.getIgnorePointerRestSelectors();
+        if (selectors === undefined || selectors.length === 0) {
+            return false;
+        }
+
+        var hoverEls = Ext.query(':hover');
+        return hoverEls.some(function(el) {
+            return selectors.some(function(sel) {
+                return el.matches(sel);
+            });
+        });
     },
 
     /**
