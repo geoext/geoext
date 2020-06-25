@@ -77,11 +77,6 @@
     "rimraf": "3.0.2",
     "sinon": "9.0.2"
   },
-  "greenkeeper": {
-    "ignore": [
-      "eslint-config-openlayers"
-    ]
-  },
   "engines": {
     "node": ">= 10"
   },
