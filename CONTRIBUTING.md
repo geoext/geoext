@@ -157,6 +157,13 @@ If you want to remove the generated artifacts:
 $ npm run-script clean
 ```
 
+#### Running the test suite in a browser
+
+```shell
+$ cd test
+$ karma start --browsers Chrome --single-run=False --debug --auto-watch
+```
+
 ## Sencha CMD
 
 ### How to package GeoExt using Sencha CMD
