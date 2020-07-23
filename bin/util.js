@@ -6,6 +6,12 @@ var path = require('path');
 var url = require('url');
 var logUpdate = require('log-update');
 
+// Patch http & https modules to use a proxy configured with e.g.
+// environment variables 'http_proxy', 'https_proxy' … or
+// 'https-proxy', 'http-proxy' & 'proxy' npm configs will be used
+var globalTunnel = require('global-tunnel-ng');
+globalTunnel.initialize();
+
 // Make the progress bar configurable with an environment variable, default
 // is to show the progressbar while downloading
 var showProgress = process.env.NO_DOWNLOAD_PROGRESS === 'true' ? false : true;
