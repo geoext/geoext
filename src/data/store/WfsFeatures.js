@@ -467,7 +467,15 @@ Ext.define('GeoExt.data.store.WfsFeatures', {
                 }
 
                 // parse WFS response to OL features
-                var wfsFeats = me.format.readFeatures(response.responseText);
+
+                var wfsFeats = [];
+
+                try {
+                    wfsFeats = me.format.readFeatures(response.responseText);
+                } catch (error) {
+                    Ext.Logger.warn('Error parsing features into the ' +
+                        'OpenLayers format. Check the server response.');
+                }
 
                 // set data for store
                 me.setData(wfsFeats);
