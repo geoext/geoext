@@ -4,70 +4,12 @@ var http = require('http');
 var https = require('https');
 var path = require('path');
 var url = require('url');
-var logUpdate = require('log-update');
 
 // Patch http & https modules to use a proxy configured with e.g.
 // environment variables 'http_proxy', 'https_proxy' … or
 // 'https-proxy', 'http-proxy' & 'proxy' npm configs will be used
 var globalTunnel = require('global-tunnel-ng');
 globalTunnel.initialize();
-
-// Make the progress bar configurable with an environment variable, default
-// is to show the progressbar while downloading
-var showProgress = process.env.NO_DOWNLOAD_PROGRESS === 'true' ? false : true;
-
-/**
- * The frames for the progressbar.
- * @type {Array}
- */
-var progressFrames = [
-    '=       ', '=>      ', ' =>     ', '  =>    ', '   =>   ', '    =>  ',
-    '     => ', '      =>', '       =', '      <=', '     <= ', '    <=  ',
-    '   <=   ', '  <=    ', ' <=     ', '<=      '
-];
-
-/**
- * Returns an object with methods to start the progressbar, and another one to
- * signal that one progress step (of a total of `totalSteps`) completed, so we
- * should check if we are done in total.
- *
- * @param {Number} totalSteps The number of total expected steps. Call the
- *     method `oneDoneCheckIfAllDone` this often, to stop the progress, i.e.
- *     simply call it for every step.
- * @param {String} runningMsg The message to display behind the spinner, while
- *     the steps hav not completed.
- * @return {[type]} An object with methods to start (`start`) the progressbar,
- *     and to signal that one step was completed (``).
- */
-var logProgress = function(totalSteps, runningMsg) {
-    var finishedSteps = 0;
-    var frameIdx = 0;
-    var progressInterval;
-    return {
-        start: function() {
-            if (totalSteps <= 0) {
-                return;
-            }
-            if (showProgress) {
-                progressInterval = setInterval(function() {
-                    var frame = progressFrames[frameIdx++ % progressFrames.length];
-                    logUpdate('  ' + frame + ' ' + runningMsg);
-                }, 100);
-            }
-        },
-        oneDoneCheckIfAllDone: function(stepDescription, ok, allDoneCb) {
-            finishedSteps++;
-            logUpdate((ok ? '  ✔ ' : '  ✖ ') + stepDescription);
-            logUpdate.done();
-            if (finishedSteps >= totalSteps) {
-                if (progressInterval) {
-                    clearInterval(progressInterval);
-                }
-                allDoneCb();
-            }
-        }
-    };
-};
 
 /**
  * Downloads the `urlStr` to `dest` and then invokes `cb`. Based on this answer
@@ -109,7 +51,6 @@ var filenameFromUrl = function(URL) {
 };
 
 module.exports = {
-    logProgress: logProgress,
     download: download,
     filenameFromUrl: filenameFromUrl
 };

@@ -5,6 +5,8 @@ var mkdirpSync = require('mkdirp').sync;
 var log = require('console').log;
 
 var util = require('./util.js');
+var progress = require('./progress.js').progress;
+
 var download = util.download;
 var filenameFromUrl = util.filenameFromUrl;
 
@@ -24,7 +26,7 @@ log('Downloading ' + numFiles + ' file' + pluralS + ' if needed\n');
 var allDoneCb = function() {
     log('Done\n');
 };
-var logProgress = util.logProgress(numFiles, 'Downloading…');
+var logProgress = progress(numFiles, 'Downloading…');
 logProgress.start();
 
 downloadFiles.forEach(function(url) {
