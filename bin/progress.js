@@ -27,7 +27,7 @@ var numProgressFrames = progressFrames.length;
  *     method `oneDoneCheckIfAllDone` this often, to stop the progress, i.e.
  *     simply call it for every step.
  * @param {String} runningMsg The message to display behind the spinner, while
- *     the steps hav not completed.
+ *     the steps have not completed.
  * @return {[type]} An object with methods to start (`start`) the progressbar,
  *     and to signal that one step was completed (``).
  */
