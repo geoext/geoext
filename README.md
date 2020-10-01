@@ -77,7 +77,7 @@ https://geoext.github.io/geoext3/master/examples/component/map.html
 * [Overview component](https://geoext.github.io/geoext3/master/examples/component/overviewMap.html)
 * [Basic TreePanel](https://geoext.github.io/geoext3/master/examples/tree/panel.html)
 * [Legends in Treepanels](https://geoext.github.io/geoext3/master/examples/tree/tree-legend-simple.html)
-* [Basic print with Mapfish v3](http://rawgit.com/geoext/geoext3/master/examples/print/basic-mapfish.html)
+* [Basic print with Mapfish v3](https://geoext.github.io/geoext3/master/examples/print/basic-mapfish.html)
 * [Popup on a map component](https://geoext.github.io/geoext3/master/examples/popup/gx-popup.html)
 * [FeatureGrid component](https://geoext.github.io/geoext3/master/examples/features/grid.html)
 * [Interactively filtered heatmap](https://geoext.github.io/geoext3/master/examples/filtered-heatmap/filtered-heatmap.html)
