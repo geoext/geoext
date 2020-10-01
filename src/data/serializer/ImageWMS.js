@@ -45,7 +45,12 @@ Ext.define('GeoExt.data.serializer.ImageWMS', {
         serialize: function(layer, source) {
             this.validateSource(source);
             var styles = source.getParams().STYLES;
-            var stylesArray = styles ? styles.split(',') : [''];
+            var stylesArray;
+            if (Ext.isArray(styles)) {
+                stylesArray = styles;
+            } else {
+                stylesArray = styles ? styles.split(',') : [''];
+            }
             var serialized = {
                 baseURL: source.getUrl(),
                 customParams: source.getParams(),
