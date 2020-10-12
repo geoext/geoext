@@ -21,11 +21,13 @@ module.exports = function(config) {
                 included: false
             },
             // CSS files
-            'node_modules/openlayers/dist/ol' + suffix + '.css',
+            'https://cdn.jsdelivr.net/gh/openlayers/openlayers.github.io@master'
+                + '/en/v6.4.3/css/ol.css',
             'resources/external/theme-crisp-all' + suffix + '_1.css',
             'resources/external/theme-crisp-all' + suffix + '_2.css',
             // OpenLayers 3/4
-            'node_modules/openlayers/dist/ol' + suffix + '.js',
+            'https://cdn.jsdelivr.net/gh/openlayers/openlayers.github.io@master'
+                + '/en/v6.4.3/build/ol.js',
             // ExtJS 6
             'resources/external/ext-all' + suffix + '.js',
             // Ext.Loader configuration

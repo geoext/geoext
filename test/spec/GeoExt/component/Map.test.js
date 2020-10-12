@@ -4,6 +4,8 @@ describe('GeoExt.component.Map', function() {
 
     describe('basics', function() {
         it('GeoExt.component.Map is defined', function() {
+            // eslint-disable-next-line no-console
+            console.log(ol.Map);
             expect(GeoExt.component.Map).not.to.be(undefined);
         });
 

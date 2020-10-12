@@ -239,7 +239,7 @@ Ext.define('GeoExt.form.field.GeocoderComboBox', {
      */
     restrictExtent: function() {
         var me = this;
-        me.map.on('moveend', me.updateExtraParams, me);
+        me.map.on('moveend', me.updateExtraParams.bind(me));
         me.updateExtraParams();
     },
 
@@ -296,6 +296,7 @@ Ext.define('GeoExt.form.field.GeocoderComboBox', {
     unRestrictExtent: function() {
         var me = this;
         // unbinding moveend event
+        ol.Observable.unByKey(me.updateExtraParamsListenerKey_);
         me.map.un('moveend', me.updateExtraParams, me);
         // cleanup params in store
         me.removeMapExtentParams();

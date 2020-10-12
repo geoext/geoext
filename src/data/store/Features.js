@@ -153,8 +153,9 @@ Ext.define('GeoExt.data.store.Features', {
         }
 
         if (cfg.features instanceof ol.Collection) {
-            this.olCollection.on('add', this.onOlCollectionAdd, this);
-            this.olCollection.on('remove', this.onOlCollectionRemove, this);
+            this.olCollection.on('add', this.onOlCollectionAdd.bind(this));
+            this.olCollection.on('remove',
+                this.onOlCollectionRemove.bind(this));
         }
         me.bindLayerEvents();
 
@@ -287,8 +288,9 @@ Ext.define('GeoExt.data.store.Features', {
         var me = this;
         if (me.layer && me.layer.getSource() instanceof ol.source.Vector) {
             // bind feature add / remove events of the layer
-            me.layer.getSource().on('addfeature', me.onFeaturesAdded, me);
-            me.layer.getSource().on('removefeature', me.onFeaturesRemoved, me);
+            me.layer.getSource().on('addfeature', me.onFeaturesAdded.bind(me));
+            me.layer.getSource().on('removefeature',
+                me.onFeaturesRemoved.bind(me));
         }
     },
 

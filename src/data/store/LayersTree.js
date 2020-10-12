@@ -341,8 +341,8 @@ Ext.define('GeoExt.data.store.LayersTree', {
 
         if (layerOrGroup instanceof ol.layer.Group) {
             // See onBeforeGroupNodeToggle for an explanation why we have this
-            layerNode.on('beforeexpand', me.onBeforeGroupNodeToggle, me);
-            layerNode.on('beforecollapse', me.onBeforeGroupNodeToggle, me);
+            layerNode.on('beforeexpand', me.onBeforeGroupNodeToggle.bind(me));
+            layerNode.on('beforecollapse', me.onBeforeGroupNodeToggle.bind(me));
 
             var childLayers = layerOrGroup.getLayers().getArray();
             Ext.each(childLayers, me.addLayerNode, me, me.inverseLayerOrder);
@@ -379,9 +379,9 @@ Ext.define('GeoExt.data.store.LayersTree', {
         var me = this;
         if (layerOrGroup instanceof ol.layer.Group) {
             var collection = layerOrGroup.getLayers();
-            collection.on('remove', me.onLayerCollectionRemove, me);
-            collection.on('add', me.onLayerCollectionAdd, me);
-            collection.forEach(me.bindGroupLayerCollectionEvents, me);
+            collection.on('remove', me.onLayerCollectionRemove.bind(me));
+            collection.on('add', me.onLayerCollectionAdd.bind(me));
+            collection.forEach(me.bindGroupLayerCollectionEvents.bind(me));
         }
     },
 

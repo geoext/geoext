@@ -91,7 +91,7 @@ Ext.application({
             type: 'Polygon'
         });
         drawQueryInteraction.setActive(false);
-        drawQueryInteraction.on('drawend', this.onDrawEnd, this);
+        drawQueryInteraction.on('drawend', this.onDrawEnd.bind(this));
         olMap.addInteraction(drawQueryInteraction);
 
         // create feature store
@@ -291,8 +291,8 @@ Ext.application({
                 undefined
         });
         drawQueryInteraction.on('drawend',
-            FeatureGridWithSpatialFilter.app.onDrawEnd,
-            FeatureGridWithSpatialFilter.app
+            FeatureGridWithSpatialFilter.app.onDrawEnd
+                .bind(FeatureGridWithSpatialFilter.app)
         );
         olMap.addInteraction(drawQueryInteraction);
     }
