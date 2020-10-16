@@ -127,7 +127,7 @@ Ext.define('GeoExt.form.field.GeocoderComboBox', {
      *
      * @cfg {String}
      */
-    emptyText: 'Search a location',
+    emptyText: 'Search for a location',
 
     /**
      * Minimum number of entered characters to trigger a search.

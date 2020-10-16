@@ -48,7 +48,7 @@ describe('GeoExt.form.field.GeocoderComboBox', function() {
             expect(geocoderCombo.displayValueMapping).to.be('display_name');
             expect(geocoderCombo.valueField).to.be('extent');
             expect(geocoderCombo.queryParam).to.be('q');
-            expect(geocoderCombo.emptyText).to.be('Search a location');
+            expect(geocoderCombo.emptyText).to.be('Search for a location');
             expect(geocoderCombo.minChars).to.be(3);
             expect(geocoderCombo.queryDelay).to.be(100);
             expect(geocoderCombo.url).to.be(
