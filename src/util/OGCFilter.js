@@ -588,6 +588,49 @@ Ext.define('GeoExt.util.OGCFilter', {
         },
 
         /**
+         * Combines the passed filter bodies with an `<And>` or `<Or>` and
+         * returns them. E.g. created with
+         * GeoExt.util.OGCFilter.getOgcFilterBodyFromExtJsFilterObject
+         *
+         * @param {Array} filterBodies The filter bodies to join.
+         * @param {string} combinator The combinator to use, should be
+         *     either `And` (the default) or `Or`.
+         * @param {string} wfsVersion The WFS version to use, either `1.0.0`,
+         *   `1.1.0` or `2.0.0`
+         * @return {string} And/Or combined OGC filter bodies.
+         */
+        combineFilterBodies: function(filterBodies, combinator, wfsVersion) {
+            if (!Ext.isDefined(filterBodies) || !Ext.isArray(filterBodies) ||
+                filterBodies.length === 0) {
+                Ext.Logger.error('Invalid "filterBodies" argument given to ' +
+                    'GeoExt.util.OGCFilter. You need to pass an array of ' +
+                    'OGC filter bodies as XML string');
+                return;
+            }
+            var combineWith = combinator || 'And';
+            var isWfs20 = !Ext.isEmpty(wfsVersion) && wfsVersion === '2.0.0';
+            var wfsPrefix = (isWfs20 ? 'fes:' : '');
+
+            var ogcFilterType = wfsPrefix + combineWith;
+            var openingTag = ogcFilterType = '<' + ogcFilterType + '>';
+
+            var closingTag = Ext.String.insert(openingTag, '/', 1);
+            var combinedFilterBodies = '';
+            // only use an And/Or filter when there are multiple filter bodies
+            if (filterBodies.length > 1) {
+                Ext.each(filterBodies, function(filterBody) {
+                    combinedFilterBodies += filterBody;
+                });
+                combinedFilterBodies =
+                    openingTag + combinedFilterBodies + closingTag;
+            } else {
+                combinedFilterBodies = filterBodies[0];
+            }
+
+            return combinedFilterBodies;
+        },
+
+        /**
          * Combines the passed filters with an `<And>` or `<Or>` and
          * returns them.
          *
