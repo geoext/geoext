@@ -311,13 +311,13 @@ Ext.define('GeoExt.data.MapfishPrintProvider', {
             store.loadRawData(capabilities);
         } else if (url) { // if servlet url is passed
             var proxy = {
-                type: 'ajax',
                 url: url
             };
             if (this.getUseJsonp()) {
                 proxy.type = 'jsonp';
                 proxy.callbackKey = 'jsonp';
             } else {
+                proxy.type = 'ajax';
                 proxy.reader = {
                     type: 'json'
                 };
