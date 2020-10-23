@@ -51,7 +51,8 @@ Ext.define('GeoExt.data.MapfishPrintProvider', {
 
     config: {
         capabilities: null,
-        url: ''
+        url: '',
+        useJsonp: true
     },
 
     inheritableStatics: {
@@ -309,14 +310,22 @@ Ext.define('GeoExt.data.MapfishPrintProvider', {
             });
             store.loadRawData(capabilities);
         } else if (url) { // if servlet url is passed
+            var proxy = {
+                type: 'ajax',
+                url: url
+            };
+            if (this.getUseJsonp()) {
+                proxy.type = 'jsonp';
+                proxy.callbackKey = 'jsonp';
+            } else {
+                proxy.reader = {
+                    type: 'json'
+                };
+            }
             store = Ext.create('Ext.data.Store', {
                 autoLoad: true,
                 model: 'GeoExt.data.model.print.Capability',
-                proxy: {
-                    type: 'jsonp',
-                    url: url,
-                    callbackKey: 'jsonp'
-                },
+                proxy: proxy,
                 listeners: {
                     load: fillRecordAndFireEvent,
                     scope: this
