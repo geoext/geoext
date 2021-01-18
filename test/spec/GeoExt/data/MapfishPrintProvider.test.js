@@ -4,6 +4,16 @@ Ext.Loader.syncRequire([
     'GeoExt.data.serializer.ImageWMS'
 ]);
 
+// This URL to a hosted print servlet is used below, it should be reachable and
+// produce a valid capabilities document. Sometimes tests fail, when that server
+// is not responding as expected… We cannot simply replace it with a local copy
+// served from the test/data directory, as we ask for JSONP, like so:
+//
+//    URL?jsonp=Ext.data.JsonP.callback1
+//
+var externalUrl = 'https://apps.terrestris.de/print-servlet-3.1.2' +
+    '/print/geoext/capabilities.json';
+
 describe('GeoExt.data.MapfishPrintProvider', function() {
 
     var printCapabilities = {
@@ -457,8 +467,7 @@ describe('GeoExt.data.MapfishPrintProvider', function() {
         describe('layouts', function() {
             it('creates a store for layouts', function(done) {
                 var provider = Ext.create('GeoExt.data.MapfishPrintProvider', {
-                    url: 'https://apps.terrestris.de/print-servlet-3.1.2/' +
-                        'print/geoext/capabilities.json',
+                    url: externalUrl,
                     listeners: {
                         ready: function() {
                             var layoutStore = provider.capabilityRec.layouts();
@@ -477,8 +486,7 @@ describe('GeoExt.data.MapfishPrintProvider', function() {
         describe('formats', function() {
             it('creates a store for formats', function(done) {
                 Ext.create('GeoExt.data.MapfishPrintProvider', {
-                    url: 'https://apps.terrestris.de/print-servlet-3.1.2/' +
-                        'print/geoext/capabilities.json',
+                    url: externalUrl,
                     listeners: {
                         ready: function() {
                             var formats = this.capabilityRec.get('formats');
@@ -496,8 +504,7 @@ describe('GeoExt.data.MapfishPrintProvider', function() {
         describe('attributes', function() {
             it('creates a store for attributes', function(done) {
                 Ext.create('GeoExt.data.MapfishPrintProvider', {
-                    url: 'https://apps.terrestris.de/print-servlet-3.1.2/' +
-                        'print/geoext/capabilities.json',
+                    url: externalUrl,
                     listeners: {
                         ready: function() {
                             var layoutStore = this.capabilityRec.layouts();
