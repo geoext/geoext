@@ -1,17 +1,20 @@
 Ext.Loader.syncRequire(['GeoExt.util.OGCFilter']);
 
+function getNumParserErrors(xmlStr) {
+    var parser = new DOMParser();
+    var doc = parser.parseFromString(xmlStr, 'application/xml');
+    return doc.getElementsByTagName('parsererror').length;
+}
+
+
 describe('GeoExt.util.OGCFilter', function() {
-
     describe('basics', function() {
-
         it('is defined', function() {
             expect(GeoExt.util.OGCFilter).not.to.be(undefined);
         });
-
     });
 
     describe('static methods', function() {
-
         var filters = [
             {
                 getProperty: function() {
@@ -302,69 +305,57 @@ describe('GeoExt.util.OGCFilter', function() {
                 expect(GeoExt.util.OGCFilter.getOgcWmsFilterFromExtJsFilter).
                     to.be.a('function');
             });
-            var wmsFilter = GeoExt.util.OGCFilter.
-                getOgcWmsFilterFromExtJsFilter(filters);
 
-            it('returns a valid XML', function() {
-                var parser = new DOMParser();
-                var doc = parser.parseFromString(wmsFilter, 'application/xml');
-                var parseError = doc.getElementsByTagName('parsererror').length;
-                expect(parseError).to.be(0);
+            describe('WMS', function() {
+                var wmsFilter = GeoExt.util.OGCFilter.
+                    getOgcWmsFilterFromExtJsFilter(filters);
+
+                it('returns a valid XML', function() {
+                    expect(getNumParserErrors(wmsFilter)).to.be(0);
+                });
+
+                it('concatenates filters with `And` per default', function() {
+                    expect(wmsFilter).to.contain('<And>');
+                });
+
+                it('contains all filters', function() {
+                    expect(wmsFilter).to.be(expectedWMSFilter);
+                });
             });
 
-            it('concatenates filters with `And` per default', function() {
-                expect(wmsFilter).to.contain('<And>');
+            describe('WFS 1.0.0', function() {
+                var wfsFilter = GeoExt.util.OGCFilter.
+                    getOgcWfsFilterFromExtJsFilter(filters);
+
+                it('returns a valid XML for WFS 1.0.0', function() {
+                    expect(getNumParserErrors(wfsFilter)).to.be(0);
+                });
+
+                it('concatenates filters with `And` per default', function() {
+                    expect(wfsFilter).to.contain('<And>');
+                });
+
+                it('contains all filters using wfs 1.0.0 default', function() {
+                    expect(wfsFilter).to.be(expectedWFS1xFilter);
+                });
             });
 
-            it('contains all filters', function() {
-                expect(wmsFilter).to.be(expectedWMSFilter);
+            describe('WFS 2.0.0', function() {
+                var wfs2Filter = GeoExt.util.OGCFilter.
+                    getOgcWfsFilterFromExtJsFilter(filters, 'And', '2.0.0');
+
+                it('returns a valid XML for WFS 2.0.0', function() {
+                    expect(getNumParserErrors(wfs2Filter)).to.be(0);
+                });
+
+                it('concatenates filters with `And`', function() {
+                    expect(wfs2Filter).to.contain('<fes:And>');
+                });
+
+                it('contains all filters', function() {
+                    expect(wfs2Filter).to.be(expectedWFS2Filter);
+                });
             });
-
-        });
-
-        describe('#getOgcWfsFilterFromExtJsFilter', function() {
-
-            it('is defined', function() {
-                expect(GeoExt.util.OGCFilter.getOgcWfsFilterFromExtJsFilter).
-                    to.be.a('function');
-            });
-
-            var wfsFilter = GeoExt.util.OGCFilter.
-                getOgcWfsFilterFromExtJsFilter(filters);
-
-            it('returns a valid XML for WFS 1.0.0', function() {
-                var parser = new DOMParser();
-                var doc = parser.parseFromString(wfsFilter, 'application/xml');
-                var parseError = doc.getElementsByTagName('parsererror').length;
-                expect(parseError).to.be(0);
-            });
-
-            it('concatenates filters with `And` per default', function() {
-                expect(wfsFilter).to.contain('<And>');
-            });
-
-            it('contains all filters using wfs 1.0.0 as default', function() {
-                expect(wfsFilter).to.be(expectedWFS1xFilter);
-            });
-
-            var wfs2Filter = GeoExt.util.OGCFilter.
-                getOgcWfsFilterFromExtJsFilter(filters, 'And', '2.0.0');
-
-            it('returns a valid XML for WFS 2.0.0', function() {
-                var parser = new DOMParser();
-                var doc = parser.parseFromString(wfs2Filter, 'application/xml');
-                var parseError = doc.getElementsByTagName('parsererror').length;
-                expect(parseError).to.be(0);
-            });
-
-            it('concatenates filters with `And`', function() {
-                expect(wfs2Filter).to.contain('<fes:And>');
-            });
-
-            it('contains all filters', function() {
-                expect(wfs2Filter).to.be(expectedWFS2Filter);
-            });
-
         });
 
         describe('#getOgcFilterFromExtJsFilter', function() {
@@ -563,24 +554,15 @@ describe('GeoExt.util.OGCFilter', function() {
                 filters, 'And', '2.0.0', 'dwd:Warngebiete_Kreise');
 
             it('returns a valid XML for GetFeature 1.0.0', function() {
-                var parser = new DOMParser();
-                var doc = parser.parseFromString(xml10, 'application/xml');
-                var parseError = doc.getElementsByTagName('parsererror').length;
-                expect(parseError).to.be(0);
+                expect(getNumParserErrors(xml10)).to.be(0);
             });
 
             it('returns a valid XML for GetFeature 1.1.0', function() {
-                var parser = new DOMParser();
-                var doc = parser.parseFromString(xml11, 'application/xml');
-                var parseError = doc.getElementsByTagName('parsererror').length;
-                expect(parseError).to.be(0);
+                expect(getNumParserErrors(xml11)).to.be(0);
             });
 
             it('returns a valid XML for GetFeature 2.0.0', function() {
-                var parser = new DOMParser();
-                var doc = parser.parseFromString(xml20, 'application/xml');
-                var parseError = doc.getElementsByTagName('parsererror').length;
-                expect(parseError).to.be(0);
+                expect(getNumParserErrors(xml20)).to.be(0);
             });
 
             it('contains all filters for WFS 1.0.0', function() {
