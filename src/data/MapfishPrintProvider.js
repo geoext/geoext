@@ -266,7 +266,7 @@ Ext.define('GeoExt.data.MapfishPrintProvider', {
 
     /**
      * The capabiltyRec is an instance of 'GeoExt.data.model.print.Capability'
-     * and contans the PrintCapabilities of the Printprovider.
+     * and contains the PrintCapabilities of the Printprovider.
      *
      * @property
      * @readonly
