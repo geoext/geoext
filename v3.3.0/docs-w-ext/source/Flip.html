@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <title>The source code</title>
+  <link href="../resources/prettify/prettify.css" type="text/css" rel="stylesheet" />
+  <script type="text/javascript" src="../resources/prettify/prettify.js"></script>
+  <style type="text/css">
+    .highlight { display: block; background-color: #ddd; }
+  </style>
+  <script type="text/javascript">
+    function highlight() {
+      document.getElementById(location.hash.replace(/#/, "")).className = "highlight";
+    }
+  </script>
+</head>
+<body onload="prettyPrint(); highlight();">
+  <pre class="prettyprint lang-js"><span id='Ext-fx-layout-card-Flip'>/**
+</span> * @private
+ */
+Ext.define(&#39;Ext.fx.layout.card.Flip&#39;, {
+    extend: &#39;Ext.fx.layout.card.Style&#39;,
+
+    alias: &#39;fx.layout.card.flip&#39;,
+
+    config: {
+<span id='Ext-fx-layout-card-Flip-cfg-duration'>        duration: 500,
+</span>
+<span id='Ext-fx-layout-card-Flip-cfg-inAnimation'>        inAnimation: {
+</span>            type: &#39;flip&#39;,
+            half: true,
+            easing: &#39;ease-out&#39;,
+            before: {
+                &#39;backface-visibility&#39;: &#39;hidden&#39;
+            },
+            after: {
+                &#39;backface-visibility&#39;: null
+            }
+        },
+<span id='Ext-fx-layout-card-Flip-cfg-outAnimation'>        outAnimation: {
+</span>            type: &#39;flip&#39;,
+            half: true,
+            easing: &#39;ease-in&#39;,
+            before: {
+                &#39;backface-visibility&#39;: &#39;hidden&#39;
+            },
+            after: {
+                &#39;backface-visibility&#39;: null
+            },
+            out: true
+        }
+    },
+
+<span id='Ext-fx-layout-card-Flip-method-onActiveItemChange'>    onActiveItemChange: function(cardLayout, newItem, oldItem, controller) {
+</span>        var parent = newItem.element.getParent();
+        parent.addCls(Ext.baseCSSPrefix + &#39;layout-card-perspective&#39;);
+
+        this.on(&#39;animationend&#39;, function() {
+            parent.removeCls(Ext.baseCSSPrefix + &#39;layout-card-perspective&#39;);
+        }, this, {single: true});
+
+        this.callParent(arguments);
+    },
+
+<span id='Ext-fx-layout-card-Flip-method-updateDuration'>    updateDuration: function(duration) {
+</span>        var halfDuration = duration / 2,
+            inAnimation = this.getInAnimation(),
+            outAnimation = this.getOutAnimation();
+
+        inAnimation.setDelay(halfDuration);
+        inAnimation.setDuration(halfDuration);
+        outAnimation.setDuration(halfDuration);
+    }
+});
+</pre>
+</body>
+</html>

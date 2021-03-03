@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <title>The source code</title>
+  <link href="../resources/prettify/prettify.css" type="text/css" rel="stylesheet" />
+  <script type="text/javascript" src="../resources/prettify/prettify.js"></script>
+  <style type="text/css">
+    .highlight { display: block; background-color: #ddd; }
+  </style>
+  <script type="text/javascript">
+    function highlight() {
+      document.getElementById(location.hash.replace(/#/, "")).className = "highlight";
+    }
+  </script>
+</head>
+<body onload="prettyPrint(); highlight();">
+  <pre class="prettyprint lang-js">Ext.define(&#39;Ext.rtl.form.Labelable&#39;, {
+    override: &#39;Ext.form.Labelable&#39;,
+
+    getHorizontalPaddingStyle: function() {
+        return this.getInherited().rtl ? &#39;padding-left:&#39; : &#39;padding-right:&#39;;
+    }
+});
+</pre>
+</body>
+</html>

@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <title>The source code</title>
+  <link href="../resources/prettify/prettify.css" type="text/css" rel="stylesheet" />
+  <script type="text/javascript" src="../resources/prettify/prettify.js"></script>
+  <style type="text/css">
+    .highlight { display: block; background-color: #ddd; }
+  </style>
+  <script type="text/javascript">
+    function highlight() {
+      document.getElementById(location.hash.replace(/#/, "")).className = "highlight";
+    }
+  </script>
+</head>
+<body onload="prettyPrint(); highlight();">
+  <pre class="prettyprint lang-js"><span id='Ext-util-sizemonitor-Scroll'>/**
+</span> * @private
+ */
+Ext.define(&#39;Ext.util.sizemonitor.Scroll&#39;, {
+
+    extend: &#39;Ext.util.sizemonitor.Abstract&#39;,
+
+<span id='Ext-util-sizemonitor-Scroll-method-getElementConfig'>    getElementConfig: function() {
+</span>        return {
+            reference: &#39;detectorsContainer&#39;,
+            classList: [Ext.baseCSSPrefix + &#39;size-monitors&#39;, &#39;scroll&#39;],
+            children: [
+                {
+                    reference: &#39;expandMonitor&#39;,
+                    className: &#39;expand&#39;
+                },
+                {
+                    reference: &#39;shrinkMonitor&#39;,
+                    className: &#39;shrink&#39;
+                }
+            ]
+        };
+    },
+
+<span id='Ext-util-sizemonitor-Scroll-method-constructor'>    constructor: function(config) {
+</span>        this.onScroll = Ext.Function.bind(this.onScroll, this);
+
+        this.callParent(arguments);
+    },
+
+<span id='Ext-util-sizemonitor-Scroll-method-bindListeners'>    bindListeners: function(bind) {
+</span>        var method = bind ? &#39;addEventListener&#39; : &#39;removeEventListener&#39;;
+
+        this.expandMonitor[method](&#39;scroll&#39;, this.onScroll, true);
+        this.shrinkMonitor[method](&#39;scroll&#39;, this.onScroll, true);
+    },
+
+<span id='Ext-util-sizemonitor-Scroll-method-forceRefresh'>    forceRefresh: function() {
+</span>        Ext.TaskQueue.requestRead(&#39;refresh&#39;, this, [true]);
+    },
+
+<span id='Ext-util-sizemonitor-Scroll-method-onScroll'>    onScroll: function() {
+</span>        Ext.TaskQueue.requestRead(&#39;refresh&#39;, this);
+    },
+
+<span id='Ext-util-sizemonitor-Scroll-method-refreshMonitors'>    refreshMonitors: function() {
+</span>        var expandMonitor = this.expandMonitor,
+            shrinkMonitor = this.shrinkMonitor,
+            end = 1000000;
+
+        if (expandMonitor &amp;&amp; !expandMonitor.destroyed) {
+            expandMonitor.scrollLeft = end;
+            expandMonitor.scrollTop = end;
+        }
+
+        if (shrinkMonitor &amp;&amp; !shrinkMonitor.destroyed) {
+            shrinkMonitor.scrollLeft = end;
+            shrinkMonitor.scrollTop = end;
+        }
+    },
+    
+<span id='Ext-util-sizemonitor-Scroll-method-destroy'>    destroy: function() {
+</span>        // This is a closure so Base destructor won&#39;t null it
+        this.onScroll = null;
+        
+        this.callParent();
+    }
+});
+</pre>
+</body>
+</html>

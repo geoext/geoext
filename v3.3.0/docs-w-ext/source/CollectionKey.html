@@ -1,0 +1,386 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <title>The source code</title>
+  <link href="../resources/prettify/prettify.css" type="text/css" rel="stylesheet" />
+  <script type="text/javascript" src="../resources/prettify/prettify.js"></script>
+  <style type="text/css">
+    .highlight { display: block; background-color: #ddd; }
+  </style>
+  <script type="text/javascript">
+    function highlight() {
+      document.getElementById(location.hash.replace(/#/, "")).className = "highlight";
+    }
+  </script>
+</head>
+<body onload="prettyPrint(); highlight();">
+  <pre class="prettyprint lang-js"><span id='Ext-util-CollectionKey'>/**
+</span> * Maintains an additional key map for an `Ext.util.Collection`. Instances of this class
+ * are seldom created manually. Rather they are created by the `Ext.util.Collection&#39; when
+ * given an `extraKeys` config.
+ *
+ * @since 5.0.0
+ */
+Ext.define(&#39;Ext.util.CollectionKey&#39;, {
+    mixins: [
+        &#39;Ext.mixin.Identifiable&#39;
+    ],
+<span id='Ext-util-CollectionKey-property-isCollectionKey'>    isCollectionKey: true,
+</span>
+<span id='Ext-util-CollectionKey-property-observerPriority'>    observerPriority: -200,
+</span>
+    config: {
+<span id='Ext-util-CollectionKey-cfg-collection'>        collection: null,
+</span>
+<span id='Ext-util-CollectionKey-cfg-keyFn'>        /**
+</span>         * @cfg {Function/String} [keyFn]
+         * A function to retrieve the key of an item in the collection. This can be normal
+         * function that takes an item and returns the key or it can be the name of the
+         * method to call on an item to get the key.
+         *
+         * For example:
+         *
+         *      new Ext.util.Collection({
+         *          keys: {
+         *              byName: {
+         *                  keyFn: &#39;getName&#39; // each item has a &quot;getName&quot; method
+         *              }
+         *          }
+         *      });
+         *
+         * Or equivalently:
+         *
+         *      new Ext.util.Collection({
+         *          keys: {
+         *              byName: {
+         *                  keyFn: function (item) {
+         *                      return item.getName();
+         *                  }
+         *              }
+         *          }
+         *      });
+         *
+         * @since 5.0.0
+         */
+        keyFn: null,
+
+<span id='Ext-util-CollectionKey-cfg-property'>        /**
+</span>         * @cfg {String} property
+         * The name of the property on each item that is its key.
+         *
+         *      new Ext.util.Collection({
+         *          keys: {
+         *              byName: &#39;name&#39;
+         *          }
+         *      });
+         *
+         * Or equivalently:
+         *
+         *      new Ext.util.Collection({
+         *          keys: {
+         *              byName: {
+         *                  property: &#39;name&#39;
+         *              }
+         *          }
+         *      });
+         *
+         *      var item = collection.byName.get(&#39;fooname&#39;);
+         */
+        property: null,
+
+<span id='Ext-util-CollectionKey-cfg-rootProperty'>        /**
+</span>         * @cfg {String} rootProperty
+         * The name of the sub-object property on each item that is its key. This value
+         * overrides `{@link Ext.util.Collection#rootProperty}`.
+         *
+         *      new Ext.util.Collection({
+         *          keys: {
+         *              byName: {
+         *                  property: &#39;name&#39;,
+         *                  rootProperty: &#39;data&#39;
+         *              }
+         *          }
+         *      });
+         *
+         *      var item = collection.byName.get(&#39;fooname&#39;);
+         */
+        rootProperty: null,
+
+<span id='Ext-util-CollectionKey-cfg-unique'>        unique: true
+</span>    },
+
+<span id='Ext-util-CollectionKey-property-generation'>    /**
+</span>     * This property is used to know when this `Index` is in sync with the `Collection`.
+     * When the two are synchronized, their `generation` values match.
+     * @private
+     * @readonly
+     * @since 5.0.0
+     */
+    generation: 0,
+
+<span id='Ext-util-CollectionKey-property-map'>    /**
+</span>     * @property {Object} map
+     * An object used as map to get an object based on its key.
+     * @since 5.0.0
+     * @private
+     */
+    map: null,
+
+<span id='Ext-util-CollectionKey-property-mapRebuilds'>    /**
+</span>     * @property {Number} mapRebuilds
+     * The number of times the `map` has been rebuilt. This is for diagnostic use.
+     * @private
+     * @readonly
+     */
+    mapRebuilds: 0,
+
+<span id='Ext-util-CollectionKey-property-name'>    /**
+</span>     * @property {String} name
+     * This property is set by `Ext.util.Collection` when added via `extraKeys`.
+     * @readonly
+     */
+
+    constructor: function (config) {
+        this.initConfig(config);
+
+        //&lt;debug&gt;
+        if (!Ext.isFunction(this.getKey)) {
+            Ext.raise(&#39;CollectionKey requires a keyFn or property config&#39;);
+        }
+        //&lt;/debug&gt;
+    },
+
+<span id='Ext-util-CollectionKey-method-get'>    /**
+</span>     * Returns the item or, if not `unique` possibly array of items that have the given
+     * key.
+     * @param {Mixed} key The key that will match the `keyFn` return value or value of
+     * the specified `property`.
+     * @return {Object}
+     */
+    get: function (key) {
+        var map = this.map || this.getMap();
+        return map[key] || null;
+    },
+
+<span id='Ext-util-CollectionKey-method-clear'>    /**
+</span>     * @private
+     * Clears this index;
+     *
+     * Called by {@link Ext.util.Collection#clear} when the collection is cleared.
+     */
+    clear: function() {
+        this.map = null;
+    },
+
+<span id='Ext-util-CollectionKey-method-getRootProperty'>    getRootProperty: function () {
+</span>        var me = this,
+            root = this.callParent();
+
+        return root !== null ? root : me.getCollection().getRootProperty();
+    },
+
+<span id='Ext-util-CollectionKey-method-indexOf'>    /**
+</span>     * Returns the index of the item with the given key in the collection. If this is not
+     * a `unique` result, the index of the first item in the collection with the matching
+     * key.
+     *
+     * To iterate the indices of all items with a matching (not `unique`) key:
+     *
+     *      for (index = collection.byName.indexOf(&#39;foo&#39;);
+     *              index &gt;= 0;
+     *              index = collection.byName.indexOf(&#39;foo&#39;, index)) {
+     *          // process item at &quot;index&quot;
+     *      }
+     *
+     * @param {Mixed} key The key that will match the `keyFn` return value or value of
+     * the specified `property`.
+     * @param {Number} [startAt=-1] The index at which to start. Only occurrences beyond
+     * this index are returned.
+     * @return {Number} The index of the first item with the given `key` beyond the given
+     * `startAt` index or -1 if there are no such items.
+     */
+    indexOf: function (key, startAt) {
+        var map = this.map || this.getMap(),
+            item = map[key],
+            collection = this.getCollection(),
+            length = collection.length,
+            i, index, items, n;
+
+        if (!item) {
+            return -1;
+        }
+
+        if (startAt === undefined) {
+            startAt = -1;
+        }
+
+        if (item instanceof Array) {
+            items = item;
+            index = length; // greater than any actual indexOf
+
+            for (n = items.length; n-- &gt; 0; ) {
+                i = collection.indexOf(items[n]);
+                if (i &lt; index &amp;&amp; i &gt; startAt) {
+                    index = i;
+                }
+            }
+            if (index === length) {
+                return -1;
+            }
+        } else {
+            index = collection.indexOf(item);
+        }
+
+        return (index &gt; startAt) ? index : -1;
+    },
+
+<span id='Ext-util-CollectionKey-method-updateKey'>    /**
+</span>     * Change the key for an existing item in the collection. If the old key does not
+     * exist this call does nothing.
+     * @param {Object} item The item whose key has changed.
+     * @param {String} oldKey The old key for the `item`.
+     * @since 5.0.0
+     */
+    updateKey: function (item, oldKey) {
+        var me = this,
+            map = me.map,
+            bucket, index;
+
+        if (map) {
+            bucket = map[oldKey];
+
+            if (bucket instanceof Array) {
+                index = Ext.Array.indexOf(bucket, item);
+
+                if (index &gt;= 0) {
+                    if (bucket.length &gt; 2) {
+                        bucket.splice(index, 1);
+                    } else {
+                        // If there is an array of 2 items, replace the array with the
+                        // one remaining item. Since index then is either 0 or 1, the
+                        // index of the other item is easy.
+                        map[oldKey] = bucket[1 - index];  // &quot;1 - 0&quot; = 1, &quot;1 - 1&quot; = 0
+                    }
+                }
+            } else if (bucket) {
+                //&lt;debug&gt;
+                if (me.getUnique() &amp;&amp; bucket !== item) {
+                    Ext.raise(&#39;Incorrect oldKey &quot;&#39; + oldKey +
+                                    &#39;&quot; for item with newKey &quot;&#39; + me.getKey(item) + &#39;&quot;&#39;);
+                }
+                //&lt;/debug&gt;
+
+                delete map[oldKey];
+            }
+
+            me.add([ item ]);
+        }
+    },
+
+<span id='Ext-util-CollectionKey-method-onCollectionAdd'>    //-------------------------------------------------------------------------
+</span>    // Calls from our Collection:
+
+    onCollectionAdd: function (collection, add) {
+        if (this.map) {
+            this.add(add.items);
+        }
+    },
+
+<span id='Ext-util-CollectionKey-method-onCollectionItemChange'>    onCollectionItemChange: function (collection, details) {
+</span>        this.map = null;
+    },
+
+<span id='Ext-util-CollectionKey-method-onCollectionRefresh'>    onCollectionRefresh: function () {
+</span>        this.map = null;
+    },
+
+<span id='Ext-util-CollectionKey-method-onCollectionRemove'>    onCollectionRemove: function (collection, remove) {
+</span>        var me = this,
+            map = me.map,
+            items = remove.items,
+            length = items.length,
+            i, item, key;
+
+        if (map) {
+            if (me.getUnique() &amp;&amp; length &lt; collection.length / 2) {
+                for (i = 0; i &lt; length; ++i) {
+                    key = me.getKey(item = items[i]);
+                    delete map[key];
+                }
+            } else {
+                me.map = null;
+            }
+        }
+    },
+
+<span id='Ext-util-CollectionKey-method-add'>    //-------------------------------------------------------------------------
+</span>    // Private
+
+    add: function (items) {
+        var me = this,
+            map = me.map,
+            bucket, i, item, key, length, unique;
+
+        length = items.length;
+        unique = me.getUnique();
+
+        for (i = 0; i &lt; length; ++i) {
+            key = me.getKey(item = items[i]);
+
+            if (unique || !(key in map)) {
+                map[key] = item;
+            } else {
+                if (!((bucket = map[key]) instanceof Array)) {
+                    map[key] = bucket = [ bucket ];
+                }
+
+                bucket.push(item);
+            }
+        }
+    },
+
+<span id='Ext-util-CollectionKey-method-applyKeyFn'>    applyKeyFn: function (keyFn) {
+</span>        if (Ext.isString(keyFn)) {
+            this.getKey = function (item) {
+                return item[keyFn]();
+            };
+        } else {
+            this.getKey = keyFn;
+        }
+    },
+
+<span id='Ext-util-CollectionKey-method-updateProperty'>    updateProperty: function (property) {
+</span>        var root = this.getRootProperty();
+
+        this.getKey = function (item) {
+            return (root ? item[root] : item)[property];
+        };
+    },
+
+<span id='Ext-util-CollectionKey-method-getMap'>    getMap: function () {
+</span>        var me = this,
+            map = me.map;
+
+        if (!map) {
+            me.map = map = {};
+            me.keysByItemKey = {};
+            ++me.mapRebuilds;
+
+            me.add(me.getCollection().items);
+        }
+
+        return map;
+    },
+
+<span id='Ext-util-CollectionKey-method-updateCollection'>    updateCollection: function (collection) {
+</span>        collection.addObserver(this);
+    },
+
+<span id='Ext-util-CollectionKey-method-clone'>    clone: function() {
+</span>        return new Ext.util.CollectionKey(this.getCurrentConfig());
+    }
+});
+</pre>
+</body>
+</html>

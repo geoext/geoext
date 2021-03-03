@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <title>The source code</title>
+  <link href="../resources/prettify/prettify.css" type="text/css" rel="stylesheet" />
+  <script type="text/javascript" src="../resources/prettify/prettify.js"></script>
+  <style type="text/css">
+    .highlight { display: block; background-color: #ddd; }
+  </style>
+  <script type="text/javascript">
+    function highlight() {
+      document.getElementById(location.hash.replace(/#/, "")).className = "highlight";
+    }
+  </script>
+</head>
+<body onload="prettyPrint(); highlight();">
+  <pre class="prettyprint lang-js">/* Copyright (c) 2015-present The Open Source Geospatial Foundation
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see &lt;http://www.gnu.org/licenses/&gt;.
+ */
+<span id='GeoExt-data-serializer-WMTS'>/**
+</span> * A serializer for layers that have an `ol.source.WMTS` source.
+ *
+ * This class is heavily inspired by the excellent `ngeo` Print service class:
+ * [camptocamp/ngeo](https://github.com/camptocamp/ngeo).
+ *
+ * @class GeoExt.data.serializer.WMTS
+ */
+Ext.define(&#39;GeoExt.data.serializer.WMTS&#39;, {
+    extend: &#39;GeoExt.data.serializer.Base&#39;,
+    mixins: [
+        &#39;GeoExt.mixin.SymbolCheck&#39;
+    ],
+
+<span id='GeoExt-data-serializer-WMTS-property-symbols'>    // &lt;debug&gt;
+</span>    symbols: [
+        &#39;ol.proj.Projection#getMetersPerUnit&#39;,
+        &#39;ol.size.toSize&#39;,
+        &#39;ol.source.WMTS&#39;,
+        &#39;ol.source.WMTS#getDimensions&#39;,
+        &#39;ol.source.WMTS#getFormat&#39;,
+        &#39;ol.source.WMTS#getLayer&#39;,
+        &#39;ol.source.WMTS#getMatrixSet&#39;,
+        &#39;ol.source.WMTS#getProjection&#39;,
+        &#39;ol.source.WMTS#getRequestEncoding&#39;,
+        &#39;ol.source.WMTS#getStyle&#39;,
+        &#39;ol.source.WMTS#getTileGrid&#39;,
+        &#39;ol.source.WMTS#getUrls&#39;,
+        &#39;ol.source.WMTS#getVersion&#39;,
+        &#39;ol.tilegrid.WMTS#getMatrixIds&#39;,
+        &#39;ol.tilegrid.WMTS#getOrigin&#39;,
+        &#39;ol.tilegrid.WMTS#getResolution&#39;
+    ],
+    // &lt;/debug&gt;
+
+    inheritableStatics: {
+<span id='GeoExt-data-serializer-WMTS-static-property-sourceCls'>        /**
+</span>         * @inheritdoc
+         */
+        sourceCls: ol.source.WMTS,
+
+<span id='GeoExt-data-serializer-WMTS-static-method-serialize'>        /**
+</span>         * @inheritdoc
+         */
+        serialize: function(layer, source) {
+            this.validateSource(source);
+
+            var projection = source.getProjection();
+            var tileGrid = source.getTileGrid();
+            var dimensions = source.getDimensions();
+            var dimensionKeys = Ext.Object.getKeys(dimensions);
+            var matrixIds = tileGrid.getMatrixIds();
+            var matrices = [];
+
+            Ext.each(matrixIds, function(matrix, idx) {
+                var sqrZ = Math.pow(2, idx);
+                matrices.push(
+                    {
+                        identifier: matrix,
+                        scaleDenominator: tileGrid.getResolution(idx) *
+                            projection.getMetersPerUnit() / 0.28E-3,
+                        tileSize: ol.size.toSize(tileGrid.getTileSize(idx)),
+                        topLeftCorner: tileGrid.getOrigin(idx),
+                        matrixSize: [sqrZ, sqrZ]
+                    }
+                );
+            });
+
+            var serialized = {
+                baseURL: source.getUrls()[0],
+                dimensions: dimensionKeys,
+                dimensionParams: dimensions,
+                imageFormat: source.getFormat(),
+                layer: source.getLayer(),
+                matrices: matrices,
+                matrixSet: source.getMatrixSet(),
+                opacity: layer.getOpacity(),
+                requestEncoding: source.getRequestEncoding(),
+                style: source.getStyle(),
+                type: &#39;WMTS&#39;,
+                version: source.getVersion()
+            };
+            return serialized;
+        }
+    }
+}, function(cls) {
+    // Register this serializer via the inherited method `register`.
+    cls.register(cls);
+});
+</pre>
+</body>
+</html>

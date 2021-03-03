@@ -1,0 +1,358 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <title>The source code</title>
+  <link href="../resources/prettify/prettify.css" type="text/css" rel="stylesheet" />
+  <script type="text/javascript" src="../resources/prettify/prettify.js"></script>
+  <style type="text/css">
+    .highlight { display: block; background-color: #ddd; }
+  </style>
+  <script type="text/javascript">
+    function highlight() {
+      document.getElementById(location.hash.replace(/#/, "")).className = "highlight";
+    }
+  </script>
+</head>
+<body onload="prettyPrint(); highlight();">
+  <pre class="prettyprint lang-js"><span id='Ext-list-TreeItem'>/**
+</span> * The default implementation of the class used for `{@link Ext.list.Tree}`.
+ *
+ * This class can only be used in conjunction with {@link Ext.list.Tree}.
+ * @since 6.0.0
+ */
+Ext.define(&#39;Ext.list.TreeItem&#39;, {
+    extend: &#39;Ext.list.AbstractTreeItem&#39;,
+    xtype: &#39;treelistitem&#39;,
+
+<span id='Ext-list-TreeItem-property-collapsedCls'>    collapsedCls: Ext.baseCSSPrefix + &#39;treelist-item-collapsed&#39;,
+</span><span id='Ext-list-TreeItem-property-expandedCls'>    expandedCls: Ext.baseCSSPrefix + &#39;treelist-item-expanded&#39;,
+</span><span id='Ext-list-TreeItem-property-floatedCls'>    floatedCls: [Ext.Widget.prototype.floatedCls, Ext.baseCSSPrefix + &#39;treelist-item-floated&#39;],
+</span><span id='Ext-list-TreeItem-property-floatedToolCls'>    floatedToolCls: Ext.baseCSSPrefix + &#39;treelist-item-tool-floated&#39;,
+</span><span id='Ext-list-TreeItem-property-leafCls'>    leafCls: Ext.baseCSSPrefix + &#39;treelist-item-leaf&#39;,
+</span><span id='Ext-list-TreeItem-property-expandableCls'>    expandableCls: Ext.baseCSSPrefix + &#39;treelist-item-expandable&#39;,
+</span><span id='Ext-list-TreeItem-property-hideIconCls'>    hideIconCls: Ext.baseCSSPrefix + &#39;treelist-item-hide-icon&#39;,
+</span><span id='Ext-list-TreeItem-property-loadingCls'>    loadingCls: Ext.baseCSSPrefix + &#39;treelist-item-loading&#39;,
+</span><span id='Ext-list-TreeItem-property-selectedCls'>    selectedCls: Ext.baseCSSPrefix + &#39;treelist-item-selected&#39;,
+</span><span id='Ext-list-TreeItem-property-selectedParentCls'>    selectedParentCls: Ext.baseCSSPrefix + &#39;treelist-item-selected-parent&#39;,
+</span><span id='Ext-list-TreeItem-property-withIconCls'>    withIconCls: Ext.baseCSSPrefix + &#39;treelist-item-with-icon&#39;,
+</span><span id='Ext-list-TreeItem-property-hoverCls'>    hoverCls: Ext.baseCSSPrefix + &#39;treelist-item-over&#39;,
+</span><span id='Ext-list-TreeItem-property-rowHoverCls'>    rowHoverCls: Ext.baseCSSPrefix + &#39;treelist-row-over&#39;,
+</span>
+<span id='Ext-list-TreeItem-property-isTreeListItem'>    /**
+</span>     * This property is `true` to allow type checking for this or derived class.
+     * @property {Boolean} isTreeListItem
+     * @readonly
+     */
+    isTreeListItem: true,
+
+    config: {
+<span id='Ext-list-TreeItem-cfg-rowCls'>        /**
+</span>         * @cfg {String} rowCls
+         * One or more CSS classes to add to the tree item&#39;s logical &quot;row&quot; element. This
+         * element fills from left-to-right of the line.
+         * @since 6.0.1
+         */
+        rowCls: null
+    },
+
+<span id='Ext-list-TreeItem-cfg-rowClsProperty'>    /**
+</span>     * @cfg {String} [rowClsProperty=&quot;rowCls&quot;]
+     * The name of the associated record&#39;s field to map to the {@link #rowCls} config.
+     * @since 6.0.1
+     */
+    rowClsProperty: &#39;rowCls&#39;,
+
+<span id='Ext-list-TreeItem-property-element'>    element: {
+</span>        reference: &#39;element&#39;,
+        tag: &#39;li&#39;,
+        cls: Ext.baseCSSPrefix + &#39;treelist-item&#39;,
+
+        children: [{
+            reference: &#39;rowElement&#39;,
+            cls: Ext.baseCSSPrefix + &#39;treelist-row&#39;,
+
+            children: [{
+                reference: &#39;wrapElement&#39;,
+                cls: Ext.baseCSSPrefix + &#39;treelist-item-wrap&#39;,
+                children: [{
+                    reference: &#39;iconElement&#39;,
+                    cls: Ext.baseCSSPrefix + &#39;treelist-item-icon&#39;
+                }, {
+                    reference: &#39;textElement&#39;,
+                    cls: Ext.baseCSSPrefix + &#39;treelist-item-text&#39;
+                }, {
+                    reference: &#39;expanderElement&#39;,
+                    cls: Ext.baseCSSPrefix + &#39;treelist-item-expander&#39;
+                }]
+            }]
+        }, {
+            reference: &#39;itemContainer&#39;,
+            tag: &#39;ul&#39;,
+            cls: Ext.baseCSSPrefix + &#39;treelist-container&#39;
+        }, {
+            reference: &#39;toolElement&#39;,
+            cls: Ext.baseCSSPrefix + &#39;treelist-item-tool&#39;
+        }]
+    },
+
+<span id='Ext-list-TreeItem-method-constructor'>    constructor: function (config) {
+</span>        this.callParent([config]);
+
+        var toolDom = this.toolElement.dom;
+
+        // We don&#39;t want the tool in the normal &lt;li&gt; structure but it is simpler to let
+        // that process create the toolElement.
+        toolDom.parentNode.removeChild(toolDom);
+    },
+
+<span id='Ext-list-TreeItem-method-getToolElement'>    getToolElement: function () {
+</span>        return this.toolElement;
+    },
+
+<span id='Ext-list-TreeItem-method-insertItem'>    insertItem: function (item, refItem) {
+</span>        if (refItem) {
+            item.element.insertBefore(refItem.element);
+        } else {
+            this.itemContainer.appendChild(item.element);
+        }
+    },
+
+<span id='Ext-list-TreeItem-method-isSelectionEvent'>    isSelectionEvent: function(e) {
+</span>        var owner = this.getOwner();
+        return (!this.isToggleEvent(e) || !owner.getExpanderOnly() || owner.getSelectOnExpander());
+    },
+
+<span id='Ext-list-TreeItem-method-isToggleEvent'>    isToggleEvent: function (e) {
+</span>        var isExpand = false;
+
+        if (this.getOwner().getExpanderOnly()) {
+            isExpand = e.target === this.expanderElement.dom;
+        } else {
+            // contains also includes the element itself
+            isExpand = !this.itemContainer.contains(e.target);
+        }
+
+        return isExpand;
+    },
+
+<span id='Ext-list-TreeItem-method-nodeCollapseBegin'>    nodeCollapseBegin: function (animation, collapsingForExpand) {
+</span>        var me = this,
+            itemContainer = me.itemContainer,
+            height;
+
+        if (me.expanding) {
+            me.stopAnimation(me.expanding); // also calls the nodeExpandDone method
+        }
+
+        // Measure before collapse since that hides the element (if animating) but after
+        // ending any in progress expand animation.
+        height = animation &amp;&amp; itemContainer.getHeight();
+
+        me.callParent([ animation, collapsingForExpand ]);
+
+        if (animation) {
+            // The collapsed state is now in effect, so itemContainer is hidden.
+            itemContainer.dom.style.display = &#39;block&#39;;
+
+            me.collapsingForExpand = collapsingForExpand;
+            me.collapsing = this.runAnimation(Ext.merge({
+                from: {
+                    height: height
+                },
+                to: {
+                    height: 0
+                },
+                callback: me.nodeCollapseDone,
+                scope: me
+            }, animation));
+        }
+    },
+
+<span id='Ext-list-TreeItem-method-nodeCollapseDone'>    nodeCollapseDone: function (animation) {
+</span>        var me = this,
+            itemContainer = me.itemContainer;
+
+        me.collapsing = null;
+        itemContainer.dom.style.display = &#39;&#39;;
+        itemContainer.setHeight(null);
+
+        me.nodeCollapseEnd(me.collapsingForExpand);
+    },
+
+<span id='Ext-list-TreeItem-method-nodeExpandBegin'>    nodeExpandBegin: function (animation) {
+</span>        var me = this,
+            itemContainer = me.itemContainer,
+            height;
+
+        if (me.collapsing) {
+            me.stopAnimation(me.collapsing);
+        }
+
+        me.callParent([ animation ]);
+
+        if (animation) {
+            // The expanded state is in effect, so itemContainer is visible again.
+            height = itemContainer.getHeight();
+            itemContainer.setHeight(0);
+
+            me.expanding = me.runAnimation(Ext.merge({
+                to: {
+                    height: height
+                },
+                callback: me.nodeExpandDone,
+                scope: me
+            }, animation));
+        }
+    },
+
+<span id='Ext-list-TreeItem-method-nodeExpandDone'>    nodeExpandDone: function () {
+</span>        this.expanding = null;
+        this.itemContainer.setHeight(null);
+        this.nodeExpandEnd();
+    },
+
+<span id='Ext-list-TreeItem-method-removeItem'>    removeItem: function (item) {
+</span>        this.itemContainer.removeChild(item.element);
+    },
+
+<span id='Ext-list-TreeItem-method-updateNode'>    //-------------------------------------------------------------------------
+</span>    // Updaters
+
+    updateNode: function (node, oldNode) {
+        this.syncIndent();
+        this.callParent([ node, oldNode ]);
+    },
+
+<span id='Ext-list-TreeItem-method-updateExpandable'>    updateExpandable: function () {
+</span>        this.updateExpandCls();
+    },
+
+<span id='Ext-list-TreeItem-method-updateExpanded'>    updateExpanded: function () {
+</span>        this.updateExpandCls();
+    },
+
+<span id='Ext-list-TreeItem-method-updateIconCls'>    updateIconCls: function (iconCls, oldIconCls) {
+</span>        var me = this,
+            el = me.element;
+
+        me.doIconCls(me.iconElement, iconCls, oldIconCls);
+        me.doIconCls(me.toolElement, iconCls, oldIconCls);
+
+        el.toggleCls(me.withIconCls, !!iconCls);
+        el.toggleCls(me.hideIconCls, iconCls === null);
+    },
+
+<span id='Ext-list-TreeItem-method-updateLeaf'>    updateLeaf: function (leaf) {
+</span>        this.element.toggleCls(this.leafCls, leaf);
+    },
+
+<span id='Ext-list-TreeItem-method-updateLoading'>    updateLoading: function (loading) {
+</span>        this.element.toggleCls(this.loadingCls, loading);
+    },
+
+<span id='Ext-list-TreeItem-method-updateOver'>    updateOver: function (over) {
+</span>        var me = this;
+
+        me.element.toggleCls(me.hoverCls, !! over); // off if over==0, on otherwise
+        me.rowElement.toggleCls(me.rowHoverCls, over &gt; 1); // off if over = 0 or 1
+    },
+
+<span id='Ext-list-TreeItem-method-updateRowCls'>    updateRowCls: function (value, oldValue) {
+</span>        this.rowElement.replaceCls(oldValue, value);
+    },
+
+<span id='Ext-list-TreeItem-method-updateSelected'>    updateSelected: function(selected, oldSelected) {
+</span>        var me = this,
+            cls = me.selectedCls,
+            tool = me.getToolElement();
+
+        me.callParent([ selected, oldSelected ]);
+
+        me.element.toggleCls(cls, selected);
+
+        if (tool) {
+            tool.toggleCls(cls, selected);
+        }
+    },
+
+<span id='Ext-list-TreeItem-method-updateSelectedParent'>    updateSelectedParent: function(selectedParent) {
+</span>        var me = this;
+        
+        me.element.toggleCls(me.selectedParentCls, selectedParent);
+        var tool = me.getToolElement();
+        if (tool) {
+            tool.toggleCls(me.selectedCls, selectedParent);
+        }
+    },
+
+<span id='Ext-list-TreeItem-method-updateText'>    updateText: function (text) {
+</span>        this.textElement.update(text);
+    },
+
+<span id='Ext-list-TreeItem-property-privates'>    //-------------------------------------------------------------------------
+</span>    // Private
+
+    privates: {
+        doNodeUpdate: function (node) {
+            this.callParent([ node ]);
+
+            this.setRowCls(node &amp;&amp; node.data[this.rowClsProperty]);
+        },
+
+        doIconCls: function (element, iconCls, oldIconCls) {
+            if (oldIconCls) {
+                element.removeCls(oldIconCls);
+            }
+
+            if (iconCls) {
+                element.addCls(iconCls);
+            }
+        },
+
+        syncIndent: function () {
+            var me = this,
+                indent = me.getIndent(),
+                node = me.getNode(),
+                depth;
+
+            if (node) {
+                depth = node.data.depth - 1;
+
+                me.wrapElement.dom.style.marginLeft = (depth * indent) + &#39;px&#39;;
+            }
+        },
+
+        updateExpandCls: function () {
+            if (!this.updatingExpandCls) {
+                var me = this,
+                    expandable = me.getExpandable(),
+                    element = me.element,
+                    expanded = me.getExpanded(),
+                    expandedCls = me.expandedCls,
+                    collapsedCls = me.collapsedCls;
+
+                me.updatingExpandCls = true;
+
+                element.toggleCls(me.expandableCls, expandable);
+
+                if (expandable) {
+                    element.toggleCls(expandedCls, expanded);
+                    element.toggleCls(collapsedCls, !expanded);
+                } else {
+                    element.removeCls([expandedCls, collapsedCls]);
+                }
+
+                me.updatingExpandCls = false;
+            }
+        },
+
+        updateIndent: function (value, oldValue) {
+            this.syncIndent();
+            this.callParent([ value, oldValue ]);
+        }
+    }
+});
+</pre>
+</body>
+</html>

@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <title>The source code</title>
+  <link href="../resources/prettify/prettify.css" type="text/css" rel="stylesheet" />
+  <script type="text/javascript" src="../resources/prettify/prettify.js"></script>
+  <style type="text/css">
+    .highlight { display: block; background-color: #ddd; }
+  </style>
+  <script type="text/javascript">
+    function highlight() {
+      document.getElementById(location.hash.replace(/#/, "")).className = "highlight";
+    }
+  </script>
+</head>
+<body onload="prettyPrint(); highlight();">
+  <pre class="prettyprint lang-js"><span id='Ext-grid-ColumnComponentLayout'>/**
+</span> * Component layout for grid column headers which have a title element at the top followed by content.
+ * @private
+ */
+Ext.define(&#39;Ext.grid.ColumnComponentLayout&#39;, {
+    extend: &#39;Ext.layout.component.Auto&#39;,
+    alias: &#39;layout.columncomponent&#39;,
+
+<span id='Ext-grid-ColumnComponentLayout-property-type'>    type: &#39;columncomponent&#39;,
+</span>
+<span id='Ext-grid-ColumnComponentLayout-cfg-setWidthInDom'>    setWidthInDom: true,
+</span>
+<span id='Ext-grid-ColumnComponentLayout-property-_paddingReset'>    _paddingReset: {
+</span>        paddingTop: &#39;&#39;,  // reset back to default padding of the style
+        paddingBottom: &#39;&#39;
+    },
+
+<span id='Ext-grid-ColumnComponentLayout-property-columnAutoCls'>    columnAutoCls: Ext.baseCSSPrefix + &#39;column-header-text-container-auto&#39;,
+</span>
+<span id='Ext-grid-ColumnComponentLayout-method-beginLayout'>    beginLayout: function(ownerContext) {
+</span>        this.callParent(arguments);
+        ownerContext.titleContext = ownerContext.getEl(&#39;titleEl&#39;);
+    },
+
+<span id='Ext-grid-ColumnComponentLayout-method-beginLayoutCycle'>    beginLayoutCycle: function(ownerContext) {
+</span>        var me = this,
+            owner = me.owner,
+            shrinkWrap = ownerContext.widthModel.shrinkWrap;
+
+        me.callParent(arguments);
+
+        // If shrinkwrapping, allow content width to stretch the element
+        if (shrinkWrap) {
+            owner.el.setWidth(&#39;&#39;);
+        }
+        owner.textContainerEl[shrinkWrap &amp;&amp; !owner.isGroupHeader ? &#39;addCls&#39; : &#39;removeCls&#39;](me.columnAutoCls);
+        owner.titleEl.setStyle(me._paddingReset);
+    },
+
+<span id='Ext-grid-ColumnComponentLayout-method-publishInnerHeight'>    // If not shrink wrapping, push height info down into child items
+</span>    publishInnerHeight: function(ownerContext, outerHeight) {
+        var me = this,
+            owner = me.owner,
+            innerHeight;
+            
+        // TreePanels (and grids with hideHeaders: true) set their column container height to zero to hide them.
+        // This is because they need to lay out in order to calculate widths for the columns (eg flexes).
+        // If there is no height to lay out, bail out early.
+        if (owner.getRootHeaderCt().hiddenHeaders) {
+            ownerContext.setProp(&#39;innerHeight&#39;, 0);
+            return;
+        }
+        
+
+        // If this ia a group header; that is, it contains subheaders...
+        // hasRawContent = !(target.isContainer &amp;&amp; target.items.items.length &gt; 0)
+        if (!ownerContext.hasRawContent) {
+            // We do not have enough information to get the height of the titleEl
+            if (owner.headerWrap &amp;&amp; !ownerContext.hasDomProp(&#39;width&#39;)) {
+                me.done = false;
+                return;
+            }
+
+            innerHeight = outerHeight - ownerContext.getBorderInfo().height;
+            ownerContext.setProp(&#39;innerHeight&#39;, innerHeight - owner.titleEl.getHeight(), false);
+        }
+    },
+
+<span id='Ext-grid-ColumnComponentLayout-method-measureContentHeight'>    // We do not need the Direct2D sub pixel measurement here. Just the offsetHeight will do.
+</span>    // TODO: When https://sencha.jira.com/browse/EXTJSIV-7734 is fixed to not do subpixel adjustment on height,
+    // remove this override.
+    measureContentHeight: function(ownerContext) {
+        return ownerContext.el.dom.offsetHeight;
+    },
+
+<span id='Ext-grid-ColumnComponentLayout-method-publishInnerWidth'>    // If not shrink wrapping, push width info down into child items
+</span>    publishInnerWidth: function(ownerContext, outerWidth) {
+        // If we are acting as a container, publish the innerWidth for the ColumnLayout to use
+        if (!ownerContext.hasRawContent) {
+            ownerContext.setProp(&#39;innerWidth&#39;, outerWidth - ownerContext.getBorderInfo().width, false);
+        }
+    },
+
+<span id='Ext-grid-ColumnComponentLayout-method-calculateOwnerHeightFromContentHeight'>    // Push content height outwards when we are shrinkwrapping
+</span>    calculateOwnerHeightFromContentHeight: function (ownerContext, contentHeight) {
+        var result = this.callParent(arguments),
+            owner = this.owner;
+
+        // If we are NOT a group header, we just use the auto component&#39;s measurement
+        if (!ownerContext.hasRawContent) {
+            if (!owner.headerWrap || ownerContext.hasDomProp(&#39;width&#39;)) {
+                return contentHeight + owner.titleEl.getHeight() + ownerContext.getBorderInfo().height;
+            }
+
+            // We do not have the information to return the height yet because we cannot know
+            // the final height of the text el
+            return null;
+        }
+        return result;
+    },
+
+<span id='Ext-grid-ColumnComponentLayout-method-calculateOwnerWidthFromContentWidth'>    // Push content width outwards when we are shrinkwrapping
+</span>    calculateOwnerWidthFromContentWidth: function (ownerContext, contentWidth) {
+        var owner = this.owner,
+            padWidth = ownerContext.getPaddingInfo().width,
+            triggerOffset = this.getTriggerOffset(owner, ownerContext),
+            inner;
+
+        // Only measure the content if we&#39;re not grouped, otherwise
+        // the size should be governed by the children
+        if (owner.isGroupHeader) {
+            inner = contentWidth;
+        } else {
+            inner = Math.max(contentWidth, owner.textEl.getWidth() + ownerContext.titleContext.getPaddingInfo().width);
+        }
+        return inner + padWidth + triggerOffset;
+    },
+    
+<span id='Ext-grid-ColumnComponentLayout-method-getTriggerOffset'>    getTriggerOffset: function(owner, ownerContext) {
+</span>        var width = 0;
+
+        if (ownerContext.widthModel.shrinkWrap &amp;&amp; !owner.menuDisabled) {
+            // If we have any children underneath, then we already have space reserved
+            if (owner.query(&#39;&gt;:not([hidden])&#39;).length === 0) {
+                width = owner.getTriggerElWidth();
+            }
+        }
+        return width;
+    }
+});
+</pre>
+</body>
+</html>

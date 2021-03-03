@@ -1,0 +1,494 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <title>The source code</title>
+  <link href="../resources/prettify/prettify.css" type="text/css" rel="stylesheet" />
+  <script type="text/javascript" src="../resources/prettify/prettify.js"></script>
+  <style type="text/css">
+    .highlight { display: block; background-color: #ddd; }
+  </style>
+  <script type="text/javascript">
+    function highlight() {
+      document.getElementById(location.hash.replace(/#/, "")).className = "highlight";
+    }
+  </script>
+</head>
+<body onload="prettyPrint(); highlight();">
+  <pre class="prettyprint lang-js"><span id='Ext-drag-Target'>/**
+</span> * A wrapper around a DOM element that allows it to receive drops.
+ *
+ * ## Validity of drag operations
+ *
+ * There are certain conditions that govern whether a {@link Ext.drag.Source source}
+ * and a target can interact. By default (without configuration), all {@link Ext.drag.Source sources}
+ * and targets can interact with each other, the conditions are evaluated in this order:
+ *
+ * ### {@link #isDisabled Disabled State}
+ * If the target is disabled, the {@link Ext.drag.Source source} 
+ * cannot interact with it.
+ *
+ * ### {@link #groups Groups}
+ * Both the {@link Ext.drag.Source source} and target can belong to multiple groups. 
+ * They may interact if:
+ * - Neither has a group
+ * - Both have one (or more) of the same group
+ *
+ * ### {@link #accepts Accept}
+ * This method is called each time a {@link Ext.drag.Source source} enters this
+ * target. If the method returns `false`, the drag is not considered valid.
+ *
+ * ## Asynchronous drop processing
+ *
+ *  When the drop completes, the {@link #drop} event will fire, however the underlying data
+ * may not be ready to be consumed. By returning a {@link Ext.Promise Promise} from the data, 
+ * it allows either:
+ * - The data to be fetched (either from a remote source or generated if expensive).
+ * - Any validation to take place before the drop is finalized.
+ *
+ * Once the promise is {@link Ext.Promise#resolve resolved} or {@link Ext.Promise#resolve rejected},
+ * further processing can be completed.
+ *
+ * Validation example:
+ *
+ * 
+ *      var confirmSource = new Ext.drag.Source({
+ *          element: dragEl,
+ *          describe: function(info) {
+ *              // Provide the data up front
+ *              info.setData(&#39;records&#39;, theRecords);
+ *          }
+ *      });  
+ *
+ *      var confirmTarget = new Ext.drag.Target({
+ *          element: dropEl,
+ *          listeners: {
+ *              drop: function(target, info) {
+ *                  Ext.MessageBox.confirm(&#39;Really&#39;, &#39;Are you sure?&#39;, function(btn) {
+ *                      if (btn === &#39;yes&#39;) {
+ *                          info.getData(&#39;records&#39;).then(function(data) {
+ *                              // Process the data
+ *                          });
+ *                      }
+ *                  });
+ *              }
+ *          }
+ *      });
+ *
+ *
+ * Remote data example:
+ *
+ *      var fetchSource = new Ext.drag.Source({
+ *          element: dragEl,
+ *          // The resulting drag data will be a binary blob
+ *          // of image data, we don&#39;t want to fetch it up front, so
+ *          // pass a callback to be executed when data is requested.
+ *          describe: function(info) {
+ *              info.setData(&#39;image&#39;, function() {
+ *                  return Ext.Ajax.request({
+ *                      url: &#39;data.json&#39;
+ *                      // some options
+ *                  }).then(function(result) {
+ *                      var imageData;
+ *                      // Do some post-processing
+ *                      return imageData;
+ *                  }, function() {
+ *                      return Ext.Promise.reject(&#39;Something went wrong!&#39;);
+ *                  });
+ *              });
+ *          }
+ *      });
+ *
+ *      var fetchTarget = new Ext.drag.Target({
+ *          element: dropEl,
+ *          accepts: function(info) {
+ *              return info.types.indexOf(&#39;image&#39;) &gt; -1;
+ *          },
+ *          listeners: {
+ *              drop: function(target, info) {
+ *                  info.getData(&#39;image&#39;).then(function() {
+ *                      // All good, show the image
+ *                  }, function() {
+ *                      // Handle failure case
+ *                  });
+ *              }
+ *          }
+ *      });
+ * 
+ */
+Ext.define(&#39;Ext.drag.Target&#39;, {
+    extend: &#39;Ext.drag.Item&#39;,
+
+    requires: [&#39;Ext.drag.Manager&#39;],
+
+<span id='Ext-drag-Target-property-defaultIdPrefix'>    defaultIdPrefix: &#39;target-&#39;,
+</span>
+    config: {
+<span id='Ext-drag-Target-cfg-invalidCls'>        /**
+</span>         * @cfg {String} invalidCls
+         * A class to add to the {@link #element} when an
+         * invalid drag is over this target.
+         */
+        invalidCls: &#39;&#39;,
+
+<span id='Ext-drag-Target-cfg-invalidCls'>        /**
+</span>         * @cfg {String} invalidCls
+         * A class to add to the {@link #element} when an
+         * invalid drag is over this target.
+         */
+        validCls: &#39;&#39;
+    },
+
+<span id='Ext-drag-Target-cfg-accepts'>    /**
+</span>     * @cfg {Function} accepts
+     * See {@link #method-accepts}.
+     */
+    
+<span id='Ext-drag-Target-event-beforedrop'>    /**
+</span>     * @event beforedrop
+     * Fires before a valid drop occurs. Return `false` to prevent the drop from
+     * completing.
+     *
+     * @param {Ext.drag.Target} this This target.
+     * @param {Ext.drag.Info} info The drag info.
+     */
+    
+<span id='Ext-drag-Target-event-drop'>    /**
+</span>     * @event drop
+     * Fires when a valid drop occurs.
+     *
+     * @param {Ext.drag.Target} this This target.
+     * @param {Ext.drag.Info} info The drag info.
+     */
+    
+<span id='Ext-drag-Target-event-dragenter'>    /**
+</span>     * @event dragenter
+     * Fires when a drag enters this target.
+     *
+     * @param {Ext.drag.Target} this This target.
+     * @param {Ext.drag.Info} info The drag info.
+     */ 
+    
+<span id='Ext-drag-Target-event-dragleave'>    /**
+</span>     * @event dragleave
+     * Fires when a source leaves this target.
+     *
+     * @param {Ext.drag.Target} this This target.
+     * @param {Ext.drag.Info} info The drag info.
+     */ 
+    
+<span id='Ext-drag-Target-event-dragmove'>    /**
+</span>     * @event dragmove
+     * Fires when a drag moves while inside this target.
+     *
+     * @param {Ext.drag.Target} this This target.
+     * @param {Ext.drag.Info} info The drag info.
+     */ 
+
+    constructor: function(config) {
+        var me = this,
+            accepts = config &amp;&amp; config.accepts;
+
+        if (accepts) {
+            me.accepts = accepts;
+            // Don&#39;t mutate the object the user passed. Need to do this
+            // here otherwise initConfig will complain about writing over
+            // the method.
+            config = Ext.apply({}, config);
+            delete config.accepts;
+        }
+        me.callParent([config]);
+        Ext.drag.Manager.register(me);
+    },
+
+<span id='Ext-drag-Target-method-accepts'>    /**
+</span>     * Called each time a {@link Ext.drag.Source source} enters this target.
+     * Allows this target to indicate whether it will interact with
+     * the given drag. Determined after {@link #isDisabled} and 
+     * {@link #groups} checks. If either of the aforementioned conditions
+     * means the target is not valid, this will not be called.
+     *
+     * Defaults to returning `true`.
+     * 
+     * @param {Ext.drag.Info} info The drag info.
+     * @return {Boolean} `true` if the drag is valid for this target.
+     *
+     * @protected
+     */
+    accepts: function(info) {
+        return true;
+    },
+
+<span id='Ext-drag-Target-method-disable'>    /**
+</span>     * @inheritdoc
+     */
+    disable: function() {
+        this.callParent();
+        this.setupListeners(null);
+    },
+
+<span id='Ext-drag-Target-method-enable'>    /**
+</span>     * @inheritdoc
+     */
+    enable: function() {
+        this.callParent();
+        this.setupListeners();
+    },
+
+<span id='Ext-drag-Target-method-beforeDrop'>    /**
+</span>     * @method
+     * Called before a drag finishes on this target. Return `false` to veto
+     * the drop.
+     * @param {Ext.drag.Info} info The drag info.
+     * @return {Boolean} `false` to veto the drop.
+     *
+     * @protected
+     * @template
+     */
+    beforeDrop: Ext.emptyFn,
+
+<span id='Ext-drag-Target-method-onDrop'>    /**
+</span>     * @method
+     * Called when a drag is dropped on this target.
+     * @param {Ext.drag.Info} info The drag info.
+     *
+     * @protected
+     * @template
+     */
+    onDrop: Ext.emptyFn, 
+
+<span id='Ext-drag-Target-method-onDragEnter'>    /**
+</span>     * @method
+     * Called when a drag enters this target.
+     * @param {Ext.drag.Info} info The drag info.
+     *
+     * @protected
+     * @template
+     */
+    onDragEnter: Ext.emptyFn,
+
+<span id='Ext-drag-Target-method-onDragLeave'>    /**
+</span>     * @method
+     * Called when a source leaves this target.
+     * @param {Ext.drag.Info} info The drag info.
+     *
+     * @protected
+     * @template
+     */
+    onDragLeave: Ext.emptyFn,
+
+<span id='Ext-drag-Target-method-onDragMove'>    /**
+</span>     * @method
+     * Called when a drag is moved while inside this target.
+     * @param {Ext.drag.Info} info The drag info.
+     *
+     * @protected
+     * @template
+     */
+    onDragMove: Ext.emptyFn,
+
+<span id='Ext-drag-Target-method-updateInvalidCls'>    updateInvalidCls: function(invalidCls, oldInvalidCls) {
+</span>        var info = this.info;
+        this.doUpdateCls(info &amp;&amp; !info.valid, invalidCls, oldInvalidCls);
+    },
+
+<span id='Ext-drag-Target-method-updateValidCls'>    updateValidCls: function(validCls, oldValidCls) {
+</span>        var info = this.info;
+        this.doUpdateCls(info &amp;&amp; info.valid, validCls, oldValidCls);
+    },
+
+<span id='Ext-drag-Target-method-destroy'>    destroy: function() {
+</span>        Ext.drag.Manager.unregister(this);
+        this.callParent();
+    },
+
+<span id='Ext-drag-Target-property-privates'>    privates: {
+</span><span id='Ext-drag-Target-method-doUpdateCls'>        /**
+</span>         * Removes a class and replaces it with a new one, if the old class
+         * was already on the element.
+         *
+         * @param {Boolean} needsAdd `true` if the new class needs adding.
+         * @param {String} cls The new class to add.
+         * @param {String} oldCls The old class to remove.
+         *
+         * @private
+         */
+        doUpdateCls: function(needsAdd, cls, oldCls) {
+            var el = this.getElement();
+
+            if (oldCls) {
+                el.removeCls(oldCls);
+            }
+
+            if (cls &amp;&amp; needsAdd) {
+                el.addCls(cls);
+            }
+        },
+
+<span id='Ext-drag-Target-method-getElListeners'>        /**
+</span>         * @inheritdoc
+         */
+        getElListeners: function() {
+            return {
+                dragenter: &#39;handleNativeDragEnter&#39;,
+                dragleave: &#39;handleNativeDragLeave&#39;,
+                dragover: &#39;handleNativeDragMove&#39;,
+                drop: &#39;handleNativeDrop&#39;
+            };
+        },
+
+<span id='Ext-drag-Target-method-handleDrop'>        /**
+</span>         * Called when a drag is dropped on this target.
+         * @param {Ext.drag.Info} info The drag info.
+         *
+         * @private
+         */
+        handleDrop: function(info) {
+            var me = this,
+                hasListeners = me.hasListeners,
+                valid = info.valid;
+
+            me.getElement().removeCls([me.getInvalidCls(), me.getValidCls()]);
+
+            if (valid &amp;&amp; me.beforeDrop(info) !== false) {
+                if (hasListeners.beforedrop &amp;&amp; me.fireEvent(&#39;beforedrop&#39;, me, info) === false) {
+                    return false;
+                }
+                me.onDrop(info);
+                if (hasListeners.drop) {
+                    me.fireEvent(&#39;drop&#39;, me, info);
+                }
+            } else {
+                return false;
+            }
+        }, 
+
+<span id='Ext-drag-Target-method-handleDragEnter'>        /**
+</span>         * Called when a drag enters this target.
+         * @param {Ext.drag.Info} info The drag info.
+         *
+         * @private
+         */
+        handleDragEnter: function(info) {
+            var me = this,
+                cls = info.valid ? me.getValidCls() : me.getInvalidCls();
+
+            if (cls) {
+                me.getElement().addCls(cls);
+            }
+
+            me.onDragEnter(info);
+            if (me.hasListeners.dragenter) {
+                me.fireEvent(&#39;dragenter&#39;, me, info);
+            }
+        },
+
+<span id='Ext-drag-Target-method-handleDragLeave'>        /**
+</span>         * Called when a source leaves this target.
+         * @param {Ext.drag.Info} info The drag info.
+         *
+         * @private
+         */
+        handleDragLeave: function(info) {
+            var me = this;
+
+            me.getElement().removeCls([me.getInvalidCls(), me.getValidCls()]);
+            me.onDragLeave(info);
+            if (me.hasListeners.dragleave) {
+                me.fireEvent(&#39;dragleave&#39;, me, info);
+            }
+        },
+
+<span id='Ext-drag-Target-method-handleDragMove'>        /**
+</span>         * Called when a drag is moved while inside this target.
+         * @param {Ext.drag.Info} info The drag info.
+         *
+         * @private
+         */
+        handleDragMove: function(info) {
+            var me = this;
+            
+            me.onDragMove(info);
+            if (me.hasListeners.dragmove) {
+                me.fireEvent(&#39;dragmove&#39;, me, info);
+            }
+        },
+
+<span id='Ext-drag-Target-method-handleNativeDragEnter'>        /**
+</span>         * Handle a native drag enter.
+         * @param {Ext.event.Event} e The event.
+         * 
+         * @private
+         */
+        handleNativeDragEnter: function(e) {
+            var me = this,
+                info = Ext.drag.Manager.getNativeDragInfo(e);
+
+            info.onNativeDragEnter(me, e);
+
+            if (me.hasListeners.dragenter) {
+                me.fireEvent(&#39;dragenter&#39;, me, info);
+            }
+        },
+
+<span id='Ext-drag-Target-method-handleNativeDragLeave'>        /**
+</span>         * Handle a native drag leave.
+         * @param {Ext.event.Event} e The event.
+         * 
+         * @private
+         */
+        handleNativeDragLeave: function(e) {
+            var me = this,
+                info = Ext.drag.Manager.getNativeDragInfo(e);
+
+            info.onNativeDragLeave(me, e);
+            
+            if (me.hasListeners.dragleave) {
+                me.fireEvent(&#39;dragleave&#39;, me, info);
+            }
+        },
+
+<span id='Ext-drag-Target-method-handleNativeDragMove'>        /**
+</span>         * Handle a native drag move.
+         * @param {Ext.event.Event} e The event.
+         * 
+         * @private
+         */
+        handleNativeDragMove: function(e) {
+            var me = this,
+                info = Ext.drag.Manager.getNativeDragInfo(e);
+
+            info.onNativeDragMove(me, e);
+
+            if (me.hasListeners.dragmove) {
+                me.fireEvent(&#39;dragmove&#39;, me, info);
+            }
+        },
+
+<span id='Ext-drag-Target-method-handleNativeDrop'>        /**
+</span>         * Handle a native drop.
+         * @param {Ext.event.Event} e The event.
+         * 
+         * @private
+         */
+        handleNativeDrop: function(e) {
+            var me = this,
+                hasListeners = me.hasListeners,
+                info = Ext.drag.Manager.getNativeDragInfo(e),
+                valid = info.valid;
+
+            info.onNativeDrop(me, e);
+
+            if (valid) {
+                if (hasListeners.beforedrop &amp;&amp; me.fireEvent(&#39;beforedrop&#39;, me, info) === false) {
+                    return;
+                }
+                if (hasListeners.drop) {
+                    me.fireEvent(&#39;drop&#39;, me, info);
+                }
+            }
+        }
+    }
+});</pre>
+</body>
+</html>

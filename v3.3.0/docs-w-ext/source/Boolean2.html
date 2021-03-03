@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <title>The source code</title>
+  <link href="../resources/prettify/prettify.css" type="text/css" rel="stylesheet" />
+  <script type="text/javascript" src="../resources/prettify/prettify.js"></script>
+  <style type="text/css">
+    .highlight { display: block; background-color: #ddd; }
+  </style>
+  <script type="text/javascript">
+    function highlight() {
+      document.getElementById(location.hash.replace(/#/, "")).className = "highlight";
+    }
+  </script>
+</head>
+<body onload="prettyPrint(); highlight();">
+  <pre class="prettyprint lang-js"><span id='Ext-grid-column-Boolean'>/**
+</span> * A Column definition class which renders boolean data fields.  See the {@link Ext.grid.column.Column#xtype xtype}
+ * config option of {@link Ext.grid.column.Column} for more details.
+ *
+ *     @example
+ *     var store = Ext.create(&#39;Ext.data.Store&#39;, {
+ *        fields: [
+ *            {name: &#39;framework&#39;, type: &#39;string&#39;},
+ *            {name: &#39;rocks&#39;, type: &#39;boolean&#39;}
+ *        ],
+ *        data: [
+ *            { framework: &#39;Ext JS 5&#39;, rocks: true },
+ *            { framework: &#39;Ext GWT&#39;, rocks: true },
+ *            { framework: &#39;Other Guys&#39;, rocks: false }
+ *        ]
+ *     });
+ *
+ *     Ext.create(&#39;Ext.grid.Panel&#39;, {
+ *         title: &#39;Boolean Column Demo&#39;,
+ *         store: store,
+ *         columns: [
+ *             { text: &#39;Framework&#39;,  dataIndex: &#39;framework&#39;, flex: 1 },
+ *             {
+ *                 xtype: &#39;booleancolumn&#39;,
+ *                 text: &#39;Rocks&#39;,
+ *                 trueText: &#39;Yes&#39;,
+ *                 falseText: &#39;No&#39;,
+ *                 dataIndex: &#39;rocks&#39;
+ *             }
+ *         ],
+ *         height: 200,
+ *         width: 400,
+ *         renderTo: Ext.getBody()
+ *     });
+ */
+Ext.define(&#39;Ext.grid.column.Boolean&#39;, {
+    extend: &#39;Ext.grid.column.Column&#39;,
+    alias: [&#39;widget.booleancolumn&#39;],
+    alternateClassName: &#39;Ext.grid.BooleanColumn&#39;,
+
+    //&lt;locale&gt;
+<span id='Ext-grid-column-Boolean-cfg-trueText'>    /**
+</span>     * @cfg {String} trueText
+     * The string returned by the renderer when the column value is not falsey.
+     */
+    trueText: &#39;true&#39;,
+    //&lt;/locale&gt;
+
+    //&lt;locale&gt;
+<span id='Ext-grid-column-Boolean-cfg-falseText'>    /**
+</span>     * @cfg {String} falseText
+     * The string returned by the renderer when the column value is falsey (but not undefined).
+     */
+    falseText: &#39;false&#39;,
+    //&lt;/locale&gt;
+
+<span id='Ext-grid-column-Boolean-cfg-undefinedText'>    /**
+</span>     * @cfg {String} undefinedText
+     * The string returned by the renderer when the column value is undefined.
+     */
+    undefinedText: &#39;&amp;#160;&#39;,
+
+<span id='Ext-grid-column-Boolean-property-defaultFilterType'>    defaultFilterType: &#39;boolean&#39;,
+</span>
+<span id='Ext-grid-column-Boolean-cfg-renderer'>    /**
+</span>     * @cfg {Object} renderer
+     * @hide
+     */
+
+<span id='Ext-grid-column-Boolean-cfg-scope'>    /**
+</span>     * @cfg {Object} scope
+     * @hide
+     */
+
+<span id='Ext-grid-column-Boolean-cfg-producesHTML'>     /**
+</span>     * @cfg {Boolean} producesHTML
+     * @inheritdoc
+     */
+    producesHTML: false,
+
+<span id='Ext-grid-column-Boolean-method-defaultRenderer'>    defaultRenderer: function(value){
+</span>        if (value === undefined) {
+            return this.undefinedText;
+        }
+
+        if (!value || value === &#39;false&#39;) {
+            return this.falseText;
+        }
+        return this.trueText;
+    },
+
+<span id='Ext-grid-column-Boolean-method-updater'>    updater: function(cell, value) {
+</span>        Ext.fly(cell).down(this.getView().innerSelector, true).innerHTML = Ext.grid.column.Boolean.prototype.defaultRenderer.call(this, value);
+    }
+});
+</pre>
+</body>
+</html>

@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <title>The source code</title>
+  <link href="../resources/prettify/prettify.css" type="text/css" rel="stylesheet" />
+  <script type="text/javascript" src="../resources/prettify/prettify.js"></script>
+  <style type="text/css">
+    .highlight { display: block; background-color: #ddd; }
+  </style>
+  <script type="text/javascript">
+    function highlight() {
+      document.getElementById(location.hash.replace(/#/, "")).className = "highlight";
+    }
+  </script>
+</head>
+<body onload="prettyPrint(); highlight();">
+  <pre class="prettyprint lang-js"><span id='Ext-layout-component-field-HtmlEditor'>/**
+</span> * Layout class for {@link Ext.form.field.HtmlEditor} fields. Sizes textarea and iframe elements.
+ * @private
+ */
+Ext.define(&#39;Ext.layout.component.field.HtmlEditor&#39;, {
+    extend: &#39;Ext.layout.component.field.FieldContainer&#39;,
+    alias: [&#39;layout.htmleditor&#39;],
+
+<span id='Ext-layout-component-field-HtmlEditor-property-type'>    type: &#39;htmleditor&#39;,
+</span>    
+<span id='Ext-layout-component-field-HtmlEditor-property-naturalHeight'>    naturalHeight: 150,
+</span><span id='Ext-layout-component-field-HtmlEditor-property-naturalWidth'>    naturalWidth: 300,
+</span>
+<span id='Ext-layout-component-field-HtmlEditor-method-beginLayout'>    beginLayout: function(ownerContext) {
+</span>        var owner = this.owner,
+            dom;
+            
+        // In gecko, it can cause the browser to hang if we&#39;re running a layout with
+        // a heap of data in the textarea (think several images with data urls).
+        // So clear the value at the start, then re-insert it once we&#39;re done
+        if (Ext.isGecko) {
+            dom = owner.textareaEl.dom;
+            this.lastValue = dom.value;
+            dom.value = &#39;&#39;;
+        }
+        this.callParent(arguments);
+
+        ownerContext.toolbarContext  = ownerContext.context.getCmp(owner.toolbar);
+        ownerContext.inputCmpContext = ownerContext.context.getCmp(owner.inputCmp);
+        ownerContext.bodyCellContext = ownerContext.getEl(&#39;bodyEl&#39;);
+        ownerContext.textAreaContext = ownerContext.getEl(&#39;textareaEl&#39;);
+        ownerContext.iframeContext   = ownerContext.getEl(&#39;iframeEl&#39;);
+    },
+    
+<span id='Ext-layout-component-field-HtmlEditor-method-beginLayoutCycle'>    beginLayoutCycle: function(ownerContext) {
+</span>        var me = this,
+            widthModel = ownerContext.widthModel,
+            heightModel = ownerContext.heightModel,
+            owner = me.owner,
+            iframeEl = owner.iframeEl,
+            textareaEl = owner.textareaEl,
+            height = (heightModel.natural || heightModel.shrinkWrap) ? me.naturalHeight : &#39;&#39;;
+            
+        me.callParent(arguments);
+        if (widthModel.shrinkWrap) {
+            iframeEl.setStyle(&#39;width&#39;, &#39;&#39;);
+            textareaEl.setStyle(&#39;width&#39;, &#39;&#39;);
+        } else if (widthModel.natural) {
+            ownerContext.bodyCellContext.setWidth(me.naturalWidth);
+        }
+        
+        iframeEl.setStyle(&#39;height&#39;, height);
+        textareaEl.setStyle(&#39;height&#39;, height);
+    },
+    
+<span id='Ext-layout-component-field-HtmlEditor-method-finishedLayout'>    finishedLayout: function(){
+</span>        var owner = this.owner;
+        
+        this.callParent(arguments);
+        if (Ext.isGecko) {
+            owner.textareaEl.dom.value = this.lastValue;
+        }
+    }
+});</pre>
+</body>
+</html>

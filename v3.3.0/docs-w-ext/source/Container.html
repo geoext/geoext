@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <title>The source code</title>
+  <link href="../resources/prettify/prettify.css" type="text/css" rel="stylesheet" />
+  <script type="text/javascript" src="../resources/prettify/prettify.js"></script>
+  <style type="text/css">
+    .highlight { display: block; background-color: #ddd; }
+  </style>
+  <script type="text/javascript">
+    function highlight() {
+      document.getElementById(location.hash.replace(/#/, "")).className = "highlight";
+    }
+  </script>
+</head>
+<body onload="prettyPrint(); highlight();">
+  <pre class="prettyprint lang-js"><span id='Ext-mixin-Container'>/**
+</span> * @private
+ * Common methods for both classic &amp; modern containers
+ */
+Ext.define(&#39;Ext.mixin.Container&#39;, {
+    extend: &#39;Ext.Mixin&#39;,
+
+<span id='Ext-mixin-Container-property-mixinConfig'>    mixinConfig: {
+</span>        id: &#39;container&#39;
+    },
+
+<span id='Ext-mixin-Container-property-isContainer'>    /**
+</span>     * @property {Boolean} isContainer
+     * `true` in this class to identify an object as an instantiated Container, or subclass thereof.
+     */
+    isContainer: true,
+
+    config: {
+<span id='Ext-mixin-Container-cfg-referenceHolder'>        /**
+</span>         * @cfg {Boolean} referenceHolder
+         * If `true`, this container will be marked as being a point in the hierarchy where
+         * references to items with a specified `reference` config will be held. The container
+         * will automatically become a referenceHolder if a {@link #controller} is specified.
+         *
+         * See the introductory docs for {@link Ext.container.Container} for more information
+         * about references &amp; reference holders.
+         */
+        referenceHolder: false
+    },
+
+<span id='Ext-mixin-Container-method-getReferences'>    /**
+</span>     * Returns an object holding the descendants of this view keyed by their
+     * `{@link Ext.Component#cfg-reference reference}`. This object should not be held
+     * past the scope of the function calling this method. It will not be valid if items
+     * are added or removed from this or any sub-container.
+     *
+     * The intended usage is shown here (assume there are 3 components with reference
+     * values of &quot;foo&quot;, &quot;bar&quot; and &quot;baz&quot; at some level below this container):
+     *
+     *      onClick: function () {
+     *          var refs = this.getReferences();
+     *
+     *          // using &quot;refs&quot; we can access any descendant by its &quot;reference&quot;
+     *
+     *          refs.foo.getValue() + refs.bar.getValue() + refs.baz.getValue();
+     *      }
+     *
+     * If `this` component has a `{@link Ext.Component#cfg-reference reference}` assigned
+     * to it, that is **not** included in this object. That reference is understood to
+     * belong to the ancestor container configured as the `referenceHolder`.
+     *
+     * @return {Object} An object with each child reference. This will be `null` if this
+     * container has no descendants with a `{@link Ext.Component#cfg-reference reference}`
+     * specified.
+     * @since 5.0.0
+     */
+    getReferences: function () {
+        Ext.ComponentManager.fixReferences();
+        return this.refs || null;
+    },
+
+<span id='Ext-mixin-Container-method-lookup'>    /**
+</span>     * Gets a reference to the component with the specified {@link #reference} value.
+     *
+     * The method is a short-hand for the {@link #lookupReference} method.
+     *
+     * @param {String} key The name of the reference to lookup.
+     * @return {Ext.Component} The referenced component or `null` if it is not found.
+     * @since 6.0.1
+     */
+    lookup: function (key) {
+        var refs = this.getReferences();
+        return (refs &amp;&amp; refs[key]) || null;
+    },
+
+<span id='Ext-mixin-Container-method-lookupReference'>    /**
+</span>     * Gets a reference to the component with the specified {@link #reference} value.
+     *
+     * The {@link #lookup} method is a short-hand version of this method.
+     *
+     * @param {String} key The name of the reference to lookup.
+     * @return {Ext.Component} The referenced component or `null` if it is not found.
+     * @since 5.0
+     */
+    lookupReference: function (key) {
+        return this.lookup(key);
+    },
+
+<span id='Ext-mixin-Container-property-privates'>    privates: {
+</span><span id='Ext-mixin-Container-method-attachReference'>        /**
+</span>         * Sets up a component reference.
+         * @param {Ext.Component} component The component to reference.
+         * @private
+         */
+        attachReference: function (component) {
+            var me = this,
+                key, refs;
+
+            // Cleaning all this up later anyway
+            if (me.destroying || me.destroyed) {
+                return;
+            }
+
+            refs = me.refs || (me.refs = {});
+            key = component.referenceKey;
+            //&lt;debug&gt;
+            if (refs[key] &amp;&amp; refs[key] !== component) {
+                Ext.log.warn(&#39;Duplicate reference: &quot;&#39; + key + &#39;&quot; on &#39; + me.id);
+            }
+            //&lt;/debug&gt;
+            refs[key] = component;
+        },
+
+<span id='Ext-mixin-Container-method-clearReference'>        /**
+</span>         * Clear a component reference.
+         * @param {Ext.Component} component The component to remove.
+         * @private
+         */
+        clearReference: function (component) {
+            var refs = this.refs,
+                key = component.referenceKey;
+
+            if (refs &amp;&amp; key) {
+                // viewModelKey would be better placed in app.Container however
+                // it&#39;s not really worth introducing a second method call to clear
+                // a single property.
+                component.viewModelKey = component.referenceKey = refs[key] = null;
+            }
+        },
+
+        containerOnAdded: function(component, instanced) {
+            // We have been added to a container, we may have child references
+            // or be a reference ourself. At this point we have no way of knowing if 
+            // our references are correct, so trigger a fix.
+            if (instanced) {
+                Ext.ComponentManager.markReferencesDirty();
+            }
+        },
+
+        containerOnRemoved: function(destroying) {
+            var refHolder;
+        
+            // If we&#39;re destroying this will get cleaned up anyway
+            if (!destroying) {
+                refHolder = this.lookupReferenceHolder();
+                if (refHolder) {
+                    // Clear any references here, they will be reset after the 
+                    // next call to lookupReference after being marked dirty.
+                    // It&#39;s easier to wipe &amp; re-establish them than attempt to 
+                    // track what changed and prune the collection
+                    
+                    Ext.ComponentManager.markReferencesDirty();
+                    refHolder.clearReferences();
+                }
+            }
+        },  
+
+<span id='Ext-mixin-Container-method-clearReferences'>        /**
+</span>         * Invalidates the references collection. Typically called when
+         * removing a container from this container, since it&#39;s difficult
+         * to know what references got removed.
+         *
+         * @private
+         */
+        clearReferences: function () {
+            this.refs = null;
+        },
+
+        initContainerInheritedState: function(inheritedState, inheritedStateInner) {
+            var me = this,
+                controller = me.getController(),
+                session = me.getSession(),
+                // Don&#39;t instantiate it here, we just want to know whether we
+                // were configured with a VM
+                viewModel = me.getConfig(&#39;viewModel&#39;, true),
+                reference = me.getReference(),
+                referenceHolder = me.getReferenceHolder();
+
+
+
+            if (controller) {
+                inheritedState.referenceHolder = controller;
+                referenceHolder = true;
+            } else if (referenceHolder) {
+                inheritedState.referenceHolder = me;
+            }
+
+            if (referenceHolder) {
+                inheritedState.referencePath = &#39;&#39;;
+            } else if (reference &amp;&amp; me.isParentReference) {
+                inheritedState.referencePath = me.referenceKey + &#39;.&#39;;
+            }
+
+            if (session) {
+                inheritedState.session = session;
+            }
+
+            if (viewModel) {
+                inheritedState.viewModelPath = &#39;&#39;;
+            } else if (reference &amp;&amp; me.isParentReference) {
+                inheritedState.viewModelPath = me.viewModelKey + &#39;.&#39;;
+            }
+        },
+        
+        setupReference: function(reference) {
+            var len;
+
+            if (reference &amp;&amp; reference.charAt(len = reference.length - 1) === &#39;&gt;&#39;) {
+                this.isParentReference = true;
+                reference = reference.substring(0, len);
+            }
+
+            //&lt;debug&gt;
+            if (reference &amp;&amp; !Ext.validIdRe.test(reference)) {
+                Ext.Error.raise(&#39;Invalid reference &quot;&#39; + reference + &#39;&quot; for &#39; + this.getId() +
+                    &#39; - not a valid identifier&#39;);
+            }
+            //&lt;/debug&gt;
+
+            return reference;
+        }
+    }
+});</pre>
+</body>
+</html>

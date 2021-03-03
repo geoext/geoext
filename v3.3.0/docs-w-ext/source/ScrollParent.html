@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <title>The source code</title>
+  <link href="../resources/prettify/prettify.css" type="text/css" rel="stylesheet" />
+  <script type="text/javascript" src="../resources/prettify/prettify.js"></script>
+  <style type="text/css">
+    .highlight { display: block; background-color: #ddd; }
+  </style>
+  <script type="text/javascript">
+    function highlight() {
+      document.getElementById(location.hash.replace(/#/, "")).className = "highlight";
+    }
+  </script>
+</head>
+<body onload="prettyPrint(); highlight();">
+  <pre class="prettyprint lang-js"><span id='Ext-util-translatable-ScrollParent'>/**
+</span> * @private
+ *
+ * Translates the element by setting the scroll position of its parent node.
+ */
+Ext.define(&#39;Ext.util.translatable.ScrollParent&#39;, {
+    extend: &#39;Ext.util.translatable.Dom&#39;,
+
+<span id='Ext-util-translatable-ScrollParent-property-isScrollParent'>    isScrollParent: true,
+</span>
+<span id='Ext-util-translatable-ScrollParent-method-applyElement'>    applyElement: function(element) {
+</span>        var el = Ext.get(element);
+
+        if (el) {
+            this.parent = el.parent();
+        }
+
+        return el;
+    },
+
+<span id='Ext-util-translatable-ScrollParent-method-doTranslate'>    doTranslate: function(x, y) {
+</span>        var parent = this.parent;
+
+        parent.setScrollLeft(Math.round(-x));
+        parent.setScrollTop(Math.round(-y));
+
+        this.callParent([x, y]);
+    },
+
+<span id='Ext-util-translatable-ScrollParent-method-getPosition'>    getPosition: function() {
+</span>        var me = this,
+            position = me.position,
+            parent = me.parent;
+
+        position.x = parent.getScrollLeft();
+        position.y = parent.getScrollTop();
+
+        return position;
+    }
+});
+</pre>
+</body>
+</html>

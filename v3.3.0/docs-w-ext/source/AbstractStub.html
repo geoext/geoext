@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <title>The source code</title>
+  <link href="../resources/prettify/prettify.css" type="text/css" rel="stylesheet" />
+  <script type="text/javascript" src="../resources/prettify/prettify.js"></script>
+  <style type="text/css">
+    .highlight { display: block; background-color: #ddd; }
+  </style>
+  <script type="text/javascript">
+    function highlight() {
+      document.getElementById(location.hash.replace(/#/, "")).className = "highlight";
+    }
+  </script>
+</head>
+<body onload="prettyPrint(); highlight();">
+  <pre class="prettyprint lang-js"><span id='Ext-app-bind-AbstractStub'>/**
+</span> * This class manages bindings for a `Session` or `ViewModel`.
+ * @private
+ */
+Ext.define(&#39;Ext.app.bind.AbstractStub&#39;, {
+    extend: &#39;Ext.util.Schedulable&#39;,
+
+    requires: [
+        &#39;Ext.app.bind.Binding&#39;
+    ],
+
+<span id='Ext-app-bind-AbstractStub-property-children'>    children: null,
+</span>
+<span id='Ext-app-bind-AbstractStub-property-depth'>    depth: 0,
+</span>
+<span id='Ext-app-bind-AbstractStub-property-generation'>    generation: 1,
+</span>
+<span id='Ext-app-bind-AbstractStub-property-kind'>    kind: 10,
+</span>
+<span id='Ext-app-bind-AbstractStub-property-parent'>    parent: null,
+</span>
+<span id='Ext-app-bind-AbstractStub-method-constructor'>    constructor: function (owner, name) {
+</span>        var me = this;
+
+<span id='Ext-app-bind-AbstractStub-property-owner'>        /**
+</span>         * @property {Ext.data.Session/Ext.app.ViewModel} owner
+         * This property is set at creation of ths stub and should not be changed.
+         * @readonly
+         */
+        me.owner = owner;
+        me.name = name;
+
+        me.callParent();
+    },
+
+<span id='Ext-app-bind-AbstractStub-method-destroy'>    destroy: function () {
+</span>        var me = this,
+            children = me.children,
+            bindings = me.bindings,
+            len, i, key;
+
+        if (bindings) {
+            for (i = 0, len = bindings.length; i &lt; len; ++i) {
+                bindings[i].destroy(true);
+            }
+        }
+
+        for (key in children) {
+            children[key].destroy();
+        }
+        
+        if (me.scheduled) {
+            me.unschedule();
+        }
+        
+        me.callParent();
+    },
+
+<span id='Ext-app-bind-AbstractStub-method-add'>    add: function (child) {
+</span>        var me = this;
+
+        (me.children || (me.children = {}))[child.name] = child;
+
+        child.depth = me.depth + 1;
+        child.parent = me;
+    },
+
+<span id='Ext-app-bind-AbstractStub-method-getChild'>    getChild: function (path) {
+</span>        var pathArray = Ext.isString(path) ? path.split(&#39;.&#39;) : path;
+
+        if (pathArray &amp;&amp; pathArray.length) {
+            return this.descend(pathArray, 0);
+        }
+
+        return this;
+    },
+
+<span id='Ext-app-bind-AbstractStub-method-getFullName'>    getFullName: function () {
+</span>        var me = this,
+            name = me.fullName,
+            parent = me.parent,
+            s;
+
+        if (!name) {
+            name = me.name || me.id;
+            if (parent &amp;&amp; (s = parent.getFullName())) {
+                name = ((s.charAt(s.length-1) !== &#39;:&#39;) ? s + &#39;.&#39; : s) + name;
+            }
+            me.fullName = name;
+        }
+
+        return name;
+    },
+
+<span id='Ext-app-bind-AbstractStub-method-getSession'>    getSession: function () {
+</span>        var owner = this.owner;
+
+        return owner.isSession ? owner : owner.getSession();
+    },
+
+<span id='Ext-app-bind-AbstractStub-method-bind'>    bind: function (callback, scope, options) {
+</span>        var me = this,
+            binding = new Ext.app.bind.Binding(me, callback, scope, options),
+            bindings = (me.bindings || (me.bindings = []));
+
+        binding.depth = me.depth;
+        bindings.push(binding);
+
+        return binding;
+    },
+
+<span id='Ext-app-bind-AbstractStub-method-getValue'>    getValue: function () {
+</span>        return this.isLoading() ? null : this.getRawValue();
+    },
+
+<span id='Ext-app-bind-AbstractStub-method-graft'>    graft: function (replacement) {
+</span>        var me = this,
+            bindings = me.bindings,
+            name = me.name,
+            i;
+
+        // Clear these so that when we call destroy we won&#39;t damage anything:
+        me.parent = me.bindings = null;
+        me.destroy(); // we may be scheduled
+
+        replacement.depth = me.depth;
+        replacement.bindings = bindings;
+        replacement.generation = me.generation + 1;
+        replacement.name = name;
+        replacement.id = me.id;
+        replacement.path = me.path;
+
+        // Now for the fun part...
+        if (bindings) {
+            for (i = bindings.length; i-- &gt; 0; ) {
+                bindings[i].stub = replacement;
+            }
+        } 
+
+        return replacement;
+    },
+
+<span id='Ext-app-bind-AbstractStub-method-isDescendantOf'>    isDescendantOf: function (item) {
+</span>        for (var parent = this; parent = parent.parent; ) {
+            if (parent === item) {
+                return true;
+            }
+        }
+        return false;
+    },
+
+<span id='Ext-app-bind-AbstractStub-method-onSchedule'>    onSchedule: function() {
+</span>        // When a stub changes, say &quot;foo.bar.baz&quot; we may need to notify bindings on our
+        // parents &quot;foo.bar&quot; and &quot;foo&quot;, This is true especially when these are targets of
+        // links. To economize on this we require that bindings that want to be notified
+        // of changes to sub-properties of their target set the &quot;deep&quot; property to true.
+        for (var i, len, binding, bindings, p = this.parent; p; p = p.parent) {
+            bindings = p.bindings;
+            if (bindings) {
+                for (i = 0, len = bindings.length; i &lt; len; ++i) {
+                    binding = bindings[i];
+                    if (binding.deep &amp;&amp; !binding.scheduled) {
+                        binding.schedule();
+                    }
+                }
+            }
+        }
+    },
+
+<span id='Ext-app-bind-AbstractStub-method-react'>    react: function () {
+</span>        var bindings = this.bindings,
+            binding, i, len;
+            
+        if (bindings) {
+            for (i = 0, len = bindings.length; i &lt; len; ++i) {
+                binding = bindings[i];
+                if (!binding.scheduled) {
+                    binding.schedule();
+                }
+            }
+        }
+    },
+
+<span id='Ext-app-bind-AbstractStub-method-unbind'>    unbind: function (binding) {
+</span>        var bindings = this.bindings;
+
+        if (bindings &amp;&amp; bindings.length) {
+            Ext.Array.remove(bindings, binding);
+        }
+    },
+
+<span id='Ext-app-bind-AbstractStub-property-privates'>    privates: {
+</span>        collect: function() {
+            var children = this.children,
+                bindings = this.bindings,
+                totalCount = 0,
+                count = 0,
+                child,
+                key;
+            
+            if (children) {
+                for (key in children) {
+                    child = children[key];
+                    count = child.collect();
+                    if (count === 0) {
+                        // The child (and any deep children) have no bindings,
+                        // so we can consider it a dead node.
+                        child.destroy();
+                        delete children[key];
+                    }
+                    totalCount += count;
+                }
+            }
+            
+            if (bindings) {
+                totalCount += bindings.length;
+            }
+            
+            return totalCount;
+        },
+        
+        getScheduler: function () {
+            var owner = this.owner;
+            return owner &amp;&amp; owner.getScheduler();
+        },
+        
+        sort: function () {
+            var parent = this.parent;
+
+            if (parent) {
+                // We sort our parent first because if it is something like a link we need
+                // it to determine the value of the root-level property before we can dot
+                // our way into it. This is especially important for formulas that might
+                // throw errors if the links have not published results before they run.
+                this.scheduler.sortItem(parent);
+            }
+
+            // Schedulable#sort === emptyFn
+            //me.callParent();
+        }
+    }
+});
+</pre>
+</body>
+</html>

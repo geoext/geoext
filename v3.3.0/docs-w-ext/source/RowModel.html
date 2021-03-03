@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <title>The source code</title>
+  <link href="../resources/prettify/prettify.css" type="text/css" rel="stylesheet" />
+  <script type="text/javascript" src="../resources/prettify/prettify.js"></script>
+  <style type="text/css">
+    .highlight { display: block; background-color: #ddd; }
+  </style>
+  <script type="text/javascript">
+    function highlight() {
+      document.getElementById(location.hash.replace(/#/, "")).className = "highlight";
+    }
+  </script>
+</head>
+<body onload="prettyPrint(); highlight();">
+  <pre class="prettyprint lang-js"><span id='Ext-selection-RowModel'>/**
+</span> * RowModel Selection Model implements row based navigation for
+ * {@link Ext.grid.Panel grid panels} via user input. RowModel is the default grid selection
+ * model and, generally, will not need to be specified.
+ *
+ * By utilizing the selModel config as an object, you may also set configurations for:
+ *
+ * + {@link #mode} - Specifies whether user may select multiple rows or single rows
+ * + {@link #allowDeselect} - Specifies whether user may deselect records when in SINGLE mode
+ * + {@link #ignoreRightMouseSelection} - Specifies whether user may ignore right clicks
+ * for selection purposes
+ *
+ * In the example below, we&#39;ve enabled MULTI mode. This means that multiple rows can be selected.
+ *
+ *     @example
+ *     var store = Ext.create(&#39;Ext.data.Store&#39;, {
+ *         fields: [&#39;name&#39;, &#39;email&#39;, &#39;phone&#39;],
+ *         data: [
+ *             { name: &#39;Lisa&#39;, email: &#39;lisa@simpsons.com&#39;, phone: &#39;555-111-1224&#39; },
+ *             { name: &#39;Bart&#39;, email: &#39;bart@simpsons.com&#39;, phone: &#39;555-222-1234&#39; },
+ *             { name: &#39;Homer&#39;, email: &#39;homer@simpsons.com&#39;, phone: &#39;555-222-1244&#39; },
+ *             { name: &#39;Marge&#39;, email: &#39;marge@simpsons.com&#39;, phone: &#39;555-222-1254&#39; }
+ *         ]
+ *     });
+ *
+ *     Ext.create(&#39;Ext.grid.Panel&#39;, {
+ *         title: &#39;Simpsons&#39;,
+ *         store: store,
+ *         width: 400,
+ *         renderTo: Ext.getBody(),
+ *         selModel: {
+ *            selType: &#39;rowmodel&#39;, // rowmodel is the default selection model
+ *            mode: &#39;MULTI&#39; // Allows selection of multiple rows
+ *         },
+ *         columns: [
+ *             { text: &#39;Name&#39;,  dataIndex: &#39;name&#39;  },
+ *             { text: &#39;Email&#39;, dataIndex: &#39;email&#39;, flex: 1 },
+ *             { text: &#39;Phone&#39;, dataIndex: &#39;phone&#39; }
+ *         ]
+ *     });
+ */
+Ext.define(&#39;Ext.selection.RowModel&#39;, {
+    extend: &#39;Ext.selection.DataViewModel&#39;,
+    alias: &#39;selection.rowmodel&#39;,
+    requires: [
+        &#39;Ext.grid.CellContext&#39;
+    ],
+
+
+<span id='Ext-selection-RowModel-cfg-enableKeyNav'>    /**
+</span>     * @cfg {Boolean} enableKeyNav
+     *
+     * Turns on/off keyboard navigation within the grid.
+     */
+    enableKeyNav: true,
+
+<span id='Ext-selection-RowModel-event-beforedeselect'>    /**
+</span>     * @event beforedeselect
+     * Fired before a record is deselected. If any listener returns false, the
+     * deselection is cancelled.
+     * @param {Ext.selection.RowModel} this
+     * @param {Ext.data.Model} record The deselected record
+     * @param {Number} index The row index deselected
+     */
+
+<span id='Ext-selection-RowModel-event-beforeselect'>    /**
+</span>     * @event beforeselect
+     * Fired before a record is selected. If any listener returns false, the
+     * selection is cancelled.
+     * @param {Ext.selection.RowModel} this
+     * @param {Ext.data.Model} record The selected record
+     * @param {Number} index The row index selected
+     */
+
+<span id='Ext-selection-RowModel-event-deselect'>    /**
+</span>     * @event deselect
+     * Fired after a record is deselected
+     * @param {Ext.selection.RowModel} this
+     * @param {Ext.data.Model} record The deselected record
+     * @param {Number} index The row index deselected
+     */
+
+<span id='Ext-selection-RowModel-event-select'>    /**
+</span>     * @event select
+     * Fired after a record is selected
+     * @param {Ext.selection.RowModel} this
+     * @param {Ext.data.Model} record The selected record
+     * @param {Number} index The row index selected
+     */
+
+    isRowModel: true,
+
+<span id='Ext-selection-RowModel-property-deselectOnContainerClick'>    /**
+</span>     * @inheritdoc
+     */
+    deselectOnContainerClick: false,
+
+<span id='Ext-selection-RowModel-method-onUpdate'>    onUpdate: function(record) {
+</span>        var me = this,
+            view = me.view,
+            index;
+
+        if (view &amp;&amp; me.isSelected(record)) {
+            index = view.indexOf(record);
+            view.onRowSelect(index);
+            if (record === me.lastFocused) {
+                view.onRowFocus(index, true);
+            }
+        }
+    },
+
+<span id='Ext-selection-RowModel-method-onSelectChange'>    // Allow the GridView to update the UI by
+</span>    // adding/removing a CSS class from the row.
+    onSelectChange: function(record, isSelected, suppressEvent, commitFn) {
+        var me      = this,
+            views   = me.views || [me.view],
+            viewsLn = views.length,
+            recordIndex = me.store.indexOf(record),
+            eventName = isSelected ? &#39;select&#39; : &#39;deselect&#39;,
+            i, view;
+
+        if ((suppressEvent || me.fireEvent(&#39;before&#39; + eventName, me, record, recordIndex)) !== false &amp;&amp;
+                commitFn() !== false) {
+
+            // Selection models can handle more than one view
+            for (i = 0; i &lt; viewsLn; i++) {
+                view = views[i];
+                recordIndex  = view.indexOf(record);
+
+                // The record might not be rendered due to either buffered rendering,
+                // or removal/hiding of all columns (eg empty locked side).
+                if (view.indexOf(record) !== -1) {
+                    if (isSelected) {
+                        view.onRowSelect(recordIndex, suppressEvent);
+                    } else {
+                        view.onRowDeselect(recordIndex, suppressEvent);
+                    }
+                }
+            }
+
+            if (!suppressEvent) {
+                me.fireEvent(eventName, me, record, recordIndex);
+            }
+        }
+    },
+
+<span id='Ext-selection-RowModel-method-getCurrentPosition'>    /**
+</span>     * Returns position of the first selected cell in the selection in the format {row: row, column: column}
+     * @deprecated 5.0.1 Use the {@link Ext.view.Table#getNavigationModel NavigationModel} instead.
+     */
+    getCurrentPosition: function() {
+        var firstSelection = this.selected.getAt(0);
+        if (firstSelection) {
+            return new Ext.grid.CellContext(this.view).setPosition(this.store.indexOf(firstSelection), 0);
+        }
+    },
+
+<span id='Ext-selection-RowModel-method-selectByPosition'>    selectByPosition: function (position, keepExisting) {
+</span>        if (!position.isCellContext) {
+            position = new Ext.grid.CellContext(this.view).setPosition(position.row, position.column);
+        }
+        this.select(position.record, keepExisting);
+    },
+
+<span id='Ext-selection-RowModel-method-selectNext'>    /**
+</span>     * Selects the record immediately following the currently selected record.
+     * @param {Boolean} [keepExisting] True to retain existing selections
+     * @param {Boolean} [suppressEvent] Set to false to not fire a select event
+     * @return {Boolean} `true` if there is a next record, else `false`
+     */
+    selectNext: function(keepExisting, suppressEvent) {
+        var me = this,
+            store = me.store,
+            selection = me.getSelection(),
+            record = selection[selection.length - 1],
+            index = me.view.indexOf(record) + 1,
+            success;
+
+        if (index === store.getCount() || index === 0) {
+            success = false;
+        } else {
+            me.doSelect(index, keepExisting, suppressEvent);
+            success = true;
+        }
+        return success;
+    },
+
+<span id='Ext-selection-RowModel-method-selectPrevious'>    /**
+</span>     * Selects the record that precedes the currently selected record.
+     * @param {Boolean} [keepExisting] True to retain existing selections
+     * @param {Boolean} [suppressEvent] Set to false to not fire a select event
+     * @return {Boolean} `true` if there is a previous record, else `false`
+     */
+    selectPrevious: function(keepExisting, suppressEvent) {
+        var me = this,
+            selection = me.getSelection(),
+            record = selection[0],
+            index = me.view.indexOf(record) - 1,
+            success;
+
+        if (index &lt; 0) {
+            success = false;
+        } else {
+            me.doSelect(index, keepExisting, suppressEvent);
+            success = true;
+        }
+        return success;
+    },
+
+<span id='Ext-selection-RowModel-method-isRowSelected'>    isRowSelected: function(record) {
+</span>        return this.isSelected(record);
+    },
+
+<span id='Ext-selection-RowModel-method-isCellSelected'>    isCellSelected: function(view, record, columnHeader) {
+</span>        return this.isSelected(record);
+    },
+
+<span id='Ext-selection-RowModel-method-vetoSelection'>    vetoSelection: function(e) {
+</span>        var navModel = this.view.getNavigationModel(),
+            key = e.getKey(),
+            isLeftRight = key === e.RIGHT || key === e.LEFT;
+
+        // Veto row selection upon key-based, in-row left/right navigation.
+        // Else pass to superclass to veto.
+        return (isLeftRight &amp;&amp; navModel.previousRecord === navModel.record) || this.callParent([e]);
+    }
+});
+</pre>
+</body>
+</html>

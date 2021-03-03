@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <title>The source code</title>
+  <link href="../resources/prettify/prettify.css" type="text/css" rel="stylesheet" />
+  <script type="text/javascript" src="../resources/prettify/prettify.js"></script>
+  <style type="text/css">
+    .highlight { display: block; background-color: #ddd; }
+  </style>
+  <script type="text/javascript">
+    function highlight() {
+      document.getElementById(location.hash.replace(/#/, "")).className = "highlight";
+    }
+  </script>
+</head>
+<body onload="prettyPrint(); highlight();">
+  <pre class="prettyprint lang-js"><span id='Ext-data-session-ChangesVisitor'>/**
+</span> * This class is used internally by `{@link Ext.data.Session#getChanges}` to build
+ * up an object describing changes in the session. It is not intended for public use but
+ * can be used as an example of the visitor `{@link Ext.data.Session#visitData}`
+ * requires.
+ * @protected
+ * @since 5.0.0
+ */
+Ext.define(&#39;Ext.data.session.ChangesVisitor&#39;, {
+<span id='Ext-data-session-ChangesVisitor-method-constructor'>    constructor: function (session) {
+</span>        var me = this,
+            crud;
+
+        me.session = session;
+        crud = session.getCrudProperties();
+        me.result = null;
+
+        me.writerOptions = {
+            /*
+             * Keyed by the $className of a Model, e.g. &quot;Foo&quot;, and to cache data from
+             * Foo.getProxy().getWriter (called &quot;writer&quot; in the pseudo code below):
+             *
+             *  Foo: {
+             *      drop: {
+             *          all: writer.getWriteAllFields(),
+             *      },
+             *      allDataOptions: Ext.apply(Ext.Object.chain(writer.getAllDataOptions()), {
+             *          serialize: true
+             *      }),
+             *      partialDataOptions: Ext.apply(Ext.Object.chain(writer.getPartialDataOptions()), {
+             *          serialize: true
+             *      })
+             *  }
+             */
+        };
+
+        me.createKey = crud.create;
+        me.readKey = crud.read;
+        me.updateKey = crud.update;
+        me.dropKey = crud.drop;
+    },
+
+<span id='Ext-data-session-ChangesVisitor-method-onDirtyRecord'>    onDirtyRecord: function (record) {
+</span>        var me = this,
+            crud = me.crud,
+            created = record.phantom,
+            dropped = record.dropped,
+            updated = !created &amp;&amp; !dropped,
+            type = record.$className,
+            prop = (created || dropped) ? &#39;allDataOptions&#39; : &#39;partialDataOptions&#39;,
+            writerOptions = me.writerOptions,
+            name = record.entityName,
+            options, bucket, entry, result;
+
+        if (created &amp;&amp; dropped) {
+            return false;
+        }
+
+        crud = created ? me.createKey : (dropped ? me.dropKey : me.updateKey);
+        writerOptions = writerOptions[type] || (writerOptions[type] = {});
+
+        if (dropped) {
+            // If the Writer says &quot;writeAllFields&quot; then we want to use allDataOptions
+            // for the prop (set already). Otherwise we just want to encode the id.
+            if (!(options = writerOptions.drop)) {
+                writerOptions.drop = options = {
+                    all: record.getProxy().getWriter().getWriteAllFields()
+                };
+            }
+            if (!options.all) {
+                entry = record.id;
+            }
+            // else entry is unset so we&#39;ll ask for the prop and call record.getData
+        }
+
+        if (!entry) {
+            // Consult the Writer for the entity to determine its preferences for writing
+            // complete or partial data. We rely on the serialization of the record&#39;s
+            // getData method whereas the Writer has its own ideas on the matter.
+            if (!(options = writerOptions[prop])) {
+                options = record.getProxy().getWriter().getConfig(prop);
+                writerOptions[prop] = options = Ext.Object.chain(options);
+                me.setupOptions(options);
+            }
+
+            entry = record.getData(options);
+        }
+
+        //  User: {
+        //      C: [
+        //          { id: 20, name: &#39;Don&#39; }
+        //      ],
+        //      U: [
+        //          { id: 30, name: &#39;Don&#39; }
+        //      ],
+        //      D: [ 40, 50 ]
+        //  }
+        result = me.result || (me.result = {});
+        bucket = result[name] || (result[name] = {});
+        bucket = bucket[crud] || (bucket[crud] = []);
+        bucket.push(entry);
+    },
+
+<span id='Ext-data-session-ChangesVisitor-method-setupOptions'>    setupOptions: function(options) {
+</span>        options.serialize = true;
+    },
+
+<span id='Ext-data-session-ChangesVisitor-method-onMatrixChange'>    onMatrixChange: function (association, id1, id2, state) {
+</span>        var me = this,
+            name = association.left.type, // e.g., &quot;User&quot;
+            assocName = association.right.role, // e.g., &quot;groups&quot;
+            operation = state &lt; 0 ? me.dropKey : me.createKey,
+            bucket, result;
+
+        //  User: {
+        //      groups: {
+        //          C: {
+        //              20: [ 30, 40 ]  // associate User 20 w/Groups 30 &amp; 40
+        //          },
+        //          D: {
+        //              10: [ 50 ]  // disassociate User 10 w/Group 50
+        //          }
+        //      }
+        //  }
+        result = me.result || (me.result = {});
+        bucket = result[name] || (result[name] = {}); // User
+        bucket = bucket[assocName] || (bucket[assocName] = {}); // groups
+        bucket = bucket[operation] || (bucket[operation] = {}); // C or D
+        bucket = bucket[id1] || (bucket[id1] = []);
+
+        bucket.push(id2);
+    }
+});</pre>
+</body>
+</html>

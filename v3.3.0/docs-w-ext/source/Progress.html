@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <title>The source code</title>
+  <link href="../resources/prettify/prettify.css" type="text/css" rel="stylesheet" />
+  <script type="text/javascript" src="../resources/prettify/prettify.js"></script>
+  <style type="text/css">
+    .highlight { display: block; background-color: #ddd; }
+  </style>
+  <script type="text/javascript">
+    function highlight() {
+      document.getElementById(location.hash.replace(/#/, "")).className = "highlight";
+    }
+  </script>
+</head>
+<body onload="prettyPrint(); highlight();">
+  <pre class="prettyprint lang-js"><span id='Ext-Progress'>/**
+</span> * A simple progress bar widget.
+ *
+ * You are responsible for showing, updating (via {@link #setValue}) and clearing the
+ * progress bar as needed from your own code. This method is most appropriate when you
+ * want to show progress throughout an operation that has predictable points of interest
+ * at which you can update the control.
+ *
+ *     @example
+ *     var store = Ext.create(&#39;Ext.data.Store&#39;, {
+ *         fields: [&#39;name&#39;, &#39;progress&#39;],
+ *         data: [
+ *             { name: &#39;Lisa&#39;, progress: .159 },
+ *             { name: &#39;Bart&#39;, progress: .216 },
+ *             { name: &#39;Homer&#39;, progress: .55 },
+ *             { name: &#39;Maggie&#39;, progress: .167 },
+ *             { name: &#39;Marge&#39;, progress: .145 }
+ *         ]
+ *     });
+ *
+ *     Ext.create(&#39;Ext.grid.Panel&#39;, {
+ *         title: &#39;Simpsons&#39;,
+ *         store: store,
+ *         columns: [
+ *             { text: &#39;Name&#39;,  dataIndex: &#39;name&#39; },
+ *             {
+ *                 text: &#39;Progress&#39;,
+ *                 xtype: &#39;widgetcolumn&#39;,
+ *                 width: 120,
+ *                 dataIndex: &#39;progress&#39;,
+ *                 widget: {
+ *                     xtype: &#39;progress&#39;
+ *                 }
+ *             }
+ *         ],
+ *         height: 200,
+ *         width: 400,
+ *         renderTo: Ext.getBody()
+ *     });
+ *
+ */
+Ext.define(&#39;Ext.Progress&#39;, {
+    extend: &#39;Ext.Gadget&#39;,
+    xtype: [&#39;progress&#39;, &#39;progressbarwidget&#39;],
+    alternateClassName: &#39;Ext.ProgressBarWidget&#39;,
+
+    mixins: [
+        &#39;Ext.ProgressBase&#39;
+    ],
+
+    config: {
+<span id='Ext-Progress-cfg-text'>        /**
+</span>         * @cfg {String} [text]
+         * The background text
+         */
+        text: null,
+
+<span id='Ext-Progress-cfg-animate'>        /**
+</span>         * @cfg {Boolean} [animate=false]
+         * Specify as `true` to have this progress bar animate to new extent when updated.
+         */
+        animate: false
+    },
+
+    cachedConfig: {
+<span id='Ext-Progress-cfg-baseCls'>        /**
+</span>         * @cfg {String} [baseCls=&#39;x-progress&#39;]
+         * The base CSS class to apply to the progress bar&#39;s wrapper element.
+         */
+        baseCls: Ext.baseCSSPrefix + &#39;progress&#39;,
+
+<span id='Ext-Progress-cfg-textCls'>        textCls: Ext.baseCSSPrefix + &#39;progress-text&#39;,
+</span>
+<span id='Ext-Progress-cfg-cls'>        cls: null
+</span>    },
+
+<span id='Ext-Progress-property-template'>    template: [{
+</span>        reference: &#39;backgroundEl&#39;
+    }, {
+        reference: &#39;barEl&#39;,
+        children: [{
+            reference: &#39;textEl&#39;
+        }]
+    }],
+
+<span id='Ext-Progress-property-defaultBindProperty'>    defaultBindProperty: &#39;value&#39;,
+</span>
+<span id='Ext-Progress-method-updateCls'>    updateCls: function (cls, oldCls) {
+</span>        var el = this.element;
+
+        if (oldCls) {
+            el.removeCls(oldCls);
+        }
+
+        if (cls) {
+            el.addCls(cls);
+        }
+    },
+
+<span id='Ext-Progress-method-updateUi'>    updateUi: function (ui, oldUi) {
+</span>        var element = this.element,
+            barEl = this.barEl,
+            baseCls = this.getBaseCls() + &#39;-&#39;;
+
+        if (oldUi) {
+            element.removeCls(baseCls + oldUi);
+            barEl.removeCls(baseCls + &#39;bar-&#39; + oldUi);
+        }
+
+        element.addCls(baseCls + ui);
+        barEl.addCls(baseCls + &#39;bar-&#39; + ui);
+    },
+
+<span id='Ext-Progress-method-updateBaseCls'>    updateBaseCls: function (baseCls, oldBaseCls) {
+</span>        //&lt;debug&gt;
+        if (oldBaseCls) {
+            Ext.raise(&#39;You cannot configure baseCls - use a subclass&#39;);
+        }
+        //&lt;/debug&gt;
+        this.element.addCls(baseCls);
+        this.barEl.addCls(baseCls + &#39;-bar&#39;);
+    },
+
+<span id='Ext-Progress-method-updateTextCls'>    updateTextCls: function (textCls) {
+</span>        this.backgroundEl.addCls(textCls + &#39; &#39; + textCls + &#39;-back&#39;);
+        this.textEl.addCls(textCls);
+    },
+
+<span id='Ext-Progress-method-updateValue'>    updateValue: function (value, oldValue) {
+</span>        var me = this,
+            barEl = me.barEl,
+            textTpl = me.getTextTpl();
+
+        if (textTpl) {
+            me.setText(textTpl.apply({
+                value: value,
+                percent: Math.round(value * 100)
+            }));
+        }
+        if (me.getAnimate()) {
+            barEl.stopAnimation();
+            barEl.animate(Ext.apply({
+                from: {
+                    width: (oldValue * 100) + &#39;%&#39;
+                },
+                to: {
+                    width: (value * 100) + &#39;%&#39;
+                }
+            }, me.animate));
+        } else {
+            barEl.setStyle(&#39;width&#39;, (value * 100) + &#39;%&#39;);
+        }
+    },
+
+<span id='Ext-Progress-method-updateText'>    updateText: function (text) {
+</span>        this.backgroundEl.setHtml(text);
+        this.textEl.setHtml(text);
+    }
+});
+</pre>
+</body>
+</html>

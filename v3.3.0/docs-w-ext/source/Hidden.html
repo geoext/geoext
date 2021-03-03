@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <title>The source code</title>
+  <link href="../resources/prettify/prettify.css" type="text/css" rel="stylesheet" />
+  <script type="text/javascript" src="../resources/prettify/prettify.js"></script>
+  <style type="text/css">
+    .highlight { display: block; background-color: #ddd; }
+  </style>
+  <script type="text/javascript">
+    function highlight() {
+      document.getElementById(location.hash.replace(/#/, "")).className = "highlight";
+    }
+  </script>
+</head>
+<body onload="prettyPrint(); highlight();">
+  <pre class="prettyprint lang-js"><span id='Ext-form-field-Hidden'>/**
+</span> * A basic hidden field for storing hidden values in forms that need to be passed in the form submit.
+ *
+ * This creates an actual input element with type=&quot;hidden&quot; in the DOM. While its label is
+ * {@link #hideLabel not rendered} by default, it is still a real component and may be sized according
+ * to its owner container&#39;s layout.
+ *
+ * Because of this, in most cases it is more convenient and less problematic to simply
+ * {@link Ext.form.action.Action#params pass hidden parameters} directly when
+ * {@link Ext.form.Basic#submit submitting the form}.
+ *
+ * Example:
+ *
+ *     @example
+ *     new Ext.form.Panel({
+ *         title: &#39;My Form&#39;,
+ *         items: [{
+ *             xtype: &#39;textfield&#39;,
+ *             fieldLabel: &#39;Text Field&#39;,
+ *             name: &#39;text_field&#39;,
+ *             value: &#39;value from text field&#39;
+ *         }, {
+ *             xtype: &#39;hiddenfield&#39;,
+ *             name: &#39;hidden_field_1&#39;,
+ *             value: &#39;value from hidden field&#39;
+ *         }],
+ *
+ *         buttons: [{
+ *             text: &#39;Submit&#39;,
+ *             handler: function() {
+ *                 this.up(&#39;form&#39;).getForm().submit({
+ *                     params: {
+ *                         hidden_field_2: &#39;value from submit call&#39;
+ *                     }
+ *                 });
+ *             }
+ *         }]
+ *     });
+ *
+ * Submitting the above form will result in three values sent to the server:
+ *
+ *     text_field=value+from+text+field&amp;hidden;_field_1=value+from+hidden+field&amp;hidden_field_2=value+from+submit+call
+ *
+ */
+Ext.define(&#39;Ext.form.field.Hidden&#39;, {
+    extend:&#39;Ext.form.field.Base&#39;,
+    alias: [&#39;widget.hiddenfield&#39;, &#39;widget.hidden&#39;],
+    alternateClassName: &#39;Ext.form.Hidden&#39;,
+
+<span id='Ext-form-field-Hidden-property-focusable'>    focusable: false,
+</span><span id='Ext-form-field-Hidden-cfg-inputType'>    inputType : &#39;hidden&#39;,
+</span><span id='Ext-form-field-Hidden-cfg-isTextInput'>    isTextInput: false,
+</span><span id='Ext-form-field-Hidden-cfg-hideLabel'>    hideLabel: true,
+</span><span id='Ext-form-field-Hidden-cfg-hidden'>    hidden: true,
+</span>    
+<span id='Ext-form-field-Hidden-property-ariaRole'>    ariaRole: &#39;presentation&#39;,
+</span>    
+<span id='Ext-form-field-Hidden-method-initComponent'>    initComponent: function() {
+</span>        this.formItemCls += &#39;-hidden&#39;;
+        this.callParent();    
+    },
+    
+<span id='Ext-form-field-Hidden-method-isEqual'>    /**
+</span>     * @private
+     * Override. Treat undefined and null values as equal to an empty string value.
+     */
+    isEqual: function(value1, value2) {
+        return this.isEqualAsString(value1, value2);
+    },
+
+<span id='Ext-form-field-Hidden-method-initEvents'>    initEvents: Ext.emptyFn,
+</span>
+<span id='Ext-form-field-Hidden-method-setSize'>    /**
+</span>     * @method
+     * @hide
+     */
+    setSize : Ext.emptyFn,
+
+<span id='Ext-form-field-Hidden-method-setWidth'>    /**
+</span>     * @method
+     * @hide
+     */
+    setWidth : Ext.emptyFn,
+
+<span id='Ext-form-field-Hidden-method-setHeight'>    /**
+</span>     * @method
+     * @hide
+     */
+    setHeight : Ext.emptyFn,
+
+<span id='Ext-form-field-Hidden-method-setPosition'>    /**
+</span>     * @method
+     * @hide
+     */
+    setPosition : Ext.emptyFn,
+
+<span id='Ext-form-field-Hidden-method-setPagePosition'>    /**
+</span>     * @method
+     * @hide
+     */
+    setPagePosition : Ext.emptyFn,
+
+<span id='Ext-form-field-Hidden-method-markInvalid'>    /**
+</span>     * @method
+     * @hide
+     */
+    markInvalid : Ext.emptyFn,
+
+<span id='Ext-form-field-Hidden-method-clearInvalid'>    /**
+</span>     * @method
+     * @hide
+     */
+    clearInvalid : Ext.emptyFn
+});
+</pre>
+</body>
+</html>
