@@ -17,7 +17,7 @@
   ],
   "homepage": "https://geoext.github.io/geoext3/",
   "license": "GPL-3.0",
-  "version": "3.2.0",
+  "version": "3.3.0",
   "repository": {
     "type": "git",
     "url": "https://github.com/geoext/geoext3.git"
