@@ -16,11 +16,11 @@ Version 3 of GeoExt is the successor to the GeoExt 2.x-series and is built atop 
 We are trying hard to keep up with developments on both our parent libraries.
 The current state of GeoExt is compatible with ExtJS 6.2.0 and OpenLayers 4.6.5. This state is released as GeoExt v3.2.0.
 
-| OpenLayers       | ExtJS | GeoExt |
-| ---------------- | ----- | ------ |
-| 3.20.1           | 6.2.0 | 3.0.0  |
-| 3.20.1 / 4.3.x   | 6.2.0 | 3.1.0  |
-| 4.6.5            | 6.2.0 | 3.2.0  |
+| OpenLayers       | ExtJS | GeoExt         |
+| ---------------- | ----- | -------------- |
+| 4.6.5            | 6.2.0 | 3.3.x & 3.2.0  |
+| 3.20.1 / 4.3.x   | 6.2.0 | 3.1.0          |
+| 3.20.1           | 6.2.0 | 3.0.0          |
 
 ## More information on GeoExt 3
 
