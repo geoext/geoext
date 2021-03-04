@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <title>The source code</title>
+  <link href="../resources/prettify/prettify.css" type="text/css" rel="stylesheet" />
+  <script type="text/javascript" src="../resources/prettify/prettify.js"></script>
+  <style type="text/css">
+    .highlight { display: block; background-color: #ddd; }
+  </style>
+  <script type="text/javascript">
+    function highlight() {
+      document.getElementById(location.hash.replace(/#/, "")).className = "highlight";
+    }
+  </script>
+</head>
+<body onload="prettyPrint(); highlight();">
+  <pre class="prettyprint lang-js"><span id='Ext-util-Group'>/**
+</span> * @class Ext.util.Group
+ * Encapsulates a grouped collection of records within a {@link Ext.util.Collection}
+ */
+Ext.define(&#39;Ext.util.Group&#39;, {
+    extend: &#39;Ext.util.Collection&#39;,
+
+    config: {
+<span id='Ext-util-Group-cfg-groupKey'>        groupKey: null
+</span>    },
+
+<span id='Ext-util-Group-property-S-endUpdatePriority'>    // Group collections must have a higher priority than normal collections.  This ensures
+</span>    // that their endupdate handlers for filters and sorters run prior to the endupdate
+    // handler of the store&#39;s main collection, and so when the user handles events such
+    // as sort/datachanged, the groups have already been sorted and filtered.
+    $endUpdatePriority: 2001,
+
+<span id='Ext-util-Group-property-manageSorters'>    manageSorters: false
+</span>});</pre>
+</body>
+</html>

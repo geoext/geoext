@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <title>The source code</title>
+  <link href="../resources/prettify/prettify.css" type="text/css" rel="stylesheet" />
+  <script type="text/javascript" src="../resources/prettify/prettify.js"></script>
+  <style type="text/css">
+    .highlight { display: block; background-color: #ddd; }
+  </style>
+  <script type="text/javascript">
+    function highlight() {
+      document.getElementById(location.hash.replace(/#/, "")).className = "highlight";
+    }
+  </script>
+</head>
+<body onload="prettyPrint(); highlight();">
+  <pre class="prettyprint lang-js"><span id='Ext-data-ArrayStore'>/**
+</span> * Small helper class to make creating {@link Ext.data.Store}s from Array data easier. An ArrayStore will be
+ * automatically configured with a {@link Ext.data.reader.Array}.
+ *
+ * A store configuration would be something like:
+ *
+ *     var store = Ext.create(&#39;Ext.data.ArrayStore&#39;, {
+ *         // store configs
+ *         storeId: &#39;myStore&#39;,
+ *         // reader configs
+ *         fields: [
+ *            &#39;company&#39;,
+ *            {name: &#39;price&#39;, type: &#39;float&#39;},
+ *            {name: &#39;change&#39;, type: &#39;float&#39;},
+ *            {name: &#39;pctChange&#39;, type: &#39;float&#39;},
+ *            {name: &#39;lastChange&#39;, type: &#39;date&#39;, dateFormat: &#39;n/j h:ia&#39;}
+ *         ]
+ *     });
+ *
+ * This store is configured to consume a returned object of the form:
+ *
+ *     var myData = [
+ *         [&#39;3m Co&#39;,71.72,0.02,0.03,&#39;9/1 12:00am&#39;],
+ *         [&#39;Alcoa Inc&#39;,29.01,0.42,1.47,&#39;9/1 12:00am&#39;],
+ *         [&#39;Boeing Co.&#39;,75.43,0.53,0.71,&#39;9/1 12:00am&#39;],
+ *         [&#39;Hewlett-Packard Co.&#39;,36.53,-0.03,-0.08,&#39;9/1 12:00am&#39;],
+ *         [&#39;Wal-Mart Stores, Inc.&#39;,45.45,0.73,1.63,&#39;9/1 12:00am&#39;]
+ *     ];
+ *
+ * An object literal of this form could also be used as the {@link #cfg-data} config option.
+ */
+Ext.define(&#39;Ext.data.ArrayStore&#39;, {
+    extend: &#39;Ext.data.Store&#39;,
+    alias: &#39;store.array&#39;,
+
+    alternateClassName: [
+        &#39;Ext.data.SimpleStore&#39;
+    ],
+
+    requires: [
+        &#39;Ext.data.proxy.Memory&#39;,
+        &#39;Ext.data.reader.Array&#39;
+    ],
+
+    config: {
+<span id='Ext-data-ArrayStore-cfg-proxy'>        proxy: {
+</span>            type: &#39;memory&#39;,
+            reader: &#39;array&#39;
+        }
+    },
+
+<span id='Ext-data-ArrayStore-method-loadData'>    loadData: function (data, append) {
+</span>        if (this.expandData) {
+            var r = [],
+                i = 0,
+                ln = data.length;
+
+            for (; i &lt; ln; i++) {
+                r[r.length] = [data[i]];
+            }
+
+            data = r;
+        }
+
+        this.callParent([data, append]);
+    }
+});
+</pre>
+</body>
+</html>

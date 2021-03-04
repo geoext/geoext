@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <title>The source code</title>
+  <link href="../resources/prettify/prettify.css" type="text/css" rel="stylesheet" />
+  <script type="text/javascript" src="../resources/prettify/prettify.js"></script>
+  <style type="text/css">
+    .highlight { display: block; background-color: #ddd; }
+  </style>
+  <script type="text/javascript">
+    function highlight() {
+      document.getElementById(location.hash.replace(/#/, "")).className = "highlight";
+    }
+  </script>
+</head>
+<body onload="prettyPrint(); highlight();">
+  <pre class="prettyprint lang-js"><span id='Ext-state-Provider'>/**
+</span> * @class Ext.state.Provider
+ * &lt;p&gt;Abstract base class for state provider implementations. The provider is responsible
+ * for setting values  and extracting values to/from the underlying storage source. The 
+ * storage source can vary and the details should be implemented in a subclass. For example
+ * a provider could use a server side database or the browser localstorage where supported.&lt;/p&gt;
+ *
+ * &lt;p&gt;This class provides methods for encoding and decoding &lt;b&gt;typed&lt;/b&gt; variables including 
+ * dates and defines the Provider interface. By default these methods put the value and the
+ * type information into a delimited string that can be stored. These should be overridden in 
+ * a subclass if you want to change the format of the encoded value and subsequent decoding.&lt;/p&gt;
+ */
+Ext.define(&#39;Ext.state.Provider&#39;, {
+    mixins: {
+        observable: &#39;Ext.util.Observable&#39;
+    },
+    
+<span id='Ext-state-Provider-cfg-prefix'>    /**
+</span>     * @cfg {String} prefix A string to prefix to items stored in the underlying state store. 
+     * Defaults to &lt;tt&gt;&#39;ext-&#39;&lt;/tt&gt;
+     */
+    prefix: &#39;ext-&#39;,
+    
+<span id='Ext-state-Provider-event-statechange'>    /**
+</span>     * @event statechange
+     * Fires when a state change occurs.
+     * @param {Ext.state.Provider} this This state provider
+     * @param {String} key The state key which was changed
+     * @param {String} value The encoded value for the state
+     */
+
+    constructor : function(config){
+        var me = this;
+        Ext.apply(me, config);
+        me.state = {};
+        me.mixins.observable.constructor.call(me);
+    },
+    
+<span id='Ext-state-Provider-method-get'>    /**
+</span>     * Returns the current value for a key
+     * @param {String} name The key name
+     * @param {Object} defaultValue A default value to return if the key&#39;s value is not found
+     * @return {Object} The state data
+     */
+    get : function(name, defaultValue){
+        var ret = this.state[name];
+        return ret === undefined ? defaultValue : ret;
+    },
+
+<span id='Ext-state-Provider-method-clear'>    /**
+</span>     * Clears a value from the state
+     * @param {String} name The key name
+     */
+    clear : function(name){
+        var me = this;
+        delete me.state[name];
+        me.fireEvent(&quot;statechange&quot;, me, name, null);
+    },
+
+<span id='Ext-state-Provider-method-set'>    /**
+</span>     * Sets the value for a key
+     * @param {String} name The key name
+     * @param {Object} value The value to set
+     */
+    set : function(name, value){
+        var me = this;
+        me.state[name] = value;
+        me.fireEvent(&quot;statechange&quot;, me, name, value);
+    },
+
+<span id='Ext-state-Provider-method-decodeValue'>    /**
+</span>     * Decodes a string previously encoded with {@link #encodeValue}.
+     * @param {String} value The value to decode
+     * @return {Object} The decoded value
+     */
+    decodeValue : function(value){
+
+        // a -&gt; Array
+        // n -&gt; Number
+        // d -&gt; Date
+        // b -&gt; Boolean
+        // s -&gt; String
+        // o -&gt; Object
+        // -&gt; Empty (null)
+
+        var me = this,
+            re = /^(a|n|d|b|s|o|e)\:(.*)$/,
+            matches = re.exec(unescape(value)),
+            all, type, keyValue, values, vLen, v;
+            
+        if (!matches || !matches[1]) {
+            return; // non state
+        }
+        
+        type = matches[1];
+        value = matches[2];
+        switch (type) {
+            case &#39;e&#39;:
+                return null;
+            case &#39;n&#39;:
+                return parseFloat(value);
+            case &#39;d&#39;:
+                return new Date(Date.parse(value));
+            case &#39;b&#39;:
+                return (value === &#39;1&#39;);
+            case &#39;a&#39;:
+                all = [];
+                if (value) {
+                    values = value.split(&#39;^&#39;);
+                    vLen   = values.length;
+
+                    for (v = 0; v &lt; vLen; v++) {
+                        value = values[v];
+                        all.push(me.decodeValue(value));
+                    }
+                }
+                return all;
+           case &#39;o&#39;:
+                all = {};
+                if (value) {
+                    values = value.split(&#39;^&#39;);
+                    vLen   = values.length;
+
+                    for (v = 0; v &lt; vLen; v++) {
+                        value = values[v];
+                        keyValue         = value.split(&#39;=&#39;);
+                        all[keyValue[0]] = me.decodeValue(keyValue[1]);
+                    }
+                }
+                return all;
+           default:
+                return value;
+        }
+    },
+
+<span id='Ext-state-Provider-method-encodeValue'>    /**
+</span>     * Encodes a value including type information.  Decode with {@link #decodeValue}.
+     * @param {Object} value The value to encode
+     * @return {String} The encoded value
+     */
+    encodeValue : function(value){
+        var flat = &#39;&#39;,
+            i = 0,
+            enc, len, key;
+            
+        if (value == null) {
+            return &#39;e:1&#39;;    
+        } else if(typeof value === &#39;number&#39;) {
+            enc = &#39;n:&#39; + value;
+        } else if(typeof value === &#39;boolean&#39;) {
+            enc = &#39;b:&#39; + (value ? &#39;1&#39; : &#39;0&#39;);
+        } else if(Ext.isDate(value)) {
+            enc = &#39;d:&#39; + value.toUTCString();
+        } else if(Ext.isArray(value)) {
+            for (len = value.length; i &lt; len; i++) {
+                flat += this.encodeValue(value[i]);
+                if (i !== len - 1) {
+                    flat += &#39;^&#39;;
+                }
+            }
+            enc = &#39;a:&#39; + flat;
+        } else if (typeof value === &#39;object&#39;) {
+            for (key in value) {
+                if (typeof value[key] !== &#39;function&#39; &amp;&amp; value[key] !== undefined) {
+                    flat += key + &#39;=&#39; + this.encodeValue(value[key]) + &#39;^&#39;;
+                }
+            }
+            enc = &#39;o:&#39; + flat.substring(0, flat.length-1);
+        } else {
+            enc = &#39;s:&#39; + value;
+        }
+        return escape(enc);
+    }
+});</pre>
+</body>
+</html>

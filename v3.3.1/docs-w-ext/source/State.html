@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <title>The source code</title>
+  <link href="../resources/prettify/prettify.css" type="text/css" rel="stylesheet" />
+  <script type="text/javascript" src="../resources/prettify/prettify.js"></script>
+  <style type="text/css">
+    .highlight { display: block; background-color: #ddd; }
+  </style>
+  <script type="text/javascript">
+    function highlight() {
+      document.getElementById(location.hash.replace(/#/, "")).className = "highlight";
+    }
+  </script>
+</head>
+<body onload="prettyPrint(); highlight();">
+  <pre class="prettyprint lang-js"><span id='Ext-fx-State'>/**
+</span> * @private
+ */
+Ext.define(&#39;Ext.fx.State&#39;, {
+
+<span id='Ext-fx-State-property-isAnimatable'>    isAnimatable: {
+</span>        &#39;background-color&#39;   : true,
+        &#39;background-image&#39;   : true,
+        &#39;background-position&#39;: true,
+        &#39;border-bottom-color&#39;: true,
+        &#39;border-bottom-width&#39;: true,
+        &#39;border-color&#39;       : true,
+        &#39;border-left-color&#39;  : true,
+        &#39;border-left-width&#39;  : true,
+        &#39;border-right-color&#39; : true,
+        &#39;border-right-width&#39; : true,
+        &#39;border-spacing&#39;     : true,
+        &#39;border-top-color&#39;   : true,
+        &#39;border-top-width&#39;   : true,
+        &#39;border-width&#39;       : true,
+        &#39;bottom&#39;             : true,
+        &#39;color&#39;              : true,
+        &#39;crop&#39;               : true,
+        &#39;font-size&#39;          : true,
+        &#39;font-weight&#39;        : true,
+        &#39;height&#39;             : true,
+        &#39;left&#39;               : true,
+        &#39;letter-spacing&#39;     : true,
+        &#39;line-height&#39;        : true,
+        &#39;margin-bottom&#39;      : true,
+        &#39;margin-left&#39;        : true,
+        &#39;margin-right&#39;       : true,
+        &#39;margin-top&#39;         : true,
+        &#39;max-height&#39;         : true,
+        &#39;max-width&#39;          : true,
+        &#39;min-height&#39;         : true,
+        &#39;min-width&#39;          : true,
+        &#39;opacity&#39;            : true,
+        &#39;outline-color&#39;      : true,
+        &#39;outline-offset&#39;     : true,
+        &#39;outline-width&#39;      : true,
+        &#39;padding-bottom&#39;     : true,
+        &#39;padding-left&#39;       : true,
+        &#39;padding-right&#39;      : true,
+        &#39;padding-top&#39;        : true,
+        &#39;right&#39;              : true,
+        &#39;text-indent&#39;        : true,
+        &#39;text-shadow&#39;        : true,
+        &#39;top&#39;                : true,
+        &#39;vertical-align&#39;     : true,
+        &#39;visibility&#39;         : true,
+        &#39;width&#39;              : true,
+        &#39;word-spacing&#39;       : true,
+        &#39;z-index&#39;            : true,
+        &#39;zoom&#39;               : true,
+        &#39;transform&#39;          : true
+    },
+
+<span id='Ext-fx-State-method-constructor'>    constructor: function(data) {
+</span>        this.data = {};
+
+        this.set(data);
+    },
+
+<span id='Ext-fx-State-method-setConfig'>    setConfig: function(data) {
+</span>        this.set(data);
+
+        return this;
+    },
+
+<span id='Ext-fx-State-method-setRaw'>    setRaw: function(data) {
+</span>        this.data = data;
+
+        return this;
+    },
+
+<span id='Ext-fx-State-method-clear'>    clear: function() {
+</span>        return this.setRaw({});
+    },
+
+<span id='Ext-fx-State-method-setTransform'>    setTransform: function(name, value) {
+</span>        var data = this.data,
+            isArray = Ext.isArray(value),
+            transform = data.transform,
+            ln, key;
+
+        if (!transform) {
+            transform = data.transform = {
+                translateX: 0,
+                translateY: 0,
+                translateZ: 0,
+                scaleX: 1,
+                scaleY: 1,
+                scaleZ: 1,
+                rotate: 0,
+                rotateX: 0,
+                rotateY: 0,
+                rotateZ: 0,
+                skewX: 0,
+                skewY: 0
+            };
+        }
+
+        if (typeof name == &#39;string&#39;) {
+            switch (name) {
+                case &#39;translate&#39;:
+                    if (isArray) {
+                        ln = value.length;
+
+                        if (ln == 0) { break; }
+
+                        transform.translateX = value[0];
+
+                        if (ln == 1) { break; }
+
+                        transform.translateY = value[1];
+
+                        if (ln == 2) { break; }
+
+                        transform.translateZ = value[2];
+                    }
+                    else {
+                        transform.translateX = value;
+                    }
+                    break;
+
+                case &#39;rotate&#39;:
+                    if (isArray) {
+                        ln = value.length;
+
+                        if (ln == 0) { break; }
+
+                        transform.rotateX = value[0];
+
+                        if (ln == 1) { break; }
+
+                        transform.rotateY = value[1];
+
+                        if (ln == 2) { break; }
+
+                        transform.rotateZ = value[2];
+                    }
+                    else {
+                        transform.rotate = value;
+                    }
+                    break;
+
+
+                case &#39;scale&#39;:
+                    if (isArray) {
+                        ln = value.length;
+
+                        if (ln == 0) { break; }
+
+                        transform.scaleX = value[0];
+
+                        if (ln == 1) { break; }
+
+                        transform.scaleY = value[1];
+
+                        if (ln == 2) { break; }
+
+                        transform.scaleZ = value[2];
+                    }
+                    else {
+                        transform.scaleX = value;
+                        transform.scaleY = value;
+                    }
+                    break;
+
+                case &#39;skew&#39;:
+                    if (isArray) {
+                        ln = value.length;
+
+                        if (ln == 0) { break; }
+
+                        transform.skewX = value[0];
+
+                        if (ln == 1) { break; }
+
+                        transform.skewY = value[1];
+                    }
+                    else {
+                        transform.skewX = value;
+                    }
+                    break;
+
+                default:
+                    transform[name] = value;
+            }
+        }
+        else {
+            for (key in name) {
+                if (name.hasOwnProperty(key)) {
+                    value = name[key];
+
+                    this.setTransform(key, value);
+                }
+            }
+        }
+    },
+
+<span id='Ext-fx-State-method-set'>    set: function(name, value) {
+</span>        var data = this.data,
+            key;
+
+        if (typeof name != &#39;string&#39;) {
+            for (key in name) {
+                value = name[key];
+
+                if (key === &#39;transform&#39;) {
+                    this.setTransform(value);
+                }
+                else {
+                    data[key] = value;
+                }
+            }
+        }
+        else {
+            if (name === &#39;transform&#39;) {
+                this.setTransform(value);
+            }
+            else {
+                data[name] = value;
+            }
+        }
+
+        return this;
+    },
+
+<span id='Ext-fx-State-method-unset'>    unset: function(name) {
+</span>        var data = this.data;
+
+        if (data.hasOwnProperty(name)) {
+            delete data[name];
+        }
+
+        return this;
+    },
+
+<span id='Ext-fx-State-method-getData'>    getData: function() {
+</span>        return this.data;
+    }
+});
+
+
+</pre>
+</body>
+</html>

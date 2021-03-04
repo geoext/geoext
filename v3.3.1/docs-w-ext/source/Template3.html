@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <title>The source code</title>
+  <link href="../resources/prettify/prettify.css" type="text/css" rel="stylesheet" />
+  <script type="text/javascript" src="../resources/prettify/prettify.js"></script>
+  <style type="text/css">
+    .highlight { display: block; background-color: #ddd; }
+  </style>
+  <script type="text/javascript">
+    function highlight() {
+      document.getElementById(location.hash.replace(/#/, "")).className = "highlight";
+    }
+  </script>
+</head>
+<body onload="prettyPrint(); highlight();">
+  <pre class="prettyprint lang-js"><span id='Ext-grid-column-Template'>/**
+</span> * A Column definition class which renders a value by processing a {@link Ext.data.Model Model}&#39;s
+ * {@link Ext.data.Model#getData data} using a {@link #tpl configured}
+ * {@link Ext.XTemplate XTemplate}.
+ *
+ *     @example
+ *     Ext.create(&#39;Ext.data.Store&#39;, {
+ *         storeId:&#39;employeeStore&#39;,
+ *         fields:[&#39;firstname&#39;, &#39;lastname&#39;, &#39;seniority&#39;, &#39;department&#39;],
+ *         groupField: &#39;department&#39;,
+ *         data:[
+ *             { firstname: &quot;Michael&quot;, lastname: &quot;Scott&quot;,   seniority: 7, department: &quot;Management&quot; },
+ *             { firstname: &quot;Dwight&quot;,  lastname: &quot;Schrute&quot;, seniority: 2, department: &quot;Sales&quot; },
+ *             { firstname: &quot;Jim&quot;,     lastname: &quot;Halpert&quot;, seniority: 3, department: &quot;Sales&quot; },
+ *             { firstname: &quot;Kevin&quot;,   lastname: &quot;Malone&quot;,  seniority: 4, department: &quot;Accounting&quot; },
+ *             { firstname: &quot;Angela&quot;,  lastname: &quot;Martin&quot;,  seniority: 5, department: &quot;Accounting&quot; }
+ *         ]
+ *     });
+ *
+ *     Ext.create(&#39;Ext.grid.Panel&#39;, {
+ *         title: &#39;Column Template Demo&#39;,
+ *         store: Ext.data.StoreManager.lookup(&#39;employeeStore&#39;),
+ *         columns: [
+ *             { text: &#39;Full Name&#39;,       xtype: &#39;templatecolumn&#39;, tpl: &#39;{firstname} {lastname}&#39;, flex:1 },
+ *             { text: &#39;Department (Yrs)&#39;, xtype: &#39;templatecolumn&#39;, tpl: &#39;{department} ({seniority})&#39; }
+ *         ],
+ *         height: 200,
+ *         width: 300,
+ *         renderTo: Ext.getBody()
+ *     });
+ */
+Ext.define(&#39;Ext.grid.column.Template&#39;, {
+    extend: &#39;Ext.grid.column.Column&#39;,
+    alias: [&#39;widget.templatecolumn&#39;],
+    requires: [&#39;Ext.XTemplate&#39;],
+    alternateClassName: &#39;Ext.grid.TemplateColumn&#39;,
+
+<span id='Ext-grid-column-Template-cfg-tpl'>    /**
+</span>     * @cfg {String/Ext.XTemplate} tpl
+     * An {@link Ext.XTemplate XTemplate}, or an XTemplate *definition string* to use to process a
+     * {@link Ext.data.Model Model}&#39;s data object to produce a cell&#39;s rendered value.
+     */
+
+<span id='Ext-grid-column-Template-cfg-renderer'>    /**
+</span>     * @cfg {Object} renderer
+     * @hide
+     */
+
+<span id='Ext-grid-column-Template-cfg-scope'>    /**
+</span>     * @cfg {Object} scope
+     * @hide
+     */
+
+    initComponent: function(){
+        var me = this;
+        me.tpl = (!Ext.isPrimitive(me.tpl) &amp;&amp; me.tpl.compile) ? me.tpl : new Ext.XTemplate(me.tpl);
+        // Set this here since the template may access any record values,
+        // so we must always run the update for this column
+        me.hasCustomRenderer = true;
+        me.callParent(arguments);
+    },
+
+<span id='Ext-grid-column-Template-method-defaultRenderer'>    defaultRenderer: function(value, meta, record) {
+</span>        var data = Ext.apply({}, record.data, record.getAssociatedData());
+        return this.tpl.apply(data);
+    },
+
+<span id='Ext-grid-column-Template-method-updater'>    updater: function(cell, value) {
+</span>        Ext.fly(cell).down(this.getView().innerSelector, true).innerHTML = Ext.grid.column.CheckColumn.prototype.defaultRenderer.call(this, value);
+    }
+});
+</pre>
+</body>
+</html>

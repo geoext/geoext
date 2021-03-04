@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Feature Grid Example</title>
+    <link rel="stylesheet" type="text/css" href="../lib/ol/ol.css">
+    <link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/extjs/6.2.0/classic/theme-crisp/resources/theme-crisp-all.css"/>
+</head>
+
+<body>
+
+    <div id='description'>
+        <p>
+            This example shows how to display features in grids.
+            <br><br>
+            The grid on the left side is created by passing an OpenLayers
+            collection (ol.Collection) with feature objects (ol.Feature)<br>
+            The grid on the right side is created from an existing vector
+            layer and also highlights the selected feature in the grid on the
+            map.
+        </p>
+        <p>
+            Have a look at <a href="grid.js">grid.js</a> to see how this is
+            done.
+        </p>
+    </div>
+
+    <script src="../lib/ol/ol.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/extjs/6.2.0/ext-all.js"></script>
+    <script>
+        Ext.Loader.setConfig({
+            enabled: true,
+            paths: {
+                'GeoExt': '../../src/'
+            }
+        });
+    </script>
+
+    <script src="grid.js"></script>
+</body>
+</html>

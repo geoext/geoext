@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <title>The source code</title>
+  <link href="../resources/prettify/prettify.css" type="text/css" rel="stylesheet" />
+  <script type="text/javascript" src="../resources/prettify/prettify.js"></script>
+  <style type="text/css">
+    .highlight { display: block; background-color: #ddd; }
+  </style>
+  <script type="text/javascript">
+    function highlight() {
+      document.getElementById(location.hash.replace(/#/, "")).className = "highlight";
+    }
+  </script>
+</head>
+<body onload="prettyPrint(); highlight();">
+  <pre class="prettyprint lang-js"><span id='Ext-toolbar-TextItem'>/**
+</span> * A simple class that renders text directly into a toolbar.
+ *
+ *     @example
+ *     Ext.create(&#39;Ext.panel.Panel&#39;, {
+ *         title: &#39;Panel with TextItem&#39;,
+ *         width: 300,
+ *         height: 200,
+ *         tbar: [
+ *             { xtype: &#39;tbtext&#39;, html: &#39;Sample Text Item&#39; }
+ *         ],
+ *         renderTo: Ext.getBody()
+ *     });
+ *
+ */
+Ext.define(&#39;Ext.toolbar.TextItem&#39;, {
+    extend: &#39;Ext.toolbar.Item&#39;,
+    // Toolbar required here because we&#39;ll try to decorate it&#39;s alternateClassName
+    // with this class&#39; alternate name
+    requires: [&#39;Ext.toolbar.Toolbar&#39;, &#39;Ext.XTemplate&#39;],
+    alias: &#39;widget.tbtext&#39;,
+    alternateClassName: &#39;Ext.Toolbar.TextItem&#39;,
+
+<span id='Ext-toolbar-TextItem-cfg-text'>    /**
+</span>     * @cfg {String} text
+     * The text to be used as innerHTML (html tags are accepted).
+     *
+     * @deprecated 5.1.0 Use {@link #html}
+     */
+    text: &#39;&#39;,
+
+<span id='Ext-toolbar-TextItem-cfg-baseCls'>    baseCls: Ext.baseCSSPrefix + &#39;toolbar-text&#39;,
+</span>    
+<span id='Ext-toolbar-TextItem-property-ariaRole'>    ariaRole: null,
+</span>
+<span id='Ext-toolbar-TextItem-method-beforeRender'>    beforeRender : function() {
+</span>        var text = this.text;
+
+        this.callParent();
+
+        if (text) {
+            this.html = text;
+        }
+    },
+
+<span id='Ext-toolbar-TextItem-method-setText'>    /**
+</span>     * Updates this item&#39;s text, setting the text to be used as innerHTML.
+     * @param {String} text The text to display (html accepted).
+     *
+     * @deprecated 5.1.0 Use {@link #update}
+     */
+    setText : function(text) {
+        this.update(text);
+    }
+});</pre>
+</body>
+</html>

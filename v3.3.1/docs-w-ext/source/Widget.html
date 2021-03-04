@@ -1,0 +1,1432 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <title>The source code</title>
+  <link href="../resources/prettify/prettify.css" type="text/css" rel="stylesheet" />
+  <script type="text/javascript" src="../resources/prettify/prettify.js"></script>
+  <style type="text/css">
+    .highlight { display: block; background-color: #ddd; }
+  </style>
+  <script type="text/javascript">
+    function highlight() {
+      document.getElementById(location.hash.replace(/#/, "")).className = "highlight";
+    }
+  </script>
+</head>
+<body onload="prettyPrint(); highlight();">
+  <pre class="prettyprint lang-js"><span id='Ext-Widget'>/**
+</span> * Ext.Widget is a light-weight Component that consists of nothing more than a template
+ * Element that can be cloned to quickly and efficiently replicate many instances.
+ * Ext.Widget is typically not instantiated directly, because the default template is
+ * just a single element with no listeners. Instead Ext.Widget should be extended to
+ * create Widgets that have a useful markup structure and event listeners.
+ *
+ * For example:
+ *
+ *      Ext.define(&#39;MyWidget&#39;, {
+ *          extend: &#39;Ext.Widget&#39;,
+ *
+ *          // The element template passed to Ext.Element.create()
+ *          element: {
+ *              reference: &#39;element&#39;,
+ *              listeners: {
+ *                  click: &#39;onClick&#39;
+ *              },
+ *              children: [{
+ *                  reference: &#39;innerElement&#39;,
+ *                  listeners: {
+ *                      click: &#39;onInnerClick&#39;
+ *                  }
+ *              }]
+ *          },
+ *
+ *          constructor: function(config) {
+ *              // It is important to remember to call the Widget superclass constructor
+ *              // when overriding the constructor in a derived class. This ensures that
+ *              // the element is initialized from the template, and that initConfig() is
+ *              // is called.
+ *              this.callParent([config]);
+ *
+ *              // After calling the superclass constructor, the Element is available and
+ *              // can safely be manipulated. Reference Elements are instances of
+ *              // Ext.Element, and are cached on each Widget instance by reference name.
+ *              Ext.getBody().appendChild(this.element);
+ *          },
+ *
+ *          onClick: function() {
+ *              // listeners use this Widget instance as their scope
+ *              console.log(&#39;element clicked&#39;, this);
+ *          },
+ *
+ *          onInnerClick: function() {
+ *              // access the innerElement reference by name
+ *              console.log(&#39;inner element clicked&#39;, this.innerElement);
+ *          }
+ *      });
+ *
+ * @since 5.0.0
+ */
+Ext.define(&#39;Ext.Widget&#39;, {
+    extend: &#39;Ext.Evented&#39;,
+    xtype: &#39;widget&#39;,
+
+    alternateClassName: &#39;Ext.Gadget&#39;,
+
+    requires: [
+        &#39;Ext.dom.Element&#39;
+    ],
+
+    mixins: [
+        &#39;Ext.mixin.Inheritable&#39;,
+        &#39;Ext.mixin.Bindable&#39;,
+        &#39;Ext.mixin.ComponentDelegation&#39;,
+        &#39;Ext.mixin.Pluggable&#39;
+    ],
+
+<span id='Ext-Widget-property-isWidget'>    isWidget: true,
+</span>
+<span id='Ext-Widget-property-element'>    /**
+</span>     * @property {Object} element
+     * A configuration object for Ext.Element.create() that is used to create the Element
+     * template.  Supports all the standard options of a Ext.Element.create() config and
+     * adds 2 additional options:
+     *
+     * 1. `reference` - this option specifies a name for Element references.  These
+     * references names become properties of the Widget instance and refer to Ext.Element
+     * instances that were created using the template:
+     *
+     *     element: {
+     *         reference: &#39;element&#39;,
+     *         children: [{
+     *             reference: &#39;innerElement&#39;
+     *         }]
+     *     }
+     *
+     * After construction of a widget the reference elements are accessible as follows:
+     *
+     *     var foo = new FooWidget(),
+     *         innerEl = foo.innerElement; // an Ext.Element that wraps the innerElement
+     *
+     * The reference attribute is optional, but all Widgets must have a `&#39;element&#39;`
+     * reference on some element within the template (usually the outermost one).
+     *
+     * 2. `listeners` - a standard listeners object as specified by {@link Ext.mixin.Observable}.
+     *
+     *     element: {
+     *         reference: &#39;element&#39;,
+     *         listeners: {
+     *             click: &#39;onClick&#39;
+     *         },
+     *         children: [{
+     *             reference: &#39;innerElement&#39;,
+     *             listeners: {
+     *                 click: &#39;onInnerClick&#39;
+     *             }
+     *         }]
+     *     }
+     *
+     * Since listeners cannot be attached without an Ext.Element reference the `reference`
+     * property MUST be specified in order to use `listeners`.
+     *
+     * The Widget instance is used as the scope for all listeners specified in this way,
+     * so it is invalid to use the `scope` option in the `listeners` config since it will
+     * always be overwritten using `this`.
+     * @protected
+     */
+    element: {
+        reference: &#39;element&#39;
+    },
+
+<span id='Ext-Widget-property-observableType'>    observableType: &#39;component&#39;,
+</span>
+    cachedConfig: {
+<span id='Ext-Widget-cfg-baseCls'>        /**
+</span>         * @cfg {String/Boolean} [baseCls=true]
+         * The base CSS class to apply to this widget&#39;s element.
+         * Used as the prefix for {@link #ui}-specific class names.
+         * When set to `true` the {@link #classCls} will be used as the baseCls
+         * @accessor
+         * @protected
+         */
+        baseCls: true,
+
+<span id='Ext-Widget-cfg-cls'>        /**
+</span>         * @cfg {String/String[]} cls The CSS class to add to this widget&#39;s element, in
+         * addition to the {@link #baseCls}. In many cases, this property will be specified
+         * by the derived widget class. See {@link #userCls} for adding additional CSS
+         * classes to widget instances (such as items in a {@link Ext.Container}).
+         * @accessor
+         */
+        cls: null,
+
+<span id='Ext-Widget-cfg-style'>        /**
+</span>         * @cfg {String/Object} style
+         * Additional CSS styles that will be rendered into an inline style attribute when
+         * the widget is rendered.
+         *
+         * You can pass either a string syntax:
+         *
+         *     style: &#39;background:red&#39;
+         *
+         * Or by using an object:
+         *
+         *     style: {
+         *         background: &#39;red&#39;
+         *     }
+         *
+         * When using the object syntax, you can define CSS Properties by using a string:
+         *
+         *     style: {
+         *         &#39;border-left&#39;: &#39;1px solid red&#39;
+         *     }
+         *
+         * Although the object syntax is much easier to read, we suggest you to use the
+         * string syntax for better performance.
+         * @accessor
+         */
+        style: null,
+
+<span id='Ext-Widget-cfg-border'>        /**
+</span>         * @cfg {Boolean} border Enables or disables bordering on this component.
+         * The following values are accepted:
+         *
+         * - `null` or `true (default): Do nothing and allow the border to be specified by the theme.
+         * - `false`: suppress the default border provided by the theme.
+         *
+         * Please note that enabling bordering via this config will not add a `border-color`
+         * or `border-style` CSS property to the component; you provide the `border-color`
+         * and `border-style` via CSS rule or {@link #style} configuration
+         * (if not already provide by the theme).
+         *
+         * ## Using {@link #style}:
+         *
+         *     Ext.Viewport.add({
+         *         centered: true,
+         *         width: 100,
+         *         height: 100,
+         *
+         *         style: &#39;border: 1px solid blue;&#39;
+         *         // ...
+         *     });
+         *
+         * ## Using CSS:
+         *
+         *     Ext.Viewport.add({
+         *         centered: true,
+         *         width: 100,
+         *         height: 100,
+         *
+         *         cls: &#39;my-component&#39;
+         *         // ...
+         *     });
+         *
+         * And your CSS file:
+         *
+         *     .my-component {
+         *         border: 1px solid red;
+         *     }
+         *
+         * @accessor
+         */
+        border: null,
+
+<span id='Ext-Widget-cfg-touchAction'>        /**
+</span>         * @cfg {Object}
+         *
+         * Emulates the behavior of the CSS
+         * {@link https://www.w3.org/TR/pointerevents/#the-touch-action-css-property touch-action}
+         * property in a cross-browser compatible manner.
+         *
+         * Keys in this object are touch action names, and values are `false` to disable
+         * a touch action or `true` to enable it.  Accepted keys are:
+         *
+         * - `panX`
+         * - `panY`
+         * - `pinchZoom`
+         * - `doubleTapZoom`
+         *
+         * All touch actions are enabled (`true`) by default, so it is usually only necessary
+         * to specify which touch actions to disable.  For example, the following disables
+         * only horizontal scrolling and pinch-to-zoom on the component&#39;s main element:
+         *
+         *     touchAction: {
+         *         panX: false,
+         *         pinchZoom: false
+         *     }
+         *
+         * Touch actions can be specified on reference elements using the reference element
+         * name, for example:
+         *
+         *     // disables horizontal scrolling on the main element, and double-tap-zoom
+         *     // on the child element named &quot;body&quot;
+         *     touchAction: {
+         *         panY: false
+         *         body: {
+         *             doubleTapZoom: false
+         *         }
+         *     }
+         *
+         * The primary motivation for setting the touch-action of an element is to prevent
+         * the browser&#39;s default handling of a gesture such as pinch-to-zoom, or
+         * drag-to-scroll, so that the application can implement its own handling of that
+         * gesture on the element.  Suppose, for example, a component has a custom drag
+         * handler on its element and wishes to prevent horizontal scrolling of its container
+         * while it is being dragged:
+         *
+         *     Ext.create(&#39;Ext.Widget&#39;, {
+         *         touchAction: {
+         *             panX: false
+         *         },
+         *         listeners: {
+         *             drag: function(e) {
+         *                 // implement drag logic
+         *             }
+         *         }
+         *     });
+         */
+        touchAction: null
+    },
+
+    config: {
+<span id='Ext-Widget-cfg-ui'>        /**
+</span>         * @cfg {String/String[]} ui The ui or uis to be used on this Component
+         *
+         * When a ui is configured, CSS class names are added to the {@link #element}, created
+         * by appending the ui name(s) to each {@link #classCls} and/or {@link #baseCls}.
+         */
+        ui: null,
+
+<span id='Ext-Widget-cfg-userCls'>        /**
+</span>         * @cfg {String/String[]} userCls
+         * One or more CSS classes to add to the component&#39;s primary element. This config
+         * is intended solely for use by the component instantiator (the &quot;user&quot;), not by
+         * derived classes.
+         *
+         * For example:
+         *
+         *      items: [{
+         *          xtype: &#39;button&#39;,
+         *          userCls: &#39;my-button&#39;
+         *      ...
+         *      }]
+         */
+        userCls: null
+    },
+
+    eventedConfig: {
+<span id='Ext-Widget-cfg-width'>        /**
+</span>         * @cfg {Number/String} width
+         * The width of this Component; must be a valid CSS length value, e.g: `300`, `100px`, `30%`, etc.
+         * By default, if this is not explicitly set, this Component&#39;s element will simply have its own natural size.
+         * If set to `auto`, it will set the width to `null` meaning it will have its own natural size.
+         * @accessor
+         * @evented
+         */
+        width: null,
+
+<span id='Ext-Widget-cfg-height'>        /**
+</span>         * @cfg {Number/String} height
+         * The height of this Component; must be a valid CSS length value, e.g: `300`, `100px`, `30%`, etc.
+         * By default, if this is not explicitly set, this Component&#39;s element will simply have its own natural size.
+         * If set to `auto`, it will set the width to `null` meaning it will have its own natural size.
+         * @accessor
+         * @evented
+         */
+        height: null,
+
+<span id='Ext-Widget-cfg-hidden'>        /**
+</span>         * @cfg {Boolean} [hidden]
+         * Whether or not this Component is hidden (its CSS `display` property is set to `none`).
+         *
+         * Defaults to `true` for {@link #floated} Components.
+         * @accessor
+         * @evented
+         */
+        hidden: null
+    },
+
+<span id='Ext-Widget-property-template'>    /**
+</span>     * @property {Array} template
+     * An array of child elements to use as the children of the main element in the {@link
+        * #element} template.  Only used if &quot;children&quot; are not specified explicitly in the
+     * {@link #element} template.
+     * @protected
+     */
+    template: [],
+
+<span id='Ext-Widget-property-classCls'>    /**
+</span>     * A CSS class to apply to the main element that will be inherited down the class
+     * hierarchy.  Subclasses may override this property on their prototype to add their
+     * own CSS class in addition to the CSS classes inherited from ancestor classes via
+     * the prototype chain.  For example
+     *
+     *     Ext.define(&#39;Foo&#39;, {
+     *         extend: &#39;Ext.Widget&#39;,
+     *         classCls: &#39;foo&#39;
+     *     });
+     *
+     *     Ext.define(&#39;Bar&#39;, {
+     *         extend: &#39;Foo&#39;,
+     *         classCls: &#39;bar&#39;
+     *     });
+     *
+     *     var bar = new Bar();
+     *
+     *     console.log(bar.element.className); // outputs &#39;foo bar&#39;
+     *
+     * @protected
+     * @property
+     */
+    classCls: null,
+
+<span id='Ext-Widget-property-classClsRoot'>    /**
+</span>     * When set to `true` during widget class definition, that class will be the &quot;root&quot; for
+     * {@link #classCls} inheritance. Derived classes may set this to `true` to avoid
+     * inheriting a {@link #classCls} from their superclass.
+     * @property
+     * @protected
+     */
+    classClsRoot: true,
+
+<span id='Ext-Widget-property-clearPropertiesOnDestroy'>    clearPropertiesOnDestroy: &#39;async&#39;,
+</span>
+<span id='Ext-Widget-property-noBorderCls'>    /**
+</span>     * @property {String} [noBorderCls] The CSS class to add to this component should not have a border.
+     * @private
+     * @readonly
+     */
+    noBorderCls: Ext.baseCSSPrefix + &#39;noborder-trbl&#39;,
+
+<span id='Ext-Widget-method-constructor'>    constructor: function(config) {
+</span>        var me = this,
+            controller;
+
+        me.initId(config);
+        me.initElement();
+        me.mixins.observable.constructor.call(me, config);
+        Ext.ComponentManager.register(me);
+
+        controller = me.getController();
+        if (controller) {
+            controller.init(me);
+        }
+    },
+
+<span id='Ext-Widget-method-afterCachedConfig'>    afterCachedConfig: function() {
+</span>        // This method runs once for the first instance of this Widget type that is
+        // created.  It runs after the element config has been processed for the first
+        // instance, and after all the cachedConfigs (whose appliers/updaters may modify
+        // the element) have been initialized.  At this point we are ready to take the
+        // DOM that was generated for the first Element instance, clone it, and cache it
+        // on the prototype, so that it can be cloned by future instance to create their
+        // elements (see initElement).
+        var me = this,
+            prototype = me.self.prototype,
+            referenceList = me.referenceList,
+            renderElement = me.renderElement,
+            renderTemplate, element, i, ln, reference, elements;
+
+        // This is where we take the first instance&#39;s DOM and clone it as the template
+        // for future instances
+        prototype.renderTemplate = renderTemplate = document.createDocumentFragment();
+        renderTemplate.appendChild(renderElement.clone(true, true));
+
+        elements = renderTemplate.querySelectorAll(&#39;[id]&#39;);
+
+        for (i = 0, ln = elements.length; i &lt; ln; i++) {
+            element = elements[i];
+            element.removeAttribute(&#39;id&#39;);
+        }
+
+        // initElement skips removal of reference attributes for the first instance so that
+        // the reference attributes will be present in the cached element when it is cloned.
+        // Now that we&#39;re done cloning and caching the template element, it is safe to
+        // remove the reference attributes from this instance&#39;s elements
+        for (i = 0, ln = referenceList.length; i &lt; ln; i++) {
+            reference = referenceList[i];
+            me[reference].dom.removeAttribute(&#39;reference&#39;);
+        }
+    },
+
+<span id='Ext-Widget-method-addCls'>    addCls: function(cls) {
+</span>        this.el.addCls(cls);
+    },
+
+<span id='Ext-Widget-method-applyBaseCls'>    applyBaseCls: function(baseCls) {
+</span>        var prefix = Ext.baseCSSPrefix,
+            xtype = this.xtype;
+
+        if (baseCls === true) {
+            baseCls = this.classCls || (prefix + xtype);
+        } else if (!baseCls) {
+            baseCls = prefix + xtype;
+        }
+
+        return baseCls;
+    },
+
+<span id='Ext-Widget-method-applyCls'>    applyCls: function(cls) {
+</span>        if (typeof cls == &quot;string&quot;) {
+            cls = [cls];
+        }
+
+        //reset it back to null if there is nothing.
+        if (!cls || !cls.length) {
+            cls = null;
+        }
+
+        return cls;
+    },
+
+<span id='Ext-Widget-method-applyHidden'>    applyHidden: function(hidden) {
+</span>        return !!hidden;
+    },
+
+<span id='Ext-Widget-method-applyTouchAction'>    applyTouchAction: function(touchAction, oldTouchAction) {
+</span>        if (oldTouchAction != null) {
+            touchAction = Ext.merge({}, oldTouchAction, touchAction);
+        }
+
+        return touchAction;
+    },
+
+<span id='Ext-Widget-method-applyWidth'>    applyWidth: function(width) {
+</span>        return this.filterLengthValue(width);
+    },
+
+<span id='Ext-Widget-method-applyHeight'>    applyHeight: function(height) {
+</span>        return this.filterLengthValue(height);
+    },
+
+<span id='Ext-Widget-method-updateBorder'>    updateBorder: function(border) {
+</span>        // If the border is null it means we should not suppress the border
+        border = border || border === null;
+        this.el.toggleCls(this.noBorderCls, !border);
+    },
+
+<span id='Ext-Widget-method-clearListeners'>    clearListeners: function() {
+</span>        var me = this;
+        me.mixins.observable.clearListeners.call(me);
+        me.mixins.componentDelegation.clearDelegatedListeners.call(me);
+    },
+
+<span id='Ext-Widget-method-destroy'>    /**
+</span>     * Destroys the Widget. This method should not be overridden in custom Widgets,
+     * because it sets the flags and does final cleanup that must go last. Instead,
+     * override {@link #doDestroy} method to add functionality at destruction time.
+     */
+    destroy: function() {
+        var me = this;
+
+        // isDestroying added for compat reasons
+        me.isDestroying = me.destroying = true;
+
+        me.doDestroy();
+
+        // We need to defer clearing listeners until after doDestroy() completes,
+        // to let the interested parties fire events until the very end.
+        me.clearListeners();
+
+        me.isDestroying = me.destroying = false;
+
+        // ComponentDelegation mixin does not install &quot;after&quot; interceptor on the
+        // base class destructor so we need to call it explicitly.
+        me.mixins.componentDelegation.destroyComponentDelegation.call(me);
+
+        me.callParent();
+    },
+
+<span id='Ext-Widget-method-doDestroy'>    /**
+</span>     * Perform the actual destruction sequence. This is the method to override in your
+     * subclasses to add steps specific to the destruction of custom Component or Widget.
+     *
+     * As a rule of thumb, subclasses should destroy their child Components, Elements,
+     * and/or other objects before calling parent method. Any object references will be
+     * nulled after this method has finished, to prevent the possibility of memory leaks.
+     *
+     * @since 6.2.0
+     */
+    doDestroy: function() {
+        var me = this,
+            referenceList = me.referenceList,
+            i, ln, reference;
+
+        // Destroy all element references
+        for (i = 0, ln = referenceList.length; i &lt; ln; i++) {
+            reference = referenceList[i];
+            if (me.hasOwnProperty(reference)) {
+                me[reference].destroy();
+                me[reference] = null;
+            }
+        }
+
+        me.destroyBindable();
+
+        Ext.ComponentManager.unregister(me);
+    },
+
+<span id='Ext-Widget-method-doFireEvent'>    doFireEvent: function(eventName, args, bubbles) {
+</span>        var me = this,
+            ret = me.mixins.observable.doFireEvent.call(me, eventName, args, bubbles);
+
+        if (ret !== false) {
+            ret = me.mixins.componentDelegation.doFireDelegatedEvent.call(me, eventName, args);
+        }
+
+        return ret;
+    },
+
+<span id='Ext-Widget-method-getBubbleTarget'>    getBubbleTarget: function () {
+</span>        return this.getRefOwner();
+    },
+
+<span id='Ext-Widget-method-getElementConfig'>    /**
+</span>     * A template method for modifying the {@link #element} config before it is processed.
+     * By default adds the result of `this.getTemplate()` as the `children` array of
+     * {@link #element} if `children` were not specified in the original
+     * {@link #element} config.  Typically this method should not need to be implemented
+     * in subclasses.  Instead the {@link #element} property should be use to configure
+     * the element template for a given Widget subclass.
+     *
+     * This method is called once when the first instance of each Widget subclass is
+     * created.  The element config object that is returned is cached and used as the template
+     * for all successive instances.  The scope object for this method is the class prototype,
+     * not the instance.
+     *
+     * @return {Object} the element config object
+     * @protected
+     */
+    getElementConfig: function() {
+        var me = this,
+            el = me.element;
+
+        if (!(&#39;children&#39; in el)) {
+            el = Ext.apply({
+                children: me.getTemplate()
+            }, el);
+        }
+
+        return el;
+    },
+
+<span id='Ext-Widget-method-getSize'>    /**
+</span>     * Returns the height and width of the Component.
+     * @return {Object} The current `height` and `width` of the Component.
+     * @return {Number} return.width
+     * @return {Number} return.height
+     */
+    getSize: function() {
+        return {
+            width: this.getWidth(),
+            height: this.getHeight()
+        };
+    },
+
+<span id='Ext-Widget-method-getTemplate'>    getTemplate: function() {
+</span>        return this.template;
+    },
+
+<span id='Ext-Widget-method-getClassCls'>    /**
+</span>     * @private
+     */
+    getClassCls: function() {
+        var proto = this.self.prototype,
+            prototype = proto,
+            classes, classCls, i, ln;
+
+        while (prototype) {
+            classCls = prototype.classCls;
+
+            if (classCls) {
+                if (classCls instanceof Array) {
+                    for (i = 0, ln = classCls.length; i &lt; ln; i++) {
+                        (classes || (classes = [])).push(classCls[i]);
+                    }
+                } else {
+                    (classes || (classes = [])).push(classCls);
+                }
+            }
+
+            if (prototype.classClsRoot &amp;&amp; prototype.hasOwnProperty(&#39;classClsRoot&#39;)) {
+                break;
+            }
+
+            prototype = prototype.superclass;
+        }
+
+        if (classes) {
+            proto.classClsList = classes;
+        }
+
+        return classes;
+    },
+
+<span id='Ext-Widget-method-hide'>    hide: function() {
+</span>        this.setHidden(true);
+    },
+
+<span id='Ext-Widget-method-initElement'>    /**
+</span>     * Initializes the Element for this Widget instance.  If this is the first time a
+     * Widget of this type has been instantiated the {@link #element} config will be
+     * processed to create an Element.  This Element is then cached on the prototype (see
+     * afterCachedConfig) so that future instances can obtain their element by simply
+     * cloning the Element that was cached by the first instance.
+     * @protected
+     */
+    initElement: function() {
+        var me = this,
+            prototype = me.self.prototype,
+            id = me.getId(),
+            // The double assignment is intentional to workaround a JIT issue that prevents
+            // me.referenceList from being assigned in random scenarios. The issue occurs on 4th gen 
+            // iPads and lower, possibly other older iOS devices. See EXTJS-16494.
+            referenceList = me.referenceList = me.referenceList = [],
+            cleanAttributes = true,
+            isFirstInstance = !prototype.hasOwnProperty(&#39;renderTemplate&#39;),
+            renderTemplate, renderElement, element, referenceNodes, i, ln, referenceNode,
+            reference, classCls;
+
+        if (isFirstInstance) {
+            // this is the first instantiation of this widget type.  Process the element
+            // config from scratch to create our Element.
+            cleanAttributes = false;
+            renderTemplate = document.createDocumentFragment();
+            renderElement = Ext.Element.create(me.processElementConfig.call(prototype), true);
+            renderTemplate.appendChild(renderElement);
+        } else {
+            // we have already created an instance of this Widget type, so the element
+            // config has already been processed, and the resulting DOM has been cached on
+            // the prototype (see afterCachedConfig).  This means we can obtain our element
+            // by simply cloning the cached element.
+            renderTemplate = me.renderTemplate.cloneNode(true);
+            renderElement = renderTemplate.firstChild;
+        }
+
+        referenceNodes = renderTemplate.querySelectorAll(&#39;[reference]&#39;);
+
+        for (i = 0, ln = referenceNodes.length; i &lt; ln; i++) {
+            referenceNode = referenceNodes[i];
+            reference = referenceNode.getAttribute(&#39;reference&#39;);
+
+            if (cleanAttributes) {
+                // on first instantiation we do not clean the reference attributes here.
+                // This is because this instance&#39;s element will be used as the template
+                // for future instances, and we need the reference attributes to be
+                // present in the template so that future instances can resolve their
+                // references.  afterCachedConfig is responsible for removing the
+                // reference attributes from the DOM for the first instance after the
+                // Element has been cloned and cached as the template.
+                referenceNode.removeAttribute(&#39;reference&#39;);
+            }
+
+            if (reference === &#39;element&#39;) {
+                //&lt;debug&gt;
+                if (element) {
+                    // already resolved a reference named element - can&#39;t have two
+                    Ext.raise(&quot;Duplicate &#39;element&#39; reference detected in &#39;&quot; +
+                        me.$className + &quot;&#39; template.&quot;);
+                }
+                //&lt;/debug&gt;
+                referenceNode.id = id;
+                // element reference needs to be established ASAP, so add the reference
+                // immediately, not &quot;on-demand&quot;
+                element = me.el = me.addElementReference(reference, referenceNode);
+
+                // Poke our id in our magic attribute to enable Component#fromElement
+                element.dom.setAttribute(&#39;data-componentid&#39;, id);
+
+                if (isFirstInstance) {
+                    classCls = me.getClassCls();
+                    if (classCls) {
+                        element.addCls(classCls);
+                    }
+                }
+            } else {
+                me.addElementReferenceOnDemand(reference, referenceNode);
+            }
+
+            referenceList.push(reference);
+        }
+
+        //&lt;debug&gt;
+        if (!element) {
+            Ext.raise(&quot;No &#39;element&#39; reference found in &#39;&quot; + me.$className +
+                &quot;&#39; template.&quot;);
+        }
+        //&lt;/debug&gt;
+
+        if (renderElement === element.dom) {
+            me.renderElement = element;
+        }
+        else {
+            me.addElementReferenceOnDemand(&#39;renderElement&#39;, renderElement);
+        }
+    },
+
+<span id='Ext-Widget-method-is'>    /**
+</span>     * Tests whether this Widget matches a {@link Ext.ComponentQuery ComponentQuery}
+     * selector string.
+     * @param {String} selector The selector string to test against.
+     * @return {Boolean} `true` if this Widget matches the selector.
+     */
+    is: function(selector) {
+        return Ext.ComponentQuery.is(this, selector);
+    },
+
+<span id='Ext-Widget-method-isHidden'>    /**
+</span>     * Returns `true` if this Component is currently hidden.
+     * @param {Boolean/Ext.Widget} [deep=false] `true` to check if this component
+     * is hidden because a parent container is hidden. Alternatively, a reference to the
+     * top-most parent at which to stop climbing.
+     * @return {Boolean} `true` if currently hidden.
+     */
+    isHidden: function(deep) {
+        var hidden = !!this.getHidden(),
+            owner;
+
+        if (!hidden &amp;&amp; deep) {
+            owner = this.getRefOwner();
+            while (owner &amp;&amp; owner !== deep) {
+                hidden = !!owner.getHidden();
+                if (hidden) {
+                    break;
+                }
+                owner = owner.getRefOwner();
+            }
+        }
+        return hidden;
+    },
+
+<span id='Ext-Widget-method-isVisible'>    /**
+</span>     * Returns `true` if this Component is currently visible.
+     * @param {Boolean} [deep=false] `true` to check if this component
+     * is visible and all parents are also visible.
+     * @return {Boolean} `true` if currently visible.
+     */
+    isVisible: function(deep) {
+        return !this.isHidden(deep);
+    },
+
+<span id='Ext-Widget-method-isXType'>    /**
+</span>     * Tests whether or not this Component is of a specific xtype. This can test whether this Component is descended
+     * from the xtype (default) or whether it is directly of the xtype specified (`shallow = true`).
+     * **If using your own subclasses, be aware that a Component must register its own xtype
+     * to participate in determination of inherited xtypes.__
+     *
+     * For a list of all available xtypes, see the {@link Ext.Component} header.
+     *
+     * Example usage:
+     *
+     *     var t = new Ext.field.Text();
+     *     var isText = t.isXType(&#39;textfield&#39;); // true
+     *     var isBoxSubclass = t.isXType(&#39;field&#39;); // true, descended from Ext.field.Field
+     *     var isBoxInstance = t.isXType(&#39;field&#39;, true); // false, not a direct Ext.field.Field instance
+     *
+     * @param {String} xtype The xtype to check for this Component.
+     * @param {Boolean} shallow (optional) `false` to check whether this Component is descended from the xtype (this is
+     * the default), or `true` to check whether this Component is directly of the specified xtype.
+     * @return {Boolean} `true` if this component descends from the specified xtype, `false` otherwise.
+     */
+    isXType: function(xtype, shallow) {
+        return shallow ? (Ext.Array.indexOf(this.xtypes, xtype) !== -1) :
+            !!this.xtypesMap[xtype];
+    },
+
+<span id='Ext-Widget-method-lookupTpl'>    /**
+</span>     * Gets a named template instance for this class. See {@link Ext.XTemplate#getTpl}.
+     * @param {String} name The name of the property that holds the template.
+     * @return {Ext.XTemplate} The template, `null` if not found.
+     *
+     * @since 6.2.0
+     */
+    lookupTpl: function(name) {
+        return Ext.XTemplate.getTpl(this, name);
+    },
+
+<span id='Ext-Widget-method-removeCls'>    removeCls: function(cls) {
+</span>        this.el.removeCls(cls);
+    },
+
+<span id='Ext-Widget-method-toggleCls'>    /**
+</span>     * Toggles the specified CSS class on this element (removes it if it already exists,
+     * otherwise adds it).
+     * @param {String} className The CSS class to toggle.
+     * @param {Boolean} [state] If specified as `true`, causes the class to be added. If
+     * specified as `false`, causes the class to be removed.
+     */
+    toggleCls: function(cls, state) {
+        this.element.toggleCls(cls, state);
+    },
+
+<span id='Ext-Widget-method-resolveListenerScope'>    resolveListenerScope: function(defaultScope, skipThis) {
+</span>        // break the tie between Observable and Inheritable resolveListenerScope
+        return this.mixins.inheritable.resolveListenerScope.call(this, defaultScope, skipThis);
+    },
+
+<span id='Ext-Widget-method-setSize'>    /**
+</span>     * Sets the size of the Component.
+     * @param {Number} width The new width for the Component.
+     * @param {Number} height The new height for the Component.
+     */
+    setSize: function(width, height) {
+        // Allow setSize to be called with a result from getSize.
+        if (width &amp;&amp; typeof width === &#39;object&#39;) {
+            return this.setSize(width.width, width.height);
+        }
+        if (width !== undefined) {
+            this.setWidth(width);
+        }
+        if (height !== undefined) {
+            this.setHeight(height);
+        }
+    },
+
+<span id='Ext-Widget-method-show'>    show: function() {
+</span>        this.setHidden(false);
+    },
+
+<span id='Ext-Widget-method-updateBaseCls'>    updateBaseCls: function(newBaseCls, oldBaseCls) {
+</span>        var me = this,
+            element = me.element;
+
+        if (oldBaseCls) {
+            element.removeCls(oldBaseCls);
+        }
+
+        if (newBaseCls) {
+            element.addCls(newBaseCls);
+        }
+
+        if (!me.isConfiguring) {
+            me.syncUiCls();
+        }
+    },
+
+<span id='Ext-Widget-method-updateCls'>    /**
+</span>     * @private
+     * All cls methods directly report to the {@link #cls} configuration, so anytime it changes, {@link #updateCls} will be called
+     */
+    updateCls: function (newCls, oldCls) {
+        this.element.replaceCls(oldCls, newCls);
+    },
+
+<span id='Ext-Widget-method-updateHidden'>    updateHidden: function(hidden) {
+</span>        var element = this.renderElement;
+
+        if (element &amp;&amp; !element.destroyed) {
+            if (hidden) {
+                element.hide();
+            } else {
+                element.show();
+            }
+        }
+    },
+
+<span id='Ext-Widget-method-applyStyle'>    /**
+</span>     * @protected
+     */
+    applyStyle: function(style, oldStyle) {
+        // If we&#39;re doing something with data binding, say:
+        // style: {
+        //     backgroundColor: &#39;rgba({r}, {g}, {b}, 1)&#39;
+        // }
+        // The inner values will change, but the object won&#39;t, so force
+        // a copy to be created here if necessary
+        if (oldStyle &amp;&amp; style === oldStyle &amp;&amp; Ext.isObject(oldStyle)) {
+            style = Ext.apply({}, style);
+        }
+        return style;
+    },
+
+<span id='Ext-Widget-method-updateStyle'>    /**
+</span>     * @protected
+     */
+    updateStyle: function(style) {
+        this.element.applyStyles(style);
+    },
+
+<span id='Ext-Widget-method-updateTouchAction'>    updateTouchAction: function(touchAction) {
+</span>        var name, childEl, value, hasRootActions;
+
+        for (name in touchAction) {
+            childEl = this[name];
+            value = touchAction[name];
+
+            if (childEl &amp;&amp; childEl.isElement) {
+                childEl.setTouchAction(value);
+            } else {
+                hasRootActions = true;
+            }
+        }
+
+        if (hasRootActions) {
+            this.el.setTouchAction(touchAction);
+        }
+    },
+
+<span id='Ext-Widget-method-updateUi'>    updateUi: function() {
+</span>        this.syncUiCls();
+    },
+
+<span id='Ext-Widget-method-updateWidth'>    /**
+</span>     * @param width
+     * @protected
+     */
+    updateWidth: function(width) {
+        this.element.setWidth(width);
+    },
+
+<span id='Ext-Widget-method-updateHeight'>    /**
+</span>     * @param height
+     * @protected
+     */
+    updateHeight: function(height) {
+        this.element.setHeight(height);
+    },
+
+<span id='Ext-Widget-method-up'>    /**
+</span>     * Walks up the ownership hierarchy looking for an ancestor Component which matches
+     * the passed simple selector.
+     *
+     * Example:
+     *
+     *     var owningTabPanel = grid.up(&#39;tabpanel&#39;);
+     *
+     * @param {String} selector (optional) The simple selector to test.
+     * @param {String/Number/Ext.Component} [limit] This may be a selector upon which to stop the upward scan, or a limit of the number of steps, or Component reference to stop on.
+     * @return {Ext.Container} The matching ancestor Container (or `undefined` if no match was found).
+     */
+    up: function(selector, limit) {
+        var result = this.getRefOwner(),
+            limitSelector = typeof limit === &#39;string&#39;,
+            limitCount = typeof limit === &#39;number&#39;,
+            limitComponent = limit &amp;&amp; limit.isComponent,
+            steps = 0;
+
+        if (selector) {
+            for (; result; result = result.getRefOwner()) {
+                steps++;
+                if (selector.isComponent || selector.isWidget) {
+                    if (result === selector) {
+                        return result;
+                    }
+                } else {
+                    if (Ext.ComponentQuery.is(result, selector)) {
+                        return result;
+                    }
+                }
+
+                // Stop when we hit the limit selector
+                if (limitSelector &amp;&amp; result.is(limit)) {
+                    return;
+                }
+                if (limitCount &amp;&amp; steps === limit) {
+                    return;
+                }
+                if (limitComponent &amp;&amp; result === limit) {
+                    return;
+                }
+            }
+        }
+        return result;
+    },
+
+<span id='Ext-Widget-method-updateLayout'>    updateLayout: Ext.emptyFn, // empty fn for modern/classic compat
+</span>
+<span id='Ext-Widget-method-onFocusEnter'>    // Temporary workarounds to keep Ext.ComponentManager from throwing errors when dealing
+</span>    // Widgets.  TODO: remove these emptyFns when proper focus handling is implmented
+    onFocusEnter: Ext.emptyFn,
+<span id='Ext-Widget-method-onFocusLeave'>    onFocusLeave: Ext.emptyFn,
+</span><span id='Ext-Widget-method-isAncestor'>    isAncestor: function() {
+</span>        return false;
+    },
+
+<span id='Ext-Widget-property-privates'>    //-------------------------------------------------------------------------
+</span>
+    privates: {
+<span id='Ext-Widget-method-addElementReferenceOnDemand'>        /**
+</span>         * Reduces instantiation time for a Widget by lazily instantiating Ext.Element
+         * references the first time they are used.  This optimization only works for elements
+         * with no listeners specified.
+         *
+         * @param {String} name The name of the reference
+         * @param {HTMLElement} domNode
+         * @private
+         */
+        addElementReferenceOnDemand: function(name, domNode) {
+            if (this._elementListeners[name]) {
+                // if the element was configured with listeners then we cannot add the
+                // reference on demand because we need to make sure the element responds
+                // immediately to any events, even if its reference is never accessed
+                this.addElementReference(name, domNode);
+            } else {
+                // no listeners - element reference can be resolved on demand.
+                // TODO: measure if this has any significant performance impact.
+                Ext.Object.defineProperty(this, name, {
+                    get: function() {
+                        // remove the property that was defined using defineProperty because
+                        // addElementReference will set the property on the instance, - the
+                        // getter is not needed after the first access.
+                        delete this[name];
+                        return this.addElementReference(name, domNode);
+                    },
+                    configurable: true
+                });
+            }
+        },
+
+<span id='Ext-Widget-method-addElementReference'>        /**
+</span>         * Adds an element reference to this Widget instance.
+         * @param {String} name The name of the reference
+         * @param {HTMLElement} domNode
+         * @return {Ext.dom.Element}
+         * @private
+         */
+        addElementReference: function(name, domNode) {
+            var me = this,
+                referenceEl = me[name] = Ext.get(domNode),
+                listeners = me._elementListeners[name],
+                eventName, listener;
+
+            referenceEl.skipGarbageCollection = true;
+            referenceEl.component = me;
+
+            if (listeners) {
+                // TODO: These references will be needed when we use delegation to listen
+                // for element events, but for now, we&#39;ll just attach the listeners directly
+                // referenceEl.reference = name;
+                // referenceEl.component = me;
+                // referenceEl.listeners = listeners;
+
+                // At this point &quot;listeners&quot; exists on the class prototype.  We need to clone
+                // it before poking the scope reference onto it, because it is used as the
+                // options object by Observable and so can&#39;t be safely shared.
+                //
+                listeners = Ext.clone(listeners);
+
+                // If the listener is specified as an object it needs to have the scope
+                // option added to that object, for example:
+                //
+                //    {
+                //        click: {
+                //            fn: &#39;onClick&#39;,
+                //            scope: this
+                //        }
+                //    }
+                //
+                for (eventName in listeners) {
+                    listener = listeners[eventName];
+                    if (typeof listener === &#39;object&#39;) {
+                        listener.scope = me;
+                    }
+                }
+
+                // The outermost listeners object always needs the scope option. This covers
+                // a listeners object with the following shape:
+                //
+                //    {
+                //        click: &#39;onClick&#39;
+                //        scope: this
+                //    }
+                //
+                listeners.scope = me; // do this *after* the above loop over listeners
+
+                // Hopefully in the future we can stop calling on() here, and just use
+                // event delegation to dispatch events to Widgets that have declared their
+                // listeners in their template.
+                //
+                referenceEl.on(listeners);
+            }
+
+            return referenceEl;
+        },
+
+        detachFromBody: function() {
+            // See reattachToBody
+            Ext.getDetachedBody().appendChild(this.element);
+            this.isDetached = true;
+        },
+
+<span id='Ext-Widget-method-doAddListener'>        /**
+</span>         * @private
+         */
+        doAddListener: function(name, fn, scope, options, order, caller, manager) {
+            var me = this,
+                elementName = options &amp;&amp; options.element,
+                delegate = options &amp;&amp; options.delegate,
+                listeners, eventOptions, option;
+
+            if (elementName) {
+                //&lt;debug&gt;
+                if (Ext.Array.indexOf(me.referenceList, elementName) === -1) {
+                    Ext.Logger.error(&quot;Adding event listener with an invalid element reference of &#39;&quot; + elementName +
+                        &quot;&#39; for this component. Available values are: &#39;&quot; + me.referenceList.join(&quot;&#39;, &#39;&quot;) + &quot;&#39;&quot;, me);
+                }
+                //&lt;/debug&gt;
+
+                listeners = {};
+                listeners[name] = fn;
+                if (scope) {
+                    listeners.scope = scope;
+                }
+
+                eventOptions = Ext.Element.prototype.$eventOptions;
+                for (option in options) {
+                    if (eventOptions[option]) {
+                        listeners[option] = options[option];
+                    }
+                }
+
+                me.mon(me[elementName], listeners);
+                return;
+            } else if (delegate) {
+                me.mixins.componentDelegation.addDelegatedListener.call(me, name, fn, scope, options, order, caller, manager);
+                return;
+            }
+
+            me.callParent([name, fn, scope, options, order, caller, manager]);
+        },
+
+        doRemoveListener: function(eventName, fn, scope) {
+            var me = this;
+            me.mixins.observable.doRemoveListener.call(me, eventName, fn, scope);
+            me.mixins.componentDelegation.removeDelegatedListener.call(me, eventName, fn, scope);
+        },
+
+        filterLengthValue: function(value) {
+            if (value === &#39;auto&#39; || (!value &amp;&amp; value !== 0)) {
+                return null;
+            }
+
+            return value;
+        },
+
+        getFocusEl: function() {
+            return this.element;
+        },
+
+<span id='Ext-Widget-method-initElementListeners'>        /**
+</span>         * Called for the first instance of this Widget to create an object that contains the
+         * listener configs for all of the element references keyed by reference name. The
+         * object is cached on the prototype and has the following shape:
+         *
+         *     _elementListeners: {
+         *         element: {
+         *             click: &#39;onClick&#39;,
+         *             scope: this
+         *         },
+         *         fooReference: {
+         *             tap: {
+         *                 fn: someFunction,
+         *                 delay: 100
+         *             }
+         *         }
+         *     }
+         *
+         * The returned object is prototype chained to the _elementListeners object of its
+         * superclass, and each key in the object is prototype chained to object with the
+         * corresponding key in the superclass _elementListeners.  This allows element
+         * listeners to be inherited and overridden when subclassing widgets.
+         *
+         * This method is invoked with the prototype object as the scope
+         *
+         * @private
+         */
+        initElementListeners: function(elementConfig) {
+            var prototype = this,
+                superPrototype = prototype.self.superclass,
+                superElementListeners = superPrototype._elementListeners,
+                reference = elementConfig.reference,
+                children = elementConfig.children,
+                elementListeners, listeners, superListeners, ln, i;
+
+            if (prototype.hasOwnProperty(&#39;_elementListeners&#39;)) {
+                elementListeners = prototype._elementListeners;
+            } else {
+                elementListeners = prototype._elementListeners =
+                    (superElementListeners ? Ext.Object.chain(superElementListeners) : {});
+            }
+
+            if (reference) {
+                listeners = elementConfig.listeners;
+                if (listeners) {
+                    if (superElementListeners) {
+                        superListeners = superElementListeners[reference];
+                        if (superListeners) {
+                            listeners = Ext.Object.chain(superListeners);
+                            Ext.apply(listeners, elementConfig.listeners);
+                        }
+                    }
+
+                    elementListeners[reference] = listeners;
+                    // null out the listeners on the elementConfig, since we are going to pass
+                    // it to Element.create(), and don&#39;t want &quot;listeners&quot; to be treated as an
+                    // attribute
+                    elementConfig.listeners = null;
+                }
+            }
+
+            if (children) {
+                for (i = 0, ln = children.length; i &lt; ln; i++) {
+                    prototype.initElementListeners(children[i]);
+                }
+            }
+        },
+
+        initId: function(config) {
+            var me = this,
+                defaultConfig = me.config,
+                id = (config &amp;&amp; config.id) || (defaultConfig &amp;&amp; defaultConfig.id);
+
+            if (id) {
+                // setId() will normally be inherited from Identifiable, unless &quot;id&quot; is a
+                // proper config, in which case it will be generated by the config system.
+                me.setId(id);
+                me.id = id;
+            } else {
+                // if no id configured, generate one (Identifiable)
+                me.getId();
+            }
+        },
+
+<span id='Ext-Widget-method-processElementConfig'>        /**
+</span>         * Recursively processes the element templates for this class and its superclasses,
+         * ascending the hierarchy until it reaches a superclass whose element template
+         * has already been processed.  This method is invoked using the prototype as the scope.
+         *
+         * @private
+         * @return {Object}
+         */
+        processElementConfig: function() {
+            var prototype = this,
+                superPrototype = prototype.self.superclass,
+                elementConfig;
+
+            if (prototype.hasOwnProperty(&#39;_elementConfig&#39;)) {
+                elementConfig = prototype._elementConfig;
+            } else {
+                // cache the elementConfig on the prototype, since we may end up here multiple
+                // times if there are multiple subclasses
+                elementConfig = prototype._elementConfig = prototype.getElementConfig();
+
+                if (superPrototype.isWidget) {
+                    // Before initializing element listeners we must process the element template
+                    // for our superclass so that we can chain our listeners to the superclass listeners
+                    prototype.processElementConfig.call(superPrototype);
+                }
+
+                // initElementListeners needs to be called BEFORE passing the element config
+                // along to Ext.Element.create().  This ensures that the listener meta data is
+                // saved, and then the listeners objects are removed from the element config
+                // so that they do not get added as attributes by create()
+                prototype.initElementListeners(elementConfig);
+            }
+
+            return elementConfig;
+        },
+
+        reattachToBody: function() {
+            // See detachFromBody
+            this.isDetached = false;
+        },
+
+        addUi: function(ui) {
+            var me = this,
+                currentUI = me.getUi(),
+                i, singleUI, len;
+
+            if (ui) {
+                ui = ui.split(&#39; &#39;);
+                len = ui.length;
+
+                currentUI = (currentUI &amp;&amp; currentUI.split(&#39; &#39;)) || [];
+
+                for (i = 0; i &lt; len; i++) {
+                    singleUI = ui[i];
+                    if (currentUI.indexOf(singleUI) === -1) {
+                        currentUI.push(singleUI);
+                    }
+                }
+
+                me.setUi(currentUI.join(&#39; &#39;));
+            }
+        },
+
+        removeUi: function(ui) {
+            var me = this,
+                currentUI = me.getUi(),
+                i, singleUI, index, len;
+
+            if (ui) {
+                ui = ui.split(&#39; &#39;);
+                len = ui.length;
+
+                currentUI = (currentUI &amp;&amp; currentUI.split(&#39; &#39;)) || [];
+
+                for (i = 0; i &lt; len; i++) {
+                    singleUI = ui[i];
+                    index = currentUI.indexOf(singleUI);
+                    if (index !== -1) {
+                        currentUI.splice(index, 1);
+                    }
+                }
+
+                me.setUi(currentUI.join(&#39; &#39;));
+            }
+        },
+
+        syncUiCls: function() {
+            var me = this,
+                ui = me.getUi(),
+                currentUiCls = me.currentUiCls,
+                element = me.element,
+                baseCls = me.getBaseCls(),
+                classClsList = me.classClsList,
+                uiCls = [],
+                uiSuffix, i, ln, j, jln;
+
+            if (currentUiCls) {
+                element.removeCls(currentUiCls);
+            }
+
+            if (ui) {
+                ui = ui.split(&#39; &#39;);
+
+                for (i = 0, ln = ui.length; i &lt; ln; i++) {
+                    uiSuffix = &#39;-&#39; + ui[i];
+
+                    if (baseCls &amp;&amp; (baseCls !== me.classCls)) {
+                        uiCls.push(baseCls + uiSuffix);
+                    }
+
+                    if (classClsList) {
+                        for (j = 0, jln = classClsList.length; j &lt; jln; j++) {
+                            uiCls.push(classClsList[j] + uiSuffix);
+                        }
+                    }
+                }
+
+                element.addCls(uiCls);
+
+                me.currentUiCls = uiCls;
+            }
+        },
+
+        updateUserCls: function(newCls, oldCls) {
+            this.element.replaceCls(oldCls, newCls);
+        }
+    }
+}, function(Widget) {
+    var prototype = Widget.prototype;
+
+    // event options for listeners that use the &quot;element&quot; event options must also include
+    // event options from Ext.Element
+    (prototype.$elementEventOptions =
+        Ext.Object.chain(Ext.Element.prototype.$eventOptions)).element = 1;
+
+    (prototype.$eventOptions = Ext.Object.chain(prototype.$eventOptions)).delegate = 1;
+});
+</pre>
+</body>
+</html>

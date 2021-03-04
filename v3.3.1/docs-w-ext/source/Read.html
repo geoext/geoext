@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <title>The source code</title>
+  <link href="../resources/prettify/prettify.css" type="text/css" rel="stylesheet" />
+  <script type="text/javascript" src="../resources/prettify/prettify.js"></script>
+  <style type="text/css">
+    .highlight { display: block; background-color: #ddd; }
+  </style>
+  <script type="text/javascript">
+    function highlight() {
+      document.getElementById(location.hash.replace(/#/, "")).className = "highlight";
+    }
+  </script>
+</head>
+<body onload="prettyPrint(); highlight();">
+  <pre class="prettyprint lang-js"><span id='Ext-data-operation-Read'>/**
+</span> * @class Ext.data.operation.Read
+ * Enacpsulates a read operation as performed by a {@link Ext.data.proxy.Proxy proxy}.
+ *
+ * This class is instantiated by {@link Ext.data.Store stores} and {@link Ext.data.Model records} and should
+ * not need to be instantiated in user code.
+ */
+Ext.define(&#39;Ext.data.operation.Read&#39;, {
+    extend: &#39;Ext.data.operation.Operation&#39;,
+    alias: &#39;data.operation.read&#39;,
+    
+<span id='Ext-data-operation-Read-property-action'>    action: &#39;read&#39;,
+</span>
+<span id='Ext-data-operation-Read-property-isReadOperation'>    isReadOperation: true,
+</span>    
+    config: {
+<span id='Ext-data-operation-Read-cfg-filters'>        /**
+</span>         * @cfg {Ext.util.Filter[]} filters
+         * Optional array of filter objects. Only applies to &#39;read&#39; actions.
+         */
+        filters: undefined,
+    
+<span id='Ext-data-operation-Read-cfg-sorters'>        /**
+</span>         * @cfg {Ext.util.Sorter[]} sorters
+         * Optional array of sorter objects. Only applies to &#39;read&#39; actions.
+         */
+        sorters: undefined,
+    
+<span id='Ext-data-operation-Read-cfg-grouper'>        /**
+</span>         * @cfg {Ext.util.Grouper} grouper
+         * Optional grouping configuration. Only applies to &#39;read&#39; actions where grouping is desired.
+         */
+        grouper: undefined,
+    
+<span id='Ext-data-operation-Read-cfg-start'>        /**
+</span>         * @cfg {Number} start
+         * The start index (offset), used in paging when running a &#39;read&#39; action.
+         */
+        start: undefined,
+    
+<span id='Ext-data-operation-Read-cfg-limit'>        /**
+</span>         * @cfg {Number} limit
+         * The number of records to load. Used on &#39;read&#39; actions when paging is being used.
+         */
+        limit: undefined,
+        
+<span id='Ext-data-operation-Read-cfg-page'>        /**
+</span>         * @cfg {Number} page
+         * The page for this operation.
+         */
+        page: undefined,
+        
+<span id='Ext-data-operation-Read-cfg-addRecords'>        /**
+</span>         * @cfg {Boolean} addRecords
+         * Passed internally to loadRecords when the load completes
+         * @private
+         */
+        addRecords: false
+    },
+    
+<span id='Ext-data-operation-Read-method-doExecute'>    doExecute: function() {
+</span>        return this.getProxy().read(this);
+    },
+
+<span id='Ext-data-operation-Read-method-doProcess'>    doProcess: Ext.emptyFn,
+</span>
+<span id='Ext-data-operation-Read-method-allowWrite'>    allowWrite: function() {
+</span>        return false;
+    }
+});
+</pre>
+</body>
+</html>

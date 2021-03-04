@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <title>The source code</title>
+  <link href="../resources/prettify/prettify.css" type="text/css" rel="stylesheet" />
+  <script type="text/javascript" src="../resources/prettify/prettify.js"></script>
+  <style type="text/css">
+    .highlight { display: block; background-color: #ddd; }
+  </style>
+  <script type="text/javascript">
+    function highlight() {
+      document.getElementById(location.hash.replace(/#/, "")).className = "highlight";
+    }
+  </script>
+</head>
+<body onload="prettyPrint(); highlight();">
+  <pre class="prettyprint lang-js"><span id='Ext-fx-animation-Wipe'>/**
+</span> * @private
+ */
+Ext.define(&#39;Ext.fx.animation.Wipe&#39;, {
+    extend: &#39;Ext.fx.Animation&#39;,
+    alternateClassName: &#39;Ext.fx.animation.WipeIn&#39;,
+
+    config: {
+<span id='Ext-fx-animation-Wipe-cfg-easing'>        /**
+</span>         * Valid values are &#39;ease&#39;, &#39;linear&#39;, ease-in&#39;, &#39;ease-out&#39;, &#39;ease-in-out&#39;,
+         * or a cubic-bezier curve as defined by CSS.
+         */
+        easing: &#39;ease-out&#39;,
+
+<span id='Ext-fx-animation-Wipe-cfg-direction'>        /**
+</span>         * @cfg {String} direction The direction of which the slide animates
+         * @accessor
+         */
+        direction: &#39;right&#39;,
+
+<span id='Ext-fx-animation-Wipe-cfg-out'>        /**
+</span>         * @cfg {Boolean} out True if you want to make this animation wipe out, instead of slide in.
+         * @accessor
+         */
+        out: false
+    },
+
+<span id='Ext-fx-animation-Wipe-method-refresh'>    refresh: function() {
+</span>        var me = this,
+            el        = me.getElement(),
+            elBox     = el.dom.getBoundingClientRect(),
+            elWidth   = elBox.width,
+            elHeight  = elBox.height,
+            from      = me.getFrom(),
+            to        = me.getTo(),
+            out       = me.getOut(),
+            direction = me.getDirection(),
+            maskFromX = 0,
+            maskFromY = 0,
+            maskToX   = 0,
+            maskToY   = 0,
+            mask, tmp;
+
+        switch (direction) {
+            case &#39;up&#39;:
+                if (out) {
+                    mask = &#39;-webkit-gradient(linear, left top, left bottom, from(#000), to(transparent), color-stop(33%, #000), color-stop(66%, transparent))&#39;;
+                    maskFromY = elHeight * 3 + &#39;px&#39;;
+                    maskToY = elHeight + &#39;px&#39;;
+                } else {
+                    mask = &#39;-webkit-gradient(linear, left top, left bottom, from(transparent), to(#000), color-stop(66%, #000), color-stop(33%, transparent))&#39;;
+                    maskFromY = -elHeight * 2 + &#39;px&#39;;
+                    maskToY = 0;
+                }
+
+                break;
+
+            case &#39;down&#39;:
+                if (out) {
+                    mask = &#39;-webkit-gradient(linear, left top, left bottom, from(transparent), to(#000), color-stop(66%, #000), color-stop(33%, transparent))&#39;;
+                    maskFromY = -elHeight * 2 + &#39;px&#39;;
+                    maskToY = 0;
+                } else {
+                    mask = &#39;-webkit-gradient(linear, left top, left bottom, from(#000), to(transparent), color-stop(33%, #000), color-stop(66%, transparent))&#39;;
+                    maskFromY = elHeight * 3 + &#39;px&#39;;
+                    maskToY = elHeight + &#39;px&#39;;
+                }
+
+                break;
+
+            case &#39;right&#39;:
+                if (out) {
+                    mask = &#39;-webkit-gradient(linear, right top, left top, from(#000), to(transparent), color-stop(33%, #000), color-stop(66%, transparent))&#39;;
+                    maskFromX = -elWidth * 2 + &#39;px&#39;;
+                    maskToX = 0;
+                } else {
+                    mask = &#39;-webkit-gradient(linear, right top, left top, from(transparent), to(#000), color-stop(66%, #000), color-stop(33%, transparent))&#39;;
+                    maskToX = -elWidth * 2 + &#39;px&#39;;
+                }
+
+                break;
+
+            case &#39;left&#39;:
+                if (out) {
+                    mask = &#39;-webkit-gradient(linear, right top, left top, from(transparent), to(#000), color-stop(66%, #000), color-stop(33%, transparent))&#39;;
+                    maskToX = -elWidth * 2 + &#39;px&#39;;
+                } else {
+                    mask = &#39;-webkit-gradient(linear, right top, left top, from(#000), to(transparent), color-stop(33%, #000), color-stop(66%, transparent))&#39;;
+                    maskFromX = -elWidth * 2 + &#39;px&#39;;
+                    maskToX = 0;
+                }
+
+                break;
+        }
+
+        if (!out) {
+            tmp = maskFromY;
+            maskFromY = maskToY;
+            maskToY = tmp;
+
+            tmp = maskFromX;
+            maskFromX = maskToX;
+            maskToX = tmp;
+        }
+
+        from.set(&#39;mask-image&#39;, mask);
+        from.set(&#39;mask-size&#39;, elWidth * 3 + &#39;px &#39; + elHeight * 3 + &#39;px&#39;);
+        from.set(&#39;mask-position-x&#39;, maskFromX);
+        from.set(&#39;mask-position-y&#39;, maskFromY);
+
+        to.set(&#39;mask-position-x&#39;, maskToX);
+        to.set(&#39;mask-position-y&#39;, maskToY);
+
+        // me.setEasing(out ? &#39;ease-in&#39; : &#39;ease-out&#39;);
+    }
+});
+</pre>
+</body>
+</html>

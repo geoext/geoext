@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <title>The source code</title>
+  <link href="../resources/prettify/prettify.css" type="text/css" rel="stylesheet" />
+  <script type="text/javascript" src="../resources/prettify/prettify.js"></script>
+  <style type="text/css">
+    .highlight { display: block; background-color: #ddd; }
+  </style>
+  <script type="text/javascript">
+    function highlight() {
+      document.getElementById(location.hash.replace(/#/, "")).className = "highlight";
+    }
+  </script>
+</head>
+<body onload="prettyPrint(); highlight();">
+  <pre class="prettyprint lang-js">Ext.define(&#39;Ext.rtl.layout.container.Box&#39;, {
+    override: &#39;Ext.layout.container.Box&#39;,
+
+    initLayout: function() {
+        var me = this;
+
+        if (me.owner.getInherited().rtl) {
+            me.names = Ext.Object.chain(me.names);
+            Ext.apply(me.names, me.rtlNames);
+        }
+
+        me.callParent(arguments);
+    },
+
+    getRenderData: function () {
+        var renderData = this.callParent();
+
+        if (this.owner.getInherited().rtl) {
+            renderData.targetElCls =
+                (renderData.targetElCls || &#39;&#39;) + &#39; &#39; + Ext.baseCSSPrefix + &#39;rtl&#39;;
+        }
+        
+        return renderData;
+    }
+});
+</pre>
+</body>
+</html>

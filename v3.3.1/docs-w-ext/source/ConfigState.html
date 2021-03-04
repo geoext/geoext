@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <title>The source code</title>
+  <link href="../resources/prettify/prettify.css" type="text/css" rel="stylesheet" />
+  <script type="text/javascript" src="../resources/prettify/prettify.js"></script>
+  <style type="text/css">
+    .highlight { display: block; background-color: #ddd; }
+  </style>
+  <script type="text/javascript">
+    function highlight() {
+      document.getElementById(location.hash.replace(/#/, "")).className = "highlight";
+    }
+  </script>
+</head>
+<body onload="prettyPrint(); highlight();">
+  <pre class="prettyprint lang-js"><span id='Ext-mixin-ConfigState'>/**
+</span> * @private
+ */
+Ext.define(&#39;Ext.mixin.ConfigState&#39;, {
+    extend: &#39;Ext.Mixin&#39;,
+
+<span id='Ext-mixin-ConfigState-property-mixinConfig'>    mixinConfig: {
+</span>        id: &#39;configstate&#39;
+    },
+
+<span id='Ext-mixin-ConfigState-property-alternateStateConfig'>    alternateStateConfig: &#39;&#39;,
+</span>
+<span id='Ext-mixin-ConfigState-method-toggleConfigState'>    toggleConfigState: function(isAlternate) {
+</span>        var me = this,
+            state = me.capturedConfigState,
+            cfg = me.getConfig(me.alternateStateConfig),
+            key;
+
+        if (!cfg) {
+            return;
+        }
+
+        if (isAlternate) {
+            state = {};
+            for (key in cfg) {
+                state[key] = me.getConfig(key);
+            }
+            me.capturedConfigState = state;
+            me.setConfig(cfg);
+            // Capture
+        } else if (!me.isConfiguring &amp;&amp; state) {
+            me.setConfig(state);
+            delete me.capturedConfigState;
+        }
+    }
+});</pre>
+</body>
+</html>

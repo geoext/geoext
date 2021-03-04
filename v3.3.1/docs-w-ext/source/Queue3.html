@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <title>The source code</title>
+  <link href="../resources/prettify/prettify.css" type="text/css" rel="stylesheet" />
+  <script type="text/javascript" src="../resources/prettify/prettify.js"></script>
+  <style type="text/css">
+    .highlight { display: block; background-color: #ddd; }
+  </style>
+  <script type="text/javascript">
+    function highlight() {
+      document.getElementById(location.hash.replace(/#/, "")).className = "highlight";
+    }
+  </script>
+</head>
+<body onload="prettyPrint(); highlight();">
+  <pre class="prettyprint lang-js"><span id='Ext-fx-Queue'>/**
+</span> * @class Ext.fx.Queue
+ * Animation Queue mixin to handle chaining and queueing by target.
+ * @private
+ */
+
+Ext.define(&#39;Ext.fx.Queue&#39;, {
+
+    requires: [&#39;Ext.util.HashMap&#39;],
+
+<span id='Ext-fx-Queue-method-constructor'>    constructor: function() {
+</span>        this.targets = new Ext.util.HashMap();
+        this.fxQueue = {};
+    },
+
+<span id='Ext-fx-Queue-method-getFxDefaults'>    /**
+</span>     * @private
+     */
+    getFxDefaults: function(targetId) {
+        var target = this.targets.get(targetId);
+        if (target) {
+            return target.fxDefaults;
+        }
+        return {};
+    },
+
+<span id='Ext-fx-Queue-method-setFxDefaults'>    /**
+</span>     * @private
+     */
+    setFxDefaults: function(targetId, obj) {
+        var target = this.targets.get(targetId);
+        if (target) {
+            target.fxDefaults = Ext.apply(target.fxDefaults || {}, obj);
+        }
+    },
+
+<span id='Ext-fx-Queue-method-stopAnimation'>    /**
+</span>     * @private
+     */
+    stopAnimation: function(targetId, suppressEvent) {
+        var me = this,
+            queue = me.getFxQueue(targetId),
+            ln = queue.length,
+            item;
+        
+        while (ln) {
+            item = queue[ln - 1];
+            
+            if (item) {
+                item.end(suppressEvent);
+            }
+            
+            ln--;
+        }
+    },
+
+<span id='Ext-fx-Queue-method-getActiveAnimation'>    /**
+</span>     * @private
+     * Returns current animation object if the element has any effects actively running or queued, else returns false.
+     */
+    getActiveAnimation: function(targetId) {
+        var queue = this.getFxQueue(targetId);
+        return (queue &amp;&amp; !!queue.length) ? queue[0] : false;
+    },
+
+<span id='Ext-fx-Queue-method-hasFxBlock'>    /**
+</span>     * @private
+     */
+    hasFxBlock: function(targetId) {
+        var queue = this.getFxQueue(targetId);
+        return queue &amp;&amp; queue[0] &amp;&amp; queue[0].block;
+    },
+
+<span id='Ext-fx-Queue-method-getFxQueue'>    /**
+</span>     * @private
+     * Get fx queue for passed target, create if needed.
+     */
+    getFxQueue: function(targetId) {
+        if (!targetId) {
+            return false;
+        }
+        var me = this,
+            fxQueue = me.fxQueue,
+            queue = fxQueue[targetId],
+            target = me.targets.get(targetId);
+
+        if (!target) {
+            return false;
+        }
+
+        if (!queue) {
+            me.fxQueue[targetId] = fxQueue[targetId] = [];
+            
+            // GarbageCollector will need to clean up Elements since they aren&#39;t currently observable
+            if (target.type !== &#39;element&#39;) {
+                target.target.on(&#39;destroy&#39;, function() {
+                    fxQueue[targetId] = null;
+                    delete fxQueue[targetId];
+                });
+            }
+        }
+        return me.fxQueue[targetId];
+    },
+
+<span id='Ext-fx-Queue-method-queueFx'>    /**
+</span>     * @private
+     */
+    queueFx: function(anim) {
+        var me = this,
+            target = anim.target,
+            targetId = target.getId(),
+            queue, ln;
+
+        if (!target) {
+            return;
+        }
+
+        queue = me.getFxQueue(targetId);
+        ln = queue.length;
+
+        if (ln) {
+            if (anim.concurrent) {
+                anim.paused = false;
+            }
+            else {
+                queue[ln - 1].on(&#39;afteranimate&#39;, function() {
+                    anim.paused = false;
+                });
+            }
+        }
+        else {
+            anim.paused = false;
+        }
+        
+        anim.on(&#39;afteranimate&#39;, function() {
+            Ext.Array.remove(queue, anim);
+            
+            if (queue.length === 0) {
+                me.targets.remove(anim.target);
+                me.fxQueue[targetId] = null;
+                delete me.fxQueue[targetId];
+            }
+            
+            if (anim.remove) {
+                if (target.type === &#39;element&#39;) {
+                    var el = Ext.get(targetId);
+                    
+                    if (el) {
+                        el.destroy();
+                    }
+                }
+            }
+        }, me, {
+            single: true
+        });
+        
+        queue.push(anim);
+    }
+});
+</pre>
+</body>
+</html>
