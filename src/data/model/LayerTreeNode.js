@@ -115,10 +115,11 @@ Ext.define('GeoExt.data.model.LayerTreeNode', {
 
         // forward changes to ol object
         if (key === 'checked') {
-            if (classicMode !== 'classic' && me.data.checked === newValue) {
+            if (me.get('__toggleMode') === 'ol3') {
                 me.getOlLayer().set('visible', newValue);
                 return;
             }
+
             me.__updating = true;
             if (me.get('isLayerGroup') && classicMode) {
                 me.getOlLayer().set('visible', newValue);
