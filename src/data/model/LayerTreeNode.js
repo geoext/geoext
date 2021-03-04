@@ -98,7 +98,7 @@ Ext.define('GeoExt.data.model.LayerTreeNode', {
     },
 
     /**
-     * Overriden to forward changes to the underlying `ol.Object`. All changes
+     * Overridden to forward changes to the underlying `ol.Object`. All changes
      * on the {Ext.data.Model} properties will be set on the `ol.Object` as
      * well.
      *
