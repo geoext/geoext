@@ -573,9 +573,9 @@ Ext.define('GeoExt.util.OGCFilter', {
         },
 
         /**
-         * Reduce an ol.Coordiate array to a string of whitespace
+         * Reduce an ol.Coordinate array to a string of whitespace
          * separated coordinate values
-         * @param {ol.Coordiate []} coordArray An array of
+         * @param {ol.Coordinate []} coordArray An array of
          * coordinates
          * @return {string} Concatenated array of coordinates
          */

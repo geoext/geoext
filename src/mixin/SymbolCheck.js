@@ -70,7 +70,7 @@ Ext.define('GeoExt.mixin.SymbolCheck', {
          * @private
          */
         _checked: {
-            // will be filled while we are checking stuff for existance
+            // will be filled while we are checking stuff for existence
         },
 
         /**
