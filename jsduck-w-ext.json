@@ -6,7 +6,7 @@
     "--ignore-html": "debug",
     "--output": "docs-w-ext",
     "--processes": 0,
-    "--title": "GeoExt v3.3.1 Documentation (incl. ExtJS classes)",
+    "--title": "GeoExt v3.3.2 Documentation (incl. ExtJS classes)",
     "--warnings": [
       "-extend",
       "-link"
