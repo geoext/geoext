@@ -36,7 +36,7 @@
   ],
   "scripts": {
     "build": "npm run test && npm run clean:dist && copyfiles -V --exclude 'resources/external/**' -a 'bin/**' 'classic/**' 'src/**' 'sass/**' 'resources/**' README.md LICENSE LICENSE-FAQ.md COMMERCIAL-LICENCE.md package.json dist/",
-    "clean": "rimraf coverage apidoc",
+    "clean": "rimraf coverage docs docs-w-ext",
     "clean:dist": "rimraf ./dist/*",
     "lint": "eslint src/ examples/ && eslint -c test/.eslintrc test/",
     "lint:fix": "eslint --fix src/ examples/ && eslint --fix -c test/.eslintrc test/",
@@ -51,6 +51,7 @@
     "coveralls": "cat coverage/lcov.info | coveralls",
     "generate:example": "node bin/example-generator/index.js",
     "generate:docs": "rimraf docs/ && jsduck --config jsduck.json",
+    "generate:docs-w-ext": "rimraf docs-w-ext/ && jsduck --config jsduck-w-ext.json",
     "release": "npm run build && np --no-yarn --contents dist && git push https://github.com/geoext/geoext3.git master --tags"
   },
   "dependencies": {},
