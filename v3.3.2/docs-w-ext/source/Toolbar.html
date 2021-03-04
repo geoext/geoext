@@ -1,0 +1,580 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <title>The source code</title>
+  <link href="../resources/prettify/prettify.css" type="text/css" rel="stylesheet" />
+  <script type="text/javascript" src="../resources/prettify/prettify.js"></script>
+  <style type="text/css">
+    .highlight { display: block; background-color: #ddd; }
+  </style>
+  <script type="text/javascript">
+    function highlight() {
+      document.getElementById(location.hash.replace(/#/, "")).className = "highlight";
+    }
+  </script>
+</head>
+<body onload="prettyPrint(); highlight();">
+  <pre class="prettyprint lang-js"><span id='Ext-toolbar-Toolbar-method-constructor'><span id='Ext-toolbar-Toolbar'>/**
+</span></span> * Basic Toolbar class. Although the {@link Ext.container.Container#defaultType defaultType} for
+ * Toolbar is {@link Ext.button.Button button}, Toolbar elements (child items for the Toolbar container)
+ * may be virtually any type of Component. Toolbar elements can be created explicitly via their
+ * constructors, or implicitly via their xtypes, and can be {@link #method-add}ed dynamically.
+ *
+ * ## Some items have shortcut strings for creation:
+ *
+ * | Shortcut | xtype         | Class                         | Description
+ * |:---------|:--------------|:------------------------------|:---------------------------------------------------
+ * | &#39;-&gt;&#39;     | `tbfill`      | {@link Ext.toolbar.Fill}      | begin using the right-justified button container
+ * | &#39;-&#39;      | `tbseparator` | {@link Ext.toolbar.Separator} | add a vertical separator bar between toolbar items
+ * | &#39; &#39;      | `tbspacer`    | {@link Ext.toolbar.Spacer}    | add horizontal space between elements
+ *
+ *     @example
+ *     Ext.create(&#39;Ext.toolbar.Toolbar&#39;, {
+ *         renderTo: document.body,
+ *         width   : 500,
+ *         items: [
+ *             {
+ *                 // xtype: &#39;button&#39;, // default for Toolbars
+ *                 text: &#39;Button&#39;
+ *             },
+ *             {
+ *                 xtype: &#39;splitbutton&#39;,
+ *                 text : &#39;Split Button&#39;
+ *             },
+ *             // begin using the right-justified button container
+ *             &#39;-&gt;&#39;, // same as { xtype: &#39;tbfill&#39; }
+ *             {
+ *                 xtype    : &#39;textfield&#39;,
+ *                 name     : &#39;field1&#39;,
+ *                 emptyText: &#39;enter search term&#39;
+ *             },
+ *             // add a vertical separator bar between toolbar items
+ *             &#39;-&#39;, // same as {xtype: &#39;tbseparator&#39;} to create Ext.toolbar.Separator
+ *             &#39;text 1&#39;, // same as {xtype: &#39;tbtext&#39;, text: &#39;text1&#39;} to create Ext.toolbar.TextItem
+ *             { xtype: &#39;tbspacer&#39; },// same as &#39; &#39; to create Ext.toolbar.Spacer
+ *             &#39;text 2&#39;,
+ *             { xtype: &#39;tbspacer&#39;, width: 50 }, // add a 50px space
+ *             &#39;text 3&#39;
+ *         ]
+ *     });
+ *
+ * Toolbars have {@link #method-enable} and {@link #method-disable} methods which when called, will
+ * enable/disable all items within your toolbar.
+ *
+ *     @example
+ *     Ext.create(&#39;Ext.toolbar.Toolbar&#39;, {
+ *         renderTo: document.body,
+ *         width   : 400,
+ *         items: [
+ *             {
+ *                 text: &#39;Button&#39;
+ *             },
+ *             {
+ *                 xtype: &#39;splitbutton&#39;,
+ *                 text : &#39;Split Button&#39;
+ *             },
+ *             &#39;-&gt;&#39;,
+ *             {
+ *                 xtype    : &#39;textfield&#39;,
+ *                 name     : &#39;field1&#39;,
+ *                 emptyText: &#39;enter search term&#39;
+ *             }
+ *         ]
+ *     });
+ *
+ * Example
+ *
+ *     @example
+ *     var enableBtn = Ext.create(&#39;Ext.button.Button&#39;, {
+ *         text    : &#39;Enable All Items&#39;,
+ *         disabled: true,
+ *         scope   : this,
+ *         handler : function() {
+ *             //disable the enable button and enable the disable button
+ *             enableBtn.disable();
+ *             disableBtn.enable();
+ *
+ *             //enable the toolbar
+ *             toolbar.enable();
+ *         }
+ *     });
+ *
+ *     var disableBtn = Ext.create(&#39;Ext.button.Button&#39;, {
+ *         text    : &#39;Disable All Items&#39;,
+ *         scope   : this,
+ *         handler : function() {
+ *             //enable the enable button and disable button
+ *             disableBtn.disable();
+ *             enableBtn.enable();
+ *
+ *             //disable the toolbar
+ *             toolbar.disable();
+ *         }
+ *     });
+ *
+ *     var toolbar = Ext.create(&#39;Ext.toolbar.Toolbar&#39;, {
+ *         renderTo: document.body,
+ *         width   : 400,
+ *         margin  : &#39;5 0 0 0&#39;,
+ *         items   : [enableBtn, disableBtn]
+ *     });
+ *
+ * Adding items to and removing items from a toolbar is as simple as calling the {@link #method-add}
+ * and {@link #method-remove} methods. There is also a {@link #removeAll} method
+ * which remove all items within the toolbar.
+ *
+ *     @example
+ *     var toolbar = Ext.create(&#39;Ext.toolbar.Toolbar&#39;, {
+ *         renderTo: document.body,
+ *         width   : 700,
+ *         items: [
+ *             {
+ *                 text: &#39;Example Button&#39;
+ *             }
+ *         ]
+ *     });
+ *
+ *     var addedItems = [];
+ *
+ *     Ext.create(&#39;Ext.toolbar.Toolbar&#39;, {
+ *         renderTo: document.body,
+ *         width   : 700,
+ *         margin  : &#39;5 0 0 0&#39;,
+ *         items   : [
+ *             {
+ *                 text   : &#39;Add a button&#39;,
+ *                 scope  : this,
+ *                 handler: function() {
+ *                     var text = prompt(&#39;Please enter the text for your button:&#39;);
+ *                     addedItems.push(toolbar.add({
+ *                         text: text
+ *                     }));
+ *                 }
+ *             },
+ *             {
+ *                 text   : &#39;Add a text item&#39;,
+ *                 scope  : this,
+ *                 handler: function() {
+ *                     var text = prompt(&#39;Please enter the text for your item:&#39;);
+ *                     addedItems.push(toolbar.add(text));
+ *                 }
+ *             },
+ *             {
+ *                 text   : &#39;Add a toolbar separator&#39;,
+ *                 scope  : this,
+ *                 handler: function() {
+ *                     addedItems.push(toolbar.add(&#39;-&#39;));
+ *                 }
+ *             },
+ *             {
+ *                 text   : &#39;Add a toolbar spacer&#39;,
+ *                 scope  : this,
+ *                 handler: function() {
+ *                     addedItems.push(toolbar.add(&#39;-&gt;&#39;));
+ *                 }
+ *             },
+ *             &#39;-&gt;&#39;,
+ *             {
+ *                 text   : &#39;Remove last inserted item&#39;,
+ *                 scope  : this,
+ *                 handler: function() {
+ *                     if (addedItems.length) {
+ *                         toolbar.remove(addedItems.pop());
+ *                     } else if (toolbar.items.length) {
+ *                         toolbar.remove(toolbar.items.last());
+ *                     } else {
+ *                         alert(&#39;No items in the toolbar&#39;);
+ *                     }
+ *                 }
+ *             },
+ *             {
+ *                 text   : &#39;Remove all items&#39;,
+ *                 scope  : this,
+ *                 handler: function() {
+ *                     toolbar.removeAll();
+ *                 }
+ *             }
+ *         ]
+ *     });
+ *
+ * @constructor
+ * Creates a new Toolbar
+ * @param {Object/Object[]} config A config object or an array of buttons to {@link #method-add}
+ */
+Ext.define(&#39;Ext.toolbar.Toolbar&#39;, {
+    extend: &#39;Ext.container.Container&#39;,
+    requires: [
+        &#39;Ext.layout.container.HBox&#39;,
+        &#39;Ext.layout.container.VBox&#39;
+    ],
+    uses: [
+        &#39;Ext.toolbar.Fill&#39;,
+        &#39;Ext.toolbar.Separator&#39;,
+        &#39;Ext.toolbar.Spacer&#39;
+    ],
+    alias: &#39;widget.toolbar&#39;,
+    alternateClassName: &#39;Ext.Toolbar&#39;,
+    
+    mixins: [
+        &#39;Ext.util.FocusableContainer&#39;
+    ],
+
+<span id='Ext-toolbar-Toolbar-property-isToolbar'>    /**
+</span>     * @property {Boolean} isToolbar
+     * `true` in this class to identify an object as an instantiated Toolbar, or subclass thereof.
+     */
+    isToolbar: true,
+<span id='Ext-toolbar-Toolbar-cfg-baseCls'>    baseCls: Ext.baseCSSPrefix + &#39;toolbar&#39;,
+</span><span id='Ext-toolbar-Toolbar-property-ariaRole'>    ariaRole: &#39;toolbar&#39;,
+</span>
+<span id='Ext-toolbar-Toolbar-cfg-defaultType'>    defaultType: &#39;button&#39;,
+</span>
+<span id='Ext-toolbar-Toolbar-cfg-layout'>    /**
+</span>     * @cfg {Ext.enums.Layout/Object} layout
+     * This class assigns a default layout (`layout: &#39;hbox&#39;` or `layout: &#39;vbox&#39;` depending upon orientation).
+     *
+     * Developers _may_ override this configuration option if another layout is required.
+     * See {@link Ext.container.Container#layout} for additional information.
+     */
+    layout: undefined,
+
+<span id='Ext-toolbar-Toolbar-cfg-vertical'>    /**
+</span>     * @cfg {Boolean} [vertical=false]
+     * Set to `true` to make the toolbar vertical. The layout will become a `vbox`.
+     */
+    vertical: undefined,
+
+    // @cmd-auto-dependency { directRef: &#39;Ext.layout.container.boxOverflow.Menu&#39; }
+<span id='Ext-toolbar-Toolbar-cfg-enableOverflow'>    /**
+</span>     * @cfg {Boolean} enableOverflow
+     * Configure true to make the toolbar provide a button which activates a dropdown Menu to show
+     * items which overflow the Toolbar&#39;s width.  Setting this too true is the equivalent
+     * of setting `{@link #overflowHandler}:&#39;menu&#39;`.
+     */
+    enableOverflow: false,
+
+    // @cmd-auto-dependency { aliasPrefix: &#39;box.overflow.&#39; }
+<span id='Ext-toolbar-Toolbar-cfg-overflowHandler'>    /**
+</span>     * @cfg {String} overflowHandler
+     *
+     * - `null` - hidden overflow
+     * - `&#39;scroller&#39;` to render left/right scroller buttons on either side of the breadcrumb
+     * - `&#39;menu&#39;` to render the overflowing buttons as items of an overflow menu.
+     */
+    overflowHandler: null,
+
+<span id='Ext-toolbar-Toolbar-cfg-defaultButtonUI'>    /**
+</span>     * @cfg {String} defaultButtonUI
+     * A default {@link Ext.Component#ui ui} to use for {@link Ext.button.Button Button} items. This is a quick and simple
+     * way to change the look of all child {@link Ext.button.Button Buttons}.
+     *
+     * If there is no value for defaultButtonUI, the button&#39;s {@link Ext.Component#ui ui} value will get `-toolbar`
+     * appended so the {@link Ext.button.Button Button} has a different look when it&#39;s a child of a {@link Ext.toolbar.Toolbar Toolbar}.
+     * To prevent this and have the same look as buttons outside of a toolbar, you can provide a string value to the defaultButtonUI:
+     *
+     *     Ext.create(&#39;Ext.panel.Panel&#39;, {
+     *         renderTo    : document.body,
+     *         width       : 300,
+     *         title       : &#39;Panel&#39;,
+     *         html        : &#39;Some Body&#39;,
+     *         dockedItems : [
+     *             {
+     *                 xtype           : &#39;toolbar&#39;,
+     *                 dock            : &#39;top&#39;,
+     *                 defaultButtonUI : &#39;default&#39;,
+     *                 items           : [
+     *                     {
+     *                         text : &#39;Save&#39;
+     *                     },
+     *                     {
+     *                         text : &#39;Remove&#39;
+     *                     }
+     *                 ]
+     *             }
+     *         ]
+     *     });
+     */
+    defaultButtonUI: &#39;default-toolbar&#39;,
+
+<span id='Ext-toolbar-Toolbar-cfg-defaultFieldUI'>    /**
+</span>     * @cfg {String}
+     * Default UI for form field items.
+     */
+    defaultFieldUI: &#39;default&#39;,
+
+<span id='Ext-toolbar-Toolbar-cfg-defaultFooterButtonUI'>    /**
+</span>     * @cfg {String}
+     * Default UI for Buttons if the toolbar has a UI of &#39;footer&#39;
+     */
+    defaultFooterButtonUI: &#39;default&#39;,
+
+<span id='Ext-toolbar-Toolbar-cfg-defaultFooterFieldUI'>    /**
+</span>     * @cfg {String}
+     * Default UI for Form Fields if the toolbar has a UI of &#39;footer&#39;
+     */
+    defaultFooterFieldUI: &#39;default&#39;,
+
+<span id='Ext-toolbar-Toolbar-property-trackMenus'>    /**
+</span>     * @private
+     */
+    trackMenus: true,
+
+<span id='Ext-toolbar-Toolbar-property-itemCls'>    itemCls: Ext.baseCSSPrefix + &#39;toolbar-item&#39;,
+</span>
+<span id='Ext-toolbar-Toolbar-event-overflowchange'>    /**
+</span>     * @event overflowchange
+     * Fires after the overflow state has changed if this toolbar has been configured with
+     * an `{@link #overflowHandler}`.
+     * @param {Number} lastHiddenCount The number of overflowing items that used to be hidden.
+     * @param {Number} hiddenCount The number of overflowing items that are hidden now.
+     * @param {Array} hiddenItems The hidden items
+     */
+
+    statics: {
+<span id='Ext-toolbar-Toolbar-static-property-shortcuts'>        shortcuts: {
+</span>            &#39;-&#39;: &#39;tbseparator&#39;,
+            &#39; &#39;: &#39;tbspacer&#39;
+        },
+
+<span id='Ext-toolbar-Toolbar-static-property-shortcutsHV'>        shortcutsHV: {
+</span>            // horizontal
+            0: {
+                &#39;-&gt;&#39;: { xtype: &#39;tbfill&#39;, height: 0 }
+            },
+            // vertical
+            1: {
+                &#39;-&gt;&#39;: { xtype: &#39;tbfill&#39;, width: 0 }
+            }
+        }
+    },
+
+<span id='Ext-toolbar-Toolbar-method-initComponent'>    initComponent: function () {
+</span>        var me = this,
+            layout = me.layout,
+            vertical = me.vertical;
+
+        if (vertical === undefined) {
+            me.vertical = vertical = me.dock === &#39;right&#39; || me.dock === &#39;left&#39;;
+        }
+
+        me.layout = layout = Ext.applyIf(Ext.isString(layout) ? {
+            type: layout
+        } : layout || {}, {
+            type: vertical ? &#39;vbox&#39; : &#39;hbox&#39;,
+            align: vertical ? &#39;stretchmax&#39; : &#39;middle&#39;
+        });
+
+        if (me.overflowHandler) {
+            layout.overflowHandler = me.overflowHandler;
+        } else if (me.enableOverflow) {
+            layout.overflowHandler = &#39;menu&#39;;
+        }
+
+        if (vertical) {
+            me.addClsWithUI(&#39;vertical&#39;);
+        }
+
+        // @TODO: remove this hack and implement a more general solution
+        if (me.ui === &#39;footer&#39;) {
+            me.ignoreBorderManagement = true;
+        }
+
+        me.callParent();
+    },
+
+<span id='Ext-toolbar-Toolbar-method-getRefItems'>    getRefItems: function (deep) {
+</span>        var me = this,
+            items = me.callParent(arguments),
+            layout = me.layout,
+            handler;
+
+        if (deep &amp;&amp; (me.enableOverflow || (me.overflowHandler === &#39;menu&#39;))) {
+            handler = layout.overflowHandler;
+            if (handler &amp;&amp; handler.menu) {
+                items = items.concat(handler.menu.getRefItems(deep));
+            }
+        }
+        return items;
+    },
+
+<span id='Ext-toolbar-Toolbar-method-add'>    /**
+</span>     * Adds element(s) to the toolbar -- this function takes a variable number of
+     * arguments of mixed type and adds them to the toolbar.
+     *
+     * **Note**: See the notes within {@link Ext.container.Container#method-add}.
+     *
+     * @param {Ext.Component.../Object.../String.../HTMLElement...} args The following types of arguments are all valid:
+     *
+     *  - `{@link Ext.button.Button config}`: A valid button config object
+     *  - `HTMLElement`: Any standard HTML element
+     *  - `Field`: Any form field
+     *  - `Item`: Any subclass of {@link Ext.toolbar.Item}
+     *  - `String`: Any generic string (gets wrapped in a {@link Ext.toolbar.TextItem}).
+     *
+     *    Note that there are a few special strings that are treated differently as explained next:
+     *
+     *      - `&#39;-&#39;`: Creates a separator element
+     *      - `&#39; &#39;`: Creates a spacer element
+     *      - `&#39;-&gt;&#39;`: Creates a fill element
+     *
+     * @return {Ext.Component[]/Ext.Component} The Components that were added.
+     *
+     * @method add
+     */
+
+<span id='Ext-toolbar-Toolbar-method-insert'>    /**
+</span>     * Inserts a Component into this Container at a specified index.
+     *
+     * @param {Number} index The index at which the Component will be inserted.
+     * @param {Ext.Component/Object/String/HTMLElement} component
+     * See {@link #method-add} method for overview of possible values.
+     * @return {Ext.Component} The component that was inserted.
+     * @method insert
+     */
+
+<span id='Ext-toolbar-Toolbar-method-lookupComponent'>    /**
+</span>     * @private
+     */
+    lookupComponent: function (c) {
+        var args = arguments,
+            shortcut, T;
+
+        if (typeof c === &#39;string&#39; &amp;&amp; c[0] !== &#39;@&#39;) {
+            T = Ext.toolbar.Toolbar;
+            shortcut = T.shortcutsHV[this.vertical ? 1 : 0][c] || T.shortcuts[c];
+
+            if (typeof shortcut === &#39;string&#39;) {
+                c = {
+                    xtype: shortcut
+                };
+            } else if (shortcut) {
+                c = Ext.apply({}, shortcut);
+            } else {
+                c = {
+                    xtype: &#39;tbtext&#39;,
+                    text: c
+                };
+            }
+
+            this.applyDefaults(c);
+
+            // See: EXTJSIV-7578
+            args = [c];
+        }
+
+        return this.callParent(args);
+    },
+
+<span id='Ext-toolbar-Toolbar-method-onBeforeAdd'>    onBeforeAdd: function (component) {
+</span>        var me = this,
+            isFooter = me.ui === &#39;footer&#39;,
+            defaultButtonUI = isFooter ? me.defaultFooterButtonUI : me.defaultButtonUI;
+
+        if (component.isSegmentedButton) {
+            if (component.getDefaultUI() === &#39;default&#39; &amp;&amp; !component.config.hasOwnProperty(&#39;defaultUI&#39;)) {
+                component.setDefaultUI(defaultButtonUI);
+            }
+        } else if (component.ui === &#39;default&#39; &amp;&amp; !component.hasOwnProperty(&#39;ui&#39;)) {
+            if (component.isButton) {
+                component.ui = defaultButtonUI;
+            } else if (component.isFormField) {
+                component.ui = isFooter ? me.defaultFooterFieldUI : me.defaultFieldUI;
+            }
+        }
+
+        // Any separators needs to know if is vertical or not
+        if (component instanceof Ext.toolbar.Separator) {
+            component.setUI(me.vertical ? &#39;vertical&#39; : &#39;horizontal&#39;);
+        }
+
+        me.callParent(arguments);
+    },
+
+<span id='Ext-toolbar-Toolbar-method-onAdd'>    onAdd: function(component) {
+</span>        var me = this;
+        
+        // If we encounter a child component that needs to handle arrow keys
+        // (input fields, sliders) we opt out of FocusableContainer behavior
+        // because it becomes highly confusing for the keyboard users. We also
+        // change the ARIA role because toolbars are expected to behave the way
+        // WAI-ARIA spec defines them, i.e. navigable with arrow keys.
+        // A widget that is announced as a toolbar but is *not* navigable
+        // with arrow keys is highly confusing to disabled users relying on
+        // hearing.
+        if (component.needArrowKeys &amp;&amp; me.enableFocusableContainer) {
+            me.enableFocusableContainer = false;
+            me.ariaRole = &#39;group&#39;;
+        }
+        
+        me.callParent(arguments);
+        me.trackMenu(component);
+    },
+
+<span id='Ext-toolbar-Toolbar-method-onRemove'>    onRemove: function (c) {
+</span>        this.callParent(arguments);
+        this.trackMenu(c, true);
+    },
+    
+<span id='Ext-toolbar-Toolbar-property-privates'>    privates: {
+</span><span id='Ext-toolbar-Toolbar-method-applyDefaults'>        /**
+</span>         * @private
+         */
+        applyDefaults: function (c) {
+            if (!Ext.isString(c)) {
+                c = this.callParent(arguments);
+            }
+            return c;
+        },
+
+<span id='Ext-toolbar-Toolbar-method-trackMenu'>        /**
+</span>         * @private
+         */
+        trackMenu: function (item, remove) {
+            var me = this;
+
+            if (me.trackMenus &amp;&amp; item.menu) {
+                item[remove ? &#39;un&#39; : &#39;on&#39;]({
+                    mouseover: me.onButtonOver,
+                    menushow: me.onButtonMenuShow,
+                    menuhide: me.onButtonMenuHide,
+                    scope: me
+                });
+            }
+        },
+
+        getChildItemsToDisable: function () {
+            return this.items.getRange();
+        },
+
+<span id='Ext-toolbar-Toolbar-method-onButtonOver'>        /**
+</span>         * @private
+         */
+        onButtonOver: function (btn, e) {
+            var activeMenuBtn = this.activeMenuBtn;
+            if (activeMenuBtn &amp;&amp; activeMenuBtn !== btn) {
+                activeMenuBtn.hideMenu();
+                btn.focus();
+                btn.showMenu(e);
+                this.activeMenuBtn = btn;
+            }
+        },
+
+<span id='Ext-toolbar-Toolbar-method-onButtonMenuShow'>        /**
+</span>         * @private
+         */
+        onButtonMenuShow: function (btn) {
+            this.activeMenuBtn = btn;
+        },
+
+<span id='Ext-toolbar-Toolbar-method-onButtonMenuHide'>        /**
+</span>         * @private
+         */
+        onButtonMenuHide: function (btn) {
+            this.activeMenuBtn = null;
+        }
+    }
+});
+</pre>
+</body>
+</html>

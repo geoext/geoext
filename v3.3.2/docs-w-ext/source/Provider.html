@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <title>The source code</title>
+  <link href="../resources/prettify/prettify.css" type="text/css" rel="stylesheet" />
+  <script type="text/javascript" src="../resources/prettify/prettify.js"></script>
+  <style type="text/css">
+    .highlight { display: block; background-color: #ddd; }
+  </style>
+  <script type="text/javascript">
+    function highlight() {
+      document.getElementById(location.hash.replace(/#/, "")).className = "highlight";
+    }
+  </script>
+</head>
+<body onload="prettyPrint(); highlight();">
+  <pre class="prettyprint lang-js"><span id='Ext-direct-Provider'>/**
+</span> * Ext.direct.Provider is an abstract class meant to be extended.
+ *
+ * For example Ext JS implements the following subclasses:
+ *
+ *     Provider
+ *     |
+ *     +---JsonProvider
+ *         |
+ *         +---PollingProvider
+ *         |
+ *         +---RemotingProvider
+ *
+ * @abstract
+ */
+Ext.define(&#39;Ext.direct.Provider&#39;, {
+   alias: &#39;direct.provider&#39;,
+
+    mixins: [
+        &#39;Ext.mixin.Observable&#39;
+    ],
+    
+    requires: [
+        &#39;Ext.direct.Manager&#39;
+    ],
+    
+<span id='Ext-direct-Provider-property-isProvider'>    isProvider: true,
+</span><span id='Ext-direct-Provider-property-S-configPrefixed'>    $configPrefixed: false,
+</span><span id='Ext-direct-Provider-property-S-configStrict'>    $configStrict: false,
+</span>
+<span id='Ext-direct-Provider-cfg-id'>   /**
+</span>     * @cfg {String} id
+     * The unique id of the provider (defaults to an {@link Ext#id auto-assigned id}).
+     * You should assign an id if you need to be able to access the provider later and you do
+     * not have an object reference available, for example:
+     *
+     *      Ext.direct.Manager.addProvider({
+     *          type: &#39;polling&#39;,
+     *          url:  &#39;php/poll.php&#39;,
+     *          id:   &#39;poll-provider&#39;
+     *      });
+     *      var p = {@link Ext.direct.Manager}.{@link Ext.direct.Manager#getProvider getProvider}(&#39;poll-provider&#39;);
+     *     p.disconnect();
+     *
+     */
+    
+<span id='Ext-direct-Provider-cfg-relayedEvents'>    /**
+</span>     * @cfg {String[]} relayedEvents
+     * List of Provider events that should be relayed by {@link Ext.direct.Manager}.
+     * &#39;data&#39; event is always relayed.
+     */
+    
+    config: {
+<span id='Ext-direct-Provider-cfg-headers'>        /**
+</span>         * @cfg {Object} [headers]
+         * An object containing default headers for every Ajax request made by this Provider.
+         */
+        headers: undefined
+    },
+    
+<span id='Ext-direct-Provider-event-connect'>    /**
+</span>     * @event connect
+     * Fires when the Provider connects to the server-side
+     *
+     * @param {Ext.direct.Provider} provider The {@link Ext.direct.Provider Provider}.
+     */
+
+<span id='Ext-direct-Provider-event-disconnect'>    /**
+</span>     * @event disconnect
+     * Fires when the Provider disconnects from the server-side
+     *
+     * @param {Ext.direct.Provider} provider The {@link Ext.direct.Provider Provider}.
+     */
+
+<span id='Ext-direct-Provider-event-data'>    /**
+</span>     * @event data
+     * Fires when the Provider receives data from the server-side. This event is fired
+     * for valid responses as well as for exceptions.
+     *
+     * @param {Ext.direct.Provider} provider The {@link Ext.direct.Provider Provider} instance.
+     * @param {Ext.direct.Event} e The {@link Ext.direct.Event} that occurred.
+     */
+
+<span id='Ext-direct-Provider-event-exception'>    /**
+</span>     * @event exception
+     * Fires when the Provider receives an exception from the server-side. This event is *not*
+     * fired for valid responses.
+     *
+     * @param {Ext.direct.Provider} provider The {@link Ext.direct.Provider Provider} instance.
+     * @param {Ext.direct.Event} e The {@link Ext.direct.Event Exception event} that occured.
+     */
+    
+    subscribers: 0,
+
+<span id='Ext-direct-Provider-method-constructor'>    constructor: function(config) {
+</span>        var me = this;
+        
+        me.mixins.observable.constructor.call(me, config);
+
+        me.requests = {};
+
+        Ext.applyIf(me, {
+            id: Ext.id(null, &#39;provider-&#39;)
+        });
+    },
+    
+<span id='Ext-direct-Provider-method-destroy'>    destroy: function() {
+</span>        var me = this;
+        
+        me.disconnect(true);
+        me.callParent();
+    },
+    
+<span id='Ext-direct-Provider-method-isConnected'>    /**
+</span>     * Returns whether or not the server-side is currently connected.
+     */
+    isConnected: function() {
+        return this.subscribers &gt; 0;
+    },
+
+<span id='Ext-direct-Provider-method-connect'>    /**
+</span>     * Connect the provider and start its service.
+     * Provider will fire `connect` event upon successful connection.
+     */
+    connect: function() {
+        var me = this;
+        
+        if (me.subscribers === 0) {
+            me.doConnect();
+            me.fireEventArgs(&#39;connect&#39;, [me]);
+        }
+        
+        me.subscribers++;
+    },
+    
+<span id='Ext-direct-Provider-method-doConnect'>    /**
+</span>     * @method
+     *
+     * Do connection setup. This is a template method.
+     * @template
+     * @protected
+     */
+    doConnect: Ext.emptyFn,
+
+<span id='Ext-direct-Provider-method-disconnect'>    /**
+</span>     * Disconnect the provider and stop its service.
+     * Provider will fire `disconnect` event upon successful disconnect.
+     */
+    disconnect: function(/* */ force) {
+        var me = this;
+        
+        if (me.subscribers &gt; 0 || force) {
+            if (force) {
+                me.subscribers = 0;
+            }
+            else {
+                me.subscribers--;
+            }
+            
+            if (me.subscribers === 0) {
+                me.doDisconnect();
+                me.fireEventArgs(&#39;disconnect&#39;, [me]);
+            }
+        }
+    },
+    
+<span id='Ext-direct-Provider-method-doDisconnect'>    /**
+</span>     * @method
+     *
+     * Do connection teardown. This is a template method.
+     * @template
+     * @protected
+     */
+    doDisconnect: function() {
+        var requests = this.requests,
+            request, id;
+        
+        for (id in requests) {
+            request = requests[id];
+            request.abort();
+        }
+        
+        this.requests = {};
+    },
+    
+<span id='Ext-direct-Provider-method-sendAjaxRequest'>    /**
+</span>     * Send the Ajax request
+     *
+     * @param {Object} Ajax request parameters
+     *
+     * @private
+     */
+    sendAjaxRequest: function(params) {
+        var request = Ext.Ajax.request(params);
+        
+        if (request &amp;&amp; request.id) {
+            this.requests[request.id] = request;
+        }
+            
+        return request;
+    },
+    
+<span id='Ext-direct-Provider-method-onData'>    /**
+</span>     * Ajax request callback
+     *
+     * @private
+     */
+    onData: function(options, success, response) {
+        if (response &amp;&amp; response.request) {
+            delete this.requests[response.request.id];
+        }
+    },
+    
+    inheritableStatics: {
+<span id='Ext-direct-Provider-static-method-checkConfig'>        /**
+</span>         * @method
+         *
+         * Check if the passed configuration object contains enough
+         * information to construct a Provider.
+         *
+         * @param {Object} config
+         *
+         * @return {Boolean} `true` if config is sufficient, `false` otherwise.
+         * @static
+         * @inheritable
+         */
+        checkConfig: Ext.returnFalse
+    },
+    
+<span id='Ext-direct-Provider-method-onClassExtended'>    onClassExtended: function(cls, data, hooks) {
+</span>        if (data.type) {
+            Ext.direct.Manager.addProviderClass(data.type, cls);
+        }
+    }
+});
+</pre>
+</body>
+</html>

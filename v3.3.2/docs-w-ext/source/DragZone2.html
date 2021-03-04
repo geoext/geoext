@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <title>The source code</title>
+  <link href="../resources/prettify/prettify.css" type="text/css" rel="stylesheet" />
+  <script type="text/javascript" src="../resources/prettify/prettify.js"></script>
+  <style type="text/css">
+    .highlight { display: block; background-color: #ddd; }
+  </style>
+  <script type="text/javascript">
+    function highlight() {
+      document.getElementById(location.hash.replace(/#/, "")).className = "highlight";
+    }
+  </script>
+</head>
+<body onload="prettyPrint(); highlight();">
+  <pre class="prettyprint lang-js"><span id='Ext-view-DragZone'>/**
+</span> * @private
+ */
+Ext.define(&#39;Ext.view.DragZone&#39;, {
+    extend: &#39;Ext.dd.DragZone&#39;,
+<span id='Ext-view-DragZone-cfg-containerScroll'>    containerScroll: false,
+</span>
+<span id='Ext-view-DragZone-method-constructor'>    constructor: function(config) {
+</span>        var me = this,
+            view,
+            ownerCt,
+            el;
+
+        Ext.apply(me, config);
+
+        // Create a ddGroup unless one has been configured.
+        // User configuration of ddGroups allows users to specify which
+        // DD instances can interact with each other. Using one
+        // based on the id of the View would isolate it and mean it can only
+        // interact with a DropZone on the same View also using a generated ID.
+        if (!me.ddGroup) {
+            me.ddGroup = &#39;view-dd-zone-&#39; + me.view.id;
+        }
+
+        // Ext.dd.DragDrop instances are keyed by the ID of their encapsulating element.
+        // So a View&#39;s DragZone cannot use the View&#39;s main element because the DropZone must use that
+        // because the DropZone may need to scroll on hover at a scrolling boundary, and it is the View&#39;s
+        // main element which handles scrolling.
+        // We use the View&#39;s parent element to drag from. Ideally, we would use the internal structure, but that
+        // is transient; DataViews recreate the internal structure dynamically as data changes.
+        // TODO: Ext 5.0 DragDrop must allow multiple DD objects to share the same element.
+        view = me.view;
+
+        // This is for https://www.w3.org/TR/pointerevents/ platforms.
+        // On these platforms, the pointerdown event (single touchstart) is reserved for
+        // initiating a scroll gesture. Setting the items draggable defeats that and
+        // enables the touchstart event to trigger a drag.
+        //
+        // Two finger dragging will still scroll on these platforms.
+        view.setItemsDraggable(true);
+
+        ownerCt = view.ownerCt;
+        // We don&#39;t just grab the parent el, since the parent el may be
+        // some el injected by the layout
+        if (ownerCt) {
+            el = ownerCt.getTargetEl().dom;
+        } else {
+            el = view.el.dom.parentNode;
+        }
+        me.callParent([el]);
+
+        me.ddel = document.createElement(&#39;div&#39;);
+        me.ddel.className = Ext.baseCSSPrefix + &#39;grid-dd-wrap&#39;;
+    },
+
+<span id='Ext-view-DragZone-method-init'>    init: function(id, sGroup, config) {
+</span>        var me = this,
+            eventSpec = {
+                itemmousedown: me.onItemMouseDown,
+                scope: me
+            };
+
+        // If there may be ambiguity with touch/swipe to scroll and a drag gesture
+        // trigger drag start on longpress and a *real* mousedown.
+        if (Ext.supports.Touch) {
+            eventSpec.itemlongpress = me.onItemLongPress;
+
+            // Longpress fires contextmenu in some touch platforms, so if we are using longpress
+            // inhibit the contextmenu on this element
+            eventSpec.contextmenu = {
+                element: &#39;el&#39;,
+                fn: me.onViewContextMenu
+            };
+        }
+        me.initTarget(id, sGroup, config);
+        me.view.mon(me.view, eventSpec);
+    },
+
+<span id='Ext-view-DragZone-method-onValidDrop'>    onValidDrop: function(target, e, id) {
+</span>        this.callParent([target, e, id]);
+        // focus the view that the node was dropped onto so that keynav will be enabled.
+        if (!target.el.contains(Ext.Element.getActiveElement())) {
+            target.el.focus();
+        }
+    },
+
+<span id='Ext-view-DragZone-method-onViewContextMenu'>    onViewContextMenu: function(e) {
+</span>        if (e.pointerType !== &#39;mouse&#39;) {
+            e.preventDefault();
+        }
+    },
+
+<span id='Ext-view-DragZone-method-onItemMouseDown'>    onItemMouseDown: function(view, record, item, index, e) {
+</span>        // Ignore touchstart.
+        // For touch events, we use longpress.
+        if (e.pointerType === &#39;mouse&#39;) {
+            this.onTriggerGesture(view, record, item, index, e);
+        }
+    },
+
+<span id='Ext-view-DragZone-method-onItemLongPress'>    onItemLongPress: function(view, record, item, index, e) {
+</span>        // Ignore long mousedowns.
+        // The initial mousedown started the drag.
+        // For touch events, we use longpress.
+        if (e.pointerType !== &#39;mouse&#39;) {
+            this.onTriggerGesture(view, record, item, index, e);
+        }
+    },
+
+<span id='Ext-view-DragZone-method-onTriggerGesture'>    onTriggerGesture: function(view, record, item, index, e) {
+</span>        var navModel;
+
+        // Only respond to longpress for touch dragging.
+        // Reject drag start if mousedown is on the actionable cell of a grid view
+        if ((e.pointerType === &#39;touch&#39; &amp;&amp; e.type !== &#39;longpress&#39;) || (e.position &amp;&amp; e.position.isEqual(e.view.actionPosition))) {
+            return;
+        }
+
+        if (!this.isPreventDrag(e, record, item, index)) {
+            navModel = view.getNavigationModel();
+
+            // Since handleMouseDown prevents the default behavior of the event, which
+            // is to focus the view, we focus the view now.  This ensures that the view
+            // remains focused if the drag is cancelled, or if no drag occurs.
+            //
+            // A Table event will have a position property which is a CellContext
+            if (e.position) {
+                navModel.setPosition(e.position);
+            }
+            // Otherwise, just use the item index
+            else {
+                navModel.setPosition(index);
+            }
+            this.handleMouseDown(e);
+        }
+    },
+
+<span id='Ext-view-DragZone-method-isPreventDrag'>    /**
+</span>     * @protected
+     * Template method called upon mousedown. May be overridden in subclasses, or configured
+     * into an instance.
+     *
+     * Return `true` to prevent drag start.
+     * @param {Ext.event.Event} e The mousedown event.
+     * @param {Ext.data.Model} record The record mousedowned upon.
+     * @param {HTMLElement} item The grid row mousedowned upon.
+     * @param {Number} index The row number mousedowned upon.
+     */
+    isPreventDrag: function(e, record, item, index) {
+        return !!e.isInputFieldEvent;
+    },
+
+<span id='Ext-view-DragZone-method-getDragData'>    getDragData: function(e) {
+</span>        var view = this.view,
+            item = e.getTarget(view.getItemSelector());
+
+        if (item) {
+            return {
+                copy: view.copy || (view.allowCopy &amp;&amp; e.ctrlKey),
+                event: e,
+                view: view,
+                ddel: this.ddel,
+                item: item,
+                records: view.getSelectionModel().getSelection(),
+                fromPosition: Ext.fly(item).getXY()
+            };
+        }
+    },
+
+<span id='Ext-view-DragZone-method-onInitDrag'>    onInitDrag: function(x, y) {
+</span>        var me = this,
+            data = me.dragData,
+            view = data.view,
+            selectionModel = view.getSelectionModel(),
+            record = view.getRecord(data.item);
+
+        // Update the selection to match what would have been selected if the user had
+        // done a full click on the target node rather than starting a drag from it
+        if (!selectionModel.isSelected(record)) {
+            selectionModel.selectWithEvent(record, me.DDMInstance.mousedownEvent);
+        }
+        data.records = selectionModel.getSelection();
+
+        Ext.fly(me.ddel).setHtml(me.getDragText());
+        me.proxy.update(me.ddel);
+        me.onStartDrag(x, y);
+        return true;
+    },
+
+<span id='Ext-view-DragZone-method-getDragText'>    getDragText: function() {
+</span>        var count = this.dragData.records.length;
+        return Ext.String.format(this.dragText, count, count === 1 ? &#39;&#39; : &#39;s&#39;);
+    },
+
+<span id='Ext-view-DragZone-method-getRepairXY'>    getRepairXY : function(e, data){
+</span>        return data ? data.fromPosition : false;
+    }
+});</pre>
+</body>
+</html>

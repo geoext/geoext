@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <title>The source code</title>
+  <link href="../resources/prettify/prettify.css" type="text/css" rel="stylesheet" />
+  <script type="text/javascript" src="../resources/prettify/prettify.js"></script>
+  <style type="text/css">
+    .highlight { display: block; background-color: #ddd; }
+  </style>
+  <script type="text/javascript">
+    function highlight() {
+      document.getElementById(location.hash.replace(/#/, "")).className = "highlight";
+    }
+  </script>
+</head>
+<body onload="prettyPrint(); highlight();">
+  <pre class="prettyprint lang-js"><span id='Ext-parse-symbol-Prefix'>/**
+</span> * This class represents a prefix (unary) operator.
+ * @private
+ */
+Ext.define(&#39;Ext.parse.symbol.Prefix&#39;, {
+    extend: &#39;Ext.parse.Symbol&#39;,
+
+<span id='Ext-parse-symbol-Prefix-property-arity'>    arity: &#39;unary&#39;,
+</span><span id='Ext-parse-symbol-Prefix-property-isUnary'>    isUnary: true,
+</span>
+<span id='Ext-parse-symbol-Prefix-property-priority'>    priority: 70,
+</span>
+<span id='Ext-parse-symbol-Prefix-method-nud'>    nud: function () {
+</span>        var me = this;
+
+        me.operand = me.parser.parseExpression(me.priority);
+        // the next line is here in case this symbol already exists in the symbols table
+        // and this function overrides that symbol
+        me.arity = &#39;unary&#39;;
+        me.isUnary = true;
+
+        return me;
+    }
+});
+</pre>
+</body>
+</html>

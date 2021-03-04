@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <title>The source code</title>
+  <link href="../resources/prettify/prettify.css" type="text/css" rel="stylesheet" />
+  <script type="text/javascript" src="../resources/prettify/prettify.js"></script>
+  <style type="text/css">
+    .highlight { display: block; background-color: #ddd; }
+  </style>
+  <script type="text/javascript">
+    function highlight() {
+      document.getElementById(location.hash.replace(/#/, "")).className = "highlight";
+    }
+  </script>
+</head>
+<body onload="prettyPrint(); highlight();">
+  <pre class="prettyprint lang-js"><span id='Ext-data-reader-Array-method-constructor'><span id='Ext-data-reader-Array'>/**
+</span></span> * @class Ext.data.reader.Array
+ * 
+ * &lt;p&gt;Data reader class to create an Array of {@link Ext.data.Model} objects from an Array.
+ * Each element of that Array represents a row of data fields. The
+ * fields are pulled into a Record object using as a subscript, the &lt;code&gt;mapping&lt;/code&gt; property
+ * of the field definition if it exists, or the field&#39;s ordinal position in the definition.&lt;/p&gt;
+ * 
+ * &lt;p&gt;&lt;u&gt;Example code:&lt;/u&gt;&lt;/p&gt;
+ * 
+&lt;pre&gt;&lt;code&gt;
+Employee = Ext.define(&#39;Employee&#39;, {
+    extend: &#39;Ext.data.Model&#39;,
+    fields: [
+        &#39;id&#39;,
+        {name: &#39;name&#39;, mapping: 1},         // &quot;mapping&quot; only needed if an &quot;id&quot; field is present which
+        {name: &#39;occupation&#39;, mapping: 2}    // precludes using the ordinal position as the index.        
+    ]
+});
+
+var myReader = new Ext.data.reader.Array({
+    model: &#39;Employee&#39;
+}, Employee);
+&lt;/code&gt;&lt;/pre&gt;
+ * 
+ * &lt;p&gt;This would consume an Array like this:&lt;/p&gt;
+ * 
+&lt;pre&gt;&lt;code&gt;
+[ [1, &#39;Bill&#39;, &#39;Gardener&#39;], [2, &#39;Ben&#39;, &#39;Horticulturalist&#39;] ]
+&lt;/code&gt;&lt;/pre&gt;
+ * 
+ * @constructor
+ * Create a new ArrayReader
+ * @param {Object} meta Metadata configuration options.
+ */
+Ext.define(&#39;Ext.data.reader.Array&#39;, {
+    extend: &#39;Ext.data.reader.Json&#39;,
+    alternateClassName: &#39;Ext.data.ArrayReader&#39;,
+    alias : &#39;reader.array&#39;,
+
+    // For Array Reader, methods in the base which use these properties must not see the defaults
+    config: {
+<span id='Ext-data-reader-Array-cfg-totalProperty'>        /**
+</span>         * @cfg
+         * @inheritdoc
+         */
+        totalProperty: undefined,
+<span id='Ext-data-reader-Array-cfg-successProperty'>        /**
+</span>         * @cfg
+         * @inheritdoc
+         */
+        successProperty: undefined
+        
+<span id='Ext-data-reader-Array-cfg-preserveRawData'>        /**
+</span>         * @cfg {Boolean} preserveRawData
+         * @hide
+         */
+    },
+    
+<span id='Ext-data-reader-Array-method-createFieldAccessor'>    createFieldAccessor: function(field) {
+</span>        // In the absence of a mapping property, use the original ordinal position
+        // at which the Model inserted the field into its collection.
+        var oldMap = field.mapping, 
+            index = field.hasMapping() ? oldMap : field.ordinal,
+            result;
+
+        // Temporarily overwrite the mapping and use the superclass method.
+        field.mapping = index;
+        result = this.callParent(arguments);
+        field.mapping = oldMap;
+        return result;
+    },
+    
+<span id='Ext-data-reader-Array-method-getModelData'>    getModelData: function(raw) {
+</span>        // Can&#39;t preserve raw data here
+        return {};
+    }
+});
+</pre>
+</body>
+</html>

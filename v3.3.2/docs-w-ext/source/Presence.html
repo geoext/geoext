@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <title>The source code</title>
+  <link href="../resources/prettify/prettify.css" type="text/css" rel="stylesheet" />
+  <script type="text/javascript" src="../resources/prettify/prettify.js"></script>
+  <style type="text/css">
+    .highlight { display: block; background-color: #ddd; }
+  </style>
+  <script type="text/javascript">
+    function highlight() {
+      document.getElementById(location.hash.replace(/#/, "")).className = "highlight";
+    }
+  </script>
+</head>
+<body onload="prettyPrint(); highlight();">
+  <pre class="prettyprint lang-js"><span id='Ext-data-validator-Presence'>/**
+</span> * Validates that the passed value is not `null` or `undefined` or `&#39;&#39;`.
+ */
+Ext.define(&#39;Ext.data.validator.Presence&#39;, {
+    extend: &#39;Ext.data.validator.Validator&#39;,
+    alias: &#39;data.validator.presence&#39;,
+
+<span id='Ext-data-validator-Presence-property-type'>    type: &#39;presence&#39;,
+</span>    
+    config: {
+<span id='Ext-data-validator-Presence-cfg-message'>        /**
+</span>         * @cfg {String} message
+         * The error message to return when the value is not specified.
+         */
+        message: &#39;Must be present&#39;,
+
+<span id='Ext-data-validator-Presence-cfg-allowEmpty'>        /**
+</span>         * @cfg {Boolean} allowEmpty
+         * `true` to allow `&#39;&#39;` as a valid value.
+         */
+        allowEmpty: false
+    },
+    
+<span id='Ext-data-validator-Presence-method-validate'>    validate: function(value) {
+</span>        var valid = !(value === undefined || value === null);
+        if (valid &amp;&amp; !this.getAllowEmpty()) {
+            valid = !(value === &#39;&#39;);
+        }
+        return valid ? true : this.getMessage();
+    }
+});
+</pre>
+</body>
+</html>

@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <title>The source code</title>
+  <link href="../resources/prettify/prettify.css" type="text/css" rel="stylesheet" />
+  <script type="text/javascript" src="../resources/prettify/prettify.js"></script>
+  <style type="text/css">
+    .highlight { display: block; background-color: #ddd; }
+  </style>
+  <script type="text/javascript">
+    function highlight() {
+      document.getElementById(location.hash.replace(/#/, "")).className = "highlight";
+    }
+  </script>
+</head>
+<body onload="prettyPrint(); highlight();">
+  <pre class="prettyprint lang-js"><span id='Ext-util-Translatable'>/**
+</span> * The utility class to abstract different implementations to have the best performance when applying 2D translation
+ * on any DOM element.
+ *
+ * @private
+ */
+Ext.define(&#39;Ext.util.Translatable&#39;, {
+    requires: [
+        &#39;Ext.util.translatable.CssTransform&#39;,
+        &#39;Ext.util.translatable.ScrollPosition&#39;,
+        &#39;Ext.util.translatable.ScrollParent&#39;,
+        &#39;Ext.util.translatable.CssPosition&#39;
+    ],
+
+<span id='Ext-util-Translatable-method-constructor'>    constructor: function(config) {
+</span>        var namespace = Ext.util.translatable;
+
+        switch (Ext.browser.getPreferredTranslationMethod(config)) {
+        case &#39;scrollposition&#39;:
+            return new namespace.ScrollPosition(config);
+        case &#39;scrollparent&#39;:
+            return new namespace.ScrollParent(config);
+        case &#39;csstransform&#39;:
+            return new namespace.CssTransform(config);
+        case &#39;cssposition&#39;:
+            return new namespace.CssPosition(config);
+        }
+    }
+});
+</pre>
+</body>
+</html>

@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <title>The source code</title>
+  <link href="../resources/prettify/prettify.css" type="text/css" rel="stylesheet" />
+  <script type="text/javascript" src="../resources/prettify/prettify.js"></script>
+  <style type="text/css">
+    .highlight { display: block; background-color: #ddd; }
+  </style>
+  <script type="text/javascript">
+    function highlight() {
+      document.getElementById(location.hash.replace(/#/, "")).className = "highlight";
+    }
+  </script>
+</head>
+<body onload="prettyPrint(); highlight();">
+  <pre class="prettyprint lang-js"><span id='Ext-drag-Item'>/**
+</span> * A base class for draggable and droppable items that wrap a DOM element.
+ *
+ * @abstract
+ */
+Ext.define(&#39;Ext.drag.Item&#39;, {
+    mixins: [
+        &#39;Ext.mixin.Observable&#39;,
+        &#39;Ext.mixin.Identifiable&#39;
+    ],
+
+    config: {
+<span id='Ext-drag-Item-cfg-autoDestroy'>        /**
+</span>         * @cfg {Boolean} autoDestroy
+         * `true` to destroy the {@link #element} when this item is destroyed.
+         */
+        autoDestroy: true,
+
+<span id='Ext-drag-Item-cfg-element'>        /**
+</span>         * @cfg {String/HTMLElement/Ext.dom.Element} element
+         * The id, dom or Element reference for this item.
+         */
+        element: null,
+
+<span id='Ext-drag-Item-cfg-groups'>        /**
+</span>         * @cfg {String/String[]} groups
+         * A group controls which {@link Ext.drag.Source sources} and {@link Ext.drag.Target} targets
+         * can interact with each other. Only items that have the same (or intersecting) groups will
+         * react to each other. Items with no groups will be in the default pool.
+         */
+        groups: null
+    },
+
+<span id='Ext-drag-Item-method-constructor'>    constructor: function(config) {
+</span>        this.mixins.observable.constructor.call(this, config);
+    },
+
+<span id='Ext-drag-Item-method-isDisabled'>    /**
+</span>     * Checks whether this item is currently disabled.
+     * @return {Boolean} `true` if this item is disabled.
+     */
+    isDisabled: function() {
+        return this.disabled;
+    },
+
+<span id='Ext-drag-Item-method-disable'>    /**
+</span>     * Disable the current item to disallow it from participating
+     * in drag/drop operations.
+     */
+    disable: function() {
+        this.disabled = true;
+    },
+
+<span id='Ext-drag-Item-method-enable'>    /**
+</span>     * Enable the current item to allow it to participate in
+     * drag/drop operations.
+     */
+    enable: function() {
+        this.disabled = false;
+    },
+
+<span id='Ext-drag-Item-method-applyElement'>    applyElement: function(element) {
+</span>        return element ? Ext.get(element) : null;
+    },
+
+<span id='Ext-drag-Item-method-updateElement'>    updateElement: function(element) {
+</span>        this.setupListeners();
+    },
+
+<span id='Ext-drag-Item-method-applyGroups'>    applyGroups: function(group) {
+</span>        if (typeof group === &#39;string&#39;) {
+            group = [group];
+        }
+        return group;
+    },
+
+<span id='Ext-drag-Item-method-destroy'>    destroy: function() {
+</span>        var me = this,
+            el = me.getElement();
+
+        me.destroying = true;
+        me.setElement(null);
+        if (el &amp;&amp; me.getAutoDestroy()) {
+            el.destroy();
+        }
+        me.callParent();
+        me.destroying = false;
+    },
+
+<span id='Ext-drag-Item-property-privates'>    privates: {
+</span><span id='Ext-drag-Item-property-disabled'>        /**
+</span>        * @property {Boolean} disabled
+        * `true` if this item is disabled.
+        *
+        * @private
+        */
+        disabled: false,
+
+<span id='Ext-drag-Item-method-getElListeners'>        /**
+</span>         * Gets any listeners to attach for the current element.
+         * @return {Object} The listeners for thie element.
+         *
+         * @private
+         */
+        getElListeners: Ext.privateFn,
+
+<span id='Ext-drag-Item-method-setupListeners'>        /**
+</span>         * Detach any existing listeners and add new listeners
+         * to the element.
+         * 
+         * @private
+         */
+        setupListeners: function(element) {
+            var me = this,
+                elListeners = me.elListeners;
+
+            element = element || me.getElement();
+
+            if (elListeners) {
+                elListeners.destroy();
+                me.elListeners = null;
+            }
+
+            if (element) {
+                me.elListeners = element.on(Ext.apply({
+                    scope: me,
+                    destroyable: true
+                }, me.getElListeners()));
+            }
+        }
+    }
+});
+</pre>
+</body>
+</html>

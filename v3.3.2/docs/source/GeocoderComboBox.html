@@ -1,0 +1,451 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <title>The source code</title>
+  <link href="../resources/prettify/prettify.css" type="text/css" rel="stylesheet" />
+  <script type="text/javascript" src="../resources/prettify/prettify.js"></script>
+  <style type="text/css">
+    .highlight { display: block; background-color: #ddd; }
+  </style>
+  <script type="text/javascript">
+    function highlight() {
+      document.getElementById(location.hash.replace(/#/, "")).className = "highlight";
+    }
+  </script>
+</head>
+<body onload="prettyPrint(); highlight();">
+  <pre class="prettyprint lang-js">/* Copyright (c) 2015-present The Open Source Geospatial Foundation
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see &lt;http://www.gnu.org/licenses/&gt;.
+ */
+<span id='GeoExt-form-field-GeocoderComboBox'>/**
+</span> * Creates a combo box that handles results from a geocoding service. By
+ * default it uses OSM Nominatim, but the component offers all config options
+ * to overwrite in order to other custom services.
+ * If the user enters a valid address in the search box, the combo&#39;s store will
+ * be populated with records that match the
+ * address. By default, records have the following fields:
+ *
+ *   * name   - `String` The formatted address.
+ *   * extent - `ol.Extent` The extent of the matching address
+ *   * bounds - `ol.Coordinate` The point coordinate of the matching address
+ *
+ * **CAUTION: This class is only usable in applications using the classic
+ * toolkit of ExtJS 6.**
+ *
+ * @class GeoExt.form.field.GeocoderComboBox
+ */
+Ext.define(&#39;GeoExt.form.field.GeocoderComboBox&#39;, {
+    extend: &#39;Ext.form.field.ComboBox&#39;,
+    alias: [
+        &#39;widget.gx_geocoder_combo&#39;,
+        &#39;widget.gx_geocoder_combobox&#39;,
+        &#39;widget.gx_geocoder_field&#39;
+    ],
+    requires: [
+        &#39;Ext.data.JsonStore&#39;
+    ],
+    mixins: [
+        &#39;GeoExt.mixin.SymbolCheck&#39;
+    ],
+
+<span id='GeoExt-form-field-GeocoderComboBox-cfg-map'>    /**
+</span>     * The OpenLayers map to work on. If not provided the selection of an
+     * address would have no effect.
+     *
+     * @cfg {ol.Map}
+     */
+    map: null,
+
+<span id='GeoExt-form-field-GeocoderComboBox-cfg-locationLayer'>    /**
+</span>     * Vector layer to visualize the selected address.
+     * Will be created if not provided.
+     *
+     * @cfg {ol.layer.Vector}
+     * @property {ol.layer.Vector}
+     */
+    locationLayer: null,
+
+<span id='GeoExt-form-field-GeocoderComboBox-cfg-locationLayerStyle'>    /**
+</span>     * The style of the #locationLayer. Only has an effect if the layer is not
+     * passed in while creation.
+     *
+     * @cfg {ol.style.Style}
+     */
+    locationLayerStyle: null,
+
+<span id='GeoExt-form-field-GeocoderComboBox-cfg-store'>    /**
+</span>     * The store used for this combo box. Default is a
+     * store with  the url configured as #url
+     * config.
+     *
+     * @cfg {Ext.data.JsonStore}
+     * @property {Ext.data.JsonStore}
+     */
+    store: null,
+
+<span id='GeoExt-form-field-GeocoderComboBox-cfg-proxyRootProperty'>    /**
+</span>     * The property in the JSON response of the geocoding service used in
+     * the store&#39;s proxy as root object.
+     *
+     * @cfg {String}
+     */
+    proxyRootProperty: null,
+
+<span id='GeoExt-form-field-GeocoderComboBox-cfg-displayField'>    /**
+</span>     * The field to display in the combobox result. Default is
+     * &quot;name&quot; for instant use with the default store for this component.
+     *
+     * @cfg {String}
+     */
+    displayField: &#39;name&#39;,
+
+<span id='GeoExt-form-field-GeocoderComboBox-cfg-displayValueMapping'>    /**
+</span>     * The field in the GeoCoder service repsonse to be used as mapping for the
+     * &#39;name&#39; field in the #store.
+     * Ignored when a store is passed in.
+     *
+     * @cfg {String}
+     */
+    displayValueMapping: &#39;display_name&#39;,
+
+<span id='GeoExt-form-field-GeocoderComboBox-cfg-valueField'>    /**
+</span>     * Field from selected record to use when the combo&#39;s
+     * #getValue method is called. Default is &quot;extent&quot;. This field is
+     * supposed to contain an ol.Extent.
+     * By setting this to &#39;coordinate&#39; a field holding an ol.Coordinate is used.
+     *
+     * @cfg {String}
+     */
+    valueField: &#39;extent&#39;,
+
+<span id='GeoExt-form-field-GeocoderComboBox-cfg-queryParam'>    /**
+</span>     * The query parameter for the user entered search text.
+     * Default is &#39;q&#39; for instant use with OSM Nominatim.
+     *
+     * @cfg {String}
+     */
+    queryParam: &#39;q&#39;,
+
+<span id='GeoExt-form-field-GeocoderComboBox-cfg-emptyText'>    /**&#39;Search&#39;
+</span>     * Text to display for an empty field.
+     *
+     * @cfg {String}
+     */
+    emptyText: &#39;Search for a location&#39;,
+
+<span id='GeoExt-form-field-GeocoderComboBox-cfg-minChars'>    /**
+</span>     * Minimum number of entered characters to trigger a search.
+     *
+     * @cfg {Number}
+     */
+    minChars: 3,
+
+<span id='GeoExt-form-field-GeocoderComboBox-cfg-queryDelay'>    /**
+</span>     * Delay before the search occurs in ms.
+     *
+     * @cfg {Number}
+     */
+    queryDelay: 100,
+
+<span id='GeoExt-form-field-GeocoderComboBox-cfg-url'>    /**
+</span>     * URL template for querying the geocoding service. If a store is
+     * configured, this will be ignored. Note that the #queryParam will be used
+     * to append the user&#39;s combo box input to the url.
+     *
+     * @cfg {String}
+     */
+    url: &#39;https://nominatim.openstreetmap.org/search?format=json&#39;,
+
+<span id='GeoExt-form-field-GeocoderComboBox-cfg-srs'>    /**
+</span>     * The SRS used by the geocoder service.
+     *
+     * @cfg {String}
+     */
+    srs: &#39;EPSG:4326&#39;,
+
+<span id='GeoExt-form-field-GeocoderComboBox-cfg-zoom'>    /**
+</span>     * Zoom level when zooming to a location (#valueField=&#39;coordinate&#39;)
+     * Not used when zooming to extent.
+     *
+     * @cfg {Number}
+     */
+    zoom: 10,
+
+<span id='GeoExt-form-field-GeocoderComboBox-cfg-showLocationOnMap'>    /**
+</span>     * Flag to steer if selected address feature is drawn on #map
+     * (by #locationLayer).
+     *
+     * @cfg {Boolean}
+     */
+    showLocationOnMap: true,
+
+<span id='GeoExt-form-field-GeocoderComboBox-cfg-restrictToMapExtent'>    /**
+</span>     * Flag to restrict nomination query to current map extent
+     *
+     * @cfg {Boolean}
+     */
+    restrictToMapExtent: false,
+
+<span id='GeoExt-form-field-GeocoderComboBox-method-initComponent'>    /**
+</span>     * @private
+     */
+    initComponent: function() {
+        var me = this;
+
+        if (!me.store) {
+            me.store = Ext.create(&#39;Ext.data.JsonStore&#39;, {
+                fields: [
+                    {name: &#39;name&#39;, mapping: me.displayValueMapping},
+                    {name: &#39;extent&#39;, convert: me.convertToExtent},
+                    {name: &#39;coordinate&#39;, convert: me.convertToCoordinate}
+                ],
+                proxy: {
+                    type: &#39;ajax&#39;,
+                    url: me.url,
+                    reader: {
+                        type: &#39;json&#39;,
+                        rootProperty: me.proxyRootProperty
+                    }
+                }
+            });
+        }
+
+        if (!me.locationLayer) {
+            me.locationLayer = new ol.layer.Vector({
+                source: new ol.source.Vector(),
+                style: me.locationLayerStyle !== null ?
+                    me.locationLayerStyle : undefined
+            });
+
+            if (me.map) {
+                me.map.addLayer(me.locationLayer);
+            }
+        }
+
+        me.callParent(arguments);
+
+        me.on({
+            unRestrictMapExtent: me.unRestrictExtent,
+            restrictToMapExtent: me.restrictExtent,
+            select: me.onSelect,
+            focus: me.onFocus,
+            scope: me
+        });
+
+        if (me.restrictToMapExtent) {
+            me.restrictExtent();
+        }
+    },
+
+<span id='GeoExt-form-field-GeocoderComboBox-method-restrictExtent'>    /**
+</span>     * Handle restriction to viewbox: register moveend event
+     * and update params of AJAX proxy
+     */
+    restrictExtent: function() {
+        var me = this;
+        me.map.on(&#39;moveend&#39;, me.updateExtraParams, me);
+        me.updateExtraParams();
+    },
+
+<span id='GeoExt-form-field-GeocoderComboBox-method-updateExtraParams'>    /**
+</span>     * Update viewbox parameter based on the current map extent
+     */
+    updateExtraParams: function() {
+        var me = this;
+        var mapSize = me.map.getSize();
+        var mv = me.map.getView();
+        var extent = mv.calculateExtent(mapSize);
+        me.addMapExtentParams(extent, mv.getProjection());
+    },
+
+<span id='GeoExt-form-field-GeocoderComboBox-method-addMapExtentParams'>    /**
+</span>     * Update map extent params of AJAX proxy.
+     *
+     * By default, &#39;viewbox&#39; and &#39;bounded&#39; are updated since Nominatim is the
+     * default geocoder in this class. If no projection is passed the one of
+     * the map view is used.
+     *
+     * @param {ol.Extent} extent The extend to restrict the geocoder to
+     * @param {ol.proj.Projection} projection The projection of given extent
+     */
+    addMapExtentParams: function(extent, projection) {
+        var me = this;
+        if (!projection) {
+            projection = me.map.getView().getProjection();
+        }
+        var ll = ol.proj.transform([extent[0], extent[1]],
+            projection, &#39;EPSG:4326&#39;);
+        var ur = ol.proj.transform([extent[2], extent[3]],
+            projection, &#39;EPSG:4326&#39;);
+
+        ll = Ext.Array.map(ll, function(val) {
+            return Math.min(Math.max(val, -180), 180);
+        });
+        ur = Ext.Array.map(ur, function(val) {
+            return Math.min(Math.max(val, -180), 180);
+        });
+        var viewBoxStr = [ll.join(&#39;,&#39;), ur.join(&#39;,&#39;)].join(&#39;,&#39;);
+
+        if (me.store &amp;&amp; me.store.getProxy()) {
+            me.store.getProxy().setExtraParam(&#39;viewbox&#39;, viewBoxStr);
+            me.store.getProxy().setExtraParam(&#39;bounded&#39;, &#39;1&#39;);
+        }
+    },
+
+<span id='GeoExt-form-field-GeocoderComboBox-method-unRestrictExtent'>    /**
+</span>     * Cleanup if extent restriction is omitted.
+     * -&gt; moveend event from map
+     * -&gt; call removeMapExtentParams to reset params set in store
+     */
+    unRestrictExtent: function() {
+        var me = this;
+        // unbinding moveend event
+        me.map.un(&#39;moveend&#39;, me.updateExtraParams, me);
+        // cleanup params in store
+        me.removeMapExtentParams();
+    },
+
+<span id='GeoExt-form-field-GeocoderComboBox-method-removeMapExtentParams'>    /**
+</span>     * Remove restriction to viewbox, in particular remove viewbox
+     * and bounded parameters from AJAX proxy for nominatim queries
+     */
+    removeMapExtentParams: function() {
+        var me = this;
+        if (me.store &amp;&amp; me.store.getProxy()) {
+            me.store.getProxy().setExtraParam(&#39;viewbox&#39;, undefined);
+            me.store.getProxy().setExtraParam(&#39;bounded&#39;, undefined);
+        }
+    },
+
+<span id='GeoExt-form-field-GeocoderComboBox-method-convertToExtent'>    /**
+</span>     * Function to convert the data delivered by the geocoder service to an
+     * ol.Extent ([minx, miny, maxx, maxy]).
+     * Default implementation converts the Nominatim response.
+     * Can be overwritten to work with other services.
+     *
+     * @param  {Mixed}          v   The data value as read by the Reader
+     * @param  {Ext.data.Model} rec The data record containing raw data
+     * @return {ol.Extent}          The created ol.Extent
+     */
+    convertToExtent: function(v, rec) {
+        var rawExtent = rec.get(&#39;boundingbox&#39;);
+        var minx = parseFloat(rawExtent[2], 10);
+        var miny = parseFloat(rawExtent[0], 10);
+        var maxx = parseFloat(rawExtent[3], 10);
+        var maxy = parseFloat(rawExtent[1], 10);
+
+        return [minx, miny, maxx, maxy];
+    },
+
+<span id='GeoExt-form-field-GeocoderComboBox-method-convertToCoordinate'>    /**
+</span>     * Function to convert the data delivered by the geocoder service to an
+     * ol.Coordinate ([x, y]).
+     * Default implementation converts the Nominatim response.
+     * Can be overwritten to work with other services.
+     *
+     * @param  {Mixed}          v   The data value as read by the Reader
+     * @param  {Ext.data.Model} rec The data record containing raw data
+     * @return {ol.Coordinate}      The created ol.Coordinate
+     */
+    convertToCoordinate: function(v, rec) {
+        return [parseFloat(rec.get(&#39;lon&#39;), 10), parseFloat(rec.get(&#39;lat&#39;), 10)];
+    },
+
+<span id='GeoExt-form-field-GeocoderComboBox-method-drawLocationFeatureOnMap'>    /**
+</span>     * Draws the selected address feature on the map.
+     *
+     * @param  {ol.Coordinate | ol.Extent} coordOrExtent Location feature to be
+     *   drawn on the map
+     */
+    drawLocationFeatureOnMap: function(coordOrExtent) {
+        var me = this;
+        var geom;
+        if (coordOrExtent.length === 2) {
+            geom = new ol.geom.Point(coordOrExtent);
+        } else if (coordOrExtent.length === 4) {
+            geom = ol.geom.Polygon.fromExtent(coordOrExtent);
+        }
+
+        if (geom) {
+            var feat = new ol.Feature({
+                geometry: geom
+            });
+            me.locationLayer.getSource().clear();
+            me.locationLayer.getSource().addFeature(feat);
+        }
+    },
+
+<span id='GeoExt-form-field-GeocoderComboBox-method-removeLocationFeature'>    /**
+</span>     * Removes the drawn address feature from the map.
+     */
+    removeLocationFeature: function() {
+        this.locationLayer.getSource().clear();
+    },
+
+<span id='GeoExt-form-field-GeocoderComboBox-method-onFocus'>    /**
+</span>     * Handles the &#39;focus&#39; event of this ComboBox.
+     */
+    onFocus: function() {
+        var me = this;
+        me.clearValue();
+        me.removeLocationFeature();
+    },
+
+<span id='GeoExt-form-field-GeocoderComboBox-method-onSelect'>    /**
+</span>     * Handles the &#39;select&#39; event of this ComboBox.
+     * Zooms to the selected address and draws the address feature on the map
+     * (if configured in #showLocationOnMap)
+     *
+     * @param  {GeoExt.form.field.GeocoderComboBox} combo  [description]
+     * @param  {Ext.data.Model} record [description]
+     *
+     * @private
+     */
+    onSelect: function(combo, record) {
+        var me = this;
+        if (!me.map) {
+            Ext.Logger.warn(&#39;No map configured in &#39; +
+                &#39;GeoExt.form.field.GeocoderComboBox. Skip zoom to selection.&#39;);
+            return;
+        }
+
+        var value = record.get(me.valueField);
+        var projValue;
+        var olMapView = me.map.getView();
+        var targetProj = olMapView.getProjection().getCode();
+        if (value.length === 2) {
+            // point based value
+            projValue = ol.proj.transform(value, me.srs, targetProj);
+
+            // adjust the map
+            olMapView.setCenter(projValue);
+            olMapView.setZoom(me.zoom);
+        } else if (value.length === 4) {
+            // bbox based value
+            projValue = ol.proj.transformExtent(value, me.srs, targetProj);
+
+            // adjust the map
+            olMapView.fit(projValue);
+        }
+
+        if (me.showLocationOnMap) {
+            me.drawLocationFeatureOnMap(projValue);
+        }
+    }
+});
+</pre>
+</body>
+</html>

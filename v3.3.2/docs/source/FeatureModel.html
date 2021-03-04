@@ -1,0 +1,352 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <title>The source code</title>
+  <link href="../resources/prettify/prettify.css" type="text/css" rel="stylesheet" />
+  <script type="text/javascript" src="../resources/prettify/prettify.js"></script>
+  <style type="text/css">
+    .highlight { display: block; background-color: #ddd; }
+  </style>
+  <script type="text/javascript">
+    function highlight() {
+      document.getElementById(location.hash.replace(/#/, "")).className = "highlight";
+    }
+  </script>
+</head>
+<body onload="prettyPrint(); highlight();">
+  <pre class="prettyprint lang-js">/* Copyright (c) 2015-present The Open Source Geospatial Foundation
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see &lt;http://www.gnu.org/licenses/&gt;.
+ */
+<span id='GeoExt-selection-FeatureModel'>/**
+</span>  * A row selection model which enables automatic selection of features
+  * in the map when rows are selected in the grid and vice-versa.
+  *
+  * **CAUTION: This class is only usable in applications using the classic
+  * toolkit of ExtJS 6.**
+  *
+  * @class GeoExt.selection.FeatureModel
+  */
+Ext.define(&#39;GeoExt.selection.FeatureModel&#39;, {
+    extend: &#39;Ext.selection.RowModel&#39;,
+    alias: &#39;selection.featuremodel&#39;,
+
+    config: {
+<span id='GeoExt-selection-FeatureModel-cfg-layer'>        /**
+</span>         * The connected vector layer.
+         * @cfg {ol.layer.Vector}
+         * @property {ol.layer.Vector}
+         */
+        layer: null,
+
+<span id='GeoExt-selection-FeatureModel-cfg-map'>        /**
+</span>         * The OpenLayers map we work with
+         * @cfg {ol.Map}
+         */
+        map: null,
+
+<span id='GeoExt-selection-FeatureModel-cfg-mapSelection'>        /**
+</span>         * Set to true to create a click handler on the map selecting a clicked
+         * object in the #layer.
+         * @cfg {Boolean}
+         */
+        mapSelection: false,
+
+<span id='GeoExt-selection-FeatureModel-cfg-selectStyle'>        /**
+</span>         * The default style for the selected features.
+         * @cfg {ol.style.Style}
+         */
+        selectStyle: new ol.style.Style({
+            image: new ol.style.Circle({
+                radius: 6,
+                fill: new ol.style.Fill({
+                    color: &#39;rgba(255,255,255,0.8)&#39;
+                }),
+                stroke: new ol.style.Stroke({
+                    color: &#39;darkblue&#39;,
+                    width: 2
+                })
+            }),
+            fill: new ol.style.Fill({
+                color: &#39;rgba(255,255,255,0.8)&#39;
+            }),
+            stroke: new ol.style.Stroke({
+                color: &#39;darkblue&#39;,
+                width: 2
+            })
+        })
+    },
+
+<span id='GeoExt-selection-FeatureModel-property-existingFeatStyles'>    /**
+</span>     * Lookup to preserve existing feature styles. Used to restore feature style
+     * when select style is removed.
+     * @private
+     * @property {Object}
+     */
+    existingFeatStyles: {},
+
+<span id='GeoExt-selection-FeatureModel-property-mapClickRegistered'>    /**
+</span>     * Indicates if a map click handler has been registered on init.
+     * @private
+     * @property {Boolean}
+     */
+    mapClickRegistered: false,
+
+<span id='GeoExt-selection-FeatureModel-cfg-selectedFeatureAttr'>    /**
+</span>     * The attribute key to mark an OL feature as selected.
+     * @cfg {String}
+     * @property
+     * @readonly
+     */
+    selectedFeatureAttr: &#39;gx_selected&#39;,
+
+<span id='GeoExt-selection-FeatureModel-property-selectedFeatures'>    /**
+</span>     * The currently selected features (`ol.Collection` containing `ol.Feature`
+     * instances).
+     * @property {ol.Collection}
+     */
+    selectedFeatures: null,
+
+<span id='GeoExt-selection-FeatureModel-method-bindComponent'>    /**
+</span>     * Prepare several connected objects once the selection model is ready.
+     *
+     * @private
+     */
+    bindComponent: function() {
+        var me = this;
+
+        me.callParent(arguments);
+
+        me.selectedFeatures = new ol.Collection();
+
+        // detect a layer from the store if not passed in
+        if (!me.layer || !me.layer instanceof ol.layer.Vector) {
+            var store = me.getStore();
+            if (store &amp;&amp; store.getLayer &amp;&amp; store.getLayer() &amp;&amp;
+                store.getLayer() instanceof ol.layer.Vector) {
+                me.layer = store.getLayer();
+            }
+        }
+
+        if (!me._destroying) {
+            // bind several OL events since this is not called while destroying
+            me.bindOlEvents();
+        }
+    },
+
+<span id='GeoExt-selection-FeatureModel-method-bindOlEvents'>    /**
+</span>     * Binds several events on the OL objects used in this class.
+     *
+     * @private
+     */
+    bindOlEvents: function() {
+        var me = this;
+
+        // change style of selected feature
+        me.selectedFeatures.on(&#39;add&#39;, me.onSelectFeatAdd, me);
+
+        // reset style of no more selected feature
+        me.selectedFeatures.on(&#39;remove&#39;, me.onSelectFeatRemove, me);
+
+        // create a map click listener for connected vector layer
+        if (me.mapSelection &amp;&amp; me.layer &amp;&amp; me.map) {
+            me.map.on(&#39;singleclick&#39;, me.onFeatureClick, me);
+            me.mapClickRegistered = true;
+        }
+    },
+
+<span id='GeoExt-selection-FeatureModel-method-unbindOlEvents'>    /**
+</span>     * Unbinds several events that were registered on the OL objects in this
+     * class (see #bindOlEvents).
+     *
+     * @private
+     */
+    unbindOlEvents: function() {
+        var me = this;
+
+        // remove &#39;add&#39; / &#39;remove&#39; listener from selected feature collection
+        if (me.selectedFeatures) {
+            me.selectedFeatures.un(&#39;add&#39;, me.onSelectFeatAdd, me);
+            me.selectedFeatures.un(&#39;remove&#39;, me.onSelectFeatRemove, me);
+        }
+
+        // remove &#39;singleclick&#39; listener for connected vector layer
+        if (me.mapClickRegistered) {
+            me.map.un(&#39;singleclick&#39;, me.onFeatureClick, me);
+            me.mapClickRegistered = false;
+        }
+    },
+
+<span id='GeoExt-selection-FeatureModel-method-onSelectFeatAdd'>    /**
+</span>     * Handles &#39;add&#39; event of #selectedFeatures.
+     * Ensures that added feature gets the #selectStyle and preserves an
+     * possibly existing feature style.
+     *
+     * @private
+     * @param  {ol.Collection.Event} evt OL event object
+     */
+    onSelectFeatAdd: function(evt) {
+        var me = this;
+        var feat = evt.element;
+        if (feat) {
+            if (feat.getStyle()) {
+                // we have to preserve the existing feature style
+                var fid = feat.getId() || me.getRandomFid();
+                me.existingFeatStyles[fid] = feat.getStyle();
+                feat.setId(fid);
+            }
+            // apply select style
+            feat.setStyle(me.selectStyle);
+        }
+    },
+
+<span id='GeoExt-selection-FeatureModel-method-onSelectFeatRemove'>    /**
+</span>     * Handles &#39;remove&#39; event of #selectedFeatures.
+     * Ensures that the #selectStyle is reset on the removed feature.
+     *
+     * @private
+     * @param  {ol.Collection.Event} evt OL event object
+     */
+    onSelectFeatRemove: function(evt) {
+        var me = this;
+        var feat = evt.element;
+        if (feat) {
+            var fid = feat.getId();
+            if (fid &amp;&amp; me.existingFeatStyles[fid]) {
+                // restore existing feature style
+                feat.setStyle(me.existingFeatStyles[fid]);
+                delete me.existingFeatStyles[fid];
+            } else {
+                // reset feature style, so layer style gets active
+                feat.setStyle();
+            }
+        }
+    },
+
+<span id='GeoExt-selection-FeatureModel-method-onFeatureClick'>    /**
+</span>     * Handles the &#39;singleclick&#39; event of the #map.
+     * Detects if a feature of the connected #layer has been clicked and selects
+     * this feature by selecting its corresponding grid row.
+     *
+     * @private
+     * @param  {ol.MapBrowserEvent} evt OL event object
+     */
+    onFeatureClick: function(evt) {
+        var me = this;
+        var feat = me.map.forEachFeatureAtPixel(evt.pixel,
+            function(feature) {
+                return feature;
+            }, {
+                layerFilter: function(layer) {
+                    return layer === me.layer;
+                }
+            });
+
+        if (feat) {
+            // select clicked feature in grid
+            me.selectMapFeature(feat);
+        }
+    },
+
+<span id='GeoExt-selection-FeatureModel-method-selectMapFeature'>    /**
+</span>     * Selects / deselects a feature by triggering the corresponding actions in
+     * the grid (e.g. selecting / deselecting a grid row).
+     *
+     * @private
+     * @param  {ol.Feature} feature The feature to select
+     */
+    selectMapFeature: function(feature) {
+        var me = this;
+        var row = me.store.findBy(function(record, id) {
+            return record.getFeature() == feature;
+        });
+
+        // deselect all if only one can be selected at a time
+        if (me.getSelectionMode() === &#39;SINGLE&#39;) {
+            me.deselectAll();
+        }
+
+        if (feature.get(me.selectedFeatureAttr)) {
+            // deselect feature by deselecting grid row
+            me.deselect(row);
+        } else {
+            // select the feature by selecting grid row
+            if (row != -1 &amp;&amp; !me.isSelected(row)) {
+                me.select(row, !this.singleSelect);
+                // focus the row in the grid to ensure it is visible
+                me.view.focusRow(row);
+            }
+        }
+    },
+
+<span id='GeoExt-selection-FeatureModel-method-onSelectChange'>    /**
+</span>     * Overwrites the onSelectChange function of the father class.
+     * Ensures that the selected feature is added / removed to / from
+     * #selectedFeatures lookup object.
+     *
+     * @private
+     * @param  {GeoExt.data.model.Feature} record Selected / deselected record
+     * @param  {Boolean} isSelected Record is selected or deselected
+     */
+    onSelectChange: function(record, isSelected) {
+        var me = this;
+        var selFeature = record.getFeature();
+
+        // toggle feature&#39;s selection state
+        selFeature.set(me.selectedFeatureAttr, isSelected);
+
+        if (isSelected) {
+            me.selectedFeatures.push(selFeature);
+        } else {
+            me.selectedFeatures.remove(selFeature);
+        }
+
+        me.callParent(arguments);
+    },
+
+<span id='GeoExt-selection-FeatureModel-method-destroy'>    /**
+</span>     * Overwrites parent&#39;s destroy method in order to unregister the OL events,
+     * that were added on init.
+     * Needed due to the lack of destroy event of the parent class.
+     *
+     * @private
+     */
+    destroy: function() {
+        var me = this;
+
+        // unfortunately callParent triggers the bindComponent method, so we
+        // have to know if we are in the process of destroying or not.
+        me._destroying = true;
+
+        me.unbindOlEvents();
+        me.callParent(arguments);
+
+        me._destroying = false;
+    },
+
+<span id='GeoExt-selection-FeatureModel-method-getRandomFid'>    /**
+</span>     * Returns a random feature ID.
+     *
+     * @private
+     * @return {String} Random feature ID
+     */
+    getRandomFid: function() {
+        // current timestamp plus a random int between 0 and 10
+        return new Date().getTime() + &#39;&#39; +  Math.floor(Math.random() * 11);
+    }
+});
+</pre>
+</body>
+</html>

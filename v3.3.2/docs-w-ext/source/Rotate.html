@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <title>The source code</title>
+  <link href="../resources/prettify/prettify.css" type="text/css" rel="stylesheet" />
+  <script type="text/javascript" src="../resources/prettify/prettify.js"></script>
+  <style type="text/css">
+    .highlight { display: block; background-color: #ddd; }
+  </style>
+  <script type="text/javascript">
+    function highlight() {
+      document.getElementById(location.hash.replace(/#/, "")).className = "highlight";
+    }
+  </script>
+</head>
+<body onload="prettyPrint(); highlight();">
+  <pre class="prettyprint lang-js"><span id='Ext-event-gesture-Rotate'>/**
+</span> * A simple event recognizer which knows when you rotate.
+ */
+Ext.define(&#39;Ext.event.gesture.Rotate&#39;, {
+    extend: &#39;Ext.event.gesture.MultiTouch&#39;,
+
+<span id='Ext-event-gesture-Rotate-property-priority'>    priority: 800,
+</span>
+<span id='Ext-event-gesture-Rotate-property-handledEvents'>    handledEvents: [&#39;rotatestart&#39;, &#39;rotate&#39;, &#39;rotateend&#39;, &#39;rotatecancel&#39;],
+</span>
+<span id='Ext-dom-Element-event-rotatestart'>    /**
+</span>     * @member Ext.dom.Element
+     * @event rotatestart
+     * Fired once when a rotation has started.
+     * @param {Ext.event.Event} event The {@link Ext.event.Event} event encapsulating the DOM event.
+     * @param {HTMLElement} node The target of the event.
+     * @param {Object} options The options object passed to Ext.mixin.Observable.addListener.
+     */
+
+<span id='Ext-dom-Element-event-rotate'>    /**
+</span>     * @member Ext.dom.Element
+     * @event rotate
+     * Fires continuously when there is rotation (the touch must move for this to be fired).
+     * When listening to this, ensure you know about the {@link Ext.event.Event#angle} and {@link Ext.event.Event#rotation}
+     * properties in the `event` object.
+     * @param {Ext.event.Event} event The {@link Ext.event.Event} event encapsulating the DOM event.
+     * @param {HTMLElement} node The target of the event.
+     * @param {Object} options The options object passed to Ext.mixin.Observable.addListener.
+     */
+
+<span id='Ext-dom-Element-event-rotateend'>    /**
+</span>     * @member Ext.dom.Element
+     * @event rotateend
+     * Fires when a rotation event has ended.
+     * @param {Ext.event.Event} event The {@link Ext.event.Event} event encapsulating the DOM event.
+     * @param {HTMLElement} node The target of the event.
+     * @param {Object} options The options object passed to Ext.mixin.Observable.addListener.
+     */
+
+<span id='Ext-event-Event-property-angle'>    /**
+</span>     * @property {Number} angle
+     * The angle of the rotation.
+     *
+     * **This is only available when the event type is `rotate`**
+     * @member Ext.event.Event
+     */
+
+<span id='Ext-event-Event-property-rotation'>    /**
+</span>     * @property {Number} rotation
+     * A amount of rotation, since the start of the event.
+     *
+     * **This is only available when the event type is `rotate`**
+     * @member Ext.event.Event
+     */
+
+    startAngle: 0,
+
+<span id='Ext-event-gesture-Rotate-property-lastTouches'>    lastTouches: null,
+</span>
+<span id='Ext-event-gesture-Rotate-property-lastAngle'>    lastAngle: null,
+</span>
+<span id='Ext-event-gesture-Rotate-method-onTouchMove'>    onTouchMove: function(e) {
+</span>        var me = this,
+            touches, lastAngle, firstPoint, secondPoint, angle, nextAngle, previousAngle,
+            diff;
+
+        if (me.isTracking) {
+            touches = e.touches;
+            lastAngle = me.lastAngle;
+
+            firstPoint = touches[0].point;
+            secondPoint = touches[1].point;
+
+            angle = firstPoint.getAngleTo(secondPoint);
+
+            if (lastAngle !== null) {
+                diff = Math.abs(lastAngle - angle);
+                nextAngle = angle + 360;
+                previousAngle = angle - 360;
+
+                if (Math.abs(nextAngle - lastAngle) &lt; diff) {
+                    angle = nextAngle;
+                } else if (Math.abs(previousAngle - lastAngle) &lt; diff) {
+                    angle = previousAngle;
+                }
+            }
+
+            me.lastAngle = angle;
+
+            if (!me.isStarted) {
+                me.isStarted = true;
+
+                me.startAngle = angle;
+
+                me.fire(&#39;rotatestart&#39;, e, {
+                    touches: touches,
+                    angle: angle,
+                    rotation: 0
+                });
+            } else {
+                me.fire(&#39;rotate&#39;, e, {
+                    touches: touches,
+                    angle: angle,
+                    rotation: angle - me.startAngle
+                });
+            }
+
+            me.lastTouches = Ext.Array.clone(touches);
+        }
+    },
+
+<span id='Ext-event-gesture-Rotate-method-onTouchEnd'>    onTouchEnd: function(e) {
+</span>        if (this.isStarted) {
+            this.fire(&#39;rotateend&#39;, e);
+        }
+
+        return this.callParent([e]);
+    },
+
+<span id='Ext-event-gesture-Rotate-method-onCancel'>    onCancel: function(e) {
+</span>        this.fire(&#39;rotatecancel&#39;, e, null, true);
+    },
+
+<span id='Ext-event-gesture-Rotate-method-reset'>    reset: function() {
+</span>        var me = this;
+
+        me.lastTouches = me.lastAngle = me.startAngle = null;
+
+        return this.callParent();
+    }
+}, function(Rotate) {
+    var gestures = Ext.manifest.gestures;
+    Rotate.instance = new Rotate(gestures &amp;&amp; gestures.rotate);
+});
+</pre>
+</body>
+</html>

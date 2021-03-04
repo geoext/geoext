@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <title>The source code</title>
+  <link href="../resources/prettify/prettify.css" type="text/css" rel="stylesheet" />
+  <script type="text/javascript" src="../resources/prettify/prettify.js"></script>
+  <style type="text/css">
+    .highlight { display: block; background-color: #ddd; }
+  </style>
+  <script type="text/javascript">
+    function highlight() {
+      document.getElementById(location.hash.replace(/#/, "")).className = "highlight";
+    }
+  </script>
+</head>
+<body onload="prettyPrint(); highlight();">
+  <pre class="prettyprint lang-js"><span id='Ext-data-matrix-Matrix'>/**
+</span> * This class manages a many-to-many matrix for a `Session`.
+ * @private
+ */
+Ext.define(&#39;Ext.data.matrix.Matrix&#39;, {
+    requires: [
+        &#39;Ext.data.matrix.Side&#39;
+    ],
+
+<span id='Ext-data-matrix-Matrix-property-association'>    /**
+</span>     * @property {Ext.data.schema.ManyToMany} association
+     * The `ManyToMany` association for this matrix.
+     * @readonly
+     */
+
+<span id='Ext-data-matrix-Matrix-property-session'>    /**
+</span>     * @property {Ext.data.Session} session
+     * The `Session` owning this matrix.
+     * @readonly
+     */
+
+<span id='Ext-data-matrix-Matrix-method-constructor'>    /*
+</span>     *      data: [
+     *          [ leftId, rightId, -1/0/1 ],   // === DELETED/UNMODIFIED/ADDED
+     *          ...
+     *      ],
+     *      
+     *      left: new Ext.data.matrix.Side({
+     *          matrix: me,
+     *          index: 0,
+     *          inverse: right,
+     *          slices: {
+     *              leftId: new Ext.data.matrix.Slice({
+     *                  id: leftId,
+     *                  side: left,
+     *                  members: {
+     *                      rightId: data[0]
+     *                  }
+     *              })
+     *          }
+     *      },
+     *      
+     *      right: new Ext.data.matrix.Side({
+     *          matrix: me,
+     *          index: 1,
+     *          inverse: left,
+     *          slices: {
+     *              rightId: new Ext.data.matrix.Slice({
+     *                  id: rightId,
+     *                  side: right,
+     *                  members: {
+     *                      leftId: data[0]
+     *                  }
+     *              })
+     *          })
+     *      }
+     */
+
+    constructor: function (session, matrix) {
+        var me = this,
+            association = matrix.isManyToMany ? matrix
+                                : session.getSchema().getAssociation(matrix),
+            Side = Ext.data.matrix.Side,
+            left = new Side(me, 0, association.left),
+            right = new Side(me, 1, association.right);
+
+        //&lt;debug&gt;
+        Ext.Assert.truthy(association.isManyToMany, &#39;Association is not many-to-many&#39;);
+        //&lt;/debug&gt;
+
+        me.association = association;
+        me.session = session;
+
+        me.left = left;
+        me.right = right;
+
+        left.inverse = right;
+        right.inverse = left;
+    },
+
+<span id='Ext-data-matrix-Matrix-method-commit'>    commit: function() {
+</span>        this.left.commit();
+        this.right.commit();
+    },
+
+<span id='Ext-data-matrix-Matrix-method-update'>    update: function (id1, id2, state) {
+</span>        return this.left.update(id1, id2, state);
+    },
+
+<span id='Ext-data-matrix-Matrix-method-updateId'>    updateId: function(record, oldId, newId) {
+</span>        var Type = record.self,
+            left = this.left,
+            right = this.right,
+            matchSide;
+
+        // Are we interested in this record? Check types
+        if (Type === left.role.cls) {
+            matchSide = left;
+        }
+
+        if (Type === right.role.cls) {
+            matchSide = right;
+        }
+
+        if (matchSide) {
+            matchSide.updateId(oldId, newId);
+        }
+    },
+
+<span id='Ext-data-matrix-Matrix-method-destroy'>    destroy: function() {
+</span>        var me = this;
+
+        me.left.destroy();
+        me.right.destroy();
+
+        me.association = me.session = me.left = me.right = null;
+        me.callParent();
+    }
+});
+</pre>
+</body>
+</html>

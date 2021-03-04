@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <title>The source code</title>
+  <link href="../resources/prettify/prettify.css" type="text/css" rel="stylesheet" />
+  <script type="text/javascript" src="../resources/prettify/prettify.js"></script>
+  <style type="text/css">
+    .highlight { display: block; background-color: #ddd; }
+  </style>
+  <script type="text/javascript">
+    function highlight() {
+      document.getElementById(location.hash.replace(/#/, "")).className = "highlight";
+    }
+  </script>
+</head>
+<body onload="prettyPrint(); highlight();">
+  <pre class="prettyprint lang-js"><span id='Ext-app-route-Queue'>/**
+</span> * A Queue is a queue of {@link Ext.app.route.Route} instances managed by the
+ * {@link Ext.app.route.Router} singleton if queueActions is set to `true`.
+ * 
+ * A developer shouldn&#39;t need to use this class as {@link Ext.app.route.Router} should
+ * manage this class. When a {@link Ext.app.route.Route} is executed,it will automatically
+ * keep running the queue until the queue is empty.
+ * @private
+ */
+Ext.define(&#39;Ext.app.route.Queue&#39;, {
+<span id='Ext-app-route-Queue-property-queue'>    /**
+</span>     * The {@link Ext.util.MixedCollection} that will hold the queued
+     * {@link Ext.app.route.Route} and recognized arguments.
+     *
+     * @private
+     */
+    queue: null,
+
+<span id='Ext-app-route-Queue-property-token'>    /**
+</span>     * The token from the {@link Ext.app.route.Router} that is being enacted on.
+     */
+    token: null,
+
+<span id='Ext-app-route-Queue-method-constructor'>    constructor : function(config) {
+</span>        Ext.apply(this, config);
+
+        //Create the queue MixedCollection
+        this.queue = new Ext.util.MixedCollection();
+    },
+
+<span id='Ext-app-route-Queue-method-queueAction'>    /**
+</span>     * Add a {@link Ext.app.route.Route} to the queue.
+     *
+     * @param {Ext.app.route.Route} route The route to add to the queue.
+     * @param {Object} args The arguments recognized by the {Ext.app.route.Route}.
+     */
+    queueAction : function (route, args) {
+        this.queue.add({
+            route : route,
+            args  : args
+        });
+    },
+
+<span id='Ext-app-route-Queue-method-clearQueue'>    /**
+</span>     * Clear all queued actions.
+     */
+    clearQueue : function() {
+        this.queue.removeAll();
+    },
+
+<span id='Ext-app-route-Queue-method-runQueue'>    /**
+</span>     * Run the queue one by one.
+     */
+    runQueue : function() {
+        var queue  = this.queue,
+            action = queue.removeAt(0),
+            route;
+
+        if (action) {
+            route = action &amp;&amp; action.route;
+
+            route.execute(this.token, action.args, this.onActionExecute, this);
+        }
+    },
+
+<span id='Ext-app-route-Queue-method-onActionExecute'>    /**
+</span>     * Handle the execution of a queued action and optionally clear all queued actions.
+     *
+     * @param {Boolean} clearQueue If `true` was returned, will clear all queued actions.
+     */
+    onActionExecute : function(clearQueue) {
+        if (clearQueue) {
+            //clear all queued actions
+            this.clearQueue();
+        } else {
+            //continue with queue execution
+            this.runQueue();
+        }
+    }
+});
+</pre>
+</body>
+</html>

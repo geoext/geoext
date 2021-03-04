@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <title>The source code</title>
+  <link href="../resources/prettify/prettify.css" type="text/css" rel="stylesheet" />
+  <script type="text/javascript" src="../resources/prettify/prettify.js"></script>
+  <style type="text/css">
+    .highlight { display: block; background-color: #ddd; }
+  </style>
+  <script type="text/javascript">
+    function highlight() {
+      document.getElementById(location.hash.replace(/#/, "")).className = "highlight";
+    }
+  </script>
+</head>
+<body onload="prettyPrint(); highlight();">
+  <pre class="prettyprint lang-js"><span id='Ext-sparkline-CanvasBase'>/**
+</span> * @class Ext.sparkline.CanvasBase
+ * @private
+ */
+Ext.define(&#39;Ext.sparkline.CanvasBase&#39;, {
+    requires: [
+        &#39;Ext.sparkline.Shape&#39;
+    ],
+
+<span id='Ext-sparkline-CanvasBase-property-shapeCount'>    shapeCount: 0,
+</span>
+<span id='Ext-sparkline-CanvasBase-property-_pxregex'>    _pxregex: /(\d+)(px)?\s*$/i,
+</span>
+<span id='Ext-sparkline-CanvasBase-method-constructor'>    constructor: function(ownerSparkLine) {
+</span>        this.owner = ownerSparkLine;
+        this.rtl = this.owner.getInherited().rtl;
+    },
+
+<span id='Ext-sparkline-CanvasBase-method-setWidth'>    setWidth: function(width) {
+</span>        this.pixelWidth = width;
+    },
+
+<span id='Ext-sparkline-CanvasBase-method-setHeight'>    setHeight: function(height) {
+</span>        this.pixelHeight = height;
+    },
+
+<span id='Ext-sparkline-CanvasBase-method-drawLine'>    drawLine: function (x1, y1, x2, y2, lineColor, lineWidth) {
+</span>        return this.drawShape([[x1, y1], [x2, y2]], lineColor, lineWidth);
+    },
+
+<span id='Ext-sparkline-CanvasBase-method-drawShape'>    drawShape: function (path, lineColor, fillColor, lineWidth) {
+</span>        return this._genShape(&#39;Shape&#39;, [path, lineColor, fillColor, lineWidth]);
+    },
+
+<span id='Ext-sparkline-CanvasBase-method-drawCircle'>    drawCircle: function (x, y, radius, lineColor, fillColor, lineWidth) {
+</span>        return this._genShape(&#39;Circle&#39;, [x, y, radius, lineColor, fillColor, lineWidth]);
+    },
+
+<span id='Ext-sparkline-CanvasBase-method-drawPieSlice'>    drawPieSlice: function (x, y, radius, startAngle, endAngle, lineColor, fillColor) {
+</span>        return this._genShape(&#39;PieSlice&#39;, [x, y, radius, startAngle, endAngle, lineColor, fillColor]);
+    },
+
+<span id='Ext-sparkline-CanvasBase-method-drawRect'>    drawRect: function (x, y, width, height, lineColor, fillColor) {
+</span>        return this._genShape(&#39;Rect&#39;, [x, y, width, height, lineColor, fillColor]);
+    },
+
+<span id='Ext-sparkline-CanvasBase-method-getElement'>    getElement: function () {
+</span>        return this.el;
+    },
+
+<span id='Ext-sparkline-CanvasBase-method-getLastShapeId'>    /*
+</span>     * Return the most recently inserted shape id
+     */
+    getLastShapeId: function () {
+        return this.lastShapeId;
+    },
+
+<span id='Ext-sparkline-CanvasBase-method-reset'>    /*
+</span>     * Clear and reset the canvas
+     */
+    reset: function () {
+        //&lt;debug&gt;
+        Ext.raise(&#39;reset not implemented&#39;);
+        //&lt;/debug&gt;
+    },
+
+<span id='Ext-sparkline-CanvasBase-method-_genShape'>    /*
+</span>     * Generate a shape object and id for later rendering
+     */
+    _genShape: function (shapetype, shapeargs) {
+        var id = this.shapeCount++;
+        shapeargs.unshift(id);
+        return new Ext.sparkline.Shape(this, id, shapetype, shapeargs);
+    },
+
+<span id='Ext-sparkline-CanvasBase-method-appendShape'>    /*
+</span>     * Add a shape to the end of the render queue
+     */
+    appendShape: function (shape) {
+        //&lt;debug&gt;
+        Ext.raise(&#39;appendShape not implemented&#39;);
+        //&lt;/debug&gt;
+    },
+
+<span id='Ext-sparkline-CanvasBase-method-replaceWithShape'>    /*
+</span>     * Replace one shape with another
+     */
+    replaceWithShape: function (shapeid, shape) {
+        //&lt;debug&gt;
+        Ext.raise(&#39;replaceWithShape not implemented&#39;);
+        //&lt;/debug&gt;
+    },
+
+<span id='Ext-sparkline-CanvasBase-method-insertAfterShape'>    /*
+</span>     * Insert one shape after another in the render queue
+     */
+    insertAfterShape: function (shapeid, shape) {
+        //&lt;debug&gt;
+        Ext.raise(&#39;insertAfterShape not implemented&#39;);
+        //&lt;/debug&gt;
+    },
+
+<span id='Ext-sparkline-CanvasBase-method-removeShapeId'>    /*
+</span>     * Remove a shape from the queue
+     */
+    removeShapeId: function (shapeid) {
+        //&lt;debug&gt;
+        Ext.raise(&#39;removeShapeId not implemented&#39;);
+        //&lt;/debug&gt;
+    },
+
+<span id='Ext-sparkline-CanvasBase-method-getShapeAt'>    /*
+</span>     * Find a shape at the specified x/y co-ordinates
+     */
+    getShapeAt: function (x, y) {
+        //&lt;debug&gt;
+        Ext.raise(&#39;getShapeAt not implemented&#39;);
+        //&lt;/debug&gt;
+    },
+
+<span id='Ext-sparkline-CanvasBase-method-render'>    /*
+</span>     * Render all queued shapes onto the canvas
+     */
+    render: function () {
+        //&lt;debug&gt;
+        Ext.raise(&#39;render not implemented&#39;);
+        //&lt;/debug&gt;
+    }
+});
+</pre>
+</body>
+</html>

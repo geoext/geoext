@@ -1,0 +1,498 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <title>The source code</title>
+  <link href="../resources/prettify/prettify.css" type="text/css" rel="stylesheet" />
+  <script type="text/javascript" src="../resources/prettify/prettify.js"></script>
+  <style type="text/css">
+    .highlight { display: block; background-color: #ddd; }
+  </style>
+  <script type="text/javascript">
+    function highlight() {
+      document.getElementById(location.hash.replace(/#/, "")).className = "highlight";
+    }
+  </script>
+</head>
+<body onload="prettyPrint(); highlight();">
+  <pre class="prettyprint lang-js"><span id='Ext-dom-TouchAction'>/**
+</span> * Processes the touch-action css property for an Ext.dom.Element, and provides
+ * compatible behavior on devices that do not support pointer events.
+ * @private
+ */
+Ext.define(&#39;Ext.dom.TouchAction&#39;, {
+    singleton: true,
+    requires: [
+        &#39;Ext.dom.Element&#39;,
+        &#39;Ext.util.Point&#39;
+    ],
+
+<span id='Ext-dom-TouchAction-property-lastTouchStartTime'>    lastTouchStartTime: 0,
+</span>
+<span id='Ext-dom-TouchAction-property-minMoveDistance'>    /**
+</span>     * @property
+     * The minimum distance a touch must move before being cancelled (only applicable
+     * on browsers that use touch events).  Allows the direction of movement to be detected
+     * so that panX and panY can be separately cancelled.
+     * @private
+     */
+    minMoveDistance: 8,
+
+<span id='Ext-dom-TouchAction-property-spaceRe'>    spaceRe: /\s+/,
+</span>
+<span id='Ext-dom-TouchAction-property-preventSingle'>    preventSingle: null,
+</span><span id='Ext-dom-TouchAction-property-preventMulti'>    preventMulti: null,
+</span><span id='Ext-dom-TouchAction-property-disabledOverflowDom'>    disabledOverflowDom: null,
+</span>
+<span id='Ext-dom-TouchAction-property-panXCls'>    panXCls: Ext.baseCSSPrefix + &#39;touch-action-pan-x&#39;,
+</span><span id='Ext-dom-TouchAction-property-panYCls'>    panYCls: Ext.baseCSSPrefix + &#39;touch-action-pan-y&#39;,
+</span>
+<span id='Ext-dom-TouchAction-property-cssValues'>    cssValues: [
+</span>        &#39;none&#39;,
+        &#39;pan-x&#39;,
+        &#39;pan-y&#39;,
+        &#39;pan-x pan-y&#39;,
+        &#39;pinch-zoom&#39;,
+        &#39;pan-x pinch-zoom&#39;,
+        &#39;pan-y pinch-zoom&#39;,
+        &#39;manipulation&#39;,
+        &#39;double-tap-zoom&#39;,
+        &#39;pan-x double-tap-zoom&#39;,
+        &#39;pan-y double-tap-zoom&#39;,
+        &#39;pan-x pan-y double-tap-zoom&#39;,
+        &#39;pinch-zoom double-tap-zoom&#39;,
+        &#39;pan-x pinch-zoom double-tap-zoom&#39;,
+        &#39;pan-y pinch-zoom double-tap-zoom&#39;,
+        &#39;&#39;
+    ],
+
+<span id='Ext-dom-TouchAction-property-objectValues'>    objectValues: [
+</span>        { panX: false, panY: false, pinchZoom: false, doubleTapZoom: false },
+        { panX: true, panY: false, pinchZoom: false, doubleTapZoom: false },
+        { panX: false, panY: true, pinchZoom: false, doubleTapZoom: false },
+        { panX: true, panY: true, pinchZoom: false, doubleTapZoom: false },
+        { panX: false, panY: false, pinchZoom: true, doubleTapZoom: false },
+        { panX: true, panY: false, pinchZoom: true, doubleTapZoom: false },
+        { panX: false, panY: true, pinchZoom: true, doubleTapZoom: false },
+        { panX: true, panY: true, pinchZoom: true, doubleTapZoom: false },
+        { panX: false, panY: false, pinchZoom: false, doubleTapZoom: true },
+        { panX: true, panY: false, pinchZoom: false, doubleTapZoom: true },
+        { panX: false, panY: true, pinchZoom: false, doubleTapZoom: true },
+        { panX: true, panY: true, pinchZoom: false, doubleTapZoom: true },
+        { panX: false, panY: false, pinchZoom: true, doubleTapZoom: true },
+        { panX: true, panY: false, pinchZoom: true, doubleTapZoom: true },
+        { panX: false, panY: true, pinchZoom: true, doubleTapZoom: true },
+        { panX: true, panY: true, pinchZoom: true, doubleTapZoom: true }
+    ],
+
+<span id='Ext-dom-TouchAction-property-attributeName'>    attributeName: &#39;data-extTouchAction&#39;,
+</span>
+<span id='Ext-dom-TouchAction-method-constructor'>    constructor: function() {
+</span>        var me = this,
+            supports = Ext.supports;
+
+        if (supports.PointerEvents) {
+            me.cssProp = &#39;touch-action&#39;;
+        } else if (supports.MSPointerEvents) {
+            me.cssProp = &#39;-ms-touch-action&#39;;
+        } else if (supports.TouchEvents) {
+            Ext.getWin().on({
+                touchstart: &#39;onTouchStart&#39;,
+                touchmove: &#39;onTouchMove&#39;,
+                touchend: &#39;onTouchEnd&#39;,
+                scope: me,
+                translate: false,
+                capture: true,
+                priority: 5000
+            });
+
+            Ext.on({
+                scroll: &#39;onScroll&#39;,
+                scope: me,
+                destroyable: true
+            });
+        }
+
+        //&lt;debug&gt;
+        if (Ext.isFunction(Object.freeze)) {
+            var objectValues = me.objectValues;
+            for (var i = 0, ln = objectValues.length; i &lt; ln; i++) {
+                Object.freeze(objectValues[i]);
+            }
+        }
+        //&lt;/debug&gt;
+
+    },
+
+<span id='Ext-dom-TouchAction-method-containsTargets'>    /**
+</span>     * Returns true if all of the event&#39;s targets are contained within the element
+     * @param {HTMLElement} dom
+     * @param {Ext.event.Event} e
+     * @private
+     * @return {Boolean}
+     */
+    containsTargets: function(dom, e) {
+        var contains = true,
+            touches = e.type === &#39;touchend&#39; ? e.changedTouches : e.touches,
+            i, ln;
+
+        for (i = 0, ln = touches.length; i &lt; ln; i++) {
+            if (!dom.contains(touches[i].target)) {
+                contains = false;
+                break;
+            }
+        }
+
+        return contains;
+    },
+
+<span id='Ext-dom-TouchAction-method-disableOverflow'>    /**
+</span>     * Forces overflow to &#39;hidden&#39; on the x or y axis starting with the &quot;el&quot; and ascending
+     * upward to all ancestors that have overflow &#39;auto&#39; or &#39;scroll&#39; on the given axis.
+     * The added classes will remain in place until the end of the current gesture (when
+     * the final touchend event is received) at which point they will be removed by invoking
+     * {@link #resetOverflow}.
+     *
+     * This is invoked at the beginning of a gesture when we make the initial determination
+     * that we are disabling scrolling on one of the axes (because touch-action contains
+     * pan-x or pan-y in the value, but not both).  Dynamically manipulating the overflow
+     * in this way vs just adding a static class ensures that the non-touch-scrolling axis
+     * can still be scrolled using the mouse.
+     *
+     * We only do this on browsers that do not have space-consuming scrollbars (e.g. on
+     * android, but not on chrome desktop) to avoid a situation where scrollbars disappear
+     * during the gesture and re-appear afterwards.
+     *
+     * We also skip this on iOS because of the following bugs in safari (already filed with apple):
+     * 1. Dynamically setting scroll position to hidden on either axis resets visual scroll
+     * position to 0:
+     * https://gist.github.com/pguerrant/105e8d91e3ffcb1b6e2eed7ecc0571d3
+     * 2. Scrolling an element that has overflow set to hidden on either axis causes scroll
+     * position to be reset to 0 on the hidden axis:
+     * https://gist.github.com/pguerrant/e959c47a6b1d4b841cc3267a61950f33
+     *
+     * The downside is that on iOS, and on desktop-touch hybrid browsers such as chrome once
+     * the user initiates scrolling in an allowed direction, it cannot be disabled in the
+     * disallowed direction, This trade-off seems better than the alternatives -
+     * vanishing/reappearing scrollbars on desktop, and scroll positions resetting to 0 on iOS.
+     *
+     * @param {HTMLElement} dom
+     * @param {Boolean} [vertical=false] `true` to disable scrolling on the y axis, `false`
+     * to disable scrolling on the x axis
+     *
+     * @private
+     */
+    disableOverflow: function(dom, vertical) {
+        var me = this,
+            overflowName = vertical ? &#39;overflow-y&#39; : &#39;overflow-x&#39;,
+            overflowStyle, cls;
+
+        if (!me.disabledOverflowDom &amp;&amp; !Ext.isiOS &amp;&amp; !Ext.getScrollbarSize().width) {
+            me.disabledOverflowDom = dom;
+            cls = vertical ? me.panXCls : me.panYCls;
+
+            while (dom) {
+                overflowStyle = Ext.fly(dom).getStyle(overflowName);
+
+                if (overflowStyle === &#39;auto&#39; || overflowStyle === &#39;scroll&#39;) {
+                    Ext.fly(dom).addCls(cls);
+                }
+
+                dom = dom.parentNode;
+            }
+        }
+    },
+
+<span id='Ext-dom-TouchAction-method-get'>    /**
+</span>     * Returns the touch action for the passed HTMLElement
+     * @param {HTMLElement} dom
+     * @return {Object}
+     */
+    get: function(dom) {
+        var flags = dom.getAttribute(this.attributeName),
+            ret = null;
+
+        if (flags != null) {
+            ret = this.objectValues[flags];
+        }
+
+        return ret;
+    },
+
+<span id='Ext-dom-TouchAction-method-getFlags'>    /**
+</span>     * @private Accepts a touch action in the object form accepted by
+     * {@link Ext.Component}, and converts it to a number representing the desired touch action(s).
+     *
+     * All touchActions absent from the passed object are defaulted to true.
+     *
+     * @param {Object} touchAction
+     * @returns {Number} A number representing the touch action using the following mapping:
+     *
+     *     panX            1  &quot;00000001&quot;
+     *     panY            2  &quot;00000010&quot;
+     *     pinchZoom       4  &quot;00000100&quot;
+     *     doubleTapZoom   8  &quot;00001000&quot;
+     *
+     * 0 represents a css value of &quot;none&quot; and all bits on is the same as &quot;auto&quot;
+     * @private
+     */
+    getFlags: function(touchAction) {
+        var flags;
+
+        if (typeof touchAction === &#39;number&#39;) {
+            flags = touchAction;
+        } else {
+            flags = 0;
+
+            if (touchAction.panX !== false) {
+                flags |= 1;
+            }
+
+            if (touchAction.panY !== false) {
+                flags |= 2;
+            }
+
+            if (touchAction.pinchZoom !== false) {
+                flags |= 4;
+            }
+
+            if (touchAction.doubleTapZoom !== false) {
+                flags |= 8;
+            }
+        }
+
+        return flags;
+    },
+
+<span id='Ext-dom-TouchAction-method-lookupFlags'>    lookupFlags: function(dom) {
+</span>        return dom.getAttribute &amp;&amp; dom.getAttribute(this.attributeName);
+    },
+
+<span id='Ext-dom-TouchAction-method-onScroll'>    onScroll: function() {
+</span>        // This flag tracks whether or not a scroll has occurred since the last touchstart event
+        this.scrollOccurred = true;
+
+        // once scrolling begins we cannot attempt to preventDefault on the touchend event
+        // or chrome will issue warnings in the console.
+        this.isDoubleTap = false;
+    },
+
+<span id='Ext-dom-TouchAction-method-onTouchEnd'>    onTouchEnd: function(e) {
+</span>        var me = this,
+            dom = e.target,
+            touchCount, flags, doubleTapZoom;
+
+        touchCount = e.touches.length;
+
+        if (touchCount === 0) {
+            if (me.isDoubleTap) {
+                while (dom) {
+                    flags = me.lookupFlags(dom);
+
+                    if (flags != null) {
+                        doubleTapZoom = flags &amp; 8;
+
+                        if (!doubleTapZoom) {
+                            e.preventDefault();
+                        }
+                    }
+
+                    dom = dom.parentNode;
+                }
+            }
+
+            me.isDoubleTap = false;
+            me.preventSingle = null;
+            me.preventMulti = null;
+            me.resetOverflow();
+        }
+    },
+
+<span id='Ext-dom-TouchAction-method-onTouchMove'>    onTouchMove: function(e) {
+</span>        var me = this,
+            prevent = null,
+            dom = e.target,
+            flags, touchCount, panX, panY, point, startPoint,
+            scale, distance, deltaX, deltaY, preventSingle, preventMulti;
+
+        preventSingle = me.preventSingle;
+        preventMulti = me.preventMulti;
+
+        touchCount = e.touches.length;
+
+        // Don&#39;t check for touchCount here when checking for preventMulti.
+        // This ensures that if we determined not to cancel the multi-touch gesture
+        // previously we will not attempt to start canceling once touch count is
+        // reduced to one (If we do attempt to start canceling at that point chrome
+        // will issue warnings in the console because scrolling has already started).
+        if ((touchCount === 1 &amp;&amp; (preventSingle === false)) || (preventMulti === false)) {
+            return;
+        }
+
+        if ((touchCount &gt; 1 &amp;&amp; (preventMulti === true)) ||
+            (touchCount === 1 &amp;&amp; (preventSingle === true)))
+        {
+            prevent = true;
+        } else {
+            while (dom) {
+                flags = me.lookupFlags(dom);
+
+                if (flags != null) {
+                    if (!flags) { // 0/none
+                        prevent = true;
+                    } else if (touchCount === 1) {
+                        panX = !!(flags &amp; 1);
+                        panY = !!(flags &amp; 2);
+
+                        if (panX &amp;&amp; panY) {
+                            prevent = false;
+                        } else if (!panX &amp;&amp; !panY) {
+                            prevent = true;
+                        } else {
+                            point = e.getPoint();
+                            startPoint = me.startPoint;
+                            scale = Ext.Element.getViewportScale();
+                            // account for scale so that move distance is actual screen pixels, not page pixels
+                            distance = Math.abs(point.getDistanceTo(me.startPoint) * scale);
+
+                            if (distance &gt;= me.minMoveDistance) {
+                                deltaX = Math.abs(point.x - startPoint.x);
+                                deltaY = Math.abs(point.y - startPoint.y);
+
+                                prevent = !!((panX &amp;&amp; (deltaY &gt; deltaX)) || (panY &amp;&amp; (deltaX &gt; deltaY)));
+                            }
+                        }
+                    } else if (me.containsTargets(dom, e)) { // multi-touch, all targets contained
+                        prevent = !(flags &amp; 4);
+                    } else { // multi-touch and not all targets contained within element
+                        prevent = false;
+                    }
+
+                    if (prevent) {
+                        break;
+                    }
+                }
+
+                dom = dom.parentNode;
+            }
+        }
+
+        // In chrome preventing a touchmove event does not prevent the defualt
+        // action such as scrolling from taking place on subsequent touchmove
+        // events.  Setting these flags tells us to prevent the touchmove event
+        // for the remainder of the gesture.
+        // explicitly setting these flags to false means do not prevent this gesture
+        // going forward. This prevents chrome from complaining because we
+        // called preventDefault() after scrolling has already started
+        if (touchCount === 1) {
+            me.preventSingle = prevent;
+        } else if (touchCount &gt; 1) {
+            me.preventMulti  = prevent;
+        }
+
+        if (prevent) {
+            e.preventDefault();
+        }
+    },
+
+<span id='Ext-dom-TouchAction-method-onTouchStart'>    onTouchStart: function(e) {
+</span>        var me = this,
+            time, flags, dom, panX, panY;
+
+        if (e.touches.length === 1) {
+            time = e.time;
+
+            // Use a time of 500ms between touchstart events to detecting a double tap that
+            // might possibly cause the screen to zoom.  Although in reality this is usually
+            // 300ms iOS can sometimes take a bit longer so 500 seems safe.
+            // Can&#39;t be a double tap if a scroll occurred in between this touch and the previous
+            // one.
+            if (!me.scrollOccurred &amp;&amp; ((time - me.lastTouchStartTime) &lt;= 500)) {
+                me.isDoubleTap = true;
+            }
+
+            me.lastTouchStartTime = time;
+            me.scrollOccurred = false;
+            me.startPoint = e.getPoint();
+
+            dom = e.target;
+
+            while (dom) {
+                flags = me.lookupFlags(dom);
+
+                if (flags != null) {
+                    panX = !!(flags &amp; 1);
+                    panY = !!(flags &amp; 2);
+
+                    if (panX !== panY) {
+                        me.disableOverflow(dom, panX);
+                        break;
+                    }
+                }
+
+                dom = dom.parentNode;
+            }
+        } else {
+            // multi touch is never a double tap
+            me.isDoubleTap = false;
+        }
+    },
+
+<span id='Ext-dom-TouchAction-method-resetOverflow'>    /**
+</span>     * Removes any classes that were added using {@link #disableOverflow}
+     */
+    resetOverflow: function() {
+        var me = this,
+            dom = me.disabledOverflowDom;
+
+        while (dom) {
+            Ext.fly(dom).removeCls([me.panXCls, me.panYCls]);
+            dom = dom.parentNode;
+        }
+
+        me.disabledOverflowDom = null;
+    },
+
+<span id='Ext-dom-TouchAction-method-set'>    /**
+</span>     * Sets the touch action value for an element
+     * @param {HTMLElement} dom The dom element
+     * @param {Object/Number} value The touch action as an object with touch action names
+     * as keys and boolean values, or as a bit flag (see {@link #getFlags})
+     *
+     * For example the following two calls are equivalent:
+     *
+     *     Ext.dom.TouchAction.set(domElement, {
+     *         panX: false,
+     *         pinchZoom: false
+     *     });
+     *
+     *     Ext.dom.TouchAction.set(domElement, 5);
+     *
+     * valid touch action names are:
+     *
+     * - `&#39;panX&#39;`
+     * - `&#39;panY&#39;`
+     * - `&#39;pinchZoom&#39;`
+     * - `&#39;doubleTapZoom&#39;`
+     *
+     * @private
+     */
+    set: function(dom, value) {
+        var me = this,
+            cssProp = me.cssProp,
+            flags = me.getFlags(value),
+            attributeName = me.attributeName;
+
+        if (cssProp) {
+            Ext.fly(dom).setStyle(cssProp, me.cssValues[flags]);
+        }
+
+        if (flags === 15) {
+            dom.removeAttribute(attributeName);
+        } else {
+            dom.setAttribute(attributeName, flags);
+        }
+    }
+});</pre>
+</body>
+</html>
