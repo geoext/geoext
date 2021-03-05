@@ -20,3 +20,4 @@ cache:
     - __download
     - __install
     - node_modules
+    - resources/external
