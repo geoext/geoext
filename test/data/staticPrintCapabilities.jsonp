@@ -1,0 +1,106 @@
+Ext.data.JsonP.staticCallbackNameDuringTests({
+    "app": "geoext",
+    "layouts": [{
+        "name": "A4 portrait",
+        "attributes": [{
+            "name": "map",
+            "name": "map",
+            "type": "MapAttributeValues",
+            "clientParams": {
+                "layers": {
+                    "type": "array"
+                },
+                "dpi": {
+                    "type": "double"
+                },
+                "areaOfInterest": {
+                    "type": "AreaOfInterest",
+                    "embeddedType": {
+                        "area": {
+                            "type": "String"
+                        },
+                        "display": {
+                            "type": "AoiDisplay",
+                            "embeddedType": {},
+                            "default": "RENDER"
+                        },
+                        "style": {
+                            "type": "String",
+                            "default": null
+                        },
+                        "renderAsSvg": {
+                            "type": "boolean",
+                            "default": null
+                        }
+                    }
+                },
+                "bbox": {
+                    "type": "double",
+                    "isArray": true
+                },
+                "center": {
+                    "type": "double",
+                    "isArray": true
+                },
+                "longitudeFirst": {
+                    "type": "boolean",
+                    "default": null
+                },
+                "projection": {
+                    "type": "String",
+                    "default": null
+                },
+                "useNearestScale": {
+                    "type": "boolean",
+                    "default": null
+                },
+                "dpiSensitiveStyle": {
+                    "type": "boolean",
+                    "default": true
+                },
+                "scale": {
+                    "type": "double",
+                    "default": null
+                },
+                "zoomToFeatures": {
+                    "type": "ZoomToFeatures",
+                    "embeddedType": {
+                        "minScale": {
+                            "type": "double",
+                            "default": null
+                        },
+                        "zoomType": {
+                            "type": "ZoomType",
+                            "embeddedType": {},
+                            "default": "EXTENT"
+                        },
+                        "layer": {
+                            "type": "String",
+                            "default": null
+                        },
+                        "minMargin": {
+                            "type": "int",
+                            "default": 10
+                        }
+                    },
+                    "default": null
+                },
+                "useAdjustBounds": {
+                    "type": "boolean",
+                    "default": null
+                },
+                "rotation": {
+                    "type": "double",
+                    "default": null
+                }
+            },
+            "clientInfo": {
+                "dpiSuggestions": [72, 120, 200, 254, 300],
+                "maxDPI": 400,
+                "width": 780,
+                "height": 330
+            }
+        }]
+    }],
+    "formats": ["bmp", "gif", "pdf", "png", "tif", "tiff"]
+});
