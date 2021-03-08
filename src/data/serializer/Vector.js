@@ -459,7 +459,7 @@ Ext.define('GeoExt.data.serializer.Vector', {
             var offsetX = textStyle.getOffsetX();
             var offsetY = textStyle.getOffsetY();
             if (offsetX) {
-                symbolizer.labelXOffet = offsetX;
+                symbolizer.labelXOffset = offsetX;
             }
             if (offsetY) {
                 symbolizer.labelYOffset = -offsetY;
