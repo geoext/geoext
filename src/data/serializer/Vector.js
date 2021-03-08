@@ -456,6 +456,15 @@ Ext.define('GeoExt.data.serializer.Vector', {
                 symbolizer.labelRotation = strRotationDeg;
             }
 
+            var offsetX = textStyle.getOffsetX();
+            var offsetY = textStyle.getOffsetY();
+            if (offsetX) {
+                symbolizer.labelXOffet = offsetX;
+            }
+            if (offsetY) {
+                symbolizer.labelYOffset = -offsetY;
+            }
+
             var fontStyle = textStyle.getFont();
             if (Ext.isDefined(fontStyle)) {
                 var font = fontStyle.split(' ');
