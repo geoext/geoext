@@ -60,7 +60,7 @@ module.exports = function(config) {
         // test results reporter to use
         // possible values: 'dots', 'progress'
         // available reporters: https://npmjs.org/browse/keyword/karma-reporter
-        reporters: ['dots', 'coverage'],
+        reporters: ['dots', 'coverage', 'summary'],
 
         // extra config for coverage reporter
         coverageReporter: {
@@ -69,6 +69,17 @@ module.exports = function(config) {
                 {type: 'html', subdir: '.'},
                 {type: 'lcovonly', subdir: '.', file: 'lcov.info'}
             ]
+        },
+
+        summaryReporter: {
+            // 'failed', 'skipped' or 'all'
+            show: 'failed',
+            // Limit the spec label to this length
+            specLength: 50,
+            // Show an 'all' column as a summary
+            overviewColumn: true,
+            // Show a list of test clients, 'always', 'never' or 'ifneeded'
+            browserList: 'always'
         },
 
         // web server port
