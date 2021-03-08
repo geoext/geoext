@@ -4,15 +4,28 @@ Ext.Loader.syncRequire([
     'GeoExt.data.serializer.ImageWMS'
 ]);
 
-// This URL to a hosted print servlet is used below, it should be reachable and
-// produce a valid capabilities document. Sometimes tests fail, when that server
-// is not responding as expected… We cannot simply replace it with a local copy
-// served from the test/data directory, as we ask for JSONP, like so:
-//
-//    URL?jsonp=Ext.data.JsonP.callback1
-//
-var externalUrl = 'https://apps.terrestris.de/print-servlet-3.1.2' +
-    '/print/geoext/capabilities.json';
+// Use a local resource from the test/data folder to be offline testable
+var dataPath = (typeof __karma__ === 'undefined' ? '' : 'base/test/');
+var jsonpCapabilitiesUrl = dataPath + 'data/staticPrintCapabilities.jsonp';
+
+// Mock Ext.data.JsonP.request to always use a predefined callbackName,
+// which matches the static name of the callback in the local resource
+var originalRequestMethod;
+before(function() {
+    originalRequestMethod = Ext.data.JsonP.request;
+    Ext.data.JsonP.request = function(options) {
+        var opts = Ext.apply(options, {
+            callbackName: 'staticCallbackNameDuringTests'
+        });
+        // call original method
+        return originalRequestMethod.apply(this, [opts]);
+    };
+});
+after(function() {
+    if (originalRequestMethod) {
+        Ext.data.JsonP.request = originalRequestMethod;
+    }
+});
 
 describe('GeoExt.data.MapfishPrintProvider', function() {
 
@@ -467,7 +480,7 @@ describe('GeoExt.data.MapfishPrintProvider', function() {
         describe('layouts', function() {
             it('creates a store for layouts', function(done) {
                 var provider = Ext.create('GeoExt.data.MapfishPrintProvider', {
-                    url: externalUrl,
+                    url: jsonpCapabilitiesUrl,
                     listeners: {
                         ready: function() {
                             var layoutStore = provider.capabilityRec.layouts();
@@ -486,7 +499,7 @@ describe('GeoExt.data.MapfishPrintProvider', function() {
         describe('formats', function() {
             it('creates a store for formats', function(done) {
                 Ext.create('GeoExt.data.MapfishPrintProvider', {
-                    url: externalUrl,
+                    url: jsonpCapabilitiesUrl,
                     listeners: {
                         ready: function() {
                             var formats = this.capabilityRec.get('formats');
@@ -504,7 +517,7 @@ describe('GeoExt.data.MapfishPrintProvider', function() {
         describe('attributes', function() {
             it('creates a store for attributes', function(done) {
                 Ext.create('GeoExt.data.MapfishPrintProvider', {
-                    url: externalUrl,
+                    url: jsonpCapabilitiesUrl,
                     listeners: {
                         ready: function() {
                             var layoutStore = this.capabilityRec.layouts();
