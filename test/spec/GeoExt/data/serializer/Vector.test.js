@@ -320,7 +320,9 @@ describe('GeoExt.data.serializer.Vector', function() {
                     fontWeight: 'normal',
                     fontSize: '16px',
                     fontFamily: '"sans serif"',
-                    label: 'Ngeo'
+                    label: 'Ngeo',
+                    labelXOffset: 42,
+                    labelYOffset: 42
                 }]
             };
 
