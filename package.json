@@ -54,7 +54,6 @@
     "generate:docs-w-ext": "rimraf docs-w-ext/ && jsduck --config jsduck-w-ext.json",
     "release": "npm run build && np --no-yarn --contents dist && git push https://github.com/geoext/geoext3.git master --tags"
   },
-  "dependencies": {},
   "devDependencies": {
     "browser-sync": "2.26.14",
     "copyfiles": "2.4.1",
@@ -63,7 +62,7 @@
     "eslint-config-openlayers": "7.0.0",
     "expect.js": "0.3.1",
     "global-tunnel-ng": "2.7.1",
-    "karma": "6.1.1",
+    "karma": "6.2.0",
     "karma-chrome-launcher": "3.1.0",
     "karma-coverage": "2.0.3",
     "karma-eslint": "2.2.0",
@@ -74,7 +73,7 @@
     "karma-summary-reporter": "^2.0.0",
     "log-update": "4.0.0",
     "mkdirp": "1.0.4",
-    "mocha": "8.3.0",
+    "mocha": "8.3.1",
     "np": "7.4.0",
     "openlayers": "4.6.5",
     "rimraf": "3.0.2",
