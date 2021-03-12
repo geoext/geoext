@@ -22,10 +22,18 @@ jobs:
     - name: Cache Node.js modules 💾
       uses: actions/cache@v2
       with:
-        path: |
-          ~/.npm
-          resources/external
+        path: node_modules
         key: ${{ runner.OS }}-node-${{ hashFiles('**/package-lock.json') }}
+        restore-keys: |
+          ${{ runner.OS }}-node-
+          ${{ runner.OS }}-
+
+    - name: Cache ext 💾
+      uses: actions/cache@v2
+      with:
+        path: |
+          resources/external
+        key: ${{ runner.OS }}-node-${{ hashFiles('resources/external/ext-all.js') }}
         restore-keys: |
           ${{ runner.OS }}-node-
           ${{ runner.OS }}-
