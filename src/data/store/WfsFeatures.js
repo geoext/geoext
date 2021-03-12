@@ -352,14 +352,14 @@ Ext.define('GeoExt.data.store.WfsFeatures', {
             url: url,
             method: me.requestMethod,
             params: params,
-            success: function (resp) {
+            success: function(resp) {
                 // set number of total features (needed for paging)
                 me.cachedTotalCount = me.getTotalFeatureCount(resp);
                 if (!skipLoad) {
                     me.loadWfs();
                 }
             },
-            failure: function (resp) {
+            failure: function(resp) {
                 Ext.Logger.warn('Error while requesting features from WFS: ' +
                     resp.responseText + ' Status: ' + resp.status);
             }
