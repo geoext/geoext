@@ -1,0 +1,50 @@
+name: Test successful build of GeoExt
+
+on: pull_request
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        node-version: [10.x, 12.x, 14.x]
+
+    steps:
+    - name: Checkout sources
+      uses: actions/checkout@v2
+
+    - name: Use Node.js ${{ matrix.node-version }}
+      uses: actions/setup-node@v1
+      with:
+        node-version: ${{ matrix.node-version }}
+
+    - name: Cache Node.js modules 💾
+      uses: actions/cache@v2
+      with:
+        path: node_modules
+        key: ${{ runner.OS }}-node-${{ hashFiles('**/package-lock.json') }}
+        restore-keys: |
+          ${{ runner.OS }}-node-
+          ${{ runner.OS }}-
+
+    - name: Cache ext 💾
+      uses: actions/cache@v2
+      with:
+        path: |
+          resources/external
+        key: ${{ runner.OS }}-node-${{ hashFiles('resources/external/ext-all.js') }}
+        restore-keys: |
+          ${{ runner.OS }}-node-
+          ${{ runner.OS }}-
+
+    - name: Install dependencies ⏬
+      run: npm install
+
+    - name: Generate coverage 🧪
+      run: npm run test:coverage
+
+    - name: Publish to coveralls ⭐
+      uses: coverallsapp/github-action@master
+      with:
+        github-token: ${{ secrets.GITHUB_TOKEN }}

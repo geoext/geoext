@@ -9,12 +9,13 @@
     "--title": "GeoExt v3.3.2 Documentation (incl. ExtJS classes)",
     "--warnings": [
       "-extend",
-      "-link"
+      "-link",
+      "-all:resources/external/ext-6.2.0"
     ],
     "--": [
         "src/",
         "classic/",
-        "../ext-6.2.0/packages/core/src/",
-        "../ext-6.2.0/classic/classic/src/"
+        "ext-6.2.0/packages/core/src/",
+        "ext-6.2.0/classic/classic/src/"
     ]
 }
