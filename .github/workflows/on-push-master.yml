@@ -48,10 +48,12 @@ jobs:
         if (test ! -f ext-6.2.0-gpl.zip); then wget -q "http://cdn.sencha.com/ext/gpl/ext-6.2.0-gpl.zip" -O ext-6.2.0-gpl.zip; fi
         if (test ! -d ext-6.2.0); then unzip -qo ext-6.2.0-gpl.zip; fi
 
-    - name: Install ruby & jsduck
+    - name: Install ruby
       uses: actions/setup-ruby@v1
       with:
         ruby-version: '2.6'
+
+    - name: Install jsduck
       run: gem install jsduck
 
     - name: Cleanup and prepare pages
