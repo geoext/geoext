@@ -73,6 +73,7 @@ jobs:
       with:
         github_token: ${{ secrets.GITHUB_TOKEN }}
         publish_dir: ./master
+        destination_dir: ./master
 
     - name: Generate coverage 🧪
       run: npm run test:coverage
