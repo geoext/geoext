@@ -1,0 +1,47 @@
+name: Publish tag docs to gh-pages
+
+on:
+  push:
+    tags: v/[1-9]+.[0-9]+.[0-9]+
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout sources
+      uses: actions/checkout@v2
+
+    - name: Use Node.js 14.x
+      uses: actions/setup-node@v1
+      with:
+        node-version: 14.x
+
+    - name: Cache Node.js modules 💾
+      uses: actions/cache@v2
+      with:
+        path: ~/.npm
+        key: ${{ runner.OS }}-node-${{ hashFiles('**/package-lock.json') }}
+        restore-keys: |
+          ${{ runner.OS }}-node-
+          ${{ runner.OS }}-
+
+    - name: Install dependencies ⏬
+      run: npm install
+
+    - name: Cleanup and prepare pages
+      run: |
+        rm -rf ${GITHUB_REF##*/}
+        mkdir -p ${GITHUB_REF##*/}/docs
+        mkdir -p ${GITHUB_REF##*/}/docs-w-ext
+        cp -r examples ${GITHUB_REF##*/}/
+        cp -r resources ${GITHUB_REF##*/}/
+        cp -r src ${GITHUB_REF##*/}/
+        npm run generate:docs:tag
+        npm run generate:docs-w-ext:tag
+
+    - name: Deploy gh-pages
+      uses: peaceiris/actions-gh-pages@v3
+      with:
+        github_token: ${{ secrets.GITHUB_TOKEN }}
+        publish_dir: ./${GITHUB_REF##*/}
