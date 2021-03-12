@@ -48,6 +48,14 @@ jobs:
         if (test ! -f ext-6.2.0-gpl.zip); then wget -q "http://cdn.sencha.com/ext/gpl/ext-6.2.0-gpl.zip" -O ext-6.2.0-gpl.zip; fi
         if (test ! -d ext-6.2.0); then unzip -qo ext-6.2.0-gpl.zip; fi
 
+    - name: Generate coverage 🧪
+      run: npm run test:coverage
+
+    - name: Publish to coveralls ⭐
+      uses: coverallsapp/github-action@master
+      with:
+        github-token: ${{ secrets.GITHUB_TOKEN }}
+
     - name: Install ruby
       uses: actions/setup-ruby@v1
       with:
@@ -74,11 +82,3 @@ jobs:
         github_token: ${{ secrets.GITHUB_TOKEN }}
         publish_dir: ./master
         destination_dir: ./master
-
-    - name: Generate coverage 🧪
-      run: npm run test:coverage
-
-    - name: Publish to coveralls ⭐
-      uses: coverallsapp/github-action@master
-      with:
-        github-token: ${{ secrets.GITHUB_TOKEN }}
