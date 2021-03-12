@@ -49,10 +49,10 @@ jobs:
         if (test ! -d ext-6.2.0); then unzip -qo ext-6.2.0-gpl.zip; fi
 
     - name: Install ruby & jsduck
-      - uses: actions/setup-ruby@v1
-        with:
-          ruby-version: '2.6'
-        run: gem install jsduck
+      uses: actions/setup-ruby@v1
+      with:
+        ruby-version: '2.6'
+      run: gem install jsduck
 
     - name: Cleanup and prepare pages
       run: |
