@@ -22,15 +22,31 @@ jobs:
       uses: actions/cache@v2
       with:
         path: |
-          ~/.npm
-          resources/external
+          node_modules
         key: ${{ runner.OS }}-node-${{ hashFiles('**/package-lock.json') }}
+        restore-keys: |
+          ${{ runner.OS }}-node-
+          ${{ runner.OS }}-
+
+    - name: Cache ext 💾
+      uses: actions/cache@v2
+      with:
+        path: |
+          resources/external
+          ext-6.2.0
+          ext-6.2.0-gpl.zip
+        key: ${{ runner.OS }}-node-${{ hashFiles('resources/external/ext-all.js') }}
         restore-keys: |
           ${{ runner.OS }}-node-
           ${{ runner.OS }}-
 
     - name: Install dependencies ⏬
       run: npm install
+
+    - name: Download extjs
+      run: |
+        if (test ! -f ext-6.2.0-gpl.zip); then wget -q "http://cdn.sencha.com/ext/gpl/ext-6.2.0-gpl.zip" -O ext-6.2.0-gpl.zip; fi
+        if (test ! -d ext-6.2.0); then unzip -qo ext-6.2.0-gpl.zip; fi
 
     - name: Install ruby & jsduck
       - uses: actions/setup-ruby@v1
@@ -46,6 +62,7 @@ jobs:
         cp -r examples master/
         cp -r resources master/
         cp -r src master/
+        cp -r classic master/
         npm run generate:docs:master
         npm run generate:docs-w-ext:master
 

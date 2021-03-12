@@ -9,7 +9,8 @@
     "--title": "GeoExt v3.3.2 Documentation",
     "--warnings": [
       "-extend",
-      "-link"
+      "-link",
+      "-inheritdoc"
     ],
     "--": [
         "src/",
