@@ -49,8 +49,8 @@ jobs:
 
     - name: Install ruby & jsduck
       uses: actions/setup-ruby@v1
-        with:
-          ruby-version: '2.6'
+      with:
+        ruby-version: '2.6'
       run: gem install jsduck
 
     - name: Cleanup and prepare pages
