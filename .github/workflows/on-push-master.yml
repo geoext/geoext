@@ -40,13 +40,13 @@ jobs:
           ${{ runner.OS }}-node-
           ${{ runner.OS }}-
 
-    - name: Install dependencies ⏬
-      run: npm install
-
     - name: Download extjs
       run: |
         if (test ! -f ext-6.2.0-gpl.zip); then wget -q "http://cdn.sencha.com/ext/gpl/ext-6.2.0-gpl.zip" -O ext-6.2.0-gpl.zip; fi
         if (test ! -d ext-6.2.0); then unzip -qo ext-6.2.0-gpl.zip; fi
+
+    - name: Install dependencies ⏬
+      run: npm install
 
     - name: Generate coverage 🧪
       run: npm run test:coverage
