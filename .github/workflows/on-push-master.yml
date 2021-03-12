@@ -21,7 +21,9 @@ jobs:
     - name: Cache Node.js modules 💾
       uses: actions/cache@v2
       with:
-        path: ~/.npm
+        path: |
+          ~/.npm
+          resources/external
         key: ${{ runner.OS }}-node-${{ hashFiles('**/package-lock.json') }}
         restore-keys: |
           ${{ runner.OS }}-node-
@@ -29,6 +31,12 @@ jobs:
 
     - name: Install dependencies ⏬
       run: npm install
+
+    - name: Install ruby & jsduck
+      - uses: actions/setup-ruby@v1
+        with:
+          ruby-version: '2.6'
+        run: gem install jsduck
 
     - name: Cleanup and prepare pages
       run: |
