@@ -48,8 +48,8 @@ jobs:
     - name: Install dependencies ⏬
       run: npm install
 
-    - name: Install dependencies ⏬
-      run: npm test:fetch-external
+    - name: Fetch external resources ⏬
+      run: npm run test:fetch-external
 
     - name: Generate coverage 🧪
       run: npm run test:coverage
