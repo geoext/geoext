@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <title>The source code</title>
+  <link href="../resources/prettify/prettify.css" type="text/css" rel="stylesheet" />
+  <script type="text/javascript" src="../resources/prettify/prettify.js"></script>
+  <style type="text/css">
+    .highlight { display: block; background-color: #ddd; }
+  </style>
+  <script type="text/javascript">
+    function highlight() {
+      document.getElementById(location.hash.replace(/#/, "")).className = "highlight";
+    }
+  </script>
+</head>
+<body onload="prettyPrint(); highlight();">
+  <pre class="prettyprint lang-js"><span id='Ext-grid-RowEditorButtons'>/**
+</span> * @private
+ * Private Container class used by the {@link Ext.grid.RowEditor} to hold its buttons.
+ */
+Ext.define(&#39;Ext.grid.RowEditorButtons&#39;, {
+    extend: &#39;Ext.container.Container&#39;,
+    alias: &#39;widget.roweditorbuttons&#39;,
+
+<span id='Ext-grid-RowEditorButtons-cfg-frame'>    frame: true,
+</span><span id='Ext-grid-RowEditorButtons-cfg-shrinkWrap'>    shrinkWrap: true,
+</span><span id='Ext-grid-RowEditorButtons-property-position'>    position: &#39;bottom&#39;,
+</span>    
+<span id='Ext-grid-RowEditorButtons-property-ariaRole'>    ariaRole: &#39;toolbar&#39;,
+</span>
+<span id='Ext-grid-RowEditorButtons-method-constructor'>    constructor: function(config) {
+</span>        var me = this,
+            rowEditor = config.rowEditor,
+            cssPrefix = Ext.baseCSSPrefix,
+            plugin = rowEditor.editingPlugin;
+
+        config = Ext.apply({
+            baseCls: cssPrefix + &#39;grid-row-editor-buttons&#39;,
+            defaults: {
+                xtype: &#39;button&#39;,
+                ui: rowEditor.buttonUI,
+                scope: plugin,
+                flex: 1,
+                minWidth: Ext.panel.Panel.prototype.minButtonWidth
+            },
+            items: [{
+                cls: cssPrefix + &#39;row-editor-update-button&#39;,
+                itemId: &#39;update&#39;,
+                handler: plugin.completeEdit,
+                text: rowEditor.saveBtnText,
+                disabled: rowEditor.updateButtonDisabled,
+                listeners: {
+                    element: &#39;el&#39;,
+                    keydown: me.onUpdateKeyDown,
+                    scope: me
+                }
+            }, {
+                cls: cssPrefix + &#39;row-editor-cancel-button&#39;,
+                itemId: &#39;cancel&#39;,
+                handler: plugin.cancelEdit,
+                text: rowEditor.cancelBtnText,
+                listeners: {
+                    element: &#39;el&#39;,
+                    keydown: me.onCancelKeyDown,
+                    scope: me
+                }
+            }]
+        }, config);
+
+        me.callParent([config]);
+
+        me.addClsWithUI(me.position);
+    },
+
+<span id='Ext-grid-RowEditorButtons-method-onUpdateKeyDown'>    // SHIFT+TAB off the update button loops back into the last field.
+</span>    onUpdateKeyDown: function(e) {
+        if (e.shiftKey &amp;&amp; e.getKey() === e.TAB) {
+            e.stopEvent();
+            // Must delay the focus, otherwise the imminent keyup will TAB off that field
+            this.rowEditor.child(&#39;:focusable:not([isButton]):last&#39;).focus(false, true);
+        }
+    },
+
+<span id='Ext-grid-RowEditorButtons-method-onCancelKeyDown'>    // TAB off the cancel button loops back into the first field.
+</span>    onCancelKeyDown: function(e) {
+        if (!e.shiftKey &amp;&amp; e.getKey() === e.TAB) {
+            e.stopEvent();
+            // Must delay the focus, otherwise the imminent keyup will TAB off that field
+            this.rowEditor.child(&#39;:focusable&#39;).focus(false, true);
+        }
+    },
+
+<span id='Ext-grid-RowEditorButtons-method-setButtonPosition'>    setButtonPosition: function(position) {
+</span>        var me = this,
+            rowEditor = this.rowEditor,
+            rowEditorHeight = rowEditor.getHeight(),
+            rowEditorBody = rowEditor.body,
+            bottom = &#39;&#39;,
+            top = &#39;&#39;;
+
+        me.removeClsWithUI(me.position);
+        me.position = position;
+        me.addClsWithUI(position);
+        // we tried setting the top/bottom value in the stylesheet based on form field
+        // height + row editor padding, but that approach does not work when there are
+        // larger things inside the editor, e.g. textarea, so we have to measure
+        // the row editor height and position the buttons accordingly (see EXTJSIV-9914).
+        if (position === &#39;top&#39;) {
+            bottom = (rowEditorHeight - rowEditorBody.getBorderWidth(&#39;t&#39;)) + &#39;px&#39;;
+        } else {
+            top = (rowEditorHeight - rowEditorBody.getBorderWidth(&#39;b&#39;)) + &#39;px&#39;;
+        }
+
+        me.el.setStyle({
+            top: top,
+            bottom: bottom
+        });
+    },
+
+<span id='Ext-grid-RowEditorButtons-property-privates'>    privates: {
+</span>        getFramingInfoCls: function(){
+            return this.baseCls + &#39;-&#39; + this.ui + &#39;-&#39; + this.position;
+        },
+
+        getFrameInfo: function() {
+            var frameInfo = this.callParent();
+
+            // Trick Renderable into rendering the top framing elements, even though they
+            // are not needed in the default &quot;bottom&quot; position.  This allows us to flip the
+            // buttons into &quot;top&quot; position without re-rendering.
+            frameInfo.top = true;
+
+            return frameInfo;
+        }
+    }
+});
+</pre>
+</body>
+</html>

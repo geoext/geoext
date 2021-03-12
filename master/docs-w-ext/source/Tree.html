@@ -1,0 +1,784 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <title>The source code</title>
+  <link href="../resources/prettify/prettify.css" type="text/css" rel="stylesheet" />
+  <script type="text/javascript" src="../resources/prettify/prettify.js"></script>
+  <style type="text/css">
+    .highlight { display: block; background-color: #ddd; }
+  </style>
+  <script type="text/javascript">
+    function highlight() {
+      document.getElementById(location.hash.replace(/#/, "")).className = "highlight";
+    }
+  </script>
+</head>
+<body onload="prettyPrint(); highlight();">
+  <pre class="prettyprint lang-js"><span id='Ext-list-Tree'>/**
+</span> * A lightweight component to display data in a simple tree structure.
+ * @since 6.0.0
+ */
+Ext.define(&#39;Ext.list.Tree&#39;, {
+    extend: &#39;Ext.Widget&#39;,
+    xtype: &#39;treelist&#39;,
+
+    requires: [
+        &#39;Ext.list.RootTreeItem&#39;
+    ],
+
+<span id='Ext-list-Tree-property-expanderFirstCls'>    expanderFirstCls: Ext.baseCSSPrefix + &#39;treelist-expander-first&#39;,
+</span><span id='Ext-list-Tree-property-expanderOnlyCls'>    expanderOnlyCls: Ext.baseCSSPrefix + &#39;treelist-expander-only&#39;,
+</span><span id='Ext-list-Tree-property-highlightPathCls'>    highlightPathCls: Ext.baseCSSPrefix + &#39;treelist-highlight-path&#39;,
+</span><span id='Ext-list-Tree-property-microCls'>    microCls: Ext.baseCSSPrefix + &#39;treelist-micro&#39;,
+</span>
+<span id='Ext-list-Tree-property-uiPrefix'>    uiPrefix: Ext.baseCSSPrefix + &#39;treelist-&#39;,
+</span>
+<span id='Ext-list-Tree-property-element'>    element: {
+</span>        reference: &#39;element&#39;,
+        cls: Ext.baseCSSPrefix + &#39;treelist &#39; + Ext.baseCSSPrefix + &#39;unselectable&#39;,
+        listeners: {
+            click: &#39;onClick&#39;,
+            mouseenter: &#39;onMouseEnter&#39;,
+            mouseleave: &#39;onMouseLeave&#39;,
+            mouseover: &#39;onMouseOver&#39;
+        },
+        children: [{
+            reference: &#39;toolsElement&#39;,
+            cls: Ext.baseCSSPrefix + &#39;treelist-toolstrip&#39;,
+            listeners: {
+                click: &#39;onToolStripClick&#39;,
+                mouseover: &#39;onToolStripMouseOver&#39;
+            }
+        }]
+    },
+
+    cachedConfig: {
+<span id='Ext-list-Tree-cfg-animation'>        animation: {
+</span>            duration: 500,
+            easing: &#39;ease&#39;
+        },
+
+<span id='Ext-list-Tree-cfg-expanderFirst'>        expanderFirst: true,
+</span>
+<span id='Ext-list-Tree-cfg-expanderOnly'>        /**
+</span>         * @cfg {Boolean} expanderOnly
+         * `true` to expand only on the click of the expander element. Setting this to
+         * `false` will allow expansion on click of any part of the element.
+         */
+        expanderOnly: true
+    },
+
+    config: {
+<span id='Ext-list-Tree-cfg-defaults'>        /**
+</span>         * @cfg {Object} [defaults]
+         * The default configuration for the widgets created for tree items.
+         *
+         * @cfg {String} [defaults.xtype=&quot;treelistitem&quot;]
+         * The type of item to create. By default, items are `{@link Ext.list.TreeItem treelistitem}`
+         * instances. This can be customized but this `xtype` must reference a class that
+         * ultimately derives from the `{@link Ext.list.AbstractTreeItem}` base class.
+         */
+        defaults: {
+            xtype: &#39;treelistitem&#39;
+        },
+
+<span id='Ext-list-Tree-cfg-highlightPath'>        highlightPath: null,
+</span>
+<span id='Ext-list-Tree-cfg-iconSize'>        iconSize: null,
+</span>
+<span id='Ext-list-Tree-cfg-indent'>        indent: null,
+</span>
+<span id='Ext-list-Tree-cfg-micro'>        micro: false,
+</span>
+<span id='Ext-list-Tree-cfg-overItem'>        overItem: null,
+</span>
+<span id='Ext-list-Tree-cfg-selection'>        /**
+</span>         * @cfg {Ext.data.TreeModel} selection
+         * 
+         * The current selected node.
+         */
+        selection: null, 
+
+<span id='Ext-list-Tree-cfg-selectOnExpander'>        /**
+</span>         * @cfg {Boolean} selectOnExpander
+         * `true` to select the node when clicking the expander.
+         */
+        selectOnExpander: false,
+
+<span id='Ext-list-Tree-cfg-singleExpand'>        /**
+</span>         * @cfg {Boolean} [singleExpand=false]
+         * `true` if only 1 node per branch may be expanded.
+         */
+        singleExpand: null,
+
+<span id='Ext-list-Tree-cfg-store'>        /**
+</span>         * @cfg {String/Object/Ext.data.TreeStore}
+         * The data source to which this component is bound.
+         */
+        store: null,
+
+<span id='Ext-list-Tree-cfg-ui'>        ui: null
+</span>    },
+
+<span id='Ext-list-Tree-cfg-twoWayBindable'>    twoWayBindable: {
+</span>        selection: 1
+    },
+
+<span id='Ext-list-Tree-cfg-publishes'>    publishes: {
+</span>        selection: 1
+    },
+
+<span id='Ext-list-Tree-property-defaultBindProperty'>    defaultBindProperty: &#39;store&#39;,
+</span>
+<span id='Ext-list-Tree-method-constructor'>    constructor: function(config) {
+</span>        var me = this;
+
+        me.callParent([config]);
+        // Important to publish the value here, so the vm can
+        // will know our intial state.
+        me.publishState(&#39;selection&#39;, me.getSelection());
+
+        // Track size so that we can track the expanded size
+        // for use by the floated state of items when in micro mode.
+        // Browsers where this event is not supported, fall back to a width
+        // of 200px for floated tree items.
+        if (!Ext.isIE8) {
+            me.el.on({
+                resize: me.onElResize,
+                buffer: 300,
+                scope: me
+            });
+        }
+    },
+
+<span id='Ext-list-Tree-method-beforeLayout'>    beforeLayout: function () {
+</span>        // Only called in classic, ignored in modern
+        this.syncIconSize();
+    },
+
+<span id='Ext-list-Tree-method-destroy'>    destroy: function () {
+</span>        var me = this;
+
+        me.destroying = true;  // normally set in callParent
+
+        me.unfloatAll(); 
+        me.activeFloater = null;
+        me.setSelection(null);
+        me.setStore(null);
+        me.callParent();
+    },
+
+<span id='Ext-list-Tree-method-updateOverItem'>    updateOverItem: function (over, wasOver) {
+</span>        var map = {},
+            state = 2,
+            c, node;
+
+        // Walk up the node hierarchy starting at the &quot;over&quot; item and set their &quot;over&quot;
+        // config appropriately (2 when over that row, 1 when over a descendant).
+        //
+        for (c = over; c; c = this.getItem(node.parentNode)) {
+            node = c.getNode();
+            map[node.internalId] = true;
+
+            c.setOver(state);
+
+            state = 1;
+        }
+
+        if (wasOver) {
+            // If we wasOver something else previously, walk up that node hierarchy and
+            // set their &quot;over&quot; to 0... until we encounter some node that we are still
+            // &quot;over&quot; (as determined in previous loop).
+            //
+            for (c = wasOver; c; c = this.getItem(node.parentNode)) {
+                node = c.getNode();
+                if (map[node.internalId]) {
+                    break;
+                }
+
+                c.setOver(0);
+            }
+        }
+    },
+
+<span id='Ext-list-Tree-method-applyMicro'>    applyMicro: function(micro) {
+</span>        return Boolean(micro);
+    },
+
+<span id='Ext-list-Tree-method-applySelection'>    applySelection: function(selection, oldSelection) {
+</span>        var store = this.getStore();
+        if (!store) {
+            selection = null;
+        }
+        if (selection &amp;&amp; selection.get(&#39;selectable&#39;) === false) {
+            selection = oldSelection;
+        }
+        return selection;
+    },
+
+<span id='Ext-list-Tree-method-updateSelection'>    updateSelection: function(selection, oldSelection) {
+</span>        var me = this,
+            item;
+
+        if (!me.destroying) {
+            // getItem has guards around null, so we don&#39;t
+            // need to check for oldSelection/selection here
+            item = me.getItem(oldSelection);
+            if (item) {
+                item.setSelected(false);
+            }
+
+            item = me.getItem(selection);
+            if (item) {
+                item.setSelected(true);
+            }
+            me.fireEvent(&#39;selectionchange&#39;, me, selection);
+        }
+    },
+
+<span id='Ext-list-Tree-method-applyStore'>    applyStore: function (store) {
+</span>        return store &amp;&amp; Ext.StoreManager.lookup(store, &#39;tree&#39;);
+    },
+
+<span id='Ext-list-Tree-method-updateStore'>    updateStore: function (store, oldStore) {
+</span>        var me = this,
+            root;
+
+        if (oldStore) {
+            // Store could be already destroyed upstream
+            if (!oldStore.destroyed) {
+                if (oldStore.getAutoDestroy()) {
+                    oldStore.destroy();
+                }
+                else {
+                    me.storeListeners.destroy();
+                }
+            }
+            me.removeRoot();
+            me.storeListeners = null;
+        }
+
+        if (store) {
+            me.storeListeners = store.on({
+                destroyable: true,
+                scope: me,
+                filterchange: &#39;onFilterChange&#39;,
+                nodeappend: &#39;onNodeAppend&#39;,
+                nodecollapse: &#39;onNodeCollapse&#39;,
+                nodeexpand: &#39;onNodeExpand&#39;,
+                nodeinsert: &#39;onNodeInsert&#39;,
+                noderemove: &#39;onNodeRemove&#39;,
+                rootchange: &#39;onRootChange&#39;,
+                update: &#39;onNodeUpdate&#39;
+            });
+        
+            root = store.getRoot();
+            if (root) {
+                me.createRootItem(root);
+            }
+        }
+
+        if (!me.destroying) {
+            me.updateLayout();
+        }
+    },
+
+<span id='Ext-list-Tree-method-updateExpanderFirst'>    updateExpanderFirst: function (expanderFirst) {
+</span>        this.element.toggleCls(this.expanderFirstCls, expanderFirst);
+    },
+
+<span id='Ext-list-Tree-method-updateExpanderOnly'>    updateExpanderOnly: function (value) {
+</span>        this.element.toggleCls(this.expanderOnlyCls, !value);
+    },
+
+<span id='Ext-list-Tree-method-updateHighlightPath'>    updateHighlightPath: function (updatePath) {
+</span>        this.element.toggleCls(this.highlightPathCls, updatePath);
+    },
+
+<span id='Ext-list-Tree-method-onElResize'>    onElResize: function(el, details) {
+</span>        if (!this.getMicro()) {
+            this.expandedWidth = details.width;
+        }
+    },
+
+<span id='Ext-list-Tree-method-updateMicro'>    updateMicro: function (micro) {
+</span>        var me = this;
+
+        if (!micro) {
+            me.unfloatAll();
+            me.activeFloater = null;
+        }
+
+        me.element.toggleCls(me.microCls, micro);
+    },
+
+<span id='Ext-list-Tree-method-updateUi'>    updateUi: function (ui, oldValue) {
+</span>        var el = this.element,
+            uiPrefix = this.uiPrefix;
+
+        if (oldValue) {
+            el.removeCls(uiPrefix + oldValue);
+        }
+        if (ui) {
+            el.addCls(uiPrefix + ui);
+        }
+
+        // Ensure that the cached iconSize is read from the style.
+        delete this.iconSize;
+        this.syncIconSize();
+    },
+
+<span id='Ext-list-Tree-method-getItem'>    /**
+</span>     * Get a child {@link Ext.list.AbstractTreeItem item} by node.
+     * @param {Ext.data.TreeModel} node The node.
+     * @return {Ext.list.AbstractTreeItem} The item. `null` if not found.
+     */
+    getItem: function (node) {
+        var map = this.itemMap,
+            ret;
+
+        if (node &amp;&amp; map) {
+            ret = map[node.internalId];
+        }
+
+        return ret || null;
+    },
+
+<span id='Ext-list-Tree-method-getItemConfig'>    /**
+</span>     * This method is called to populate and return a config object for new nodes. This
+     * can be overridden by derived classes to manipulate properties or `xtype` of the
+     * returned object. Upon return, the object is passed to `{@link Ext#create}` and the
+     * reference is stored as part of this tree.
+     *
+     * The base class implementation will apply any configured `{@link #defaults}` to the
+     * object it returns.
+     *
+     * @param {Ext.data.TreeModel} node The node backing the item.
+     * @param {Ext.list.AbstractTreeItem} parent The parent item. This is never `null` but
+     * may be an instance of `{@link Ext.list.RootTreeItem}`.
+     * @return {Object} The config object to pass to `{@link Ext#create}` for the item.
+     * @template
+     */
+    getItemConfig: function (node, parent) {
+        return Ext.apply({
+            parentItem: parent.isRootListItem ? null : parent,
+            owner: this,
+            node: node,
+            indent: this.getIndent()
+        }, this.getDefaults());
+    },
+
+<span id='Ext-list-Tree-property-privates'>    privates: {
+</span>        checkForOutsideClick: function(e) {
+            var floater = this.activeFloater;
+            if (!floater.element.contains(e.target)) {
+                this.unfloatAll();
+            }
+        },
+
+        collapsingForExpand: false,
+
+<span id='Ext-list-Tree-method-createItem'>        /**
+</span>         * Create a new list item.
+         * @param {Ext.data.TreeModel} node The node backing the item.
+         * @param {Ext.list.AbstractTreeItem} parent The parent item.
+         * @return {Ext.list.AbstractTreeItem} The list item.
+         *
+         * @private
+         */
+        createItem: function (node, parent) {
+            var me = this,
+                item = Ext.create(me.getItemConfig(node, parent)),
+                toolsElement = me.toolsElement,
+                toolEl, previousSibling;
+
+            if (parent.isRootListItem) {
+                toolEl = item.getToolElement();
+                if (toolEl) {
+                    previousSibling = me.findVisiblePreviousSibling(node);
+                    if (!previousSibling) {
+                        toolsElement.insertFirst(toolEl);
+                    } else {
+                        previousSibling = me.getItem(previousSibling);
+                        toolEl.insertAfter(previousSibling.getToolElement());
+                    }
+                    toolEl.dom.setAttribute(&#39;data-recordId&#39;, node.internalId);
+                    toolEl.isTool = true;
+                }
+            }
+
+            me.itemMap[node.internalId] = item;
+            return item;
+        },
+
+<span id='Ext-list-Tree-method-createRootItem'>        /**
+</span>         * Create a root item for this list.
+         * @param {Ext.data.TreeModel} root The root node.
+         *
+         * @private
+         */
+        createRootItem: function (root) {
+            var me = this,
+                item;
+
+            me.itemMap = {};
+            me.rootItem = item = new Ext.list.RootTreeItem({
+                indent: me.getIndent(),
+                node: root,
+                owner: me
+            });
+
+            me.element.appendChild(item.element);
+
+            me.itemMap[root.internalId] = item;
+        },
+
+        findVisiblePreviousSibling: function(node) {
+            var sibling = node.previousSibling;
+            while (sibling) {
+                if (sibling.data.visible) {
+                    return sibling;
+                }
+                sibling = sibling.previousSibling;
+            }
+            return null;
+        },
+
+        floatItem: function(item, byHover) {
+            var me = this,
+                floater;
+
+            if (item.getFloated()) {
+                return;
+            }
+
+           	// Cancel any mouseout timer,
+            if (me.toolMouseListeners) {
+                me.toolMouseListeners.destroy();
+                me.floaterMouseListeners.destroy();
+            }
+            
+            me.unfloatAll();
+
+            me.activeFloater = floater = item;
+            me.floatedByHover = byHover;
+
+            item.setFloated(true);
+
+            if (byHover) {
+                // monitorMouseLeave allows straying out for the specified short time
+                me.toolMouseListeners = item.getToolElement().monitorMouseLeave(300, me.checkForMouseLeave, me);
+                me.floaterMouseListeners = (item.floater || item).el.monitorMouseLeave(300, me.checkForMouseLeave, me);
+            } else {
+                Ext.on(&#39;mousedown&#39;, &#39;checkForOutsideClick&#39;, me);
+            }
+        },
+
+<span id='Ext-list-Tree-method-onClick'>        /**
+</span>         * Handles when this element is clicked.
+         * @param {Ext.event.Event} e The event.
+         *
+         * @private
+         */
+        onClick: function (e) {
+            var item = e.getTarget(&#39;[data-recordId]&#39;),
+                id;
+
+            if (item) {
+                id = item.getAttribute(&#39;data-recordId&#39;);
+                item = this.itemMap[id];
+                if (item) {
+                    item.onClick(e);
+                }
+            }
+        },
+
+        onMouseEnter: function (e) {
+            this.onMouseOver(e);
+        },
+
+        onMouseLeave: function () {
+            this.setOverItem(null);
+        },
+
+        onMouseOver: function (e) {
+            var comp = Ext.Component.fromElement(e.getTarget());
+
+            this.setOverItem(comp &amp;&amp; comp.isTreeListItem &amp;&amp; comp);
+        },
+
+        checkForMouseLeave: function (e) {
+            var floater = this.activeFloater,
+                relatedTarget = e.getRelatedTarget();
+
+            if (floater) {
+                if (relatedTarget !== floater.getToolElement().dom &amp;&amp; !floater.element.contains(relatedTarget)) {
+                    this.unfloatAll();
+                }
+            }
+        },
+
+        onFilterChange: function(store) {
+            // Because the tree can use bottom up or top down filtering, don&#39;t try and figure out
+            // what changed here, just do a global refresh
+            this.onRootChange(store.getRoot());
+        },
+
+<span id='Ext-list-Tree-method-onNodeAppend'>        /**
+</span>         * Handles a node being appended to a parent.
+         * @param {Ext.data.TreeModel} parentNode The parent node.
+         * @param {Ext.data.TreeModel} node The appended node.
+         *
+         * @private
+         */
+        onNodeAppend: function (parentNode, node) {
+            // If it&#39;s a root we&#39;ll handle it on rootchange
+            if (parentNode) {
+                var item = this.itemMap[parentNode.internalId];
+
+                if (item) {
+                    item.nodeInsert(node, null);
+                }
+            }
+        },
+
+<span id='Ext-list-Tree-method-onNodeCollapse'>        /**
+</span>         * Handles when a node collapses.
+         * @param {Ext.data.TreeModel} node The node.
+         *
+         * @private
+         */
+        onNodeCollapse: function (node) {
+            var item = this.itemMap[node.internalId];
+
+            if (item) {
+                item.nodeCollapse(node, this.collapsingForExpand);
+            }
+        },
+
+<span id='Ext-list-Tree-method-onNodeExpand'>        /**
+</span>         * Handles when a node expands.
+         * @param {Ext.data.TreeModel} node The node.
+         *
+         * @private
+         */
+        onNodeExpand: function (node) {
+            var me = this,
+                item = me.itemMap[node.internalId],
+                childNodes, len, i, parentNode, child;
+
+            if (item) {
+                if (!item.isRootItem &amp;&amp; me.getSingleExpand()) {
+                    me.collapsingForExpand = true;
+                    parentNode = (item.getParentItem() || me.rootItem).getNode();
+                    childNodes = parentNode.childNodes;
+                    for (i = 0, len = childNodes.length; i &lt; len; ++i) {
+                        child = childNodes[i];
+                        if (child !== node) {
+                            child.collapse();
+                        }
+                    }
+                    me.collapsing = false;
+                }
+
+                item.nodeExpand(node);
+            }
+        },
+
+<span id='Ext-list-Tree-method-onNodeInsert'>        /**
+</span>         * Handles a node being inserted into a parent.
+         * @param {Ext.data.TreeModel} parentNode The parent node.
+         * @param {Ext.data.TreeModel} node The inserted node.
+         * @param {Ext.data.TreeModel} refNode The node this was inserted before.
+         *
+         * @private
+         */
+        onNodeInsert: function (parentNode, node, refNode) {
+            var item = this.itemMap[parentNode.internalId];
+
+            if (item) {
+                item.nodeInsert(node, refNode);
+            }
+        },
+
+<span id='Ext-list-Tree-method-onNodeRemove'>        /**
+</span>         * Handles a node being removed from a parent.
+         * @param {Ext.data.TreeModel} parentNode The parent node.
+         * @param {Ext.data.TreeModel} node The removed node.
+         * @param {Boolean} isMove `true` if this node is moving inside the tree.
+         *
+         * @private
+         */
+        onNodeRemove: function (parentNode, node, isMove) {
+            // If it&#39;s a move we don&#39;t need to do anything, we won&#39;t process it
+            // as a removal, the addition will handle it all.
+            // Also if the node being removed is the root we&#39;ll handle it in rootchange
+            if (parentNode &amp;&amp; !isMove) {
+                var item = this.itemMap[parentNode.internalId];
+
+                if (item) {
+                    item.nodeRemove(node);
+                }
+            }
+        },  
+
+<span id='Ext-list-Tree-method-onNodeUpdate'>        /**
+</span>         * Handles when a node updates.
+         * @param {Ext.data.TreeStore} store The store.
+         * @param {Ext.data.TreeModel} node The node.
+         * @param {String} type The update type.
+         * @param {String[]} modifiedFieldNames The modified field names, if known.
+         *
+         * @private
+         */
+        onNodeUpdate: function (store, node, type, modifiedFieldNames) {
+            var item = this.itemMap[node.internalId];
+
+            if (item) {
+                item.nodeUpdate(node, modifiedFieldNames);
+            }
+        },
+
+<span id='Ext-list-Tree-method-onRootChange'>        /**
+</span>         * Handles when the root node in the tree changes.
+         * @param {Ext.data.TreeModel} root The root.
+         *
+         * @private
+         */
+        onRootChange: function (root) {
+            var me = this;
+
+            me.removeRoot();
+
+            if (root) {
+                me.createRootItem(root);
+            }
+
+            me.updateLayout();
+            me.fireEvent(&#39;refresh&#39;, me);
+        },
+
+<span id='Ext-list-Tree-method-removeItem'>        /**
+</span>         * Removes a list item.
+         * @param {Ext.data.TreeModel} node The node backing the item.
+         *
+         * @private
+         */
+        removeItem: function (node)  {
+            var map = this.itemMap,
+                id = node.internalId,
+                item, toolEl;
+
+            if (map) {
+                item = map[id];
+                // If it&#39;s null, it means it&#39;s a root level item
+                if (item.getParentItem() === null) {
+                    toolEl = item.getToolElement();
+                    if (toolEl) {
+                        this.toolsElement.removeChild(toolEl);
+                    }
+                }
+                delete map[id];
+            }
+        },
+
+        removeRoot: function () {
+            var me = this,
+                rootItem = me.rootItem;
+
+            if (rootItem) {
+                me.element.removeChild(rootItem.element);
+                me.rootItem = me.itemMap = Ext.destroy(rootItem);
+            }
+        },
+
+<span id='Ext-list-Tree-method-onToolStripClick'>        /**
+</span>         * Handles when the toolstrip has a click.
+         * @param {Ext.event.Event} e The event.
+         *
+         * @private
+         */
+        onToolStripClick: function(e) {
+            var item = e.getTarget(&#39;[data-recordId]&#39;),
+                id;
+
+            if (item) {
+                id = item.getAttribute(&#39;data-recordId&#39;);
+                item = this.itemMap[id];
+                if (item) {
+                    if (item === this.activeFloater) {
+                        this.unfloatAll();
+                    } else {
+                        this.floatItem(item, false);
+                    }
+                }
+            }
+        },
+
+<span id='Ext-list-Tree-method-onToolStripMouseOver'>        /**
+</span>         * Handles when the toolstrip has a mouseover.
+         * @param {Ext.event.Event} e The event.
+         *
+         * @private
+         */
+        onToolStripMouseOver: function(e) {
+            var item = e.getTarget(&#39;[data-recordId]&#39;),
+                id;
+
+            if (item) {
+                id = item.getAttribute(&#39;data-recordId&#39;);
+                item = this.itemMap[id];
+                if (item) {
+                    this.floatItem(item, true);
+                }
+            }
+        },
+
+        syncIconSize: function() {
+            var me = this,
+                size = me.iconSize ||
+                      (me.iconSize = parseInt(me.element.getStyle(&#39;background-position&#39;), 10));
+
+            me.setIconSize(size);
+        },
+
+        unfloatAll: function () {
+            var me = this,
+                floater = me.activeFloater;
+
+            if (floater) {
+                floater.setFloated(false);
+                me.activeFloater = null;
+
+                if (me.floatedByHover) {
+                    floater.getToolElement().un(&#39;mouseleave&#39;, &#39;checkForMouseLeave&#39;, me);
+                    floater.element.un({
+                        scope: me,
+                        mouseleave: &#39;checkForMouseLeave&#39;,
+                        mouseover: &#39;onMouseOver&#39;
+                    });
+                } else {
+                    Ext.un(&#39;mousedown&#39;, &#39;checkForOutsideClick&#39;, me);
+                }
+            }
+        },
+
+        defaultIconSize: 22,
+
+        updateIconSize: function (value) {
+            this.setIndent(value || this.defaultIconSize);
+        },
+
+        updateIndent: function (value) {
+            var rootItem = this.rootItem;
+
+            if (rootItem) {
+                rootItem.setIndent(value);
+            }
+        }
+    }
+});
+</pre>
+</body>
+</html>

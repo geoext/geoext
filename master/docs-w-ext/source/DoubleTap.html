@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <title>The source code</title>
+  <link href="../resources/prettify/prettify.css" type="text/css" rel="stylesheet" />
+  <script type="text/javascript" src="../resources/prettify/prettify.js"></script>
+  <style type="text/css">
+    .highlight { display: block; background-color: #ddd; }
+  </style>
+  <script type="text/javascript">
+    function highlight() {
+      document.getElementById(location.hash.replace(/#/, "")).className = "highlight";
+    }
+  </script>
+</head>
+<body onload="prettyPrint(); highlight();">
+  <pre class="prettyprint lang-js"><span id='Ext-event-gesture-DoubleTap'>/**
+</span> * A simple event recognizer which knows when you double tap.
+ */
+Ext.define(&#39;Ext.event.gesture.DoubleTap&#39;, {
+
+    extend: &#39;Ext.event.gesture.SingleTouch&#39;,
+
+<span id='Ext-event-gesture-DoubleTap-property-priority'>    priority: 300,
+</span>
+    config: {
+<span id='Ext-event-gesture-DoubleTap-cfg-moveDistance'>        /**
+</span>         * @cfg {Number}
+         * The maximum distance a touch can move without canceling recognition
+         */
+        moveDistance: 8,
+<span id='Ext-event-gesture-DoubleTap-cfg-tapDistance'>        /**
+</span>         * @cfg {Number}
+         * The minimum distance the second tap can occur from the first tap and still
+         * be considered a doubletap
+         */
+        tapDistance: 24,
+<span id='Ext-event-gesture-DoubleTap-cfg-maxDuration'>        maxDuration: 300
+</span>    },
+
+<span id='Ext-event-gesture-DoubleTap-property-handledEvents'>    handledEvents: [&#39;singletap&#39;, &#39;doubletap&#39;],
+</span>
+<span id='Ext-dom-Element-event-singletap'>    /**
+</span>     * @member Ext.dom.Element
+     * @event singletap
+     * Fires when there is a single tap.
+     * @param {Ext.event.Event} event The {@link Ext.event.Event} event encapsulating the DOM event.
+     * @param {HTMLElement} node The target of the event.
+     * @param {Object} options The options object passed to Ext.mixin.Observable.addListener.
+     */
+
+<span id='Ext-dom-Element-event-doubletap'>    /**
+</span>     * @member Ext.dom.Element
+     * @event doubletap
+     * Fires when there is a double tap.
+     * @param {Ext.event.Event} event The {@link Ext.event.Event} event encapsulating the DOM event.
+     * @param {HTMLElement} node The target of the event.
+     * @param {Object} options The options object passed to Ext.mixin.Observable.addListener.
+     */
+
+    singleTapTimer: null,
+
+<span id='Ext-event-gesture-DoubleTap-property-startTime'>    startTime: 0,
+</span>
+<span id='Ext-event-gesture-DoubleTap-property-lastTapTime'>    lastTapTime: 0,
+</span>
+<span id='Ext-event-gesture-DoubleTap-method-onTouchStart'>    onTouchStart: function(e) {
+</span>        var me = this,
+            ret = me.callParent([e]),
+            lastStartPoint;
+
+        if (ret !== false) {
+            me.isStarted = true;
+
+            // the start point of the last touch that occurred.
+            lastStartPoint = me.lastStartPoint = e.changedTouches[0].point;
+
+            // the start point of the &quot;first&quot; touch in this gesture
+            me.startPoint = me.startPoint || lastStartPoint;
+
+            me.startTime = e.time;
+
+            clearTimeout(me.singleTapTimer);
+        }
+
+        return ret;
+    },
+
+<span id='Ext-event-gesture-DoubleTap-method-onTouchMove'>    onTouchMove: function(e) {
+</span>        var me = this,
+            point = e.changedTouches[0].point,
+            scale = Ext.Element.getViewportScale(),
+            // account for scale so that move distance is actual screen pixels, not page pixels
+            distance = Math.round(Math.abs(point.getDistanceTo(me.lastStartPoint) * scale));
+
+        if (distance &gt;= me.getMoveDistance()) {
+            return me.cancel(e);
+        }
+    },
+
+<span id='Ext-event-gesture-DoubleTap-method-onTouchEnd'>    onTouchEnd: function(e) {
+</span>        var me = this,
+            maxDuration = me.getMaxDuration(),
+            time = e.time,
+            target = e.target,
+            lastTapTime = me.lastTapTime,
+            lastTarget = me.lastTarget,
+            point = e.changedTouches[0].point,
+            duration, scale, distance;
+
+        me.lastTapTime = time;
+        me.lastTarget = target;
+
+        if (lastTapTime) {
+            duration = time - lastTapTime;
+
+            if (duration &lt;= maxDuration) {
+                scale = Ext.Element.getViewportScale();
+                // account for scale so that move distance is actual screen pixels, not page pixels
+                distance = Math.round(Math.abs(point.getDistanceTo(me.startPoint) * scale));
+
+                if (distance &lt;= me.getTapDistance()) {
+                    if (target !== lastTarget) {
+                        return me.cancel(e);
+                    }
+
+                    me.lastTarget = null;
+                    me.lastTapTime = 0;
+
+                    me.fire(&#39;doubletap&#39;, e, {
+                        touch: e.changedTouches[0],
+                        duration: duration
+                    });
+
+                    return me.callParent([e]);
+                }
+            }
+        }
+
+        if (time - me.startTime &gt; maxDuration) {
+            me.fire(&#39;singletap&#39;, e);
+            me.reset();
+        } else {
+            me.setSingleTapTimer(e);
+        }
+    },
+
+<span id='Ext-event-gesture-DoubleTap-method-setSingleTapTimer'>    setSingleTapTimer: function(e) {
+</span>        var me = this;
+
+        me.singleTapTimer = Ext.defer(function() {
+            me.fire(&#39;singletap&#39;, e);
+            me.reset();
+        }, me.getMaxDuration());
+    },
+
+<span id='Ext-event-gesture-DoubleTap-method-reset'>    reset: function() {
+</span>        var me = this;
+
+        clearTimeout(me.singleTapTimer);
+
+        me.startTime = me.lastTapTime = 0;
+ 
+        me.lastStartPoint = me.startPoint = me.singleTapTimer = null;
+
+        return me.callParent();
+    }
+}, function(DoubleTap) {
+    var gestures = Ext.manifest.gestures;
+    DoubleTap.instance = new DoubleTap(gestures &amp;&amp; gestures.doubleTap);
+});
+</pre>
+</body>
+</html>

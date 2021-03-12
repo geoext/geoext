@@ -1,0 +1,969 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <title>The source code</title>
+  <link href="../resources/prettify/prettify.css" type="text/css" rel="stylesheet" />
+  <script type="text/javascript" src="../resources/prettify/prettify.js"></script>
+  <style type="text/css">
+    .highlight { display: block; background-color: #ddd; }
+  </style>
+  <script type="text/javascript">
+    function highlight() {
+      document.getElementById(location.hash.replace(/#/, "")).className = "highlight";
+    }
+  </script>
+</head>
+<body onload="prettyPrint(); highlight();">
+  <pre class="prettyprint lang-js">/*
+ * This file contains miscellaneous utility methods that depends on various helper classes
+ * like `Ext.Array` and `Ext.Date`. Historically these methods were defined in Ext.js or
+ * Ext-more.js but that creates circular dependencies so they were consolidated here.
+ */
+Ext.apply(Ext, {
+// @define Ext.Util
+// @require Ext
+// @require Ext.lang.*
+
+    // shortcut for the special named scopes for listener scope resolution
+    _namedScopes: {
+        &#39;this&#39;: { isThis: 1 },
+        controller: { isController: 1 },
+        // these two are private, used to indicate that listeners were declared on the
+        // class body with either an unspecified scope, or scope:&#39;controller&#39;
+        self: { isSelf: 1 },
+        &#39;self.controller&#39;: { isSelf: 1, isController: 1 }
+    },
+
+    escapeId: (function(){
+        var validIdRe = /^[a-zA-Z_][a-zA-Z0-9_\-]*$/i,
+            escapeRx = /([\W]{1})/g,
+            leadingNumRx = /^(\d)/g,
+            escapeFn = function(match, capture){
+                return &quot;\\&quot; + capture;
+            },
+            numEscapeFn = function(match, capture){
+                return &#39;\\00&#39; + capture.charCodeAt(0).toString(16) + &#39; &#39;;
+            };
+
+        return function(id) {
+            return validIdRe.test(id) ? id :
+                // replace the number portion last to keep the trailing &#39; &#39;
+                // from being escaped
+                id.replace(escapeRx, escapeFn).replace(leadingNumRx, numEscapeFn);
+        };
+    }()),
+
+<span id='Ext-method-callback'>    /**
+</span>     * @method callback
+     * @member Ext
+     * Execute a callback function in a particular scope. If `callback` argument is a
+     * function reference, that is called. If it is a string, the string is assumed to
+     * be the name of a method on the given `scope`. If no function is passed the call
+     * is ignored.
+     *
+     * For example, these calls are equivalent:
+     *
+     *      var myFunc = this.myFunc;
+     *
+     *      Ext.callback(&#39;myFunc&#39;, this, [arg1, arg2]);
+     *      Ext.callback(myFunc, this, [arg1, arg2]);
+     *
+     *      Ext.isFunction(myFunc) &amp;&amp; this.myFunc(arg1, arg2);
+     *
+     * @param {Function/String} callback The callback function to execute or the name of
+     * the callback method on the provided `scope`.
+     * @param {Object} [scope] The scope in which `callback` should be invoked. If `callback`
+     * is a string this object provides the method by that name. If this is `null` then
+     * the `caller` is used to resolve the scope to a `ViewController` or the proper
+     * `defaultListenerScope`.
+     * @param {Array} [args] The arguments to pass to the function.
+     * @param {Number} [delay] Pass a number to delay the call by a number of milliseconds.
+     * @param {Object} [caller] The object calling the callback. This is used to resolve
+     * named methods when no explicit `scope` is provided.
+     * @param {Object} [defaultScope=caller] The default scope to return if none is found.
+     * @return The value returned by the callback or `undefined` (if there is a `delay`
+     * or if the `callback` is not a function).
+     */
+    callback: function (callback, scope, args, delay, caller, defaultScope) {
+        if (!callback) {
+            return;
+        }
+
+        var namedScope = (scope in Ext._namedScopes);
+        
+        if (callback.charAt) { // if (isString(fn))
+            if ((!scope || namedScope) &amp;&amp; caller) {
+                scope = caller.resolveListenerScope(namedScope ? scope : defaultScope);
+            }
+            //&lt;debug&gt;
+            if (!scope || !Ext.isObject(scope)) {
+                Ext.raise(&#39;Named method &quot;&#39; + callback + &#39;&quot; requires a scope object&#39;);
+            }
+            if (!Ext.isFunction(scope[callback])) {
+                Ext.raise(&#39;No method named &quot;&#39; + callback + &#39;&quot; on &#39; +
+                                (scope.$className || &#39;scope object&#39;));
+            }
+            //&lt;/debug&gt;
+
+            callback = scope[callback];
+        } else if (namedScope) {
+            scope = defaultScope || caller;
+        } else if (!scope) {
+            scope = caller;
+        }
+        
+        var ret;
+
+        if (callback &amp;&amp; Ext.isFunction(callback)) {
+            scope = scope || Ext.global;
+            if (delay) {
+                Ext.defer(callback, delay, scope, args);
+            } else if (Ext.elevateFunction) {
+                ret = Ext.elevateFunction(callback, scope, args);
+            } else if (args) {
+                ret = callback.apply(scope, args);
+            } else {
+                ret = callback.call(scope);
+            }
+        }
+
+        return ret;
+    },
+
+<span id='Ext-method-coerce'>    /**
+</span>     * @method coerce
+     * @member Ext
+     * Coerces the first value if possible so that it is comparable to the second value.
+     *
+     * Coercion only works between the basic atomic data types String, Boolean, Number, Date, null and undefined.
+     *
+     * Numbers and numeric strings are coerced to Dates using the value as the millisecond era value.
+     *
+     * Strings are coerced to Dates by parsing using the {@link Ext.Date#defaultFormat defaultFormat}.
+     *
+     * For example
+     *
+     *     Ext.coerce(&#39;false&#39;, true);
+     *
+     * returns the boolean value `false` because the second parameter is of type `Boolean`.
+     *
+     * @param {Mixed} from The value to coerce
+     * @param {Mixed} to The value it must be compared against
+     * @return The coerced value.
+     */
+    coerce: function (from, to) {
+        var fromType = Ext.typeOf(from),
+            toType = Ext.typeOf(to),
+            isString = typeof from === &#39;string&#39;;
+
+        if (fromType !== toType) {
+            switch (toType) {
+                case &#39;string&#39;:
+                    return String(from);
+                case &#39;number&#39;:
+                    return Number(from);
+                case &#39;boolean&#39;:
+                    // See http://ecma262-5.com/ELS5_HTML.htm#Section_11.9.3 as to why &#39;0&#39;.
+                    // TL;DR =&gt; (&#39;0&#39; == 0), so if given string &#39;0&#39;, we must return boolean false.
+                    return isString &amp;&amp; (!from || from === &#39;false&#39; || from === &#39;0&#39;) ? false : Boolean(from);
+                case &#39;null&#39;:
+                    return isString &amp;&amp; (!from || from === &#39;null&#39;) ? null : false;
+                case &#39;undefined&#39;:
+                    return isString &amp;&amp; (!from || from === &#39;undefined&#39;) ? undefined : false;
+                case &#39;date&#39;:
+                    return isString &amp;&amp; isNaN(from) ? Ext.Date.parse(from, Ext.Date.defaultFormat) : Date(Number(from));
+            }
+        }
+        return from;
+    },
+
+<span id='Ext-method-copyTo'>    /**
+</span>     * @method copyTo
+     * @member Ext
+     * Copies a set of named properties fom the source object to the destination object.
+     *
+     * Example:
+     *
+     *     var foo = { a: 1, b: 2, c: 3 };
+     *
+     *     var bar = Ext.copyTo({}, foo, &#39;a,c&#39;);
+     *     // bar = { a: 1, c: 3 };
+     *
+     * Important note: To borrow class prototype methods, use {@link Ext.Base#borrow} instead.
+     *
+     * @param {Object} dest The destination object.
+     * @param {Object} source The source object.
+     * @param {String/String[]} names Either an Array of property names, or a comma-delimited list
+     * of property names to copy.
+     * @param {Boolean} [usePrototypeKeys=false] Pass `true` to copy keys off of the
+     * prototype as well as the instance.
+     * @return {Object} The `dest` object.
+     * @deprecated 6.0.1 Use {@link Ext#copy Ext.copy} instead. This old method
+     * would copy the named preoperties even if they did not exist in the source which
+     * could produce `undefined` values in the destination.
+     */
+    copyTo: function (dest, source, names, usePrototypeKeys) {
+        if (typeof names === &#39;string&#39;) {
+            names = names.split(Ext.propertyNameSplitRe);
+        }
+
+        for (var name, i = 0, n = names ? names.length : 0; i &lt; n; i++) {
+            name = names[i];
+
+            if (usePrototypeKeys || source.hasOwnProperty(name)) {
+                dest[name] = source[name];
+            }
+        }
+
+        return dest;
+    },
+<span id='Ext-method-copy'>    /**
+</span>     * @method copy
+     * @member Ext
+     * Copies a set of named properties fom the source object to the destination object.
+     *
+     * Example:
+     *
+     *     var foo = { a: 1, b: 2, c: 3 };
+     *
+     *     var bar = Ext.copy({}, foo, &#39;a,c&#39;);
+     *     // bar = { a: 1, c: 3 };
+     *
+     * Important note: To borrow class prototype methods, use {@link Ext.Base#borrow} instead.
+     *
+     * @param {Object} dest The destination object.
+     * @param {Object} source The source object.
+     * @param {String/String[]} names Either an Array of property names, or a comma-delimited list
+     * of property names to copy.
+     * @param {Boolean} [usePrototypeKeys=false] Pass `true` to copy keys off of the
+     * prototype as well as the instance.
+     * @return {Object} The `dest` object.
+     */
+    copy: function (dest, source, names, usePrototypeKeys) {
+        if (typeof names === &#39;string&#39;) {
+            names = names.split(Ext.propertyNameSplitRe);
+        }
+
+        for (var name, i = 0, n = names ? names.length : 0; i &lt; n; i++) {
+            name = names[i];
+
+            // Only copy a property if the source actually *has* that property.
+            // If we are including prototype properties, then ensure that a property of
+            // that name can be found *somewhere* in the prototype chain (otherwise we&#39;d be copying undefined in which may break things)
+            if (source.hasOwnProperty(name) || (usePrototypeKeys &amp;&amp; name in source)) {
+                dest[name] = source[name];
+            }
+        }
+
+        return dest;
+    },
+
+    propertyNameSplitRe: /[,;\s]+/,
+
+<span id='Ext-method-copyToIf'>    /**
+</span>     * @method copyToIf
+     * @member Ext
+     * Copies a set of named properties fom the source object to the destination object
+     * if the destination object does not already have them.
+     *
+     * Example:
+     *
+     *     var foo = { a: 1, b: 2, c: 3 };
+     *
+     *     var bar = Ext.copyToIf({ a:42 }, foo, &#39;a,c&#39;);
+     *     // bar = { a: 42, c: 3 };
+     *
+     * @param {Object} destination The destination object.
+     * @param {Object} source The source object.
+     * @param {String/String[]} names Either an Array of property names, or a single string
+     * with a list of property names separated by &quot;,&quot;, &quot;;&quot; or spaces.
+     * @return {Object} The `dest` object.
+     * @deprecated 6.0.1 Use {@link Ext#copyIf Ext.copyIf} instead. This old method
+     * would copy the named preoperties even if they did not exist in the source which
+     * could produce `undefined` values in the destination.
+     */
+    copyToIf: function (destination, source, names) {
+        if (typeof names === &#39;string&#39;) {
+            names = names.split(Ext.propertyNameSplitRe);
+        }
+
+        for (var name, i = 0, n = names ? names.length : 0; i &lt; n; i++) {
+            name = names[i];
+
+            if (destination[name] === undefined) {
+                destination[name] = source[name];
+            }
+        }
+
+        return destination;
+    },
+
+<span id='Ext-method-copyIf'>    /**
+</span>     * @method copyIf
+     * @member Ext
+     * Copies a set of named properties fom the source object to the destination object
+     * if the destination object does not already have them.
+     *
+     * Example:
+     *
+     *     var foo = { a: 1, b: 2, c: 3 };
+     *
+     *     var bar = Ext.copyIf({ a:42 }, foo, &#39;a,c&#39;);
+     *     // bar = { a: 42, c: 3 };
+     *
+     * @param {Object} destination The destination object.
+     * @param {Object} source The source object.
+     * @param {String/String[]} names Either an Array of property names, or a single string
+     * with a list of property names separated by &quot;,&quot;, &quot;;&quot; or spaces.
+     * @return {Object} The `dest` object.
+     */
+    copyIf: function (destination, source, names) {
+        if (typeof names === &#39;string&#39;) {
+            names = names.split(Ext.propertyNameSplitRe);
+        }
+
+        for (var name, i = 0, n = names ? names.length : 0; i &lt; n; i++) {
+            name = names[i];
+
+            // Only copy a property if the destination has no property by that name
+            if (!(name in destination) &amp;&amp; (name in source)) {
+                destination[name] = source[name];
+            }
+        }
+
+        return destination;
+    },
+
+<span id='Ext-method-extend'>    /**
+</span>     * @method extend
+     * @member Ext
+     * This method deprecated. Use {@link Ext#define Ext.define} instead.
+     * @param {Function} superclass
+     * @param {Object} overrides
+     * @return {Function} The subclass constructor from the &lt;tt&gt;overrides&lt;/tt&gt; parameter, or a generated one if not provided.
+     * @deprecated 4.0.0 Use {@link Ext#define Ext.define} instead
+     */
+    extend: (function () {
+        // inline overrides
+        var objectConstructor = Object.prototype.constructor,
+            inlineOverrides = function (o) {
+                var m;
+
+                for (m in o) {
+                    if (!o.hasOwnProperty(m)) {
+                        continue;
+                    }
+                    this[m] = o[m];
+                }
+            };
+
+        return function(subclass, superclass, overrides) {
+            // First we check if the user passed in just the superClass with overrides
+            if (Ext.isObject(superclass)) {
+                overrides = superclass;
+                superclass = subclass;
+                subclass = overrides.constructor !== objectConstructor ? overrides.constructor : function() {
+                    superclass.apply(this, arguments);
+                };
+            }
+
+            //&lt;debug&gt;
+            if (!superclass) {
+                Ext.raise({
+                    sourceClass: &#39;Ext&#39;,
+                    sourceMethod: &#39;extend&#39;,
+                    msg: &#39;Attempting to extend from a class which has not been loaded on the page.&#39;
+                });
+            }
+            //&lt;/debug&gt;
+
+            // We create a new temporary class
+            var F = function() {},
+                subclassProto, superclassProto = superclass.prototype;
+
+            F.prototype = superclassProto;
+            subclassProto = subclass.prototype = new F();
+            subclassProto.constructor = subclass;
+            subclass.superclass = superclassProto;
+
+            if (superclassProto.constructor === objectConstructor) {
+                superclassProto.constructor = superclass;
+            }
+
+            subclass.override = function(overrides) {
+                Ext.override(subclass, overrides);
+            };
+
+            subclassProto.override = inlineOverrides;
+            subclassProto.proto = subclassProto;
+
+            subclass.override(overrides);
+            subclass.extend = function(o) {
+                return Ext.extend(subclass, o);
+            };
+
+            return subclass;
+        };
+    }()),
+
+<span id='Ext-method-iterate'>    /**
+</span>     * @method iterate
+     * @member Ext
+     * Iterates either an array or an object. This method delegates to
+     * {@link Ext.Array#each Ext.Array.each} if the given value is iterable, and {@link Ext.Object#each Ext.Object.each} otherwise.
+     *
+     * @param {Object/Array} object The object or array to be iterated.
+     * @param {Function} fn The function to be called for each iteration. See and {@link Ext.Array#each Ext.Array.each} and
+     * {@link Ext.Object#each Ext.Object.each} for detailed lists of arguments passed to this function depending on the given object
+     * type that is being iterated.
+     * @param {Object} [scope] The scope (`this` reference) in which the specified function is executed.
+     * Defaults to the object being iterated itself.
+     */
+    iterate: function(object, fn, scope) {
+        if (Ext.isEmpty(object)) {
+            return;
+        }
+
+        if (scope === undefined) {
+            scope = object;
+        }
+
+        if (Ext.isIterable(object)) {
+            Ext.Array.each.call(Ext.Array, object, fn, scope);
+        }
+        else {
+            Ext.Object.each.call(Ext.Object, object, fn, scope);
+        }
+    },
+
+    _resourcePoolRe: /^[&lt;]([^&lt;&gt;@:]*)(?:[@]([^&lt;&gt;@:]+))?[&gt;](.+)$/,
+
+<span id='Ext-method-resolveResource'>    /**
+</span>     * Resolves a resource URL that may contain a resource pool identifier token at the
+     * front. The tokens are formatted as HTML tags &quot;&amp;lt;poolName@packageName&amp;gt;&quot; followed
+     * by a normal relative path. This token is only processed if present at the first
+     * character of the given string.
+     *
+     * These tokens are parsed and the pieces are then passed to the
+     * {@link Ext#getResourcePath} method.
+     *
+     * For example:
+     *
+     *      [{
+     *          xtype: &#39;image&#39;,
+     *          src: &#39;&lt;shared&gt;images/foo.png&#39;
+     *      },{
+     *          xtype: &#39;image&#39;,
+     *          src: &#39;&lt;@package&gt;images/foo.png&#39;
+     *      },{
+     *          xtype: &#39;image&#39;,
+     *          src: &#39;&lt;shared@package&gt;images/foo.png&#39;
+     *      }]
+     *
+     * In the above example, &quot;shared&quot; is the name of a Sencha Cmd resource pool and
+     * &quot;package&quot; is the name of a Sencha Cmd package.
+     * @member Ext
+     * @param {String} url The URL that may contain a resource pool token at the front.
+     * @return {String}
+     * @since 6.0.1
+     */
+    resolveResource: function (url) {
+        var ret = url,
+            m;
+
+        if (url &amp;&amp; url.charAt(0) === &#39;&lt;&#39;) {
+            m = Ext._resourcePoolRe.exec(url);
+            if (m) {
+                ret = Ext.getResourcePath(m[3], m[1], m[2]);
+            }
+        }
+
+        return ret;
+    },
+
+<span id='Ext-method-urlEncode'>    /**
+</span>     *
+     * @member Ext
+     * @method urlEncode
+     * @inheritdoc Ext.Object#toQueryString
+     * @deprecated 4.0.0 Use {@link Ext.Object#toQueryString} instead
+     */
+    urlEncode: function () {
+        var args = Ext.Array.from(arguments),
+            prefix = &#39;&#39;;
+
+        // Support for the old `pre` argument
+        if (Ext.isString(args[1])) {
+            prefix = args[1] + &#39;&amp;&#39;;
+            args[1] = false;
+        }
+
+        return prefix + Ext.Object.toQueryString.apply(Ext.Object, args);
+    },
+
+<span id='Ext-method-urlDecode'>    /**
+</span>     * Alias for {@link Ext.Object#fromQueryString}.
+     *
+     * @member Ext
+     * @method urlDecode
+     * @inheritdoc Ext.Object#fromQueryString
+     * @deprecated 4.0.0 Use {@link Ext.Object#fromQueryString} instead
+     */
+    urlDecode: function() {
+        return Ext.Object.fromQueryString.apply(Ext.Object, arguments);
+    },
+
+<span id='Ext-method-getScrollbarSize'>    /**
+</span>     * @method getScrollbarSize
+     * @member Ext
+     * Returns the size of the browser scrollbars. This can differ depending on
+     * operating system settings, such as the theme or font size.
+     * @param {Boolean} [force] true to force a recalculation of the value.
+     * @return {Object} An object containing scrollbar sizes.
+     * @return {Number} return.width The width of the vertical scrollbar.
+     * @return {Number} return.height The height of the horizontal scrollbar.
+     */
+    getScrollbarSize: function (force) {
+        //&lt;debug&gt;
+        if (!Ext.isDomReady) {
+            Ext.raise(&quot;getScrollbarSize called before DomReady&quot;);
+        }
+        //&lt;/debug&gt;
+
+        var scrollbarSize = Ext._scrollbarSize;
+
+        if (force || !scrollbarSize) {
+            var db = document.body,
+                div = document.createElement(&#39;div&#39;);
+
+            div.style.width = div.style.height = &#39;100px&#39;;
+            div.style.overflow = &#39;scroll&#39;;
+            div.style.position = &#39;absolute&#39;;
+
+            db.appendChild(div); // now we can measure the div...
+
+            // at least in iE9 the div is not 100px - the scrollbar size is removed!
+            Ext._scrollbarSize = scrollbarSize = {
+                width: div.offsetWidth - div.clientWidth,
+                height: div.offsetHeight - div.clientHeight
+            };
+
+            db.removeChild(div);
+        }
+
+        return scrollbarSize;
+    },
+
+<span id='Ext-method-typeOf'>    /**
+</span>     * @method typeOf
+     * @member Ext
+     * Returns the type of the given variable in string format. List of possible values are:
+     *
+     * - `undefined`: If the given value is `undefined`
+     * - `null`: If the given value is `null`
+     * - `string`: If the given value is a string
+     * - `number`: If the given value is a number
+     * - `boolean`: If the given value is a boolean value
+     * - `date`: If the given value is a `Date` object
+     * - `function`: If the given value is a function reference
+     * - `object`: If the given value is an object
+     * - `array`: If the given value is an array
+     * - `regexp`: If the given value is a regular expression
+     * - `element`: If the given value is a DOM Element
+     * - `textnode`: If the given value is a DOM text node and contains something other than whitespace
+     * - `whitespace`: If the given value is a DOM text node and contains only whitespace
+     *
+     * @param {Object} value
+     * @return {String}
+     */
+    typeOf: (function () {
+        var nonWhitespaceRe = /\S/,
+            toString = Object.prototype.toString,
+            typeofTypes = {
+                number: 1,
+                string: 1,
+                &#39;boolean&#39;: 1,
+                &#39;undefined&#39;: 1
+            },
+            toStringTypes = {
+                &#39;[object Array]&#39;  : &#39;array&#39;,
+                &#39;[object Date]&#39;   : &#39;date&#39;,
+                &#39;[object Boolean]&#39;: &#39;boolean&#39;,
+                &#39;[object Number]&#39; : &#39;number&#39;,
+                &#39;[object RegExp]&#39; : &#39;regexp&#39;
+            };
+
+        return function(value) {
+            if (value === null) {
+                return &#39;null&#39;;
+            }
+
+            var type = typeof value,
+                ret, typeToString;
+
+            if (typeofTypes[type]) {
+                return type;
+            }
+
+            ret = toStringTypes[typeToString = toString.call(value)];
+            if (ret) {
+                return ret;
+            }
+
+            if (type === &#39;function&#39;) {
+                return &#39;function&#39;;
+            }
+
+            if (type === &#39;object&#39;) {
+                if (value.nodeType !== undefined) {
+                    if (value.nodeType === 3) {
+                        return nonWhitespaceRe.test(value.nodeValue) ? &#39;textnode&#39; : &#39;whitespace&#39;;
+                    }
+                    else {
+                        return &#39;element&#39;;
+                    }
+                }
+
+                return &#39;object&#39;;
+            }
+
+            //&lt;debug&gt;
+            Ext.raise({
+                sourceClass: &#39;Ext&#39;,
+                sourceMethod: &#39;typeOf&#39;,
+                msg: &#39;Failed to determine the type of &quot;&#39; + value + &#39;&quot;.&#39;
+            });
+            //&lt;/debug&gt;
+
+            return typeToString;
+        };
+    }()),
+
+<span id='Ext-method-factory'>    /**
+</span>     * A global factory method to instantiate a class from a config object. For example,
+     * these two calls are equivalent:
+     *
+     *     Ext.factory({ text: &#39;My Button&#39; }, &#39;Ext.Button&#39;);
+     *     Ext.create(&#39;Ext.Button&#39;, { text: &#39;My Button&#39; });
+     *
+     * If an existing instance is also specified, it will be updated with the supplied config object. This is useful
+     * if you need to either create or update an object, depending on if an instance already exists. For example:
+     *
+     *     var button;
+     *     button = Ext.factory({ text: &#39;New Button&#39; }, &#39;Ext.Button&#39;, button);     // Button created
+     *     button = Ext.factory({ text: &#39;Updated Button&#39; }, &#39;Ext.Button&#39;, button); // Button updated
+     *
+     * @param {Object} config  The config object to instantiate or update an instance with.
+     * @param {String} [classReference]  The class to instantiate from (if there is a default).
+     * @param {Object} [instance]  The instance to update.
+     * @param [aliasNamespace]
+     * @member Ext
+     */
+    factory: function(config, classReference, instance, aliasNamespace) {
+        var manager = Ext.ClassManager,
+            newInstance;
+
+        // If config is falsy or a valid instance, destroy the current instance
+        // (if it exists) and replace with the new one
+        if (!config || config.isInstance) {
+            if (instance &amp;&amp; instance !== config) {
+                instance.destroy();
+            }
+
+            return config;
+        }
+
+        if (aliasNamespace) {
+             // If config is a string value, treat it as an alias
+            if (typeof config === &#39;string&#39;) {
+                return manager.instantiateByAlias(aliasNamespace + &#39;.&#39; + config);
+            }
+            // Same if &#39;type&#39; is given in config
+            else if (Ext.isObject(config) &amp;&amp; &#39;type&#39; in config) {
+                return manager.instantiateByAlias(aliasNamespace + &#39;.&#39; + config.type, config);
+            }
+        }
+
+        if (config === true) {
+            //&lt;debug&gt;
+            if (!instance &amp;&amp; !classReference) {
+                Ext.raise(&#39;[Ext.factory] Cannot determine type of class to create&#39;);
+            }
+            //&lt;/debug&gt;
+            return instance || Ext.create(classReference);
+        }
+
+        //&lt;debug&gt;
+        if (!Ext.isObject(config)) {
+            Ext.raise(&quot;Invalid config, must be a valid config object&quot;);
+        }
+        //&lt;/debug&gt;
+
+        if (&#39;xtype&#39; in config) {
+            newInstance = manager.instantiateByAlias(&#39;widget.&#39; + config.xtype, config);
+        }
+        else if (&#39;xclass&#39; in config) {
+            newInstance = Ext.create(config.xclass, config);
+        }
+
+        if (newInstance) {
+            if (instance) {
+                instance.destroy();
+            }
+
+            return newInstance;
+        }
+
+        if (instance) {
+            return instance.setConfig(config);
+        }
+
+        return Ext.create(classReference, config);
+    },
+
+<span id='Ext-method-log'>    /**
+</span>     * @method log
+     * @member Ext
+     * Logs a message. If a console is present it will be used. On Opera, the method
+     * &quot;opera.postError&quot; is called. In other cases, the message is logged to an array
+     * &quot;Ext.log.out&quot;. An attached debugger can watch this array and view the log. The
+     * log buffer is limited to a maximum of &quot;Ext.log.max&quot; entries (defaults to 250).
+     *
+     * If additional parameters are passed, they are joined and appended to the message.
+     * A technique for tracing entry and exit of a function is this:
+     *
+     *     function foo () {
+     *         Ext.log({ indent: 1 }, &#39;&gt;&gt; foo&#39;);
+     *
+     *         // log statements in here or methods called from here will be indented
+     *         // by one step
+     *
+     *         Ext.log({ outdent: 1 }, &#39;&lt;&lt; foo&#39;);
+     *     }
+     *
+     * This method does nothing in a release build.
+     *
+     * @param {String/Object} [options] The message to log or an options object with any
+     * of the following properties:
+     *
+     *  - `msg`: The message to log (required).
+     *  - `level`: One of: &quot;error&quot;, &quot;warn&quot;, &quot;info&quot; or &quot;log&quot; (the default is &quot;log&quot;).
+     *  - `dump`: An object to dump to the log as part of the message.
+     *  - `stack`: True to include a stack trace in the log.
+     *  - `indent`: Cause subsequent log statements to be indented one step.
+     *  - `outdent`: Cause this and following statements to be one step less indented.
+     *
+     * @param {String...} [message] The message to log (required unless specified in
+     * options object).
+     */
+    log:
+    //&lt;debug&gt;
+        (function () {
+            /*
+             * Iterate through an object to dump its content into a string.
+             * For example:
+             *     {
+             *         style: {
+             *             lineWidth: 1
+             *         },
+             *         label: {},
+             *         marker: {
+             *             strokeStyle: &quot;#555&quot;,
+             *             radius: 3,
+             *             size: 3
+             *         },
+             *         subStyle: {
+             *             fillStyle: [
+             *                 0: &quot;#133987&quot;,
+             *                 1: &quot;#1c55ca&quot;,
+             *                 2: &quot;#4d7fe6&quot;
+             *             ]
+             *         },
+             *         markerSubStyle: {}
+             *     } 
+             *
+             * @param {Object} object The object to iterate
+             * @param {Number} [level] Current level of identation (and recursion). Default is 0.
+             * @param {Number} [maxLevel] Maximum level of recursion. Default is 3.
+             * @param {Boolean} [withFunctions] Include functions in the output.
+             * @return {String} The string with the contents of the object
+             */
+            var primitiveRe = /string|number|boolean/;
+            function dumpObject (object, level, maxLevel, withFunctions) {
+                var member, type, value, name, prefix, suffix,
+                    members = [];
+
+                if (Ext.isArray(object)) {
+                    prefix = &#39;[&#39;;
+                    suffix = &#39;]&#39;;
+                } else if (Ext.isObject(object)) {
+                    prefix = &#39;{&#39;;
+                    suffix = &#39;}&#39;;
+                }
+                if (!maxLevel) {
+                    maxLevel = 3;
+                }
+                if (level &gt; maxLevel) {
+                    return prefix+&#39;...&#39;+suffix;
+                }
+
+                level = level || 1;
+                var spacer = (new Array(level)).join(&#39;    &#39;);
+
+                // Cannot use Ext.encode since it can recurse endlessly
+                for (name in object) {
+                    if (object.hasOwnProperty(name)) {
+                        value = object[name];
+
+                        type = typeof value;
+                        if (type === &#39;function&#39;) {
+                            if (!withFunctions) {
+                                continue;
+                            }
+                            member = type;
+                        } else if (type === &#39;undefined&#39;) {
+                            member = type;
+                        } else if (value === null || primitiveRe.test(type) || Ext.isDate(value)) {
+                            member = Ext.encode(value);
+                        } else if (Ext.isArray(value)) {
+                            member = dumpObject(value, level+1, maxLevel, withFunctions);
+                        } else if (Ext.isObject(value)) {
+                            member = dumpObject(value, level+1, maxLevel, withFunctions);
+                        } else {
+                            member = type;
+                        }
+                        members.push(spacer + name + &#39;: &#39; + member);    // or Ext.encode(name)
+                    }
+                }
+                if (members.length) {
+                    return prefix + &#39;\n    &#39;+ members.join(&#39;,\n    &#39;) + &#39;\n&#39;+spacer+suffix;
+                }
+                return prefix+suffix;
+            }
+
+            function log (message) {
+                var options, dump,
+                    con = Ext.global.console,
+                    level = &#39;log&#39;,
+                    indent = log.indent || 0,
+                    prefix, stack, fn, out, max;
+
+                log.indent = indent;
+
+                if (typeof message !== &#39;string&#39;) {
+                    options = message;
+                    message = options.msg || &#39;&#39;;
+                    level = options.level || level;
+                    dump = options.dump;
+                    stack = options.stack;
+                    prefix = options.prefix;
+                    fn = options.fn;
+
+                    if (options.indent) {
+                        ++log.indent;
+                    } else if (options.outdent) {
+                        log.indent = indent = Math.max(indent - 1, 0);
+                    }
+
+                    if (dump &amp;&amp; !(con &amp;&amp; con.dir)) {
+                        message += dumpObject(dump);
+                        dump = null;
+                    }
+                }
+
+                if (arguments.length &gt; 1) {
+                    message += Array.prototype.slice.call(arguments, 1).join(&#39;&#39;);
+                }
+
+                if (prefix) {
+                    message = prefix + &#39; - &#39; + message;
+                }
+
+                message = indent ? Ext.String.repeat(&#39; &#39;, log.indentSize * indent) + message : message;
+                // w/o console, all messages are equal, so munge the level into the message:
+                if (level !== &#39;log&#39;) {
+                    message = &#39;[&#39; + level.charAt(0).toUpperCase() + &#39;] &#39; + message;
+                }
+
+                if (fn) {
+                    message += &#39;\nCaller: &#39; + fn.toString();
+                }
+
+                // Not obvious, but &#39;console&#39; comes and goes when Firebug is turned on/off, so
+                // an early test may fail either direction if Firebug is toggled.
+                //
+                if (con) { // if (Firebug-like console)
+                    if (con[level]) {
+                        con[level](message);
+                    } else {
+                        con.log(message);
+                    }
+
+                    if (dump) {
+                        con.dir(dump);
+                    }
+
+                    if (stack &amp;&amp; con.trace) {
+                        // Firebug&#39;s console.error() includes a trace already...
+                        if (!con.firebug || level !== &#39;error&#39;) {
+                            con.trace();
+                        }
+                    }
+                } else if (Ext.isOpera) {
+                    opera.postError(message); // jshint ignore:line
+                } else {
+                    out = log.out;
+                    max = log.max;
+
+                    if (out.length &gt;= max) {
+                        // this formula allows out.max to change (via debugger), where the
+                        // more obvious &quot;max/4&quot; would not quite be the same
+                        Ext.Array.erase(out, 0, out.length - 3 * Math.floor(max / 4)); // keep newest 75%
+                    }
+
+                    out.push(message);
+                }
+
+                // Mostly informational, but the Ext.Error notifier uses them:
+                ++log.count;
+                ++log.counters[level];
+            }
+
+            function logx (level, args) {
+                if (typeof args[0] === &#39;string&#39;) {
+                    args.unshift({});
+                }
+                args[0].level = level;
+                log.apply(this, args);
+            }
+
+            log.error = function () {
+                logx(&#39;error&#39;, Array.prototype.slice.call(arguments));
+            };
+            log.info = function () {
+                logx(&#39;info&#39;, Array.prototype.slice.call(arguments));
+            };
+            log.warn = function () {
+                logx(&#39;warn&#39;, Array.prototype.slice.call(arguments));
+            };
+
+            log.count = 0;
+            log.counters = { error: 0, warn: 0, info: 0, log: 0 };
+            log.indentSize = 2;
+            log.out = [];
+            log.max = 750;
+
+            return log;
+        }()) ||
+    //&lt;/debug&gt;
+        (function () {
+            var nullLog = function () {};
+            nullLog.info = nullLog.warn = nullLog.error = Ext.emptyFn;
+            return nullLog;
+        }())
+});
+
+</pre>
+</body>
+</html>

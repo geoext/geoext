@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <title>The source code</title>
+  <link href="../resources/prettify/prettify.css" type="text/css" rel="stylesheet" />
+  <script type="text/javascript" src="../resources/prettify/prettify.js"></script>
+  <style type="text/css">
+    .highlight { display: block; background-color: #ddd; }
+  </style>
+  <script type="text/javascript">
+    function highlight() {
+      document.getElementById(location.hash.replace(/#/, "")).className = "highlight";
+    }
+  </script>
+</head>
+<body onload="prettyPrint(); highlight();">
+  <pre class="prettyprint lang-js"><span id='Ext-form-action-DirectSubmit'>/**
+</span> * Provides Ext Direct support for submitting form data.
+ *
+ * This example illustrates usage of Ext Direct to submit a form.
+ *
+ *     var myFormPanel = new Ext.form.Panel({
+ *         // configs for FormPanel
+ *         title: &#39;Basic Information&#39;,
+ *         renderTo: document.body,
+ *         width: 300, height: 160,
+ *         padding: 10,
+ *         buttons:[{
+ *             text: &#39;Submit&#39;,
+ *             handler: function(){
+ *                 myFormPanel.getForm().submit({
+ *                     params: {
+ *                         foo: &#39;bar&#39;,
+ *                         uid: 34
+ *                     }
+ *                 });
+ *             }
+ *         }],
+ *
+ *         // configs apply to child items
+ *         defaults: {anchor: &#39;100%&#39;},
+ *         defaultType: &#39;textfield&#39;,
+ *         items: [{
+ *             fieldLabel: &#39;Name&#39;,
+ *             name: &#39;name&#39;
+ *         },{
+ *             fieldLabel: &#39;Email&#39;,
+ *             name: &#39;email&#39;
+ *         },{
+ *             fieldLabel: &#39;Company&#39;,
+ *             name: &#39;company&#39;
+ *         }],
+ *
+ *         // configs for BasicForm
+ *         api: {
+ *             // The server-side method to call for load() requests
+ *             load: &#39;Profile.getBasicInfo&#39;,
+ *             // The server-side must mark the submit handler as a &#39;formHandler&#39;
+ *             submit: &#39;Profile.updateBasicInfo&#39;
+ *         },
+ *         // specify the order for the passed params
+ *         paramOrder: [&#39;uid&#39;, &#39;foo&#39;]
+ *     });
+ *
+ * Before using DirectLoad action, make sure you set up Ext Direct remoting provider.
+ * See {@link Ext.direct.Manager} for more information.
+ *
+ * For corresponding load action, see {@link Ext.form.action.DirectLoad}.
+ */
+Ext.define(&#39;Ext.form.action.DirectSubmit&#39;, {
+    extend: &#39;Ext.form.action.Submit&#39;,
+    alternateClassName: &#39;Ext.form.Action.DirectSubmit&#39;,
+    alias: &#39;formaction.directsubmit&#39;,
+    
+    requires: [
+        &#39;Ext.direct.Manager&#39;
+    ],
+    
+    mixins: [
+        &#39;Ext.form.action.DirectAction&#39;
+    ],
+
+<span id='Ext-form-action-DirectSubmit-property-type'>    type: &#39;directsubmit&#39;,
+</span>
+<span id='Ext-form-action-DirectSubmit-method-doSubmit'>    doSubmit: function() {
+</span>        var me = this,
+            form = me.form,
+            metadata = me.metadata || form.metadata,
+            timeout = me.timeout || form.timeout,
+            fn, formInfo, args;
+        
+        fn       = me.resolveMethod(&#39;submit&#39;);
+        formInfo = me.buildForm();
+        
+        args = fn.directCfg.method.getArgs({
+            params: formInfo.formEl,
+            options: timeout != null ? { timeout: timeout * 1000 } : null,
+            metadata: metadata,
+            callback: me.onComplete,
+            scope: me
+        });
+        
+        fn.apply(window, args);
+        
+        me.cleanup(formInfo);
+    },
+
+<span id='Ext-form-action-DirectSubmit-method-processResponse'>    // Direct actions have already been processed and therefore
+</span>    // we can directly set the result; Direct Actions do not have
+    // a this.response property.
+    processResponse: function(result) {
+        return (this.result = result);
+    },
+    
+<span id='Ext-form-action-DirectSubmit-method-onComplete'>    onComplete: function(data){
+</span>        if (data) {
+            this.onSuccess(data);
+        } else {
+            this.onFailure(null);
+        }
+    }
+});
+</pre>
+</body>
+</html>

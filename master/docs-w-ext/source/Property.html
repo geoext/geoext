@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <title>The source code</title>
+  <link href="../resources/prettify/prettify.css" type="text/css" rel="stylesheet" />
+  <script type="text/javascript" src="../resources/prettify/prettify.js"></script>
+  <style type="text/css">
+    .highlight { display: block; background-color: #ddd; }
+  </style>
+  <script type="text/javascript">
+    function highlight() {
+      document.getElementById(location.hash.replace(/#/, "")).className = "highlight";
+    }
+  </script>
+</head>
+<body onload="prettyPrint(); highlight();">
+  <pre class="prettyprint lang-js"><span id='Ext-grid-property-Property-method-constructor'><span id='Ext-grid-property-Property'>/**
+</span></span> * A specific {@link Ext.data.Model} type that represents a name/value pair and is made to work with the
+ * {@link Ext.grid.property.Grid}. Typically, Properties do not need to be created directly as they can be
+ * created implicitly by simply using the appropriate data configs either via the
+ * {@link Ext.grid.property.Grid#source} config property or by calling {@link Ext.grid.property.Grid#setSource}.
+ * However, if the need arises, these records can also be created explicitly as shown below. Example usage:
+ *
+ *     var rec = new Ext.grid.property.Property({
+ *         name: &#39;birthday&#39;,
+ *         value: Ext.Date.parse(&#39;17/06/1962&#39;, &#39;d/m/Y&#39;)
+ *     });
+ *     // Add record to an already populated grid
+ *     grid.store.addSorted(rec);
+ *
+ * @constructor
+ * Creates new property.
+ * @param {Object} config A data object in the format:
+ * @param {String/String[]} config.name A name or names for the property.
+ * @param {Mixed/Mixed[]} config.value A value or values for the property.
+ * The specified value&#39;s type will be read automatically by the grid to determine the type of editor to use when
+ * displaying it.
+ * @return {Object}
+ */
+Ext.define(&#39;Ext.grid.property.Property&#39;, {
+    extend: &#39;Ext.data.Model&#39;,
+
+    alternateClassName: &#39;Ext.PropGridProperty&#39;,
+
+<span id='Ext-grid-property-Property-property-fields'>    fields: [{
+</span>        name: &#39;name&#39;,
+        type: &#39;string&#39;
+    }, {
+        name: &#39;value&#39;
+    }],
+<span id='Ext-grid-property-Property-cfg-idProperty'>    idProperty: &#39;name&#39;,
+</span>
+    constructor: function(data, value) {
+        if (!Ext.isObject(data)) {
+            data = {
+                name: data,
+                value: value
+            };
+        }
+        this.callParent([data]);
+    }
+});</pre>
+</body>
+</html>
