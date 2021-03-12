@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <title>The source code</title>
+  <link href="../resources/prettify/prettify.css" type="text/css" rel="stylesheet" />
+  <script type="text/javascript" src="../resources/prettify/prettify.js"></script>
+  <style type="text/css">
+    .highlight { display: block; background-color: #ddd; }
+  </style>
+  <script type="text/javascript">
+    function highlight() {
+      document.getElementById(location.hash.replace(/#/, "")).className = "highlight";
+    }
+  </script>
+</head>
+<body onload="prettyPrint(); highlight();">
+  <pre class="prettyprint lang-js">/* Copyright (c) 2015-present The Open Source Geospatial Foundation
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see &lt;http://www.gnu.org/licenses/&gt;.
+ */
+<span id='GeoExt-data-model-LayerTreeNode'>/**
+</span> * The layer tree node class used by the stores used in trees.
+ *
+ * @class GeoExt.data.model.LayerTreeNode
+ */
+Ext.define(&#39;GeoExt.data.model.LayerTreeNode&#39;, {
+    extend: &#39;GeoExt.data.model.Layer&#39;,
+    requires: [
+        &#39;Ext.data.NodeInterface&#39;
+    ],
+    mixins: [
+        &#39;Ext.mixin.Queryable&#39;,
+        &#39;GeoExt.mixin.SymbolCheck&#39;
+    ],
+
+<span id='GeoExt-data-model-LayerTreeNode-property-symbols'>    // &lt;debug&gt;
+</span>    symbols: [
+        &#39;ol.layer.Base&#39;,
+        &#39;ol.Object#get&#39;,
+        &#39;ol.Object#set&#39;
+    ],
+<span id='GeoExt-data-model-LayerTreeNode-property-fields'>    // &lt;/debug&gt;
+</span>
+    fields: [{
+        name: &#39;leaf&#39;,
+        type: &#39;boolean&#39;,
+        convert: function(v, record) {
+            var isGroup = record.get(&#39;isLayerGroup&#39;);
+            if (isGroup === undefined || isGroup) {
+                return false;
+            } else {
+                return true;
+            }
+        }
+    }, {
+<span id='GeoExt-data-model-LayerTreeNode-property-name'>        /**
+</span>         * This should be set via tree panel.
+         */
+        name: &#39;__toggleMode&#39;,
+        type: &#39;string&#39;,
+        defaultValue: &#39;classic&#39;
+    }, {
+        name: &#39;iconCls&#39;,
+        type: &#39;string&#39;,
+        convert: function(v, record) {
+            return record.getOlLayerProp(&#39;iconCls&#39;);
+        }
+    }],
+
+<span id='GeoExt-data-model-LayerTreeNode-property-proxy'>    proxy: {
+</span>        type: &#39;memory&#39;,
+        reader: {
+            type: &#39;json&#39;
+        }
+    },
+
+<span id='GeoExt-data-model-LayerTreeNode-method-constructor'>    /**
+</span>     * @inheritDoc
+     */
+    constructor: function() {
+        var layer;
+
+        this.callParent(arguments);
+
+        layer = this.getOlLayer();
+        if (layer instanceof ol.layer.Base) {
+            this.set(&#39;checked&#39;, layer.get(&#39;visible&#39;));
+            layer.on(&#39;change:visible&#39;, this.onLayerVisibleChange, this);
+        }
+    },
+
+<span id='GeoExt-data-model-LayerTreeNode-method-onLayerVisibleChange'>    /**
+</span>     * Handler for the `change:visible` event of the layer.
+     *
+     * @param {ol.ObjectEvent} evt The emitted `ol.Object` event.
+     */
+    onLayerVisibleChange: function(evt) {
+        var target = evt.target;
+
+        if (!this.__updating) {
+            this.set(&#39;checked&#39;, target.get(&#39;visible&#39;));
+        }
+    },
+
+<span id='GeoExt-data-model-LayerTreeNode-method-set'>    /**
+</span>     * Overridden to forward changes to the underlying `ol.Object`. All changes
+     * on the {Ext.data.Model} properties will be set on the `ol.Object` as
+     * well.
+     *
+     * @param {String} key The key to set.
+     * @param {Object} newValue The value to set.
+     *
+     * @inheritdoc
+     */
+    set: function(key, newValue) {
+        var me = this;
+        var classicMode = (me.get(&#39;__toggleMode&#39;) === &#39;classic&#39;);
+
+        me.callParent(arguments);
+
+        // forward changes to ol object
+        if (key === &#39;checked&#39;) {
+            if (me.get(&#39;__toggleMode&#39;) === &#39;ol3&#39;) {
+                me.getOlLayer().set(&#39;visible&#39;, newValue);
+                return;
+            }
+
+            me.__updating = true;
+            if (me.get(&#39;isLayerGroup&#39;) &amp;&amp; classicMode) {
+                me.getOlLayer().set(&#39;visible&#39;, newValue);
+                if (me.childNodes) {
+                    me.eachChild(function(child) {
+                        child.getOlLayer().set(&#39;visible&#39;, newValue);
+                    });
+                }
+            } else {
+                me.getOlLayer().set(&#39;visible&#39;, newValue);
+            }
+            me.__updating = false;
+
+            if (classicMode) {
+                me.toggleParentNodes(newValue);
+            }
+        }
+    },
+
+<span id='GeoExt-data-model-LayerTreeNode-method-toggleParentNodes'>    /**
+</span>     * Handles parent behaviour of checked nodes: Checks parent Nodes if node
+     * is checked or unchecks parent nodes if the node is unchecked and no
+     * sibling is checked.
+     *
+     * @param {Boolean} newValue The newValue to pass through to the parent.
+     * @private
+     */
+    toggleParentNodes: function(newValue) {
+        var me = this;
+        // Checks parent Nodes if node is checked.
+        if (newValue === true) {
+            me.__updating = true;
+            me.bubble(function(parent) {
+                if (!parent.isRoot()) {
+                    parent.set(&#39;__toggleMode&#39;, &#39;ol3&#39;); // prevents recursion
+                    parent.set(&#39;checked&#39;, true);
+                    parent.set(&#39;__toggleMode&#39;, &#39;classic&#39;);
+                }
+            });
+            me.__updating = false;
+        }
+
+        // Unchecks parent Nodes if the node is unchecked and no sibling is
+        // checked.
+        if (newValue === false) {
+            me.__updating = true;
+            me.bubble(function(parent) {
+                if (!parent.isRoot()) {
+                    var allUnchecked = true;
+                    parent.eachChild(function(child) {
+                        if (child.get(&#39;checked&#39;)) {
+                            allUnchecked = false;
+                        }
+                    });
+                    if (allUnchecked) {
+                        parent.set(&#39;__toggleMode&#39;, &#39;ol3&#39;); // prevents recursion
+                        parent.set(&#39;checked&#39;, false);
+                        parent.set(&#39;__toggleMode&#39;, &#39;classic&#39;);
+                    }
+                }
+            });
+            me.__updating = false;
+        }
+    },
+
+<span id='GeoExt-data-model-LayerTreeNode-method-getRefItems'>    /**
+</span>     * @inheritdoc
+     */
+    getRefItems: function() {
+        return this.childNodes;
+    },
+
+<span id='GeoExt-data-model-LayerTreeNode-method-getRefOwner'>    /**
+</span>     * @inheritdoc
+     */
+    getRefOwner: function() {
+        return this.parentNode;
+    }
+
+}, function() {
+    // make this an Ext.data.TreeModel
+    Ext.data.NodeInterface.decorate(this);
+});
+</pre>
+</body>
+</html>
