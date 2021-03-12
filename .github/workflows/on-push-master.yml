@@ -18,6 +18,19 @@ jobs:
       with:
         node-version: 14.x
 
+    - name: Install needed Java version
+      uses: actions/setup-java@v1
+      with:
+        java-version: '8'
+
+    - name: Install ruby
+      uses: actions/setup-ruby@v1
+      with:
+        ruby-version: '2.6'
+
+    - name: Install jsduck
+      run: gem install jsduck
+
     - name: Cache Node.js modules 💾
       uses: actions/cache@v2
       with:
@@ -35,15 +48,25 @@ jobs:
           resources/external
           ext-6.2.0
           ext-6.2.0-gpl.zip
+          sencha-cmd-download
+          sencha-cmd
         key: ${{ runner.OS }}-node-${{ hashFiles('resources/external/ext-all.js') }}
         restore-keys: |
           ${{ runner.OS }}-node-
           ${{ runner.OS }}-
 
-    - name: Download extjs
+    - name: Download ExtJS, install sencha cmd, create sencha workspace
       run: |
-        if (test ! -f ext-6.2.0-gpl.zip); then wget -q "http://cdn.sencha.com/ext/gpl/ext-6.2.0-gpl.zip" -O ext-6.2.0-gpl.zip; fi
+        if (test ! -f ext-6.2.0-gpl.zip); then wget -q http://cdn.sencha.com/ext/gpl/ext-6.2.0-gpl.zip -O ext-6.2.0-gpl.zip; fi
         if (test ! -d ext-6.2.0); then unzip -qo ext-6.2.0-gpl.zip; fi
+        mkdir -p sencha-cmd-download
+        if (test ! -f sencha-cmd-download/SenchaCmd-6.2.1-linux-amd64.sh.zip); then wget -q http://cdn.sencha.com/cmd/6.2.1/no-jre/SenchaCmd-6.2.1-linux-amd64.sh.zip -O sencha-cmd-download/SenchaCmd-6.2.1-linux-amd64.sh.zip; fi
+        if (test ! -f sencha-cmd-download/SenchaCmd-6.2.1.29-linux-amd64.sh); then unzip -q -d sencha-cmd-download sencha-cmd-download/SenchaCmd-6.2.1-linux-amd64.sh.zip; fi
+        mkdir -p sencha-cmd
+        if (test ! -f sencha-cmd/sencha); then ./sencha-cmd-download/SenchaCmd-6.2.1.29-linux-amd64.sh -q -dir "$PWD/sencha-cmd"; fi
+        mkdir -p sencha-workspace
+        ./sencha-cmd/sencha -sdk ext-6.2.0 generate workspace /tmp/sencha-workspace
+        mkdir -p /tmp/sencha-workspace/packages/geoext3
 
     - name: Install dependencies ⏬
       run: npm install
@@ -59,13 +82,16 @@ jobs:
       with:
         github-token: ${{ secrets.GITHUB_TOKEN }}
 
-    - name: Install ruby
-      uses: actions/setup-ruby@v1
-      with:
-        ruby-version: '2.6'
-
-    - name: Install jsduck
-      run: gem install jsduck
+    - name: Build dreaded sencha package
+      run: |
+        SENCHACMD="$PWD/sencha-cmd/sencha"
+        COPY_RESOURCES=".sencha resources sass src package.json build.xml classic LICENSE"
+        rm -rf /tmp/sencha-workspace/packages/geoext3/*
+        for COPY_RESOURCE in $COPY_RESOURCES; do cp -r $PWD/$COPY_RESOURCE /tmp/sencha-workspace/packages/geoext3/; done
+        cd /tmp/sencha-workspace/packages/geoext3/
+        sed -i 's|"@geoext/geoext"|"GeoExt"|' package.json
+        $SENCHACMD package build
+        ls build/*js
 
     - name: Cleanup and prepare pages
       run: |
@@ -76,6 +102,7 @@ jobs:
         cp -r resources master/
         cp -r src master/
         cp -r classic master/
+        cp /tmp/sencha-workspace/packages/geoext3/build/*js master/
         npm run generate:docs:master
         npm run generate:docs-w-ext:master
 
