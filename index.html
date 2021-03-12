@@ -1,0 +1,455 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>GeoExt 3 &mdash; JavaScript Toolkit for Rich Web Mapping Applications</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="Main website for GeoExt 3, a JavaScript Toolkit for Rich Web Mapping Applications based on ExtJS 6 and OpenLayers 3. Includes links to examples, API-documentation and tests." />
+    <meta name="author" content="The GeoExt developers" />
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Quattrocento+Sans:400,400italic,700" type="text/css">
+    <link rel="stylesheet" href="website-resources/css/index.css" />
+    <link rel="stylesheet" href="website-resources/bootstrap/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="website-resources/bootstrap/css/bootstrap-responsive.css">
+    <!-- HTML5 shim, for IE6-8 support of HTML5 elements -->
+    <!--[if lt IE 9]>
+      <script src="website-resources/bootstrap/js/html5shiv.js"></script>
+    <![endif]-->
+    <link rel="stylesheet" href="website-resources/css/index.css" />
+  </head>
+  <body>
+
+  <div class="navbar navbar-fixed-top">
+    <div class="navbar-inner">
+      <div class="container">
+        <button type="button" class="btn btn-navbar" data-toggle="collapse" data-target=".nav-collapse">
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+        </button>
+        <a class="brand" href="./">
+          <img src="website-resources/img/GeoExt-logo.png" alt="Logo of GeoExt" title="Logo of GeoExt">
+          <h1>GeoExt 3</h1>
+        </a>
+        <div class="nav-collapse collapse pull-right">
+          <ul class="nav">
+            <li><a href="https://geoext.github.io/geoext3/v3.3.2/docs/"><i class="icon-th-list icon-big"></i> Documentation</a></li>
+            <li><a href="https://geoext.github.io/geoext3/v3.3.2/docs-w-ext/"><i class="icon-list icon-big"></i> Documentation (w/ Ext)</a></li>
+            <li><a href="https://github.com/geoext/geoext3"><i class="icon-folder-open icon-big"></i> Code</a></li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="container">
+    <blockquote id="tagline" class="pull-right plain">
+      <p>GeoExt 3 &mdash; JavaScript Toolkit for Rich Web Mapping Applications</p>
+    </blockquote>
+
+    <div class="well">
+      <p>
+        GeoExt is Open Source and enables building desktop-like GIS applications
+        through the web. It is a JavaScript framework that combines the GIS
+        functionality of
+        <a href="https://openlayers.org/">OpenLayers</a> with the user
+        interface of the ExtJS library provided by
+        <a href="https://www.sencha.com/">Sencha</a>.
+      </p>
+      <p>
+        Version 3 of GeoExt is the successor to the GeoExt 2-series and is
+        built atop the following official installments of it's base libraries;
+        OpenLayers 4.6.5 and ExtJS 6.2.0. The versions of GeoExt that support
+        these libraries are
+        <a href="https://github.com/geoext/geoext3/releases/tag/v3.3.2">version
+        3.3.2</a> and the older <a href="https://github.com/geoext/geoext3/releases/tag/v3.2.0">version
+      3.2.0</a>.
+      </p>
+      <p>
+        GeoExt is an <a href="https://www.osgeo.org/projects/geoext/">OSGeo Community project</a> - a member of the
+        Open Source Geospatial Foundation (OSGeo) family of projects. 
+        Everybody is invited to help us create the next version of GeoExt.
+      </p>
+    </div>
+
+    <div class="row">
+      <h1 class="span12 topic">About GeoExt</h1>
+      <div class="span8">
+        <p>
+          Since version 3, GeoExt is based upon Ext JS 6.2.0.
+        </p>
+        <p>
+          This means GeoExt can be used just like any other Ext component, and
+          applications making use of GeoExt also profit from Ext JS enhancements
+          like charting, a harmonized API with Sencha Touch and a sophisticated
+          single-file build tool.
+        </p>
+        <p>
+          GeoExt 3 is a rather young project, a lot of the code and structural
+          decisions come from a code sprint in Bonn. 9 developers gathered there
+          from 2015-06-17 to 2015-06-19. We are deeply grateful that
+          <a href="https://github.com/geoext/geoext3/wiki/GeoExt-3-Codesprint#sponsors">our
+          sponsors</a> helped to start GeoExt 3.
+        </p>
+        <p>
+          Now, have a look at the examples below, read the API documentation, the
+          API documentation (including ExtJS classes) or
+          <a href="https://github.com/geoext/geoext3">checkout the code</a>
+        </p>
+
+        <table class="table table-hover">
+          <tbody>
+            <tr>
+              <td>v3.3.2</td>
+              <td>
+                <a href="./v3.3.2/docs/">
+                  API documentation
+                </a>
+              </td>
+              <td>
+                <a href="./v3.3.2/docs-w-ext/">
+                  API documentation (including ExtJS classes)
+                </a>
+              </td>
+            </tr>
+            <tr>
+              <td>v3.2.0</td>
+              <td>
+                <a href="./v3.2.0/docs/">
+                  API documentation
+                </a>
+              </td>
+              <td>
+                <a href="./v3.2.0/docs-w-ext/">
+                  API documentation (including ExtJS classes)
+                </a>
+              </td>
+            </tr>
+            <tr>
+            <tr>
+              <td>v3.1.0</td>
+              <td>
+                <a href="./v3.1.0/docs/">
+                  API documentation
+                </a>
+              </td>
+              <td>
+                <a href="./v3.1.0/docs-w-ext/">
+                  API documentation (including ExtJS classes)
+                </a>
+              </td>
+            </tr>
+            <tr>
+              <td>v3.0.0</td>
+              <td>
+                <a href="./v3.0.0/docs/">
+                  API documentation
+                </a>
+              </td>
+              <td>
+                <a href="./v3.0.0/docs-w-ext/">
+                  API documentation (including ExtJS classes)
+                </a>
+              </td>
+            </tr>
+            <tr>
+              <td>master</td>
+              <td>
+                <a href="./master/docs/">
+                  API documentation
+                </a>
+              </td>
+              <td>
+                <a href="./master/docs-w-ext/">
+                  API documentation (including ExtJS classes)
+                </a>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="span4">
+        <img src="website-resources/img/example.png" alt="A screenshot of an example built with GeoExt 3" title="A screenshot of an example built with GeoExt 3">
+        <img src="website-resources/img/OSGeo_community.png" alt="OSGeo Community logo" title="OSGeo Community logo">
+      </div>
+    </div>
+
+    <div class="row">
+      <h1 class="span12 topic">Download &amp; how to use in your application</h1>
+      <div class="span12">
+        <p>
+          There are multiple ways to download and use GeoExt. 
+          <ul>
+              <li>using <a href="https://www.npmjs.com/package/@geoext/geoext">npm</a>: <code>npm install @geoext/geoext</code>		  
+              <li>by cloning with git: <code>git clone https://github.com/geoext/geoext3.git</code></li>
+              <li>downloading the latest official <a href="https://github.com/geoext/geoext3/archive/v3.2.0.zip">release</a></li>
+              <li><a href="https://github.com/geoext/geoext3/archive/master.zip">downloading the latest raw source code</a></li>
+          </ul>
+        </p>
+        <p>
+          Each approach has upsides and downsides, so if you want to use GeoExt
+          in your project, please refer to these more detailed instructions with
+          <a href="https://github.com/geoext/geoext3#how-to-use-geoext-3-inside-your-sencha-app">hints
+          on how to download / use GeoExt</a> efficiently.
+        </p>
+      </div>
+    </div>
+
+    <div class="row">
+      <h1 class="span12 topic">Examples</h1>
+    </div>
+
+    <div class="examples_container">
+
+      <h2 class="">Classic Toolkit</h2>
+
+      <div class="row">
+        <div class="span4">
+          <a href="https://geoext.github.io/geoext3/master/examples/component/map.html" class="big-link">
+            <h3>Map</h3>
+            <p>A basic Map component in a panel.</p>
+          </a>
+        </div>
+        <div class="span4">
+          <a href="https://geoext.github.io/geoext3/master/examples/component/overviewMap.html" class="big-link">
+            <h3>Overview Map</h3>
+            <p>Various versions of the OverviewMap component.</p>
+          </a>
+        </div>
+        <div class="span4">
+          <a href="https://geoext.github.io/geoext3/master/examples/state/stateful-map.html" class="big-link">
+            <h3>Map Permalinks</h3>
+            <p>Create a stateful map and generate map permalinks.</p>
+          </a>
+        </div>
+      </div>
+
+      <div class="row">
+          <div class="span4">
+              <a href="https://geoext.github.io/geoext3/master/examples/tree/panel.html" class="big-link">
+                  <h3>Tree Panel</h3>
+                  <p>Control the layers of you map with a hierarchical tree.</p>
+              </a>
+          </div>
+          <div class="span4">
+              <a href="https://geoext.github.io/geoext3/master/examples/tree/tree-legend-simple.html" class="big-link">
+                  <h3>Tree Panel with legends</h3>
+                  <p>See how to include legends in the tree panel.</p>
+              </a>
+          </div>
+          <div class="span4">
+              <a href="https://geoext.github.io/geoext3/master/examples/popup/gx-popup.html" class="big-link">
+                  <h3>Popup</h3>
+                  <p>See how to create popups that are anchored to a location.</p>
+              </a>
+          </div>
+      </div>
+
+      <div class="row">
+          <div class="span4">
+              <a href="https://geoext.github.io/geoext3/master/examples/renderer/renderer.html" class="big-link">
+                  <h3>Feature Renderer</h3>
+                  <p>See how to render styled features in arbitrary components.</p>
+              </a>
+          </div>
+          <div class="span4">
+              <a href="https://geoext.github.io/geoext3/master/examples/mapviewform/mapviewform.html" class="big-link">
+                  <h3>OlObject</h3>
+                  <p>See how to wrap OpenLayers objects as ExtJS model records.</p>
+              </a>
+          </div>
+          <div class="span4">
+              <a href="https://geoext.github.io/geoext3/master/examples/filtered-heatmap/filtered-heatmap.html" class="big-link">
+                  <h3>Filtered Heatmap</h3>
+                  <p>See how to adapt OpenLayers maps interactively with controls.</p>
+              </a>
+          </div>
+      </div>
+
+      <div class="row">
+          <div class="span4">
+              <a href="https://geoext.github.io/geoext3/master/examples/features/grid.html" class="big-link">
+                  <h3>Feature Grid</h3>
+                  <p>See how to display OpenLayers features in a grid and interact between grid and map.</p>
+              </a>
+          </div>
+
+          <div class="span4">
+              <a href="https://geoext.github.io/geoext3/master/examples/features/grid-map-selection.html" class="big-link">
+                  <h3>Grid with Feature Selection</h3>
+                  <p>Synchronize selection of features between a grid and a layer.</p>
+              </a>
+          </div>
+          <div class="span4">
+              <a href="https://geoext.github.io/geoext3/master/examples/features/grid-paging.html" class="big-link">
+                  <h3>Grid with OGC Filters and Paging</h3>
+                  <p>Page through WFS records in a grid, synchronized with a layer.</p>
+              </a>
+          </div>
+      </div>
+
+      <div class="row">
+          <div class="span4">
+              <a href="https://geoext.github.io/geoext3/master/examples/features/grid-filter.html" class="big-link">
+                  <h3>Grid with OGC Filters for WMS and WFS Layers</h3>
+                  <p>Use ExtJS grid filters to filter WMS and WFS layers in a map with OGC compliant filters</p>
+              </a>
+          </div>
+          <div class="span4">
+              <a href="https://geoext.github.io/geoext3/master/examples/geocoder/geocoder-combo.html" class="big-link">
+                  <h3>GeoCoder Combo Box</h3>
+                  <p>Search for locations using geocoding provided by the Nominatim API.</p>
+              </a>
+          </div>
+          <div class="span4">
+              <a href="https://geoext.github.io/geoext3/master/examples/print/basic-mapfish.html" class="big-link">
+                  <h3>Mapfish Print</h3>
+                  <p>See how to talk with a mapfish print servlet (v.3).</p>
+              </a>
+          </div>
+      </div>
+    </div>
+
+    <div class="examples_container">
+
+      <h2 class="">Modern Toolkit</h2>
+
+      <div class="row">
+        <div class="span4">
+          <a href="https://geoext.github.io/geoext3/master/examples/modern-map/modern-map.html" class="big-link">
+            <h3>Map</h3>
+            <p>A basic Map component in a modern toolkit app.</p>
+          </a>
+        </div>
+        <div class="span4">
+          <a href="https://geoext.github.io/geoext3/master/examples/modern-layerlist/modern-layerlist.html" class="big-link">
+            <h3>LayerList</h3>
+            <p>A LayerList component in a modern toolkit app.</p>
+          </a>
+        </div>
+        <div class="span4">
+          <h3>More examples …</h3>
+          <p>… coming soon</p>
+        </div>
+      </div>
+    </div>
+
+  <div class="row">
+    <h1 class="span12 topic">Versions of GeoExt</h1>
+    <div class="span12">
+      <p>
+        The following table lists the versions of OpenLayers and ExtJS that the
+        respective version of GeoExt is compatible with:
+      </p>
+      <table class="table table-hover">
+        <thead>
+          <tr>
+            <th>OpenLayers</th>
+            <th>ExtJS</th>
+            <th>GeoExt</th>
+            <th>status</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>&gt; 4</td>
+            <td>6.2.0</td>
+            <td>master</td>
+            <td>work in progress</td>
+          </tr>
+          <tr>
+            <td>4.6.5</td>
+            <td>6.2.0</td>
+            <td>3.3.2</td>
+            <td>
+              <a href="https://github.com/geoext/geoext3/releases/tag/v3.3.2">released</a>
+            </td>
+          </tr>
+          <tr>
+            <td>4.3.3</td>
+            <td>6.2.0</td>
+            <td>3.2.0</td>
+            <td>
+              <a href="https://github.com/geoext/geoext3/releases/tag/v3.2.0">released</a>
+            </td>
+          </tr>
+          <tr>
+            <td>4.3.3</td>
+            <td>6.2.0</td>
+            <td>3.1.0</td>
+            <td>
+              <a href="https://github.com/geoext/geoext3/releases/tag/v3.1.0">released</a>
+            </td>
+          </tr>
+          <tr>
+            <td>3.20.1</td>
+            <td>6.2.0</td>
+            <td>3.0.0</td>
+            <td>
+              <a href="https://github.com/geoext/geoext3/releases/tag/v3.0.0">released</a>
+            </td>
+          </tr>
+          <tr>
+            <td>2.13.1</td>
+            <td>5.1.0 / 4.2.1</td>
+            <td>2.1.x</td>
+            <td>
+              <a href="http://geoext.github.io/geoext2/">released</a>
+            </td>
+          </tr>
+          <tr>
+            <td>2.11.1</td>
+            <td>3.4.0</td>
+            <td>1.1.x</td>
+            <td>
+              <a href="http://geoext.org/v1/">released</a>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+      <p>
+        Of course you can still use <a href="http://geoext.org/v1/">GeoExt
+        1.x</a> or <a href="http://geoext.github.io/geoext2/">GeoExt 2.x</a>,
+        but these libraries do not receive much attention these days.
+      </p>
+    </div>
+  </div>
+  <div class="row">
+    <h1 class="span12 topic">Now: Get involved!</h1>
+  </div>
+
+  <div class="row">
+    <div class="span4">
+      <a href="https://github.com/geoext/geoext3" class="big-link">
+        <h3>Fork the repo</h3>
+      </a>
+    </div>
+    <div class="span4">
+      <a href="https://github.com/geoext/geoext3/issues" class="big-link">
+        <h3>Open an issue</h3>
+      </a>
+    </div>
+    <div class="span4">
+      <a href="http://www.geoext.org/cgi-bin/mailman/listinfo/" class="big-link">
+        <h3>Join the discussion</h3>
+      </a>
+    </div>
+  </div>
+
+  </div>
+    <footer class="footer">
+      <p>
+        Code licensed under the <a href="https://raw.githubusercontent.com/geoext/geoext3/master/LICENSE">GPL-3-license</a>.
+        All documentation <a href="https://creativecommons.org/licenses/by/3.0/">CC BY 3.0</a>.
+      </p>
+      <p>
+        The GeoExt library is for use with the ExtJS library. ExtJS is
+        distributed under the terms of the GPL v3.
+        See <a href="https://www.sencha.com/products/extjs/license/">the ExtJS license page</a>
+        for details on Ext JS licensing.
+      </p>
+    </footer>
+
+    <script src="https://code.jquery.com/jquery.js"></script>
+    <script src="./website-resources/bootstrap/js/bootstrap.min.js"></script>
+  </body>
+</html>

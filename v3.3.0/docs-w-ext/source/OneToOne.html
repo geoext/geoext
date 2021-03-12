@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <title>The source code</title>
+  <link href="../resources/prettify/prettify.css" type="text/css" rel="stylesheet" />
+  <script type="text/javascript" src="../resources/prettify/prettify.js"></script>
+  <style type="text/css">
+    .highlight { display: block; background-color: #ddd; }
+  </style>
+  <script type="text/javascript">
+    function highlight() {
+      document.getElementById(location.hash.replace(/#/, "")).className = "highlight";
+    }
+  </script>
+</head>
+<body onload="prettyPrint(); highlight();">
+  <pre class="prettyprint lang-js"><span id='Ext-data-schema-OneToOne'>/**
+</span> * **This class is never created directly. It should be constructed through associations in `Ext.data.Model`.**
+ *
+ * This is a specialized version of `Ext.data.schema.ManyToOne` that declares a relationship between a single 
+ * entity type and a single related entities. The relationship can be declared as a keyed or keyless relationship.
+ *
+ *     // Keyed
+ *     Ext.define(&#39;User&#39;, {
+ *         extend: &#39;Ext.data.Model&#39;,
+ *         fields: [&#39;id&#39;, &#39;name&#39;, {
+ *             name: &#39;userInfoId&#39;,
+ *             reference: {
+ *                 type: &#39;UserInfo&#39;,
+ *                 unique: true
+ *             }
+ *         }]
+ *     });
+ *
+ *     Ext.define(&#39;UserInfo&#39;, {
+ *         extend: &#39;Ext.data.Model&#39;,
+ *         fields: [&#39;id&#39;, &#39;secretKey&#39;]
+ *     });
+ *
+ *     // Keyless
+ *     Ext.define(&#39;User&#39;, {
+ *         extend: &#39;Ext.data.Model&#39;,
+ *         fields: [&#39;id&#39;, &#39;name&#39;],
+ *         hasOne: &#39;UserInfo&#39;
+ *     });
+ *
+ *     Ext.define(&#39;Ticket&#39;, {
+ *         extend: &#39;Ext.data.Model&#39;,
+ *         fields: [&#39;id&#39;, &#39;secretKey&#39;]
+ *     });
+ *
+ *     // Generated methods
+ *     var user = new User();
+ *     user.getUserInfo();
+ *     user.setUserInfo();
+ *     
+ *     var info = new UserInfo();
+ *     info.getUser();
+ *     info.setUser();
+ *     
+ *
+ *     var ticket = new Ticket();
+ *     ticket.setCustomer(customer);
+ *     console.log(ticket.getCustomer()); // The customer object
+ *
+ * By declaring a keyed relationship, extra functionality is gained that maintains
+ * the key field in the model as changes are made to the association. 
+ * 
+ * For available configuration options, see {@link Ext.data.schema.Reference}.
+ * Each record type will have a {@link Ext.data.schema.Association#recordGetter getter} and {@link Ext.data.schema.Association#recordSetter setter}.
+ */
+Ext.define(&#39;Ext.data.schema.OneToOne&#39;, {
+    extend: &#39;Ext.data.schema.Association&#39;,
+
+<span id='Ext-data-schema-OneToOne-property-isOneToOne'>    isOneToOne: true,
+</span>
+<span id='Ext-data-schema-OneToOne-property-isToOne'>    isToOne: true,
+</span>
+<span id='Ext-data-schema-OneToOne-property-kind'>    kind: &#39;one-to-one&#39;,
+</span>
+<span id='Ext-data-schema-OneToOne-property-Left'>    Left: Ext.define(null, {
+</span>        extend: &#39;Ext.data.schema.Role&#39;,
+
+        onDrop: function(rightRecord, session) {
+            var leftRecord = this.getAssociatedItem(rightRecord);
+            rightRecord[this.getInstanceName()] = null;
+            if (leftRecord) {
+                leftRecord[this.inverse.getInstanceName()] = null;
+            }
+        },
+
+        onIdChanged: function(rightRecord, oldId, newId) {
+            var leftRecord = this.getAssociatedItem(rightRecord),
+                fieldName = this.association.getFieldName();
+
+            if (!rightRecord.session &amp;&amp; leftRecord &amp;&amp; fieldName) {
+                leftRecord.set(fieldName, newId);
+            }
+        },
+
+        createGetter: function() {
+            var me = this;
+            return function () {
+                // &#39;this&#39; refers to the Model instance inside this function
+                return me.doGet(this);
+            };
+        },
+
+        createSetter: function () {
+            var me = this;
+            return function (value) {
+                // &#39;this&#39; refers to the Model instance inside this function
+                return me.doSet(this, value);
+            };
+        },
+
+        doGet: function (rightRecord) {
+            // Consider the Department entity with a managerId to a User entity. The
+            // Department is on the left (the FK holder&#39;s side) so we are implementing the
+            // guts of the getManagerDepartment method we place on the User entity. Since
+            // we represent the &quot;managerDepartment&quot; role and as such our goal is to get a
+            // Department instance, we start that from the User (rightRecord). Sadly that
+            // record has no FK back to us.
+
+            var instanceName = this.getInstanceName(), // ex &quot;managerDepartment&quot;
+                ret = rightRecord[instanceName],
+                session = rightRecord.session;
+
+            if (!ret &amp;&amp; session) {
+                // @TODO: session - we&#39;ll cache the result on the record as always
+                // but to get it we must ask the session
+            }
+
+            return ret || null;
+        },
+
+        doSet: function (rightRecord, leftRecord) {
+            // We are the guts of the setManagerDepartment method we place on the User
+            // entity. Our goal here is to establish the relationship between the new
+            // Department (leftRecord) and the User (rightRecord).
+
+            var instanceName = this.getInstanceName(), // ex &quot;managerDepartment&quot;
+                ret = rightRecord[instanceName],
+                inverseSetter = this.inverse.setterName;  // setManager for Department
+
+            if (ret !== leftRecord) {
+                rightRecord[instanceName] = leftRecord;
+
+                if (inverseSetter) {
+                    // Because the FK is owned by the inverse record, we delegate the
+                    // majority of work to its setter. We&#39;ve already locked in the only
+                    // thing we keep on this side so we won&#39;t recurse back-and-forth.
+                    leftRecord[inverseSetter](rightRecord);
+                }
+                rightRecord.onAssociatedRecordSet(leftRecord, this);
+            }
+
+            return ret;
+        },
+
+        read: function(rightRecord, node, fromReader, readOptions) {
+            var me = this,
+                leftRecords = me.callParent([rightRecord, node, fromReader, readOptions]),
+                leftRecord;
+
+            if (leftRecords) {
+                leftRecord = leftRecords[0];
+                if (leftRecord) {
+                    leftRecord[me.inverse.getInstanceName()] = rightRecord;
+
+                    rightRecord[me.getInstanceName()] = leftRecord;
+                    // Inline associations should *not* arrive on the &quot;data&quot; object:
+                    delete rightRecord.data[me.role];
+                }
+            }
+        }
+    }),
+
+<span id='Ext-data-schema-OneToOne-property-Right'>    Right: Ext.define(null, {
+</span>        extend: &#39;Ext.data.schema.Role&#39;,
+
+        left: false,
+        side: &#39;right&#39;,
+        
+        createGetter: function() {
+            // As the target of the FK (say &quot;manager&quot; for the Department entity) this
+            // getter is responsible for getting the entity referenced by the FK value.
+            var me = this;
+
+            return function (options, scope) {
+                // &#39;this&#39; refers to the Model instance inside this function
+                return me.doGetFK(this, options, scope);
+            };
+        },
+        
+        createSetter: function() {
+            var me = this;
+
+            return function(value, options, scope) {
+                // &#39;this&#39; refers to the Model instance inside this function
+                return me.doSetFK(this, value, options, scope);
+            };
+        },
+
+        onDrop: function(leftRecord, session) {
+            var me = this,
+                field = me.association.field,
+                rightRecord = me.getAssociatedItem(leftRecord),
+                id;
+
+            if (me.inverse.owner) {
+                if (session &amp;&amp; field) {
+                    id = leftRecord.get(field.name);
+                    if (id || id === 0) {
+                        rightRecord = session.getEntry(me.cls, id).record;
+                        if (rightRecord) {
+                            rightRecord.drop();
+                        }
+                    }
+                } else {
+                    if (rightRecord) {
+                        rightRecord.drop();
+                    }
+                }
+            }
+             
+            if (field) {
+                leftRecord.set(field.name, null);
+            }
+            leftRecord[me.getInstanceName()] = null;
+            if (rightRecord) {
+                rightRecord[me.inverse.getInstanceName()] = null;
+            }
+        },
+
+        onValueChange: function(leftRecord, session, newValue) {
+            // Important to get the record before changing the key.
+            var me = this,
+                rightRecord = leftRecord[me.getOldInstanceName()] || me.getAssociatedItem(leftRecord),
+                hasNewValue = newValue || newValue === 0,
+                instanceName = me.getInstanceName(),
+                cls = me.cls;
+
+            leftRecord.changingKey = true;
+            me.doSetFK(leftRecord, newValue);
+            if (!hasNewValue) {
+                leftRecord[instanceName] = null;
+            } else if (session &amp;&amp; cls) {
+                // Setting to undefined is important so that we can load the record later.
+                leftRecord[instanceName] = session.peekRecord(cls, newValue) || undefined;
+            }
+            if (me.inverse.owner &amp;&amp; rightRecord) {
+                me.association.schema.queueKeyCheck(rightRecord, me);
+            }
+            leftRecord.changingKey = false;
+        },
+
+        checkKeyForDrop: function(rightRecord) {
+            var leftRecord = this.inverse.getAssociatedItem(rightRecord);
+            if (!leftRecord) {
+                // Not reassigned to another parent
+                rightRecord.drop();
+            }
+        },
+        
+        read: function(leftRecord, node, fromReader, readOptions) {
+            var me = this,
+                rightRecords = me.callParent([leftRecord, node, fromReader, readOptions]),
+                rightRecord, field, fieldName, session, 
+                refs, id, oldId, setKey, data;
+
+            if (rightRecords) {
+                rightRecord = rightRecords[0];
+                field = me.association.field;
+                if (field) {
+                    fieldName = field.name;
+                }
+                session = leftRecord.session;
+                data = leftRecord.data;
+                if (rightRecord) {
+
+                    if (session) {
+                        refs = session.getRefs(rightRecord, this.inverse, true);
+                        // If we have an existing reference in the session, or we don&#39;t and the data is
+                        // undefined, allow the nested load to go ahead
+                        setKey = (refs &amp;&amp; refs[leftRecord.id]) || (data[fieldName] === undefined);
+                    } else {
+                        setKey = true;
+                    }
+
+                    
+                    if (setKey) {
+                        // We want to poke the inferred key onto record if it exists, but we don&#39;t
+                        // want to mess with the dirty or modified state of the record.
+                        if (field) {
+                            oldId = data[fieldName];
+                            id = rightRecord.id;
+                            if (oldId !== id) {
+                                data[fieldName] = id;
+                                if (session) {
+                                    session.updateReference(leftRecord, field, id, oldId);
+                                }
+                            }
+                        }
+                        rightRecord[me.inverse.getInstanceName()] = leftRecord;
+                        leftRecord[me.getInstanceName()] = rightRecord;
+                    }
+                    // Inline associations should *not* arrive on the &quot;data&quot; object:
+                    delete data[me.role];
+                }
+            }
+        }
+    })
+});
+</pre>
+</body>
+</html>

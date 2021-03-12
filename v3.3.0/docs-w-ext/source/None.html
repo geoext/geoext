@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <title>The source code</title>
+  <link href="../resources/prettify/prettify.css" type="text/css" rel="stylesheet" />
+  <script type="text/javascript" src="../resources/prettify/prettify.js"></script>
+  <style type="text/css">
+    .highlight { display: block; background-color: #ddd; }
+  </style>
+  <script type="text/javascript">
+    function highlight() {
+      document.getElementById(location.hash.replace(/#/, "")).className = "highlight";
+    }
+  </script>
+</head>
+<body onload="prettyPrint(); highlight();">
+  <pre class="prettyprint lang-js"><span id='Ext-drag-proxy-None'>/**
+</span> * A base class for drag proxies that are shown to represent the
+ * dragged item during a drag.
+ *
+ * Default implementations are:
+ * - {@link Ext.drag.proxy.Original}: Moves the original element.
+ * - {@link Ext.drag.proxy.Placeholder}: Creates a new element each drag.
+ *
+ * This implementation does not provide a proxy element, so it can be used
+ * for cursor tracking only.
+ */
+Ext.define(&#39;Ext.drag.proxy.None&#39;, {
+
+    mixins: [&#39;Ext.mixin.Factoryable&#39;],
+
+    alias: &#39;drag.proxy.none&#39;,
+
+<span id='Ext-drag-proxy-None-property-factoryConfig'>    factoryConfig: {
+</span>        aliasPrefix: &#39;drag.proxy.&#39;,
+        type: &#39;dragproxy&#39;
+    },
+
+    config: {
+<span id='Ext-drag-proxy-None-cfg-source'>        source: null
+</span>    },
+
+<span id='Ext-drag-proxy-None-method-constructor'>    constructor: function(config) {
+</span>        var getElement = config &amp;&amp; config.getElement;
+        if (getElement) {
+            // Don&#39;t mutate the object the user passed. Need to do this
+            // here otherwise initConfig will complain about writing over
+            // the method.
+            this.getElement = getElement;
+            config = Ext.apply({}, config);
+            delete config.getElement;
+        }
+        this.initConfig(config);
+    },
+
+<span id='Ext-drag-proxy-None-method-cleanup'>    /**
+</span>     * @method
+     * Perform any cleanup required. This is called as the drag ends.
+     *
+     * @template
+     * @protected
+     */
+    cleanup: Ext.emptyFn,
+
+<span id='Ext-drag-proxy-None-method-getElement'>    /**
+</span>     * Get the proxy element for the drag source. This is called as
+     * the drag starts. This element may be cached on the instance and
+     * reused.
+     *
+     * @param {Ext.drag.Info} info Drag info
+     *
+     * @return {Ext.dom.Element} The element.
+     *
+     * @template
+     * @protected
+     */
+    getElement: function() {
+        return null;
+    },
+
+<span id='Ext-drag-proxy-None-method-update'>    /**
+</span>     * @method
+     * Called when the target changes for the active drag. This may
+     * mean the target is now `null`.
+     *
+     * @param {Ext.drag.Info} info Drag info
+     *
+     * @template
+     * @protected
+     */
+    update: Ext.emptyFn,
+
+<span id='Ext-drag-proxy-None-property-privates'>    privates: {
+</span><span id='Ext-drag-proxy-None-method-adjustCursorOffset'>        /**
+</span>         * Adjust the xy position based on any cursor offset.
+         * @param {Ext.drag.Info} info The drag info.
+         * @param {Number[]} pos The xy position.
+         * @return {Number[]} The adjusted position.
+         *
+         * @private
+         */
+        adjustCursorOffset: function(info, pos) {
+            return pos;
+        }
+    }
+});</pre>
+</body>
+</html>

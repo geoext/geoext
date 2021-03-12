@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <title>The source code</title>
+  <link href="../resources/prettify/prettify.css" type="text/css" rel="stylesheet" />
+  <script type="text/javascript" src="../resources/prettify/prettify.js"></script>
+  <style type="text/css">
+    .highlight { display: block; background-color: #ddd; }
+  </style>
+  <script type="text/javascript">
+    function highlight() {
+      document.getElementById(location.hash.replace(/#/, "")).className = "highlight";
+    }
+  </script>
+</head>
+<body onload="prettyPrint(); highlight();">
+  <pre class="prettyprint lang-js"><span id='Ext-data-matrix-Side'>/**
+</span> * This class manages one side of a `Matrix`.
+ * @private
+ */
+Ext.define('Ext.data.matrix.Side', {
+    requires: [
+        'Ext.data.matrix.Slice'
+    ],
+
+<span id='Ext-data-matrix-Side-property-inverse'>    /**
+</span>     * @property {Ext.data.matrix.Side} inverse
+     * Reference to the opposite side of the matrix.
+     * @readonly
+     */
+
+    constructor: function (matrix, index, role) {
+        var me = this;
+
+<span id='Ext-data-matrix-Side-property-matrix'>        /**
+</span>         * @property {Ext.data.matrix.Matrix} matrix
+         * @readonly
+         */
+        me.matrix = matrix;
+
+<span id='Ext-data-matrix-Side-property-index'>        /**
+</span>         * @property {Number} index
+         * Either 0 or 1 which is the index of our id value in an association entry.
+         * @readonly
+         */
+        me.index = index;
+
+<span id='Ext-data-matrix-Side-property-role'>        /**
+</span>         * @property {Ext.data.schema.Role} role
+         * The role for this side of the matrix.
+         * @readonly
+         */
+        me.role = role;
+
+<span id='Ext-data-matrix-Side-property-slices'>        /**
+</span>         * @property {Object} slices
+         * Keyed by the id for this side of the matrix to yield a `Slice`.
+         * @readonly
+         */
+        me.slices = {};
+    },
+
+<span id='Ext-data-matrix-Side-method-commit'>    commit: function() {
+</span>        var slices = this.slices,
+            id;
+
+        for (id in slices) {
+            slices[id].commit();
+        }
+    },
+
+<span id='Ext-data-matrix-Side-method-get'>    get: function (id1, id2) {
+</span>        var me = this,
+            slices = me.slices,
+            slice = slices[id1] ||
+                   (slices[id1] = new Ext.data.matrix.Slice(me, id1));
+
+        return (id2 || id2 === 0) ? slice.members[id2] : slice;
+    },
+
+<span id='Ext-data-matrix-Side-method-update'>    update: function (id1, id2, state) {
+</span>        var slice = this.get(id1);
+        return slice.update(id2, state);
+    },
+
+<span id='Ext-data-matrix-Side-method-updateId'>    updateId: function(oldId, newId) {
+</span>        var slice = this.get(oldId);
+        if (slice) {
+            slice.updateId(newId);
+        }
+    },
+
+<span id='Ext-data-matrix-Side-method-destroy'>    destroy: function() {
+</span>        var me = this,
+            slices = me.slices,
+            id;
+
+        for (id in slices) {
+            slices[id].destroy();
+        }
+
+        me.inverse = me.matrix = me.role = me.slices = null;
+        me.callParent();
+    }
+});
+</pre>
+</body>
+</html>

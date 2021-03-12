@@ -1,0 +1,529 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <title>The source code</title>
+  <link href="../resources/prettify/prettify.css" type="text/css" rel="stylesheet" />
+  <script type="text/javascript" src="../resources/prettify/prettify.js"></script>
+  <style type="text/css">
+    .highlight { display: block; background-color: #ddd; }
+  </style>
+  <script type="text/javascript">
+    function highlight() {
+      document.getElementById(location.hash.replace(/#/, "")).className = "highlight";
+    }
+  </script>
+</head>
+<body onload="prettyPrint(); highlight();">
+  <pre class="prettyprint lang-js">/* Copyright (c) 2015-present The Open Source Geospatial Foundation
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see &lt;http://www.gnu.org/licenses/&gt;.
+ */
+<span id='GeoExt-data-store-WfsFeatures'>/**
+</span> * A data store loading features from an OGC WFS.
+ *
+ * @class GeoExt.data.store.WfsFeatures
+ */
+Ext.define(&#39;GeoExt.data.store.WfsFeatures&#39;, {
+    extend: &#39;GeoExt.data.store.Features&#39;,
+    mixins: [
+        &#39;GeoExt.mixin.SymbolCheck&#39;,
+        &#39;GeoExt.util.OGCFilter&#39;
+    ],
+
+<span id='GeoExt-data-store-WfsFeatures-cfg-autoLoad'>    /**
+</span>     * If autoLoad is true, this store&#39;s loadWfs method is automatically called
+     * after creation.
+     * @cfg {Boolean}
+     */
+    autoLoad: true,
+
+<span id='GeoExt-data-store-WfsFeatures-cfg-remoteSort'>    /**
+</span>     * Default to using server side sorting
+     * @cfg {Boolean}
+     */
+    remoteSort: true,
+
+<span id='GeoExt-data-store-WfsFeatures-cfg-remoteFilter'>    /**
+</span>     * Default to using server side filtering
+     * @cfg {Boolean}
+     */
+    remoteFilter: true,
+
+<span id='GeoExt-data-store-WfsFeatures-cfg-logicalFilterCombinator'>    /**
+</span>     * Default logical comperator to combine filters sent to WFS
+     * @cfg {String}
+     */
+    logicalFilterCombinator: &#39;And&#39;,
+
+<span id='GeoExt-data-store-WfsFeatures-cfg-requestMethod'>    /**
+</span>      * Default request method to use in AJAX requests
+      * @cfg {String}
+      */
+    requestMethod: &#39;GET&#39;,
+
+<span id='GeoExt-data-store-WfsFeatures-cfg-service'>    /**
+</span>     * The &#39;service&#39; param value used in the WFS request.
+     * @cfg {String}
+     */
+    service: &#39;WFS&#39;,
+
+<span id='GeoExt-data-store-WfsFeatures-cfg-version'>    /**
+</span>     * The &#39;version&#39; param value used in the WFS request.
+     * This should be &#39;2.0.0&#39; or higher at least if the paging mechanism
+     * should be used.
+     * @cfg {String}
+     */
+    version: &#39;2.0.0&#39;,
+
+<span id='GeoExt-data-store-WfsFeatures-cfg-request'>    /**
+</span>     * The &#39;request&#39; param value used in the WFS request.
+     * @cfg {String}
+     */
+    request: &#39;GetFeature&#39;,
+
+<span id='GeoExt-data-store-WfsFeatures-cfg-typeName'>    /**
+</span>     * The &#39;typeName&#39; param value used in the WFS request.
+     * @cfg {String}
+     */
+    typeName: null,
+
+<span id='GeoExt-data-store-WfsFeatures-cfg-srsName'>    /**
+</span>     * The &#39;srsName&#39; param value used in the WFS request. If not set
+     * it is automatically set to the map projection when available.
+     * @cfg {String}
+     */
+    srsName: null,
+<span id='GeoExt-data-store-WfsFeatures-cfg-outputFormat'>    /**
+</span>     * The &#39;outputFormat&#39; param value used in the WFS request.
+     * @cfg {String}
+     */
+    outputFormat: &#39;application/json&#39;,
+
+<span id='GeoExt-data-store-WfsFeatures-cfg-startIndex'>    /**
+</span>     * The &#39;startIndex&#39; param value used in the WFS request.
+     * @cfg {String}
+     */
+    startIndex: 0,
+
+<span id='GeoExt-data-store-WfsFeatures-cfg-count'>    /**
+</span>     * The &#39;count&#39; param value used in the WFS request.
+     * @cfg {String}
+     */
+    count: null,
+
+<span id='GeoExt-data-store-WfsFeatures-cfg-propertyName'>    /**
+</span>     * A comma-separated list of property names to retrieve
+     * from the server. If left as null all properties are returned.
+     * @cfg {String}
+     */
+    propertyName: null,
+
+<span id='GeoExt-data-store-WfsFeatures-cfg-startIndexOffset'>    /**
+</span>     * Offset to add to the #startIndex in the WFS request.
+     * @cfg {Number}
+     */
+    startIndexOffset: 0,
+
+<span id='GeoExt-data-store-WfsFeatures-cfg-format'>    /**
+</span>     * The OL format used to parse the WFS GetFeature response.
+     * @cfg {ol.format.Feature}
+     */
+    format: null,
+
+<span id='GeoExt-data-store-WfsFeatures-cfg-layerAttribution'>    /**
+</span>     * The attribution added to the created vector layer source. Only has an
+     * effect if #createLayer is set to `true`
+     * @cfg {String}
+     */
+    layerAttribution: null,
+
+<span id='GeoExt-data-store-WfsFeatures-cfg-layerOptions'>    /**
+</span>     * Additional OpenLayers properties to apply to the created vector layer.
+     * Only has an effect if #createLayer is set to `true`
+     * @cfg {String}
+     */
+    layerOptions: null,
+
+<span id='GeoExt-data-store-WfsFeatures-cfg-cacheFeatureCount'>    /**
+</span>     * Cache the total number of features be queried from when the store is
+     * first loaded to use for the remaining life of the store.
+     * This uses resultType=hits to get the number of features and can improve
+     * performance rather than calculating on each request. It should be used
+     * for read-only layers, or when the server does not return the
+     * feature count on each request.
+     * @cfg {Boolean}
+     */
+    cacheFeatureCount: false,
+
+<span id='GeoExt-data-store-WfsFeatures-cfg-featureCountOutputFormat'>    /**
+</span>    * The outputFormat sent with the resultType=hits request.
+    * Defaults to GML3 as some WFS servers do not support this
+    * request type when using application/json.
+    * Only has an effect if #cacheFeatureCount is set to `true`
+    * @cfg {Boolean}
+    */
+    featureCountOutputFormat: &#39;gml3&#39;,
+
+<span id='GeoExt-data-store-WfsFeatures-cfg-activeRequest'>    /**
+</span>    * Any currently executing request to the WFS server.
+    * A reference to this is kept so any new requests can
+    * abort the previous request to ensure only the most recently
+    * requested results are returned.
+    * @cfg {Ext.data.request.Ajax}
+    */
+    activeRequest: null,
+
+<span id='GeoExt-data-store-WfsFeatures-method-constructor'>    /**
+</span>     * Constructs the WFS feature store.
+     *
+     * @param {Object} config The configuration object.
+     * @private
+     */
+    constructor: function(config) {
+        var me = this;
+
+        config = config || {};
+
+        // apply count as store&#39;s pageSize
+        config.pageSize = config.count || me.count;
+
+        if (config.pageSize &gt; 0) {
+            // calculate initial page
+            var startIndex = config.startIndex || me.startIndex;
+            var currentPage = Math.floor(startIndex / config.pageSize) + 1;
+            config.currentPage = currentPage;
+        }
+
+        // avoid creation of vector layer by parent class (raises error when
+        // applying WFS data) so we can create the WFS vector layer on our own
+        // (if needed)
+        var createLayer = config.createLayer;
+        config.createLayer = false;
+
+        me.callParent([config]);
+
+        if (!me.url) {
+            Ext.raise(&#39;No URL given to WfsFeaturesStore&#39;);
+        }
+
+        if (createLayer) {
+            // the WFS vector layer showing the WFS features on the map
+            me.source = new ol.source.Vector({
+                features: [],
+                attributions: me.layerAttribution
+            });
+
+            var layerOptions = {
+                source: me.source,
+                style: me.style
+            };
+
+            if (me.layerOptions) {
+                Ext.applyIf(layerOptions, me.layerOptions);
+            }
+
+            me.layer = new ol.layer.Vector(layerOptions);
+
+            me.layerCreated = true;
+        }
+
+        if (me.cacheFeatureCount === true) {
+            me.cacheTotalFeatureCount(!me.autoLoad);
+        } else {
+            if (me.autoLoad) {
+                // initial load of the WFS data
+                me.loadWfs();
+            }
+        }
+
+        // before the store gets re-loaded (e.g. by a paging toolbar) we trigger
+        // the re-loading of the WFS, so the data keeps in sync
+        me.on(&#39;beforeload&#39;, me.loadWfs, me);
+
+        // add layer to connected map, if available
+        if (me.map &amp;&amp; me.layer) {
+            me.map.addLayer(me.layer);
+        }
+    },
+
+<span id='GeoExt-data-store-WfsFeatures-method-getTotalFeatureCount'>    /**
+</span>     * Detects the total amount of features (without paging) of the given
+     * WFS response. The detection is based on the response format (currently
+     * GeoJSON and GML &gt;=v3 are supported).
+     *
+     * @private
+     * @param  {Object} wfsResponse The XMLHttpRequest object
+     * @return {Number}            Total amount of features
+     */
+    getTotalFeatureCount: function(wfsResponse) {
+        var totalCount = -1;
+        // get the response type from the header
+        var contentType = wfsResponse.getResponseHeader(&#39;Content-Type&#39;);
+
+        try {
+            if (contentType.indexOf(&#39;application/json&#39;) !== -1) {
+                var respJson = Ext.decode(wfsResponse.responseText);
+                totalCount = respJson.numberMatched;
+            } else {
+                // assume GML
+                var xml = wfsResponse.responseXML;
+                if (xml &amp;&amp; xml.firstChild) {
+                    var total = xml.firstChild.getAttribute(&#39;numberMatched&#39;);
+                    totalCount = parseInt(total, 10);
+                }
+            }
+        } catch (e) {
+            Ext.Logger.warn(&#39;Error while detecting total feature count from &#39; +
+                &#39;WFS response&#39;);
+        }
+
+        return totalCount;
+    },
+
+<span id='GeoExt-data-store-WfsFeatures-method-createSortByParameter'>    /**
+</span>     * Sends the sortBy parameter to the WFS Server
+     * If multiple sorters are specified then multiple fields are
+     * sent to the server.
+     * Ascending sorts will append ASC and descending sorts DESC
+     * E.g. sortBy=attribute1 DESC,attribute2 ASC
+     * @private
+     * @return {String} The sortBy string
+     */
+    createSortByParameter: function() {
+        var me = this;
+        var sortStrings = [];
+        var direction;
+        var property;
+
+        me.getSorters().each(function(sorter) {
+            // direction will be ASC or DESC
+            direction = sorter.getDirection();
+            property = sorter.getProperty();
+            sortStrings.push(Ext.String.format(&#39;{0} {1}&#39;, property, direction));
+        });
+
+        return sortStrings.join(&#39;,&#39;);
+    },
+
+<span id='GeoExt-data-store-WfsFeatures-method-createOgcFilter'>    /**
+</span>     * Create filter parameter string (according to Filter Encoding standard)
+     * based on the given instances in filters ({Ext.util.FilterCollection}) of
+     * the store.
+     *
+     * @private
+     * @return {String} The filter XML encoded as string
+     */
+    createOgcFilter: function() {
+        var me = this;
+        var filters = [];
+        me.getFilters().each(function(item) {
+            filters.push(item);
+        });
+        if (filters.length === 0) {
+            return null;
+        }
+        var wfsGetFeatureFilter = GeoExt.util.OGCFilter.
+            getOgcWfsFilterFromExtJsFilter(
+                filters,
+                me.logicalFilterCombinator,
+                me.version
+            );
+        return wfsGetFeatureFilter;
+    },
+
+<span id='GeoExt-data-store-WfsFeatures-method-cacheTotalFeatureCount'>    /**
+</span>     * Gets the number of features for the WFS typeName
+     * using resultType=hits and caches it so it only needs to be calculated
+     * the first time the store is used.
+     *
+     * @param  {Boolean} skipLoad Avoids loading the store if set to `true`
+     * @private
+     */
+    cacheTotalFeatureCount: function(skipLoad) {
+        var me = this;
+        var url = me.url;
+        me.cachedTotalCount = 0;
+
+        var params = {
+            service: me.service,
+            version: me.version,
+            request: me.request,
+            typeName: me.typeName,
+            outputFormat: me.featureCountOutputFormat,
+            resultType: &#39;hits&#39;
+        };
+
+        Ext.Ajax.request({
+            url: url,
+            method: me.requestMethod,
+            params: params,
+            success: function(response) {
+                // set number of total features (needed for paging)
+                me.cachedTotalCount = me.getTotalFeatureCount(response);
+                if (!skipLoad) {
+                    me.loadWfs();
+                }
+            },
+            failure: function(response) {
+                Ext.Logger.warn(&#39;Error while requesting features from WFS: &#39; +
+                    response.responseText + &#39; Status: &#39; + response.status);
+            }
+        });
+    },
+
+<span id='GeoExt-data-store-WfsFeatures-method-onFilterChange'>    /**
+</span>     * Handles the &#39;filterchange&#39;-event.
+     * Reload data using updated filter config.
+     * @private
+     */
+    onFilterChange: function() {
+        var me = this;
+        if (me.getFilters() &amp;&amp; me.getFilters().length &gt; 0) {
+            me.loadWfs();
+        }
+    },
+
+<span id='GeoExt-data-store-WfsFeatures-method-loadWfs'>    /**
+</span>     * Loads the data from the connected WFS.
+     * @private
+     */
+    loadWfs: function() {
+        var me = this;
+
+        if (me.activeRequest) {
+            me.activeRequest.abort();
+        }
+
+        var url = me.url;
+        var params = {
+            service: me.service,
+            version: me.version,
+            request: me.request,
+            typeName: me.typeName,
+            outputFormat: me.outputFormat
+        };
+
+        // add a propertyName parameter if set
+        if (me.propertyName !== null) {
+            params.propertyName = me.propertyName;
+        }
+
+        // add a srsName parameter
+        if (me.srsName) {
+            params.srsName = me.srsName;
+        } else {
+            // if it has not been set manually retrieve from the map
+            if (me.map) {
+                params.srsName = me.map.getView().getProjection().getCode();
+            }
+        }
+
+        // send the sortBy parameter only when remoteSort is true
+        // as it is not supported by all WFS servers
+        if (me.remoteSort === true) {
+            var sortBy = me.createSortByParameter();
+            if (sortBy) {
+                params.sortBy = sortBy;
+            }
+        }
+
+        // create filter string if remoteFilter is activated
+        if (me.remoteFilter === true) {
+            var filter = me.createOgcFilter();
+            if (filter) {
+                params.filter = filter;
+            }
+        }
+
+        // apply paging parameters if necessary
+        if (me.pageSize) {
+            var fromRecord =
+                ((me.currentPage - 1) * me.pageSize) + me.startIndexOffset;
+            me.startIndex = fromRecord;
+            params.startIndex = me.startIndex;
+            params.count = me.pageSize;
+        }
+
+        // fire event &#39;gx-wfsstoreload-beforeload&#39; and skip loading if listener
+        // function returns false
+        if (me.fireEvent(&#39;gx-wfsstoreload-beforeload&#39;, me, params) === false) {
+            return;
+        }
+
+        // request features from WFS
+        me.activeRequest = Ext.Ajax.request({
+            url: url,
+            method: me.requestMethod,
+            params: params,
+            success: function(response) {
+
+                if (!me.format) {
+                    Ext.Logger.warn(&#39;No format given for WfsFeatureStore. &#39; +
+                        &#39;Skip parsing feature data.&#39;);
+                    return;
+                }
+
+                if (me.cacheFeatureCount === true) {
+                    // me.totalCount is reset to 0 on each load so reset it here
+                    me.totalCount = me.cachedTotalCount;
+                } else {
+                    // set number of total features (needed for paging)
+                    me.totalCount = me.getTotalFeatureCount(response);
+                }
+
+                // parse WFS response to OL features
+
+                var wfsFeats = [];
+
+                try {
+                    wfsFeats = me.format.readFeatures(response.responseText);
+                } catch (error) {
+                    Ext.Logger.warn(&#39;Error parsing features into the &#39; +
+                        &#39;OpenLayers format. Check the server response.&#39;);
+                }
+
+                // set data for store
+                me.setData(wfsFeats);
+
+                if (me.layer) {
+                    // add features to WFS layer
+                    me.source.clear();
+                    me.source.addFeatures(wfsFeats);
+                }
+
+                me.fireEvent(&#39;gx-wfsstoreload&#39;, me, wfsFeats, true);
+            },
+            failure: function(response) {
+                Ext.Logger.warn(&#39;Error while requesting features from WFS: &#39; +
+                    response.responseText + &#39; Status: &#39; + response.status);
+                me.fireEvent(&#39;gx-wfsstoreload&#39;, me, null, false);
+            }
+
+        });
+    },
+
+<span id='GeoExt-data-store-WfsFeatures-method-doDestroy'>    doDestroy: function() {
+</span>        var me = this;
+
+        if (me.activeRequest) {
+            me.activeRequest.destroy();
+        }
+
+        me.callParent(arguments);
+    }
+});
+</pre>
+</body>
+</html>

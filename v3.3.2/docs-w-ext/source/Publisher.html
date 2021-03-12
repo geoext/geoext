@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <title>The source code</title>
+  <link href="../resources/prettify/prettify.css" type="text/css" rel="stylesheet" />
+  <script type="text/javascript" src="../resources/prettify/prettify.js"></script>
+  <style type="text/css">
+    .highlight { display: block; background-color: #ddd; }
+  </style>
+  <script type="text/javascript">
+    function highlight() {
+      document.getElementById(location.hash.replace(/#/, "")).className = "highlight";
+    }
+  </script>
+</head>
+<body onload="prettyPrint(); highlight();">
+  <pre class="prettyprint lang-js"><span id='Ext-event-publisher-Publisher'>/**
+</span> * Abstract base class for event publishers
+ * @private
+ */
+Ext.define(&#39;Ext.event.publisher.Publisher&#39;, {
+
+<span id='Ext-event-publisher-Publisher-property-isEventPublisher'>    isEventPublisher: true,
+</span>    
+<span id='Ext-event-publisher-Publisher-property-S-vetoClearingPrototypeOnDestroy'>    $vetoClearingPrototypeOnDestroy: true,
+</span>
+<span id='Ext-event-publisher-Publisher-property-handledEvents'>    /**
+</span>     * @property {Array} handledEvents
+     * An array of events that this publisher handles.
+     */
+    handledEvents: [],
+
+    statics: {
+<span id='Ext-event-publisher-Publisher-static-property-publishers'>        /**
+</span>         * @property {Object} publishers
+         * A map of all publisher singleton instances.  Publishers register themselves
+         * in this map as soon as they are constructed.
+         */
+        publishers: {},
+
+<span id='Ext-event-publisher-Publisher-static-property-publishersByEvent'>        /**
+</span>         * @property publishersByEvent
+         * A map of handled event names to the publisher that handles each event.
+         * Provides a convenient way for looking up the publisher that handles any given
+         * event, for example:
+         *
+         *     // get the publisher that  handles click:
+         *     var publisher = Ext.event.publisher.Publisher.publishersByEvent.click;
+         */
+        publishersByEvent: {}
+    },
+
+<span id='Ext-event-publisher-Publisher-method-constructor'>    constructor: function() {
+</span>        var me = this,
+            type = me.type;
+
+<span id='Ext-event-publisher-Publisher-property-handles'>        /**
+</span>         * @property {Object} handles
+         * @private
+         * A map for conveniently checking if this publisher handles a given event
+         */
+        me.handles = {};
+
+        //&lt;debug&gt;
+        if (!type) {
+            Ext.raise(&quot;Event publisher &#39;&quot; + me.$className + &quot;&#39; defined without a &#39;type&#39; property.&quot;);
+        }
+        if (me.self.instance) {
+            Ext.raise(&quot;Cannot create multiple instances of &#39;&quot; + me.$className + &quot;&#39;. &quot; +
+                &quot;Use &#39;&quot; + me.$className + &quot;.instance&#39; to retrieve the singleton instance.&quot;);
+        }
+        //&lt;/debug&gt;
+
+        me.registerEvents();
+
+        Ext.event.publisher.Publisher.publishers[type] = me;
+    },
+
+<span id='Ext-event-publisher-Publisher-method-registerEvents'>    /**
+</span>     * Registers all {@link #handledEvents} in the
+     * {@link Ext.event.publisher.Publisher#publishersByEvent} map.
+     * @param {String[]} [events] optional events to register instead of handledEvents.
+     * @protected
+     */
+    registerEvents: function(events) {
+       var me = this,
+           publishersByEvent = Ext.event.publisher.Publisher.publishersByEvent,
+           handledEvents = events || me.handledEvents,
+           ln = handledEvents.length,
+           eventName, i;
+
+        for (i = 0; i &lt; ln; i++) {
+            eventName = handledEvents[i];
+            me.handles[eventName] = 1;
+            publishersByEvent[eventName] = me;
+        }
+    },
+
+<span id='Ext-event-publisher-Publisher-method-subscribe'>    //&lt;debug&gt;
+</span>    subscribe: function() {
+        Ext.raise(&quot;Ext.event.publisher.Publisher subclass &#39;&quot; + this.$className + &#39;&quot; has no subscribe method.&#39;);
+    },
+
+<span id='Ext-event-publisher-Publisher-method-unsubscribe'>    unsubscribe: function() {
+</span>        Ext.raise(&quot;Ext.event.publisher.Publisher subclass &#39;&quot; + this.$className + &#39;&quot; has no unsubscribe method.&#39;);
+    },
+<span id='Ext-event-publisher-Publisher-method-fire'>    //&lt;/debug&gt;
+</span>    
+    fire: function(element, eventName, args) {
+        var event;
+
+        if (element.hasListeners[eventName]) {
+            event = element.events[eventName];
+
+            if (event) {
+                event.fire.apply(event, args);
+            }
+        }
+    }
+});
+</pre>
+</body>
+</html>

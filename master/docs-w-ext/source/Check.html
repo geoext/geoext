@@ -1,0 +1,532 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <title>The source code</title>
+  <link href="../resources/prettify/prettify.css" type="text/css" rel="stylesheet" />
+  <script type="text/javascript" src="../resources/prettify/prettify.js"></script>
+  <style type="text/css">
+    .highlight { display: block; background-color: #ddd; }
+  </style>
+  <script type="text/javascript">
+    function highlight() {
+      document.getElementById(location.hash.replace(/#/, "")).className = "highlight";
+    }
+  </script>
+</head>
+<body onload="prettyPrint(); highlight();">
+  <pre class="prettyprint lang-js"><span id='Ext-grid-column-Check'>/**
+</span> * A Column subclass which renders a checkbox in each column cell which toggles the truthiness of the associated data field on click.
+ *
+ * Example usage:
+ *
+ *     @example
+ *     var store = Ext.create('Ext.data.Store', {
+ *         fields: ['name', 'email', 'phone', 'active'],
+ *         data: [
+ *             { name: 'Lisa', email: 'lisa@simpsons.com', phone: '555-111-1224', active: true },
+ *             { name: 'Bart', email: 'bart@simpsons.com', phone: '555-222-1234', active: true },
+ *             { name: 'Homer', email: 'homer@simpsons.com', phone: '555-222-1244', active: false },
+ *             { name: 'Marge', email: 'marge@simpsons.com', phone: '555-222-1254', active: true }
+ *         ]
+ *     });
+ *
+ *     Ext.create('Ext.grid.Panel', {
+ *         title: 'Simpsons',
+ *         height: 200,
+ *         width: 400,
+ *         renderTo: Ext.getBody(),
+ *         store: store,
+ *         columns: [
+ *             { text: 'Name', dataIndex: 'name' },
+ *             { text: 'Email', dataIndex: 'email', flex: 1 },
+ *             { text: 'Phone', dataIndex: 'phone' },
+ *             { xtype: 'checkcolumn', text: 'Active', dataIndex: 'active' }
+ *         ]
+ *     });
+ *
+ * The check column can be at any index in the columns array.
+ */
+Ext.define('Ext.grid.column.Check', {
+    extend: 'Ext.grid.column.Column',
+    alternateClassName: ['Ext.ux.CheckColumn', 'Ext.grid.column.CheckColumn'],
+    alias: 'widget.checkcolumn',
+
+<span id='Ext-grid-column-Check-property-isCheckColumn'>    /**
+</span>     * @property {Boolean} isCheckColumn
+     * `true` in this class to identify an object as an instantiated Check column, or subclass thereof.
+     */
+    isCheckColumn: true,
+
+    config: {
+<span id='Ext-grid-column-Check-cfg-headerCheckbox'>        /**
+</span>         * @cfg {Boolean} [headerCheckbox=false]
+         * Configure as `true` to display a checkbox below the header text.
+         *
+         * Clicking the checkbox will check/uncheck all records.
+         */
+        headerCheckbox: false
+    },
+
+<span id='Ext-grid-column-Check-cfg-align'>    /**
+</span>     * @cfg
+     * @hide
+     * Overridden from base class. Must center to line up with editor.
+     */
+    align: 'center',
+
+<span id='Ext-grid-column-Check-cfg-triggerEvent'>    /**
+</span>     * @cfg {String} [triggerEvent=click]
+     * The mouse event which triggers the toggle of a single cell.
+     */
+    triggerEvent: 'click',
+
+<span id='Ext-grid-column-Check-cfg-invert'>    /**
+</span>     * @cfg {Boolean} invert
+     * Use `true` to display a check when the value is `false` instead of when the value
+     * is `true`.
+     */
+    invert: false,
+
+<span id='Ext-grid-column-Check-cfg-tooltip'>    /**
+</span>     * @cfg {String} tooltip
+     * The tooltip text to show upon hover of a checked cell.
+     */
+
+<span id='Ext-grid-column-Check-cfg-checkedTooltip'>    /**
+</span>     * @cfg {String} checkedTooltip
+     * The tooltip text to show upon hover of an unchecked cell.
+     */
+
+    ignoreExport: true,
+
+<span id='Ext-grid-column-Check-cfg-stopSelection'>    /**
+</span>     * @cfg {Boolean} [stopSelection=true]
+     * Prevent grid selection upon mousedown.
+     */
+    stopSelection: true,
+
+<span id='Ext-grid-column-Check-property-headerCheckedCls'>    /**
+</span>     * @private
+     */
+    headerCheckedCls: Ext.baseCSSPrefix + 'grid-hd-checker-on',
+
+<span id='Ext-grid-column-Check-property-headerCheckboxCls'>    /**
+</span>     * @private
+     * The CSS class used to style and select the header checkbox.
+     */
+    headerCheckboxCls: Ext.baseCSSPrefix + 'column-header-checkbox',
+
+<span id='Ext-grid-column-Check-property-checkboxCls'>    checkboxCls: Ext.baseCSSPrefix + 'grid-checkcolumn',
+</span>
+<span id='Ext-grid-column-Check-property-checkboxCheckedCls'>    checkboxCheckedCls: Ext.baseCSSPrefix + 'grid-checkcolumn-checked',
+</span>
+<span id='Ext-grid-column-Check-property-innerCls'>    innerCls: Ext.baseCSSPrefix + 'grid-checkcolumn-cell-inner',
+</span>
+<span id='Ext-grid-column-Check-property-clickTargetName'>    clickTargetName: 'el',
+</span>
+<span id='Ext-grid-column-Check-property-defaultFilterType'>    defaultFilterType: 'boolean',
+</span>    
+<span id='Ext-grid-column-Check-property-checkboxAriaRole'>    checkboxAriaRole: 'button',
+</span>
+<span id='Ext-grid-column-Check-event-beforecheckchange'>    /**
+</span>     * @event beforecheckchange
+     * Fires when the UI requests a change of check status.
+     * The change may be vetoed by returning `false` from a listener.
+     * @param {Ext.grid.column.Check} this CheckColumn.
+     * @param {Number} rowIndex The row index.
+     * @param {Boolean} checked `true` if the box is to be checked.
+     * @param {Ext.data.Model} The record to be updated.
+     * @param {Ext.event.Event} e The underlying event which caused the check change.
+     * @param {Ext.grid.CellContext} e.position A {@link Ext.grid.CellContext CellContext} object
+     * containing all contextual information about where the event was triggered.
+     */
+
+<span id='Ext-grid-column-Check-event-checkchange'>    /**
+</span>     * @event checkchange
+     * Fires when the UI has successfully changed the checked state of a row.
+     * @param {Ext.grid.column.Check} this CheckColumn.
+     * @param {Number} rowIndex The row index.
+     * @param {Boolean} checked `true` if the box is now checked.
+     * @param {Ext.data.Model} The record which was updated.
+     * @param {Ext.event.Event} e The underlying event which caused the check change.
+     * @param {Ext.grid.CellContext} e.position A {@link Ext.grid.CellContext CellContext} object
+     */
+
+<span id='Ext-grid-column-Check-event-beforeheadercheckchange'>    /**
+</span>     * @event beforeheadercheckchange
+     * Fires when the header is clicked and before the mass check/uncheck takes place.
+     * The change may be vetoed by returning `false` from a listener.
+     * @param {Ext.grid.column.Check} this CheckColumn.
+     * @param {Boolean} checked `true` if all boxes are to be checked.
+     * @param {Ext.event.Event} e The underlying event which caused the check change.
+     */
+
+<span id='Ext-grid-column-Check-event-headercheckchange'>    /**
+</span>     * @event headercheckchange
+     * Fires after the header is clicked and a mass check/uncheck operation has been completed.
+     * @param {Ext.grid.column.Check} this CheckColumn.
+     * @param {Boolean} checked `true` if all boxes are now checked.
+     * @param {Ext.event.Event} e The underlying event which caused the check change.
+     */
+
+    constructor: function(config) {
+        // This method may be invoked more than once in an event, so defer its actual invocation.
+        // For example it's invoked in the renderer and updater and they may be called from a loop.
+        this.updateHeaderState = Ext.Function.createAnimationFrame(config.updateHeaderState || this.updateHeaderState);
+
+        this.scope = this;
+        this.callParent(arguments);
+    },
+
+<span id='Ext-grid-column-Check-method-afterComponentLayout'>    afterComponentLayout: function() {
+</span>        var me = this;
+
+        me.callParent(arguments);
+
+        if (me.useAriaElements &amp;&amp; me.headerCheckbox) {
+            me.updateHeaderAriaDescription(me.areAllChecked());
+        }
+
+        // Only do this once
+        if (!me.storeListeners) {
+            // Ensure initial rendered state is correct.
+            // This will update the header state on the next animation frame
+            // after all rows have been rendered.
+            me.updateHeaderState();
+
+            // We need to listen to data changed. This includes add and remove as well as reload.
+            // We cannot rely on the renderer or updater to kick off an updateHeaderState call
+            // because buffered rendering may mean that the UI does not process the entire dataset.
+            me.storeListeners = me.getView().dataSource.on({
+                datachanged: me.onDataChanged,
+                scope: me,
+                destroyable: true
+            });
+        }
+    },
+
+<span id='Ext-grid-column-Check-method-onRemoved'>    onRemoved: function() {
+</span>        this.callParent(arguments);
+        this.storeListeners = Ext.destroy(this.storeListeners);
+    },
+
+<span id='Ext-grid-column-Check-method-onDataChanged'>    onDataChanged: function(store, records) {
+</span>        // If any records are added or removed, we need up to date the header state.
+        this.updateHeaderState();
+    },
+
+<span id='Ext-grid-column-Check-method-updateHeaderCheckbox'>    updateHeaderCheckbox: function(headerCheckbox) {
+</span>        var me = this,
+            cls = Ext.baseCSSPrefix + 'column-header-checkbox';
+        
+        if (headerCheckbox) {
+            me.addCls(cls);
+            
+            // So that SPACE/ENTER does not sort, but routes to the checkbox
+            me.sortable = false;
+            
+            if (me.useAriaElements) {
+                me.updateHeaderAriaDescription(me.areAllChecked());
+            }
+        }
+        else {
+            me.removeCls(cls);
+            
+            if (me.useAriaElements &amp;&amp; me.ariaEl.dom) {
+                me.ariaEl.dom.removeAttribute('aria-describedby');
+            }
+        }
+
+        // Keep the header checkbox up to date
+        me.updateHeaderState();
+    },
+
+<span id='Ext-grid-column-Check-method-processEvent'>    /**
+</span>     * @private
+     * Process and refire events routed from the GridView's processEvent method.
+     */
+    processEvent: function(type, view, cell, recordIndex, cellIndex, e, record, row) {
+        var me = this,
+            key = type === 'keydown' &amp;&amp; e.getKey(),
+            isClick = type === me.triggerEvent,
+            disabled = me.disabled,
+            ret,
+            checked;
+
+        // Flag event to tell SelectionModel not to process it.
+        e.stopSelection = !key &amp;&amp; me.stopSelection;
+
+        if (!disabled &amp;&amp; (isClick || (key === e.ENTER || key === e.SPACE))) {
+            checked = !me.isRecordChecked(record);
+
+            // Allow apps to hook beforecheckchange
+            if (me.fireEvent('beforecheckchange', me, recordIndex, checked, record, e) !== false) {
+
+                me.setRecordCheck(record, recordIndex, checked, cell, e);
+
+                // Do not allow focus to follow from this mousedown unless the grid is already in actionable mode
+                if (isClick &amp;&amp; !view.actionableMode) {
+                    e.preventDefault();
+                }
+                if (me.hasListeners.checkchange) {
+                    me.fireEvent('checkchange', me, recordIndex, checked, record, e);
+                }
+            }
+        } else {
+            ret = me.callParent(arguments);
+        }
+        return ret;
+    },
+
+<span id='Ext-grid-column-Check-method-onTitleElClick'>    onTitleElClick: function(e, t, sortOnClick) {
+</span>        var me = this;
+
+        // Toggle if no text, or it's activated by SPACE key, or the click is on the checkbox element.
+        if (!me.disabled &amp;&amp; (e.keyCode || !me.text || (Ext.fly(e.target).hasCls(me.headerCheckboxCls)))) {
+            me.toggleAll(e);
+        } else {
+            return me.callParent([e, t, sortOnClick]);
+        }
+    },
+
+<span id='Ext-grid-column-Check-method-toggleAll'>    toggleAll: function(e) {
+</span>        var me = this,
+            view = me.getView(),
+            store = view.getStore(),
+            checked = !me.allChecked,
+            position, text, anncEl;
+
+        if (me.fireEvent('beforeheadercheckchange', me, checked, e) !== false) {
+
+            // Only create and maintain a CellContext if there are consumers
+            // in the form of event listeners. The event is a click on a 
+            // column header and will have no position property.
+            if (me.hasListeners.checkchange || me.hasListeners.beforecheckchange) {
+                position = e.position = new Ext.grid.CellContext(view);
+            }
+            store.each(function(record, recordIndex) {
+                me.setRecordCheck(record, recordIndex, checked, view.getCell(record, me));
+            });
+
+            me.setHeaderStatus(checked, e);
+            me.fireEvent('headercheckchange', me, checked, e);
+        }
+    },
+
+<span id='Ext-grid-column-Check-method-setHeaderStatus'>    setHeaderStatus: function(checked, e) {
+</span>        var me = this;
+
+        // Will fire initially due to allChecked being undefined and using !==
+        if (me.allChecked !== checked) {
+            me.allChecked = checked;
+            
+            if (me.headerCheckbox) {
+                me[checked ? 'addCls' : 'removeCls'](me.headerCheckedCls);
+                
+                if (me.useAriaElements) {
+                    me.updateHeaderAriaDescription(checked);
+                }
+            }
+        }
+    },
+
+<span id='Ext-grid-column-Check-method-updateHeaderState'>    updateHeaderState: function(e) {
+</span>        // This is called on a timer, so ignore if it fires after destruction
+        if (!this.destroyed &amp;&amp; this.headerCheckbox) {
+            this.setHeaderStatus(this.areAllChecked(), e);
+        }
+    },
+
+<span id='Ext-grid-column-Check-method-onEnable'>    /**
+</span>     * Enables this CheckColumn.
+     */
+    onEnable: function() {
+        this.callParent(arguments);
+        this._setDisabled(false);
+    },
+
+<span id='Ext-grid-column-Check-method-onDisable'>    /**
+</span>     * Disables this CheckColumn.
+     */
+    onDisable: function() {
+        this._setDisabled(true);
+    },
+
+<span id='Ext-grid-column-Check-method-_setDisabled'>    // Don't want to conflict with the Component method
+</span>    _setDisabled: function(disabled) {
+        var me = this,
+            cls = me.disabledCls,
+            items;
+
+        items = me.up('tablepanel').el.select(me.getCellSelector());
+        if (disabled) {
+            items.addCls(cls);
+        } else {
+            items.removeCls(cls);
+        }
+    },
+
+<span id='Ext-grid-column-Check-method-defaultRenderer'>    defaultRenderer: function(value, cellValues) {
+</span>        var me = this,
+            cls = me.checkboxCls,
+            tip = me.tooltip;
+
+        if (me.invert) {
+            value = !value;
+        }
+        if (me.disabled) {
+            cellValues.tdCls += ' ' + me.disabledCls;
+        }
+        
+        if (value) {
+            cls += ' ' + me.checkboxCheckedCls;
+            tip = me.checkedTooltip || tip;
+        }
+        
+        if (me.useAriaElements) {
+            cellValues.tdAttr += ' aria-describedby=&quot;' + me.id + '-cell-description' +
+                                 (!value ? '-not' : '') + '-selected&quot;';
+        }
+
+        // This will update the header state on the next animation frame
+        // after all rows have been rendered.
+        me.updateHeaderState();
+
+        return '&lt;span ' + (tip || '') + ' class=&quot;' + cls + '&quot; role=&quot;' + me.checkboxAriaRole + '&quot;' +
+                (!me.ariaStaticRoles[me.checkboxAriaRole] ? ' tabIndex=&quot;0&quot;' : '') +
+               '&gt;&lt;/span&gt;';
+    },
+
+<span id='Ext-grid-column-Check-method-isRecordChecked'>    isRecordChecked: function (record) {
+</span>        var prop = this.property;
+        if (prop) {
+            return record[prop];
+        }
+        return record.get(this.dataIndex);
+    },
+
+<span id='Ext-grid-column-Check-method-areAllChecked'>    areAllChecked: function() {
+</span>        var me = this,
+            store = me.getView().getStore(),
+            records, len, i;
+            
+        if (!store.isBufferedStore &amp;&amp; store.getCount() &gt; 0) {
+            records = store.getData().items;
+            len = records.length;
+            for (i = 0; i &lt; len; ++i) {
+                if (!me.isRecordChecked(records[i])) {
+                    return false;
+                }
+            }
+            return true;
+        }
+    },
+
+<span id='Ext-grid-column-Check-method-setRecordCheck'>    setRecordCheck: function (record, recordIndex, checked, cell) {
+</span>        var me = this,
+            prop = me.property,
+            result;
+
+        // Only proceed if we NEED to change
+        if (prop ? record[prop] : record.get(me.dataIndex) != checked) {
+            if (prop) {
+                record[prop] = checked;
+                me.updater(cell, checked);
+            } else {
+                record.set(me.dataIndex, checked);
+            }
+        }
+    },
+
+<span id='Ext-grid-column-Check-method-updater'>    updater: function (cell, value) {
+</span>        var me = this,
+            tip = me.tooltip;
+
+        if (me.invert) {
+            value = !value;
+        }
+        if (value) {
+            tip = me.checkedTooltip || tip;
+        }
+        if (tip) {
+            cell.setAttribute('data-qtip', tip);
+        } else {
+            cell.removeAttribute('data-qtip');
+        }
+        cell = Ext.fly(cell);
+
+        if (me.useAriaElements) {
+            me.updateCellAriaDescription(null, value, cell);
+        }
+        
+        cell[me.disabled ? 'addCls' : 'removeCls'](me.disabledCls);
+        Ext.fly(cell.down(me.getView().innerSelector, true).firstChild)[value ? 'addCls' : 'removeCls'](Ext.baseCSSPrefix + 'grid-checkcolumn-checked');
+
+        // This will update the header state on the next animation frame
+        // after all rows have been updated.
+        me.updateHeaderState();
+    },
+    
+<span id='Ext-grid-column-Check-method-updateHeaderAriaDescription'>    /**
+</span>     * @private
+     */
+    updateHeaderAriaDescription: function(isSelected) {
+        var me = this;
+        
+        if (me.useAriaElements &amp;&amp; me.ariaEl.dom) {
+            me.ariaEl.dom.setAttribute('aria-describedby', me.id + '-header-description' +
+                                       (!isSelected ? '-not' : '') + '-selected');
+        }
+    },
+    
+<span id='Ext-grid-column-Check-method-updateCellAriaDescription'>    /**
+</span>     * @private
+     */
+    updateCellAriaDescription: function(record, isSelected, cell) {
+        var me = this;
+        
+        if (me.useAriaElements) {
+            cell = cell || me.getView().getCell(record, me);
+            
+            if (cell) {
+                cell.dom.setAttribute('aria-describedby', me.id + '-cell-description' + 
+                                        (!isSelected ? '-not' : '') + '-selected');
+            }
+        }
+    },
+
+<span id='Ext-grid-column-Check-property-privates'>    privates: {
+</span><span id='Ext-grid-column-Check-method-afterText'>        /**
+</span>         * A method called by the render template to allow extra content after the header text.
+         * Needs to be a seperate element to carry this. Cannot be a :after pseudo element
+         * on one of the textual elements because we need to filter the click target to this
+         * element for header checkbox clicking.
+         * @private
+         */
+        afterText: function(out, values) {
+            var me = this,
+                id = me.id;
+            
+            out.push('&lt;span role=&quot;presentation&quot; class=&quot;', me.headerCheckboxCls, '&quot;&gt;&lt;/span&gt;');
+            
+            if (me.useAriaElements) {
+                out.push(
+                    '&lt;span id=&quot;' + id + '-header-description-selected&quot; class=&quot;' +
+                        Ext.baseCSSPrefix + 'hidden-offsets&quot;&gt;' + me.headerDeselectText + '&lt;/span&gt;' +
+                    '&lt;span id=&quot;' + id + '-header-description-not-selected&quot; class=&quot;' +
+                        Ext.baseCSSPrefix + 'hidden-offsets&quot;&gt;' + me.headerSelectText + '&lt;/span&gt;' +
+                    '&lt;span id=&quot;' + id + '-cell-description-selected&quot; class=&quot;' +
+                        Ext.baseCSSPrefix + 'hidden-offsets&quot;&gt;' + me.rowDeselectText +
+                    '&lt;/span&gt;' +
+                    '&lt;span id=&quot;' + id + '-cell-description-not-selected&quot; class=&quot;' +
+                        Ext.baseCSSPrefix + 'hidden-offsets&quot;&gt;' + me.rowSelectText +
+                    '&lt;/span&gt;'
+                );
+            }
+        }
+    }
+});
+</pre>
+</body>
+</html>

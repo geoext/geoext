@@ -1,0 +1,367 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <title>The source code</title>
+  <link href="../resources/prettify/prettify.css" type="text/css" rel="stylesheet" />
+  <script type="text/javascript" src="../resources/prettify/prettify.js"></script>
+  <style type="text/css">
+    .highlight { display: block; background-color: #ddd; }
+  </style>
+  <script type="text/javascript">
+    function highlight() {
+      document.getElementById(location.hash.replace(/#/, "")).className = "highlight";
+    }
+  </script>
+</head>
+<body onload="prettyPrint(); highlight();">
+  <pre class="prettyprint lang-js"><span id='Ext-fx-runner-Css'>/**
+</span> * @private
+ */
+Ext.define('Ext.fx.runner.Css', {
+    extend: 'Ext.Evented',
+
+    requires: [
+        'Ext.fx.Animation'
+    ],
+
+<span id='Ext-fx-runner-Css-property-prefixedProperties'>    prefixedProperties: {
+</span>        'transform'                 : true,
+        'transform-origin'          : true,
+        'perspective'               : true,
+        'transform-style'           : true,
+        'transition'                : true,
+        'transition-property'       : true,
+        'transition-duration'       : true,
+        'transition-timing-function': true,
+        'transition-delay'          : true,
+        'animation'                 : true,
+        'animation-name'            : true,
+        'animation-duration'        : true,
+        'animation-iteration-count' : true,
+        'animation-direction'       : true,
+        'animation-timing-function' : true,
+        'animation-delay'           : true
+    },
+
+<span id='Ext-fx-runner-Css-property-lengthProperties'>    lengthProperties: {
+</span>        'top'                : true,
+        'right'              : true,
+        'bottom'             : true,
+        'left'               : true,
+        'width'              : true,
+        'height'             : true,
+        'max-height'         : true,
+        'max-width'          : true,
+        'min-height'         : true,
+        'min-width'          : true,
+        'margin-bottom'      : true,
+        'margin-left'        : true,
+        'margin-right'       : true,
+        'margin-top'         : true,
+        'padding-bottom'     : true,
+        'padding-left'       : true,
+        'padding-right'      : true,
+        'padding-top'        : true,
+        'border-bottom-width': true,
+        'border-left-width'  : true,
+        'border-right-width' : true,
+        'border-spacing'     : true,
+        'border-top-width'   : true,
+        'border-width'       : true,
+        'outline-width'      : true,
+        'letter-spacing'     : true,
+        'line-height'        : true,
+        'text-indent'        : true,
+        'word-spacing'       : true,
+        'font-size'          : true,
+        'translate'          : true,
+        'translateX'         : true,
+        'translateY'         : true,
+        'translateZ'         : true,
+        'translate3d'        : true,
+        'x'                  : true,
+        'y'                  : true
+    },
+
+<span id='Ext-fx-runner-Css-property-durationProperties'>    durationProperties: {
+</span>        'transition-duration'   : true,
+        'transition-delay'      : true,
+        'animation-duration'    : true,
+        'animation-delay'       : true
+    },
+
+<span id='Ext-fx-runner-Css-property-angleProperties'>    angleProperties: {
+</span>        rotate     : true,
+        rotateX    : true,
+        rotateY    : true,
+        rotateZ    : true,
+        skew       : true,
+        skewX      : true,
+        skewY      : true
+    },
+
+<span id='Ext-fx-runner-Css-property-lengthUnitRegex'>    lengthUnitRegex: /([a-z%]*)$/,
+</span>
+<span id='Ext-fx-runner-Css-property-DEFAULT_UNIT_LENGTH'>    DEFAULT_UNIT_LENGTH: 'px',
+</span>
+<span id='Ext-fx-runner-Css-property-DEFAULT_UNIT_ANGLE'>    DEFAULT_UNIT_ANGLE: 'deg',
+</span>
+<span id='Ext-fx-runner-Css-property-DEFAULT_UNIT_DURATION'>    DEFAULT_UNIT_DURATION: 'ms',
+</span>
+<span id='Ext-fx-runner-Css-property-customProperties'>    customProperties: {
+</span>        x: true,
+        y: true
+    },
+
+<span id='Ext-fx-runner-Css-property-formattedNameCache'>    formattedNameCache: {
+</span>        'x': 'left',
+        'y': 'top'
+    },
+
+<span id='Ext-fx-runner-Css-property-transformMethods3d'>    transformMethods3d: [
+</span>        'translateX', 
+        'translateY', 
+        'translateZ', 
+        'rotate', 
+        'rotateX', 
+        'rotateY', 
+        'rotateZ', 
+        'skewX', 
+        'skewY', 
+        'scaleX', 
+        'scaleY', 
+        'scaleZ'
+    ],
+
+<span id='Ext-fx-runner-Css-property-transformMethodsNo3d'>    transformMethodsNo3d: [
+</span>        'translateX', 
+        'translateY', 
+        'rotate', 
+        'skewX', 
+        'skewY', 
+        'scaleX', 
+        'scaleY'
+    ],
+
+<span id='Ext-fx-runner-Css-method-constructor'>    constructor: function() {
+</span>        var me = this;
+
+        me.transformMethods = Ext.feature.has.Css3dTransforms ? me.transformMethods3d : me.transformMethodsNo3d;
+        me.vendorPrefix = Ext.browser.getStyleDashPrefix();
+        me.ruleStylesCache = {};
+
+        me.callParent();
+    },
+
+<span id='Ext-fx-runner-Css-method-getStyleSheet'>    getStyleSheet: function() {
+</span>        var styleSheet = this.styleSheet,
+            styleElement, styleSheets;
+
+        if (!styleSheet) {
+            styleElement = document.createElement('style');
+            styleElement.type = 'text/css';
+
+            (document.head || document.getElementsByTagName('head')[0]).appendChild(styleElement);
+
+            styleSheets = document.styleSheets;
+
+            this.styleSheet = styleSheet = styleSheets[styleSheets.length - 1];
+        }
+
+        return styleSheet;
+    },
+
+<span id='Ext-fx-runner-Css-method-applyRules'>    applyRules: function(selectors) {
+</span>        var styleSheet = this.getStyleSheet(),
+            ruleStylesCache = this.ruleStylesCache,
+            rules = styleSheet.cssRules,
+            selector, properties, ruleStyle,
+            ruleStyleCache, rulesLength, name, value;
+
+        for (selector in selectors) {
+            properties = selectors[selector];
+
+            ruleStyle = ruleStylesCache[selector];
+
+            if (ruleStyle === undefined) {
+                rulesLength = rules.length;
+                styleSheet.insertRule(selector + '{}', rulesLength);
+                ruleStyle = ruleStylesCache[selector] = rules.item(rulesLength).style;
+            }
+
+            ruleStyleCache = ruleStyle.$cache;
+
+            if (!ruleStyleCache) {
+                ruleStyleCache = ruleStyle.$cache = {};
+            }
+
+            for (name in properties) {
+                value = this.formatValue(properties[name], name);
+                name = this.formatName(name);
+
+                if (ruleStyleCache[name] !== value) {
+                    ruleStyleCache[name] = value;
+
+                    if (value === null) {
+                        ruleStyle.removeProperty(name);
+                    }
+                    else {
+                        ruleStyle.setProperty(name, value, 'important');
+                    }
+                }
+            }
+        }
+
+        return this;
+    },
+
+<span id='Ext-fx-runner-Css-method-applyStyles'>    applyStyles: function(styles) {
+</span>        var id, element, elementStyle, properties, name, value;
+
+        for (id in styles) {
+            if (styles.hasOwnProperty(id)) {
+                this.activeElement = element = document.getElementById(id);
+
+                if (!element) {
+                    continue;
+                }
+
+                elementStyle = element.style;
+
+                properties = styles[id];
+                for (name in properties) {
+                    if (properties.hasOwnProperty(name)) {
+                        value = this.formatValue(properties[name], name);
+                        name = this.formatName(name);
+
+                        if (value === null) {
+                            elementStyle.removeProperty(name);
+                        }
+                        else {
+                            elementStyle.setProperty(name, value, 'important');
+                        }
+                    }
+                }
+            }
+        }
+
+        this.activeElement = null;
+
+        return this;
+    },
+
+<span id='Ext-fx-runner-Css-method-formatName'>    formatName: function(name) {
+</span>        var cache = this.formattedNameCache,
+            formattedName = cache[name];
+
+        if (!formattedName) {
+            if ((Ext.os.is.Tizen || !Ext.feature.has.CssTransformNoPrefix) &amp;&amp; this.prefixedProperties[name]) {
+                formattedName = this.vendorPrefix + name;
+            }
+            else {
+                formattedName = name;
+            }
+
+            cache[name] = formattedName;
+        }
+
+        return formattedName;
+    },
+
+<span id='Ext-fx-runner-Css-method-formatValue'>    formatValue: function(value, name) {
+</span>        var type = typeof value,
+            lengthUnit = this.DEFAULT_UNIT_LENGTH,
+            isCustom = this.customProperties[name],
+            transformMethods,
+            method, i, ln,
+            transformValues, values, unit;
+
+        if (value === null) {
+            return '';
+        }
+
+        if (type === 'string') {
+            if (this.lengthProperties[name]) {
+                unit = value.match(this.lengthUnitRegex)[1];
+
+                if (unit.length &gt; 0) {
+                    //&lt;debug&gt;
+                    if (unit !== lengthUnit) {
+                        Ext.Logger.error(&quot;Length unit: '&quot; + unit + &quot;' in value: '&quot; + value + &quot;' of property: '&quot; + name + &quot;' is not &quot; +
+                            &quot;valid for animation. Only 'px' is allowed&quot;);
+                    }
+                    //&lt;/debug&gt;
+                }
+                else {
+                    value = value + lengthUnit;
+                    if (isCustom) {
+                        value = this.getCustomValue(value, name);
+                    }
+                    return value;
+                }
+            }
+
+            return value;
+        }
+        else if (type === 'number') {
+            if (value == 0) {
+                return '0';
+            }
+
+            if (this.lengthProperties[name]) {
+                value = value + lengthUnit;
+                if (isCustom) {
+                    value = this.getCustomValue(value, name);
+                }
+                return value;
+            }
+
+            if (this.angleProperties[name]) {
+                return value + this.DEFAULT_UNIT_ANGLE;
+            }
+
+            if (this.durationProperties[name]) {
+                return value + this.DEFAULT_UNIT_DURATION;
+            }
+        }
+        else if (name === 'transform') {
+            transformMethods = this.transformMethods;
+            transformValues = [];
+
+            for (i = 0,ln = transformMethods.length; i &lt; ln; i++) {
+                method = transformMethods[i];
+
+                transformValues.push(method + '(' + this.formatValue(value[method], method) + ')');
+            }
+
+            return transformValues.join(' ');
+        }
+        else if (Ext.isArray(value)) {
+            values = [];
+
+            for (i = 0,ln = value.length; i &lt; ln; i++) {
+                values.push(this.formatValue(value[i], name));
+            }
+
+            return (values.length &gt; 0) ? values.join(', ') : 'none';
+        }
+
+        return value;
+    },
+
+<span id='Ext-fx-runner-Css-method-getCustomValue'>    getCustomValue: function(value, name) {
+</span>        var el = Ext.fly(this.activeElement),
+             unit = value.match(this.lengthUnitRegex)[1];
+
+        if (name === 'x') {
+            value = el.translateXY(parseInt(value, 10)).x;
+        } else if (name === 'y') {
+            value = el.translateXY(null, parseInt(value, 10)).y;
+        }
+        return value + unit;
+    }
+});
+</pre>
+</body>
+</html>

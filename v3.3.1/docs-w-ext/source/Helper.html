@@ -1,0 +1,623 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <title>The source code</title>
+  <link href="../resources/prettify/prettify.css" type="text/css" rel="stylesheet" />
+  <script type="text/javascript" src="../resources/prettify/prettify.js"></script>
+  <style type="text/css">
+    .highlight { display: block; background-color: #ddd; }
+  </style>
+  <script type="text/javascript">
+    function highlight() {
+      document.getElementById(location.hash.replace(/#/, "")).className = "highlight";
+    }
+  </script>
+</head>
+<body onload="prettyPrint(); highlight();">
+  <pre class="prettyprint lang-js"><span id='Ext-dom-Helper'>/**
+</span> * @alternateClassName Ext.DomHelper
+ * @singleton
+ *
+ * The DomHelper class provides a layer of abstraction from DOM and transparently supports creating elements via DOM or
+ * using HTML fragments. It also has the ability to create HTML fragment templates from your DOM building code.
+ *
+ * ## DomHelper element specification object
+ *
+ * A specification object is used when creating elements. Attributes of this object are assumed to be element
+ * attributes, except for 4 special attributes:
+ *
+ * * **tag**: The tag name of the element
+ * * **children (or cn)**: An array of the same kind of element definition objects to be created and appended. These
+ * can be nested as deep as you want.
+ * * **cls**: The class attribute of the element. This will end up being either the &quot;class&quot; attribute on a HTML
+ * fragment or className for a DOM node, depending on whether DomHelper is using fragments or DOM.
+ * * **html**: The innerHTML for the element
+ *
+ * ## Insertion methods
+ *
+ * Commonly used insertion methods:
+ *
+ * * {@link #append}
+ * * {@link #insertBefore}
+ * * {@link #insertAfter}
+ * * {@link #overwrite}
+ * * {@link #insertHtml}
+ *
+ * ## Example
+ *
+ * This is an example, where an unordered list with 3 children items is appended to an existing element with id
+ * &#39;my-div&#39;:
+ *
+ *     var dh = Ext.DomHelper; // create shorthand alias
+ *     // specification object
+ *     var spec = {
+ *         id: &#39;my-ul&#39;,
+ *         tag: &#39;ul&#39;,
+ *         cls: &#39;my-list&#39;,
+ *         // append children after creating
+ *         children: [     // may also specify &#39;cn&#39; instead of &#39;children&#39;
+ *             {tag: &#39;li&#39;, id: &#39;item0&#39;, html: &#39;List Item 0&#39;},
+ *             {tag: &#39;li&#39;, id: &#39;item1&#39;, html: &#39;List Item 1&#39;},
+ *             {tag: &#39;li&#39;, id: &#39;item2&#39;, html: &#39;List Item 2&#39;}
+ *         ]
+ *     };
+ *     var list = dh.append(
+ *         &#39;my-div&#39;, // the context element &#39;my-div&#39; can either be the id or the actual node
+ *         spec      // the specification object
+ *     );
+ *
+ * Element creation specification parameters in this class may also be passed as an Array of specification objects.
+ * This can be used to insert multiple sibling nodes into an existing container very efficiently. For example, to add
+ * more list items to the example above:
+ *
+ *     dh.append(&#39;my-ul&#39;, [
+ *         {tag: &#39;li&#39;, id: &#39;item3&#39;, html: &#39;List Item 3&#39;},
+ *         {tag: &#39;li&#39;, id: &#39;item4&#39;, html: &#39;List Item 4&#39;}
+ *     ]);
+ *
+ * ## Templating
+ *
+ * The real power is in the built-in templating. Instead of creating or appending any elements, createTemplate returns
+ * a Template object which can be used over and over to insert new elements. Revisiting the example above, we could
+ * utilize templating this time:
+ *
+ *     // create the node
+ *     var list = dh.append(&#39;my-div&#39;, {tag: &#39;ul&#39;, cls: &#39;my-list&#39;});
+ *     // get template
+ *     var tpl = dh.createTemplate({tag: &#39;li&#39;, id: &#39;item{0}&#39;, html: &#39;List Item {0}&#39;});
+ *
+ *     for(var i = 0; i &lt; 5; i++){
+ *         tpl.append(list, i); // use template to append to the actual node
+ *     }
+ *
+ * An example using a template:
+ *
+ *     var html = &#39;&quot;{0}&quot; href=&quot;{1}&quot; class=&quot;nav&quot;&gt;{2}&#39;;
+ *
+ *     var tpl = new Ext.DomHelper.createTemplate(html);
+ *     tpl.append(&#39;blog-roll&#39;, [&#39;link1&#39;, &#39;http://www.foxmulder.com/&#39;, &quot;Fox&#39;s Site&quot;]);
+ *     tpl.append(&#39;blog-roll&#39;, [&#39;link2&#39;, &#39;http://www.danascully.org/&#39;, &quot;Scully&#39;s Site&quot;]);
+ *
+ * The same example using named parameters:
+ *
+ *     var html = &#39;&quot;{id}&quot; href=&quot;{url}&quot; class=&quot;nav&quot;&gt;{text}&#39;;
+ *
+ *     var tpl = new Ext.DomHelper.createTemplate(html);
+ *     tpl.append(&#39;blog-roll&#39;, {
+ *         id: &#39;link1&#39;,
+ *         url: &#39;http://www.danascully.org/&#39;,
+ *         text: &quot;Scully&#39;s Site&quot;
+ *     });
+ *     tpl.append(&#39;blog-roll&#39;, {
+ *         id: &#39;link2&#39;,
+ *         url: &#39;http://www.foxmulder.com/&#39;,
+ *         text: &quot;Fox&#39;s Site&quot;
+ *     });
+ *
+ * ## Compiling Templates
+ *
+ * Templates are applied using regular expressions. The performance is great, but if you are adding a bunch of DOM
+ * elements using the same template, you can increase performance even further by &quot;compiling&quot; the template. The way
+ * &quot;compile()&quot; works is the template is parsed and broken up at the different variable points and a dynamic function is
+ * created and eval&#39;ed. The generated function performs string concatenation of these parts and the passed variables
+ * instead of using regular expressions.
+ *
+ *     var html = &#39;&quot;{id}&quot; href=&quot;{url}&quot; class=&quot;nav&quot;&gt;{text}&#39;;
+ *
+ *     var tpl = new Ext.DomHelper.createTemplate(html);
+ *     tpl.compile();
+ *
+ *     // ... use template like normal
+ *
+ * ## Performance Boost
+ *
+ * DomHelper will transparently create HTML fragments when it can. Using HTML fragments instead of DOM can
+ * significantly boost performance.
+ *
+ * Element creation specification parameters may also be strings which are used as innerHTML.
+ */
+Ext.define(&#39;Ext.dom.Helper&#39;, function() {
+    var afterbegin = &#39;afterbegin&#39;,
+        afterend = &#39;afterend&#39;,
+        beforebegin = &#39;beforebegin&#39;,
+        beforeend = &#39;beforeend&#39;,
+        bbValues = [&#39;BeforeBegin&#39;, &#39;previousSibling&#39;],
+        aeValues = [&#39;AfterEnd&#39;, &#39;nextSibling&#39;],
+        bb_ae_PositionHash = {
+            beforebegin: bbValues,
+            afterend: aeValues
+        },
+        fullPositionHash = {
+            beforebegin: bbValues,
+            afterend: aeValues,
+            afterbegin: [&#39;AfterBegin&#39;, &#39;firstChild&#39;],
+            beforeend: [&#39;BeforeEnd&#39;, &#39;lastChild&#39;]
+        };
+
+    return {
+        singleton: true,
+
+        alternateClassName: [
+            &#39;Ext.DomHelper&#39;,
+            &#39;Ext.core.DomHelper&#39;
+        ],
+
+        emptyTags: /^(?:br|frame|hr|img|input|link|meta|range|spacer|wbr|area|param|col)$/i,
+        confRe: /^(?:tag|children|cn|html|tpl|tplData)$/i,
+        endRe: /end/i,
+
+        // Since cls &amp; for are reserved words, we need to transform them
+        attributeTransform: { cls : &#39;class&#39;, htmlFor : &#39;for&#39; },
+
+        closeTags: {},
+
+        detachedDiv: document.createElement(&#39;div&#39;),
+
+        decamelizeName: function () {
+            var camelCaseRe = /([a-z])([A-Z])/g,
+                cache = {};
+
+            function decamel (match, p1, p2) {
+                return p1 + &#39;-&#39; + p2.toLowerCase();
+            }
+
+            return function (s) {
+                return cache[s] || (cache[s] = s.replace(camelCaseRe, decamel));
+            };
+        }(),
+
+        generateMarkup: function(spec, buffer) {
+            var me = this,
+                specType = typeof spec,
+                attr, val, tag, i, closeTags;
+
+            if (specType === &quot;string&quot; || specType === &quot;number&quot;) {
+                buffer.push(spec);
+            } else if (Ext.isArray(spec)) {
+                for (i = 0; i &lt; spec.length; i++) {
+                    if (spec[i]) {
+                        me.generateMarkup(spec[i], buffer);
+                    }
+                }
+            } else {
+                tag = spec.tag || &#39;div&#39;;
+                buffer.push(&#39;&lt;&#39;, tag);
+
+                for (attr in spec) {
+                    if (spec.hasOwnProperty(attr)) {
+                        val = spec[attr];
+                        if (val !== undefined &amp;&amp; !me.confRe.test(attr)) {
+                            if (val &amp;&amp; val.join) {
+                                val = val.join(&#39; &#39;);
+                            }
+                            if (typeof val === &quot;object&quot;) {
+                                buffer.push(&#39; &#39;, attr, &#39;=&quot;&#39;);
+                                me.generateStyles(val, buffer, true).push(&#39;&quot;&#39;);
+                            } else {
+                                buffer.push(&#39; &#39;, me.attributeTransform[attr] || attr, &#39;=&quot;&#39;, val, &#39;&quot;&#39;);
+                            }
+                        }
+                    }
+                }
+
+                // Now either just close the tag or try to add children and close the tag.
+                if (me.emptyTags.test(tag)) {
+                    buffer.push(&#39;/&gt;&#39;);
+                } else {
+                    buffer.push(&#39;&gt;&#39;);
+
+                    // Apply the tpl html, and cn specifications
+                    if ((val = spec.tpl)) {
+                        val.applyOut(spec.tplData, buffer);
+                    }
+                    if ((val = spec.html)) {
+                        buffer.push(val);
+                    }
+                    if ((val = spec.cn || spec.children)) {
+                        me.generateMarkup(val, buffer);
+                    }
+
+                    // we generate a lot of close tags, so cache them rather than push 3 parts
+                    closeTags = me.closeTags;
+                    buffer.push(closeTags[tag] || (closeTags[tag] = &#39;&lt;/&#39; + tag + &#39;&gt;&#39;));
+                }
+            }
+
+            return buffer;
+        },
+
+<span id='Ext-dom-Helper-method-generateStyles'>        /**
+</span>         * Converts the styles from the given object to text. The styles are CSS style names
+         * with their associated value.
+         * 
+         * The basic form of this method returns a string:
+         * 
+         *      var s = Ext.DomHelper.generateStyles({
+         *          backgroundColor: &#39;red&#39;
+         *      });
+         *      
+         *      // s = &#39;background-color:red;&#39;
+         *
+         * Alternatively, this method can append to an output array.
+         * 
+         *      var buf = [];
+         *
+         *      ...
+         *
+         *      Ext.DomHelper.generateStyles({
+         *          backgroundColor: &#39;red&#39;
+         *      }, buf);
+         *
+         * In this case, the style text is pushed on to the array and the array is returned.
+         * 
+         * @param {Object} styles The object describing the styles.
+         * @param {String[]} [buffer] The output buffer.
+         * @param {Boolean} [encode] `true` to {@link Ext.String#htmlEncode} property values if they
+         * are going to be inserted as HTML attributes.
+         * @return {String/String[]} If buffer is passed, it is returned. Otherwise the style
+         * string is returned.
+         */
+        generateStyles: function (styles, buffer, encode) {
+            var a = buffer || [],
+                name, val;
+
+            for (name in styles) {
+                if (styles.hasOwnProperty(name)) {
+                    val = styles[name];
+                    // Since a majority of attributes won&#39;t have html characters (basically
+                    // restricted to fonts), we&#39;ll check first before we try and encode it
+                    // because it&#39;s less expensive and this method gets called a lot.
+                    name = this.decamelizeName(name);
+                    if (encode &amp;&amp; Ext.String.hasHtmlCharacters(val)) {
+                        val = Ext.String.htmlEncode(val);
+                    }
+                    a.push(name, &#39;:&#39;, val, &#39;;&#39;);
+                }
+            }
+
+            return buffer || a.join(&#39;&#39;);
+        },
+
+<span id='Ext-dom-Helper-method-markup'>        /**
+</span>         * Returns the markup for the passed Element(s) config.
+         * @param {Object} spec The DOM object spec (and children).
+         * @return {String}
+         */
+        markup: function(spec) {
+            if (typeof spec === &quot;string&quot;) {
+                return spec;
+            }
+
+            var buf = this.generateMarkup(spec, []);
+            return buf.join(&#39;&#39;);
+        },
+
+<span id='Ext-dom-Helper-method-applyStyles'>        /**
+</span>         * Applies a style specification to an element.
+         * 
+         * Styles in object form should be a valid DOM element style property.  
+         * [Valid style property names](http://www.w3schools.com/jsref/dom_obj_style.asp) 
+         * (_along with the supported CSS version for each_)
+         * 
+         *     // &lt;div id=&quot;my-el&quot;&gt;Phineas Flynn&lt;/div&gt;
+         *     
+         *     var el = Ext.get(&#39;my-el&#39;),
+         *         dh = Ext.dom.Helper;
+         *     
+         *     dh.applyStyles(el, &#39;color: white;&#39;);
+         *     
+         *     dh.applyStyles(el, {
+         *         fontWeight: &#39;bold&#39;,
+         *         backgroundColor: &#39;gray&#39;,
+         *         padding: &#39;10px&#39;
+         *     });
+         *     
+         *     dh.applyStyles(el, function () {
+         *         if (name.initialConfig.html === &#39;Phineas Flynn&#39;) {
+         *             return &#39;font-style: italic;&#39;;
+         *             // OR return { fontStyle: &#39;italic&#39; };
+         *         }
+         *     });
+         * 
+         * @param {String/HTMLElement/Ext.dom.Element} el The element to apply styles to
+         * @param {String/Object/Function} styles A style specification string e.g. &#39;width:100px&#39;, or object in the form {width:&#39;100px&#39;}, or
+         * a function which returns such a specification.
+         */
+        applyStyles: function(el, styles) {
+            Ext.fly(el).applyStyles(styles);
+        },
+
+<span id='Ext-dom-Helper-method-createContextualFragment'>        /**
+</span>         * @private
+         * Fix for browsers which do not support createContextualFragment
+         */
+        createContextualFragment: function(html){
+            var div = this.detachedDiv,
+                fragment = document.createDocumentFragment(),
+                length, childNodes;
+
+            div.innerHTML = html;
+            childNodes = div.childNodes;
+            length = childNodes.length;
+
+            // Move nodes into fragment, don&#39;t clone: http://jsperf.com/create-fragment
+            while (length--) {
+                fragment.appendChild(childNodes[0]);
+            }
+            return fragment;
+        },
+
+<span id='Ext-dom-Helper-method-createDom'>        /**
+</span>         * Creates new DOM element(s) without inserting them to the document.
+         * @param {Object/String} o The DOM object spec (and children) or raw HTML blob
+         * @return {HTMLElement} The new uninserted node
+         */
+        createDom: function(o, parentNode){
+            var me = this,
+                markup = me.markup(o),
+                div = me.detachedDiv,
+                child;
+
+            div.innerHTML = markup;
+            child = div.firstChild;
+
+            // Important to clone the node here, IE8 &amp; 9 have an issue where the markup
+            // in the first element will be lost.
+            // var ct = document.createElement(&#39;div&#39;),
+            //     a, b;
+            //     ct.innerHTML = &#39;&lt;div&gt;markup1&lt;/div&gt;&#39;;
+            //     a = ct.firstChild;
+            //     ct.innerHTML = &#39;&lt;div&gt;markup2&lt;/div&gt;&#39;;
+            //     b = ct.firstChild;
+            //     console.log(a.innerHTML, b.innerHTML);
+
+            return Ext.supports.ChildContentClearedWhenSettingInnerHTML ? child.cloneNode(true) : child;
+        },
+
+<span id='Ext-dom-Helper-method-insertHtml'>        /**
+</span>         * Inserts an HTML fragment into the DOM.
+         * @param {String} where Where to insert the html in relation to el - beforeBegin, afterBegin, beforeEnd, afterEnd.
+         *
+         * For example take the following HTML: `&lt;div&gt;Contents&lt;/div&gt;`
+         *
+         * Using different `where` values inserts element to the following places:
+         *
+         * - beforeBegin: `&lt;HERE&gt;&lt;div&gt;Contents&lt;/div&gt;`
+         * - afterBegin: `&lt;div&gt;&lt;HERE&gt;Contents&lt;/div&gt;`
+         * - beforeEnd: `&lt;div&gt;Contents&lt;HERE&gt;&lt;/div&gt;`
+         * - afterEnd: `&lt;div&gt;Contents&lt;/div&gt;&lt;HERE&gt;`
+         *
+         * @param {HTMLElement/TextNode} el The context element
+         * @param {String} html The HTML fragment
+         * @return {HTMLElement} The new node
+         */
+        insertHtml: function(where, el, html) {
+            var me = this,
+                hashVal,
+                range,
+                rangeEl,
+                setStart,
+                frag;
+
+            where = where.toLowerCase();
+
+            // Has fast HTML insertion into existing DOM: http://www.w3.org/TR/html5/apis-in-html-documents.html#insertadjacenthtml
+            if (el.insertAdjacentHTML) {
+
+                if (me.ieInsertHtml) {
+                    // hook for IE table hack - impl in ext package override
+                    frag = me.ieInsertHtml(where, el, html);
+                    if (frag) {
+                        return frag;
+                    }
+                }
+
+                hashVal = fullPositionHash[where];
+                if (hashVal) {
+                    el.insertAdjacentHTML(hashVal[0], html);
+                    return el[hashVal[1]];
+                }
+                // if (not IE and context element is an HTMLElement) or TextNode
+            } else {
+                // we cannot insert anything inside a textnode so...
+                if (el.nodeType === 3) {
+                    where = where === afterbegin ? beforebegin : where;
+                    where = where === beforeend ? afterend : where;
+                }
+                range = Ext.supports.CreateContextualFragment ? el.ownerDocument.createRange() : undefined;
+                setStart = &#39;setStart&#39; + (this.endRe.test(where) ? &#39;After&#39; : &#39;Before&#39;);
+                if (bb_ae_PositionHash[where]) {
+                    if (range) {
+                        range[setStart](el);
+                        frag = range.createContextualFragment(html);
+                    } else {
+                        frag = this.createContextualFragment(html);
+                    }
+                    el.parentNode.insertBefore(frag, where === beforebegin ? el : el.nextSibling);
+                    return el[(where === beforebegin ? &#39;previous&#39; : &#39;next&#39;) + &#39;Sibling&#39;];
+                } else {
+                    rangeEl = (where === afterbegin ? &#39;first&#39; : &#39;last&#39;) + &#39;Child&#39;;
+                    if (el.firstChild) {
+                        if (range) {
+                            // Creating ranges on a hidden element throws an error, checking for
+                            // visibility is expensive, so we&#39;ll catch the error and fall back to
+                            // using the full fragment
+                            try {
+                                range[setStart](el[rangeEl]);
+                                frag = range.createContextualFragment(html);
+                            }
+                            catch(e) {
+                                frag = this.createContextualFragment(html);
+                            }
+                        } else {
+                            frag = this.createContextualFragment(html);
+                        }
+
+                        if (where === afterbegin) {
+                            el.insertBefore(frag, el.firstChild);
+                        } else {
+                            el.appendChild(frag);
+                        }
+                    } else {
+                        el.innerHTML = html;
+                    }
+                    return el[rangeEl];
+                }
+            }
+            //&lt;debug&gt;
+            Ext.raise({
+                sourceClass: &#39;Ext.DomHelper&#39;,
+                sourceMethod: &#39;insertHtml&#39;,
+                htmlToInsert: html,
+                targetElement: el,
+                msg: &#39;Illegal insertion point reached: &quot;&#39; + where + &#39;&quot;&#39;
+            });
+            //&lt;/debug&gt;
+        },
+
+<span id='Ext-dom-Helper-method-insertBefore'>        /**
+</span>         * Creates new DOM element(s) and inserts them before el.
+         * @param {String/HTMLElement/Ext.dom.Element} el The context element
+         * @param {Object/String} o The DOM object spec (and children) or raw HTML blob
+         * @param {Boolean} [returnElement] true to return a Ext.Element
+         * @return {HTMLElement/Ext.dom.Element} The new node
+         */
+        insertBefore: function(el, o, returnElement) {
+            return this.doInsert(el, o, returnElement, beforebegin);
+        },
+
+<span id='Ext-dom-Helper-method-insertAfter'>        /**
+</span>         * Creates new DOM element(s) and inserts them after el.
+         * @param {String/HTMLElement/Ext.dom.Element} el The context element
+         * @param {Object} o The DOM object spec (and children)
+         * @param {Boolean} [returnElement] true to return a Ext.Element
+         * @return {HTMLElement/Ext.dom.Element} The new node
+         */
+        insertAfter: function(el, o, returnElement) {
+            return this.doInsert(el, o, returnElement, afterend);
+        },
+
+<span id='Ext-dom-Helper-method-insertFirst'>        /**
+</span>         * Creates new DOM element(s) and inserts them as the first child of el.
+         * @param {String/HTMLElement/Ext.dom.Element} el The context element
+         * @param {Object/String} o The DOM object spec (and children) or raw HTML blob
+         * @param {Boolean} [returnElement] true to return a Ext.Element
+         * @return {HTMLElement/Ext.dom.Element} The new node
+         */
+        insertFirst: function(el, o, returnElement) {
+            return this.doInsert(el, o, returnElement, afterbegin);
+        },
+
+<span id='Ext-dom-Helper-method-append'>        /**
+</span>         * Creates new DOM element(s) and appends them to el.
+         * @param {String/HTMLElement/Ext.dom.Element} el The context element
+         * @param {Object/String} o The DOM object spec (and children) or raw HTML blob
+         * @param {Boolean} [returnElement] true to return a Ext.Element
+         * @return {HTMLElement/Ext.dom.Element} The new node
+         */
+        append: function(el, o, returnElement) {
+            return this.doInsert(el, o, returnElement, beforeend);
+        },
+
+<span id='Ext-dom-Helper-method-overwrite'>        /**
+</span>         * Creates new DOM element(s) and overwrites the contents of el with them.
+         * @param {String/HTMLElement/Ext.dom.Element} el The context element
+         * @param {Object/String} o The DOM object spec (and children) or raw HTML blob
+         * @param {Boolean} [returnElement=false] true to return an Ext.Element
+         * @return {HTMLElement/Ext.dom.Element} The new node
+         */
+        overwrite: function(el, html, returnElement) {
+            var me = this,
+                newNode;
+
+            el = Ext.getDom(el);
+            html = me.markup(html);
+
+            if (me.ieOverwrite) {
+                // hook for IE table hack - impl in ext package override
+                newNode = me.ieOverwrite(el, html);
+            }
+            if (!newNode) {
+                el.innerHTML = html;
+                newNode = el.firstChild;
+            }
+            return returnElement ? Ext.get(newNode) : newNode;
+        },
+
+        doInsert: function(el, o, returnElement, where) {
+            var me = this,
+                newNode;
+
+            el = el.dom || Ext.getDom(el);
+
+            if (&#39;innerHTML&#39; in el) {
+                // regular dom node
+                // For standard HTMLElements, we insert as innerHTML instead of
+                // createElement/appenChild because it is much faster in all versions of
+                // IE: https://fiddle.sencha.com/#fiddle/tj
+                newNode = me.insertHtml(where, el, me.markup(o));
+            } else {
+                // document fragment does not support innerHTML
+                newNode = me.createDom(o, null);
+
+                // we cannot insert anything inside a textnode so...
+                if (el.nodeType === 3) {
+                    where = where === afterbegin ? beforebegin : where;
+                    where = where === beforeend ? afterend : where;
+                }
+                if (bb_ae_PositionHash[where]) {
+                    el.parentNode.insertBefore(newNode, where === beforebegin ? el : el.nextSibling);
+                } else if (el.firstChild &amp;&amp; where === afterbegin) {
+                    el.insertBefore(newNode, el.firstChild);
+                } else {
+                    el.appendChild(newNode);
+                }
+            }
+
+            return returnElement ? Ext.get(newNode) : newNode;
+        },
+
+<span id='Ext-dom-Helper-method-createTemplate'>        /**
+</span>         * Creates a new Ext.Template from the DOM object spec.
+         * @param {Object} o The DOM object spec (and children)
+         * @return {Ext.Template} The new template
+         */
+        createTemplate: function(o) {
+            var html = this.markup(o);
+            return new Ext.Template(html);
+        },
+
+<span id='Ext-dom-Helper-method-createHtml'>        /**
+</span>         * @method createHtml
+         * Alias for {@link #markup}.
+         * @deprecated 5.0.0
+         */
+        createHtml: function(spec) {
+            return this.markup(spec);
+        }
+    };
+});
+</pre>
+</body>
+</html>

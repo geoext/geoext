@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <title>The source code</title>
+  <link href="../resources/prettify/prettify.css" type="text/css" rel="stylesheet" />
+  <script type="text/javascript" src="../resources/prettify/prettify.js"></script>
+  <style type="text/css">
+    .highlight { display: block; background-color: #ddd; }
+  </style>
+  <script type="text/javascript">
+    function highlight() {
+      document.getElementById(location.hash.replace(/#/, "")).className = "highlight";
+    }
+  </script>
+</head>
+<body onload="prettyPrint(); highlight();">
+  <pre class="prettyprint lang-js"><span id='Ext-app-bind-TemplateBinding'>/**
+</span> * This class is created to manage a template against a `ViewModel`. A binding of this
+ * type uses `{@link Ext.app.bind.Template}` to process the template text so see that
+ * class for details on template syntax.
+ *
+ * The bindings to provide the data needed by the template are managed here.
+ */
+Ext.define('Ext.app.bind.TemplateBinding', {
+    extend: 'Ext.app.bind.BaseBinding',
+
+    requires: [
+        'Ext.app.bind.Multi',
+        'Ext.app.bind.Template'
+    ],
+
+<span id='Ext-app-bind-TemplateBinding-property-isTemplateBinding'>    isTemplateBinding: true,
+</span>
+<span id='Ext-app-bind-TemplateBinding-property-lastValue'>    lastValue: undefined,
+</span>
+<span id='Ext-app-bind-TemplateBinding-property-value'>    value: undefined,
+</span>
+<span id='Ext-app-bind-TemplateBinding-method-constructor'>    constructor: function (template, owner, callback, scope, options) {
+</span>        var me = this,
+            tpl = new Ext.app.bind.Template(template),
+            tokens = tpl.getTokens();
+
+        me.callParent([ owner, callback, scope, options ]);
+
+        me.tpl = tpl;
+        me.tokens = tokens;
+        tokens.$literal = true;
+
+        // If we don't have any tokens, then we've just got a static string.
+        if (!tpl.isStatic()) {
+            me.multiBinding = new Ext.app.bind.Multi(tokens, owner, me.onBindData, me);
+        } else {
+            me.isStatic = true;
+            me.onData(tpl.text);
+        }
+    },
+    
+<span id='Ext-app-bind-TemplateBinding-method-destroy'>    destroy: function() {
+</span>        var me = this;
+        Ext.destroy(me.multiBinding);
+        me.tpl = me.multiBinding = null;
+        me.callParent();
+    },
+
+<span id='Ext-app-bind-TemplateBinding-method-getFullName'>    getFullName: function () {
+</span>        var multi = this.multiBinding;
+        return this.fullName || (this.fullName = '$' + (multi ? multi.getFullName() : this.callParent()));
+    },
+
+<span id='Ext-app-bind-TemplateBinding-method-getRawValue'>    getRawValue: function () {
+</span>        return this.value;
+    },
+
+<span id='Ext-app-bind-TemplateBinding-method-getTemplateScope'>    getTemplateScope: function () {
+</span>        return null;
+    },
+
+<span id='Ext-app-bind-TemplateBinding-method-isDescendantOf'>    isDescendantOf: function () {
+</span>        return false;
+    },
+
+<span id='Ext-app-bind-TemplateBinding-method-isLoading'>    isLoading: function () {
+</span>        var multi = this.multiBinding;
+        return multi ? multi.isLoading() : false;
+    },
+    
+<span id='Ext-app-bind-TemplateBinding-method-onBindData'>    onBindData: function(data) {
+</span>        this.onData(this.tpl.apply(data, this.getTemplateScope()));
+    },
+
+<span id='Ext-app-bind-TemplateBinding-method-onData'>    onData: function (value) {
+</span>        var me = this,
+            lastValue = me.value;
+
+        if (lastValue !== (me.value = value)) {
+            me.lastValue = lastValue;
+            me.schedule();
+        }
+    },
+
+<span id='Ext-app-bind-TemplateBinding-method-react'>    react: function () {
+</span>        this.notify(this.value);
+    },
+
+<span id='Ext-app-bind-TemplateBinding-method-refresh'>    refresh: function () {
+</span>        var multi = this.multiBinding;
+        if (multi) {
+            multi.refresh();
+        }
+    },
+
+<span id='Ext-app-bind-TemplateBinding-property-privates'>    privates: {
+</span>        sort: function () {
+            var multi = this.multiBinding;
+            if (multi) {
+                this.scheduler.sortItem(multi);
+            }
+
+            // Schedulable#sort === emptyFn
+            //me.callParent();
+        }
+    }
+});
+</pre>
+</body>
+</html>

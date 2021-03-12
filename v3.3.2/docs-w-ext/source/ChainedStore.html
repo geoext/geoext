@@ -1,0 +1,379 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <title>The source code</title>
+  <link href="../resources/prettify/prettify.css" type="text/css" rel="stylesheet" />
+  <script type="text/javascript" src="../resources/prettify/prettify.js"></script>
+  <style type="text/css">
+    .highlight { display: block; background-color: #ddd; }
+  </style>
+  <script type="text/javascript">
+    function highlight() {
+      document.getElementById(location.hash.replace(/#/, "")).className = "highlight";
+    }
+  </script>
+</head>
+<body onload="prettyPrint(); highlight();">
+  <pre class="prettyprint lang-js"><span id='Ext-data-ChainedStore'>/**
+</span> * A chained store is a store that is a &quot;view&quot; of an existing store. The data comes from the
+ * {@link #source}, however this view of the store may be sorted &amp; filtered independently without
+ * having any impact on the {@link #source} store.
+ */
+Ext.define(&#39;Ext.data.ChainedStore&#39;, {
+    extend: &#39;Ext.data.AbstractStore&#39;,
+    alias: &#39;store.chained&#39;,
+    
+    config: {
+<span id='Ext-data-ChainedStore-cfg-source'>        /**
+</span>         * @cfg {Ext.data.Store/String} source
+         * The backing data source for this chained store. Either a store instance
+         * or the id of an existing store.
+         */
+        source: null,
+
+<span id='Ext-data-ChainedStore-cfg-remoteFilter'>        remoteFilter: false,
+</span>
+<span id='Ext-data-ChainedStore-cfg-remoteSort'>        remoteSort: false
+</span>    },
+
+    mixins: [
+        &#39;Ext.data.LocalStore&#39;
+    ],
+    
+<span id='Ext-data-ChainedStore-method-updateRemoteFilter'>    //&lt;debug&gt;
+</span>    updateRemoteFilter: function(remoteFilter, oldRemoteFilter) {
+        if (remoteFilter) {
+            Ext.raise(&#39;Remote filtering cannot be used with chained stores.&#39;);
+        }
+        this.callParent([remoteFilter, oldRemoteFilter]);
+    },
+
+<span id='Ext-data-ChainedStore-method-updateRemoteSort'>    updateRemoteSort: function(remoteSort, oldRemoteSort) {
+</span>        if (remoteSort) {
+            Ext.raise(&#39;Remote sorting cannot be used with chained stores.&#39;);
+        }
+        this.callParent([remoteSort, oldRemoteSort]);
+    },
+<span id='Ext-data-ChainedStore-method-remove'>    //&lt;/debug&gt;
+</span>    
+    remove: function() {
+        var source = this.getSource();
+        return source.remove.apply(source, arguments);
+    },
+
+<span id='Ext-data-ChainedStore-method-removeAll'>    removeAll: function() {
+</span>        var source = this.getSource();
+        return source.removeAll();
+    },
+    
+<span id='Ext-data-ChainedStore-method-getData'>    getData: function() {
+</span>        var me = this,
+            data = me.data;
+        
+        if (!data) {
+            me.data = data = me.constructDataCollection();
+        }
+        return data;
+    },
+
+<span id='Ext-data-ChainedStore-method-getTotalCount'>    getTotalCount: function() {
+</span>        return this.getCount();
+    },
+
+<span id='Ext-data-ChainedStore-method-getSession'>    getSession: function() {
+</span>        return this.getSource().getSession();
+    },
+
+<span id='Ext-data-ChainedStore-method-applySource'>    applySource: function(source) {
+</span>        if (source) {
+            //&lt;debug&gt;
+            var original = source,
+                s;
+            //&lt;/debug&gt;
+            source = Ext.data.StoreManager.lookup(source);
+            //&lt;debug&gt;
+            if (!source) {
+                s = &#39;Invalid source {0}specified for Ext.data.ChainedStore&#39;;
+                s = Ext.String.format(s, typeof original === &#39;string&#39; ? &#39;&quot;&#39; + original + &#39;&quot; &#39; : &#39;&#39;);
+                Ext.raise(s);
+            }
+            //&lt;/debug&gt;
+        }
+        return source;
+    },
+    
+<span id='Ext-data-ChainedStore-method-updateSource'>    updateSource: function(source, oldSource) {
+</span>        var me = this,
+            data;
+        
+        if (oldSource &amp;&amp; !oldSource.destroyed) {
+            oldSource.removeObserver(me);
+        }
+        
+        if (source) {
+            data = me.getData();
+            data.setSource(source.getData());
+            if (!me.isInitializing) {
+                me.fireEvent(&#39;refresh&#39;, me);
+                me.fireEvent(&#39;datachanged&#39;, me);
+            }
+            source.addObserver(me);
+        }
+    },
+    
+<span id='Ext-data-ChainedStore-method-getModel'>    /**
+</span>     * Get the model used for this store.
+     * @return {Ext.data.Model} The model
+     */
+    getModel: function() {
+        return this.getSource().getModel();
+    },
+
+<span id='Ext-data-ChainedStore-method-getProxy'>    getProxy: function() {
+</span>        return null;
+    },
+    
+<span id='Ext-data-ChainedStore-method-onCollectionAdd'>    onCollectionAdd: function(collection, info) {
+</span>        var me = this,
+            records = info.items,
+            lastChunk = !info.next;
+        
+        if (me.ignoreCollectionAdd) {
+            return;
+        }
+        
+        me.fireEvent(&#39;add&#39;, me, records, info.at);
+        // If there is a next property, that means there is another range that needs
+        // to be removed after this. Wait until everything is gone before firign datachanged
+        // since it should be a bulk operation
+        if (lastChunk) {
+            me.fireEvent(&#39;datachanged&#39;, me);
+        }
+    },
+
+<span id='Ext-data-ChainedStore-method-onCollectionItemChange'>    // Our collection tells us that an item has changed
+</span>    onCollectionItemChange: function(collection, info) {
+        var me = this,
+            record = info.item,
+            modifiedFieldNames = info.modified || null,
+            type = info.meta;
+
+        // Inform any interested parties that a record has been mutated.
+        // This will be invoked on TreeStores in which the invoking record
+        // is an descendant of a collapsed node, and so *will not be contained by this store
+        me.onUpdate(record, type, modifiedFieldNames, info);
+        me.fireEvent(&#39;update&#39;, me, record, type, modifiedFieldNames, info);
+    },
+    
+<span id='Ext-data-ChainedStore-method-onCollectionUpdateKey'>    onCollectionUpdateKey: function(source, details) {
+</span>        // Must react to upstream Collection key update by firing idchanged event
+        this.fireEvent(&#39;idchanged&#39;, this, details.item, details.oldKey, details.newKey);
+    },
+
+<span id='Ext-data-ChainedStore-method-onUpdate'>    onUpdate: Ext.emptyFn,
+</span>
+<span id='Ext-data-ChainedStore-method-onCollectionRemove'>    onCollectionRemove: function(collection, info) {
+</span>        var me = this,
+            records = info.items,
+            lastChunk = !info.next;
+        
+        if (me.ignoreCollectionRemove) {
+            return;
+        }
+        
+        me.fireEvent(&#39;remove&#39;, me, records, info.at, false);
+        // If there is a next property, that means there is another range that needs
+        // to be removed after this. Wait until everything is gone before firign datachanged
+        // since it should be a bulk operation
+        if (lastChunk) {
+            me.fireEvent(&#39;datachanged&#39;, me);
+        }
+    },
+
+<span id='Ext-data-ChainedStore-method-onSourceBeforeLoad'>    onSourceBeforeLoad: function(source, operation) {
+</span>        this.fireEvent(&#39;beforeload&#39;, this, operation);
+    },
+
+<span id='Ext-data-ChainedStore-method-onSourceAfterLoad'>    onSourceAfterLoad: function(source, records, successful, operation) {
+</span>        this.fireEvent(&#39;load&#39;, this, records, successful, operation);
+    },
+
+<span id='Ext-data-ChainedStore-method-onFilterEndUpdate'>    onFilterEndUpdate: function() {
+</span>        this.callParent(arguments);
+        this.callObservers(&#39;Filter&#39;);
+    },
+    
+<span id='Ext-data-ChainedStore-method-onSourceBeforePopulate'>    onSourceBeforePopulate: function() {
+</span>        this.ignoreCollectionAdd = true;
+        this.callObservers(&#39;BeforePopulate&#39;);
+    },
+    
+<span id='Ext-data-ChainedStore-method-onSourceAfterPopulate'>    onSourceAfterPopulate: function() {
+</span>        var me = this;
+        me.ignoreCollectionAdd = false;
+        me.fireEvent(&#39;datachanged&#39;, me);
+        me.fireEvent(&#39;refresh&#39;, me);
+        this.callObservers(&#39;AfterPopulate&#39;);
+    },
+    
+<span id='Ext-data-ChainedStore-method-onSourceBeforeClear'>    onSourceBeforeClear: function() {
+</span>        this.ignoreCollectionRemove = true;
+        this.callObservers(&#39;BeforeClear&#39;);
+    },
+    
+<span id='Ext-data-ChainedStore-method-onSourceAfterClear'>    onSourceAfterClear: function() {
+</span>        this.ignoreCollectionRemove = false;
+        this.callObservers(&#39;AfterClear&#39;);
+    },
+    
+<span id='Ext-data-ChainedStore-method-onSourceBeforeRemoveAll'>    onSourceBeforeRemoveAll: function() {
+</span>        this.ignoreCollectionRemove = true;
+        this.callObservers(&#39;BeforeRemoveAll&#39;);
+    },
+    
+<span id='Ext-data-ChainedStore-method-onSourceAfterRemoveAll'>    onSourceAfterRemoveAll: function(source, silent) {
+</span>        var me = this;
+        me.ignoreCollectionRemove = false;
+        if (!silent) {
+            me.fireEvent(&#39;clear&#39;, me);
+            me.fireEvent(&#39;datachanged&#39;, me);
+        }
+        this.callObservers(&#39;AfterRemoveAll&#39;, [silent]);
+    },
+
+<span id='Ext-data-ChainedStore-method-onSourceFilter'>    onSourceFilter: function() {
+</span>        var me = this;
+        me.fireEvent(&#39;refresh&#39;, me);
+        me.fireEvent(&#39;datachanged&#39;, me);
+    },
+    
+<span id='Ext-data-ChainedStore-method-hasPendingLoad'>    hasPendingLoad: function() {
+</span>        return this.getSource().hasPendingLoad();
+    },
+    
+<span id='Ext-data-ChainedStore-method-isLoaded'>    isLoaded: function() {
+</span>        return this.getSource().isLoaded();
+    },
+
+<span id='Ext-data-ChainedStore-method-isLoading'>    isLoading: function() {
+</span>        return this.getSource().isLoading();
+    },
+
+<span id='Ext-data-ChainedStore-method-doDestroy'>    doDestroy: function() {
+</span>        var me = this;
+
+        me.observers = null;
+        me.setSource(null);
+        me.getData().destroy(true);
+        me.data = null;
+        
+        me.callParent();
+    },
+
+<span id='Ext-data-ChainedStore-property-privates'>    privates: {
+</span>        isMoving: function () {
+            var source = this.getSource();
+            return source.isMoving ? source.isMoving.apply(source, arguments) : false;
+        },
+
+        loadsSynchronously: function() {
+            return this.getSource().loadsSynchronously();
+        }
+    }
+
+    // Provides docs from the mixin
+    
+<span id='Ext-data-ChainedStore-method-add'>    /**
+</span>     * @method add
+     * @inheritdoc Ext.data.LocalStore#add
+     */
+
+<span id='Ext-data-ChainedStore-method-each'>    /**
+</span>     * @method each
+     * @inheritdoc Ext.data.LocalStore#each
+     */
+
+<span id='Ext-data-ChainedStore-method-collect'>    /**
+</span>     * @method collect
+     * @inheritdoc Ext.data.LocalStore#collect
+     */
+
+<span id='Ext-data-ChainedStore-method-getById'>    /**
+</span>     * @method getById
+     * @inheritdoc Ext.data.LocalStore#getById
+     */
+
+<span id='Ext-data-ChainedStore-method-getByInternalId'>    /**
+</span>     * @method getByInternalId
+     * @inheritdoc Ext.data.LocalStore#getByInternalId
+     */
+
+<span id='Ext-data-ChainedStore-method-indexOf'>    /**
+</span>     * @method indexOf
+     * @inheritdoc Ext.data.LocalStore#indexOf
+     */
+
+<span id='Ext-data-ChainedStore-method-indexOfId'>    /**
+</span>     * @method indexOfId
+     * @inheritdoc Ext.data.LocalStore#indexOfId
+     */
+    
+<span id='Ext-data-ChainedStore-method-insert'>    /**
+</span>     * @method insert
+     * @inheritdoc Ext.data.LocalStore#insert
+     */
+
+<span id='Ext-data-ChainedStore-method-queryBy'>    /**
+</span>     * @method queryBy
+     * @inheritdoc Ext.data.LocalStore#queryBy
+     */
+
+<span id='Ext-data-ChainedStore-method-query'>    /**
+</span>     * @method query
+     * @inheritdoc Ext.data.LocalStore#query
+     */
+
+<span id='Ext-data-ChainedStore-method-first'>    /**
+</span>     * @method first
+     * @inheritdoc Ext.data.LocalStore#first
+     */
+
+<span id='Ext-data-ChainedStore-method-last'>    /**
+</span>     * @method last
+     * @inheritdoc Ext.data.LocalStore#last
+     */
+
+<span id='Ext-data-ChainedStore-method-sum'>    /**
+</span>     * @method sum
+     * @inheritdoc Ext.data.LocalStore#sum
+     */
+
+<span id='Ext-data-ChainedStore-method-count'>    /**
+</span>     * @method count
+     * @inheritdoc Ext.data.LocalStore#count
+     */
+
+<span id='Ext-data-ChainedStore-method-min'>    /**
+</span>     * @method min
+     * @inheritdoc Ext.data.LocalStore#min
+     */
+
+<span id='Ext-data-ChainedStore-method-max'>    /**
+</span>     * @method max
+     * @inheritdoc Ext.data.LocalStore#max
+     */
+
+<span id='Ext-data-ChainedStore-method-average'>    /**
+</span>     * @method average
+     * @inheritdoc Ext.data.LocalStore#average
+     */
+
+<span id='Ext-data-ChainedStore-method-aggregate'>    /**
+</span>     * @method aggregate
+     * @inheritdoc Ext.data.LocalStore#aggregate
+     */
+});
+</pre>
+</body>
+</html>

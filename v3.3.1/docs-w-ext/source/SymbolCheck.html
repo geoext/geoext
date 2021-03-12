@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <title>The source code</title>
+  <link href="../resources/prettify/prettify.css" type="text/css" rel="stylesheet" />
+  <script type="text/javascript" src="../resources/prettify/prettify.js"></script>
+  <style type="text/css">
+    .highlight { display: block; background-color: #ddd; }
+  </style>
+  <script type="text/javascript">
+    function highlight() {
+      document.getElementById(location.hash.replace(/#/, "")).className = "highlight";
+    }
+  </script>
+</head>
+<body onload="prettyPrint(); highlight();">
+  <pre class="prettyprint lang-js">/* Copyright (c) 2015-present The Open Source Geospatial Foundation
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see &lt;http://www.gnu.org/licenses/&gt;.
+ */
+<span id='GeoExt-mixin-SymbolCheck'>/**
+</span> * A utility class providing methods to check for symbols of OpenLayers we
+ * depend upon.
+ *
+ * This class can be mixed into classes to check if the dependencies to external
+ * symbols are fulfilled. An example:
+ *
+ *     Ext.define(&#39;MyNewClass.DependingOnOpenLayersClasses&#39;, {
+ *         mixins: [&#39;GeoExt.mixin.SymbolCheck&#39;],
+ *         // the contents of the `symbols` property will be checked
+ *         symbols: [
+ *             &#39;ol.Map&#39;, // checking a class
+ *             &#39;ol.View.prototype.constrainResolution&#39;, // an instance method
+ *             &#39;ol.control.ScaleLine#getUnits&#39;, // other way for instance method
+ *             &#39;ol.color.asArray&#39;, // one way to reference a static method
+ *             &#39;ol.color::asString&#39; // other way to reference a static method
+ *         ]
+ *         // … your configuration and methods …
+ *     });
+ *
+ * Since this sort of checking usually only makes sense in debug mode, you can
+ * additionally wrap the `symbols`-configuration in these `&lt;debug&gt;`-line
+ * comments:
+ *
+ *     Ext.define(&#39;MyNewClass.DependingOnOpenLayersClasses&#39;, {
+ *         mixins: [&#39;GeoExt.mixin.SymbolCheck&#39;],
+ *         // &lt;debug&gt;
+ *         symbols: []
+ *         // &lt;/debug&gt;
+ *     });
+ *
+ * This means that the array of symbols is not defined in production builds
+ * as the wrapped lines are simply removed from the final JavaScript.
+ *
+ * If one of the symbols cannot be found, a warning will be printed to the
+ * developer console (via `Ext.log.warn`, which will only print in a debug
+ * build):
+ *
+ *     [W] The class &quot;MyNewClass.DependingOnOpenLayersClasses&quot; depends on the
+ *     external symbol &quot;ol.color.notExisting&quot;, which does not seem to exist.
+ *
+ * @class GeoExt.mixin.SymbolCheck
+ */
+Ext.define(&#39;GeoExt.mixin.SymbolCheck&#39;, {
+    extend: &#39;Ext.Mixin&#39;,
+    inheritableStatics: {
+
+<span id='GeoExt-mixin-SymbolCheck-static-property-_checked'>        /**
+</span>         * An object that we will use to store already looked up references in.
+         *
+         * The key will be a symbol (after it has been normalized by the
+         * method #normalizeSymbol), and the value will be a boolean indicating
+         * if the symbol was found to be defined when it was checked.
+         *
+         * @private
+         */
+        _checked: {
+            // will be filled while we are checking stuff for existance
+        },
+
+<span id='GeoExt-mixin-SymbolCheck-static-method-check'>        /**
+</span>         * Checks whether the required symbols of the given class are defined
+         * in the global context. Will log to the console if a symbol cannot be
+         * found.
+         *
+         * @param {Ext.Base} cls An ext class defining a property `symbols` that
+         *     that this method will check.
+         */
+        check: function(cls) {
+            // &lt;debug&gt;
+            var me = this;
+            var proto = cls.prototype;
+            var olSymbols = proto &amp;&amp; proto.symbols;
+            var clsName = proto &amp;&amp; proto[&#39;$className&#39;];
+            if (!olSymbols) {
+                return;
+            }
+            Ext.each(olSymbols, function(olSymbol) {
+                olSymbol = me.normalizeSymbol(olSymbol);
+                me.checkSymbol(olSymbol, clsName);
+            });
+            // &lt;/debug&gt;
+        },
+
+<span id='GeoExt-mixin-SymbolCheck-static-method-normalizeSymbol'>        /**
+</span>         * Normalizes a short form of a symbol to a canonical one we use to
+         * store the results of the #isDefinedSymbol method. The following two
+         * normalizations take place:
+         *
+         * * A `#` in the symbol is being replaced with `.prototype.` so that
+         *   e.g. the symbol `&#39;ol.Class#methodName&#39;` turns into the symbol
+         *   `&#39;ol.Class.prototype.methodName&#39;`
+         * * A `::` in the symbol is being replaced with `.` so that
+         *   e.g. the symbol `&#39;ol.Class::staticMethodName&#39;` turns into the
+         *   symbol `&#39;ol.Class.staticMethodName&#39;`
+         *
+         * @param {String} symbolStr A string to normalize.
+         * @return {String} The normalized string.
+         * @private
+         */
+        normalizeSymbol: (function() {
+            // &lt;debug&gt;
+            var hashRegEx = /#/;
+            var colonRegEx = /::/;
+            // &lt;/debug&gt;
+            var normalizeFunction = function(symbolStr) {
+                // &lt;debug&gt;
+                if (hashRegEx.test(symbolStr)) {
+                    symbolStr = symbolStr.replace(hashRegEx, &#39;.prototype.&#39;);
+                } else if (colonRegEx.test(symbolStr)) {
+                    symbolStr = symbolStr.replace(colonRegEx, &#39;.&#39;);
+                }
+                return symbolStr;
+                // &lt;/debug&gt;
+            };
+            return normalizeFunction;
+        }()),
+
+<span id='GeoExt-mixin-SymbolCheck-static-method-checkSymbol'>        /**
+</span>         * Checks the passed symbolStr and raises a warning if it cannot be
+         * found.
+         *
+         * @param {String} symbolStr A string to check. Usually this string has
+         *     been {@link #normalizeSymbol normalized} already.
+         * @param {String} [clsName] The optional name of the class that
+         *     requires the passed openlayers symbol.
+         * @private
+         */
+        checkSymbol: function(symbolStr, clsName) {
+            // &lt;debug&gt;
+            var isDefined = this.isDefinedSymbol(symbolStr);
+            if (!isDefined) {
+                Ext.log.warn(
+                    &#39;The class &quot;&#39; + (clsName || &#39;unknown&#39;) + &#39;&quot; &#39; +
+                    &#39;depends on the external symbol &quot;&#39; + symbolStr + &#39;&quot;, &#39; +
+                    &#39;which does not seem to exist.&#39;
+                );
+            }
+            // &lt;/debug&gt;
+        },
+
+<span id='GeoExt-mixin-SymbolCheck-static-method-isDefinedSymbol'>        /**
+</span>         * Checks if the passed symbolStr is defined.
+         *
+         * @param {String} symbolStr A string to check. Usually this string has
+         *     been {@link #normalizeSymbol normalized} already.
+         * @return {Boolean} Whether the symbol is defined or not.
+         * @private
+         */
+        isDefinedSymbol: function(symbolStr) {
+            // &lt;debug&gt;
+            var checkedCache = this._checked;
+            if (Ext.isDefined(checkedCache[symbolStr])) {
+                return checkedCache[symbolStr];
+            }
+            var parts = symbolStr.split(&#39;.&#39;);
+            var lastIdx = parts.length - 1;
+            var curSymbol = Ext.getWin().dom;
+            var isDefined = false;
+            var intermediateSymb = &#39;&#39;;
+            Ext.each(parts, function(part, idx) {
+                if (intermediateSymb !== &#39;&#39;) {
+                    intermediateSymb += &#39;.&#39;;
+                }
+                intermediateSymb += part;
+                if (curSymbol[part]) {
+                    checkedCache[intermediateSymb] = true;
+                    curSymbol = curSymbol[part];
+                    if (lastIdx === idx) {
+                        isDefined = true;
+                    }
+                } else {
+                    checkedCache[intermediateSymb] = false;
+                    return false; // break early
+                }
+            });
+            checkedCache[symbolStr] = isDefined;
+            return isDefined;
+            // &lt;/debug&gt;
+        }
+    },
+
+<span id='GeoExt-mixin-SymbolCheck-property-symbols'>    /**
+</span>     * @property {String[]} symbols The symbols to check.
+     */
+
+<span id='GeoExt-mixin-SymbolCheck-method-onClassMixedIn'>    /**
+</span>     * Whenever a class mixes in GeoExt.mixin.SymbolCheck, this method will be
+     * called and it actually runs the checks for all the defined #symbols.
+     *
+     * @param {Ext.Class} cls The class that this mixin is mixed into.
+     * @private
+     */
+    onClassMixedIn: function(cls) {
+        // &lt;debug&gt;
+        GeoExt.mixin.SymbolCheck.check(cls);
+        // &lt;/debug&gt;
+    }
+});
+</pre>
+</body>
+</html>

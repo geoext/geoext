@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <title>The source code</title>
+  <link href="../resources/prettify/prettify.css" type="text/css" rel="stylesheet" />
+  <script type="text/javascript" src="../resources/prettify/prettify.js"></script>
+  <style type="text/css">
+    .highlight { display: block; background-color: #ddd; }
+  </style>
+  <script type="text/javascript">
+    function highlight() {
+      document.getElementById(location.hash.replace(/#/, "")).className = "highlight";
+    }
+  </script>
+</head>
+<body onload="prettyPrint(); highlight();">
+  <pre class="prettyprint lang-js"><span id='Ext-view-MultiSelector'>/**
+</span> * This component provides a grid holding selected items from a second store of potential
+ * members. The `store` of this component represents the selected items. The &quot;search store&quot;
+ * represents the potentially selected items.
+ *
+ * While this component is a grid and so you can configure `columns`, it is best to leave
+ * that to this class in its `initComponent` method. That allows this class to create the
+ * extra column that allows the user to remove rows. Instead use `{@link #fieldName}` and
+ * `{@link #fieldTitle}` to configure the primary column&#39;s `dataIndex` and column `text`,
+ * respectively.
+ *
+ * @since 5.0.0
+ */
+Ext.define(&#39;Ext.view.MultiSelector&#39;, {
+    extend: &#39;Ext.grid.Panel&#39;,
+
+    xtype: &#39;multiselector&#39;,
+
+    config: {
+<span id='Ext-view-MultiSelector-cfg-search'>        /**
+</span>         * @cfg {Object} search
+         * This object configures the search popup component. By default this contains the
+         * `xtype` for a `Ext.view.MultiSelectorSearch` component and specifies `autoLoad`
+         * for its `store`.
+         */
+        search: {
+            xtype: &#39;multiselector-search&#39;,
+            width: 200,
+            height: 200,
+            store: {
+                autoLoad: true
+            }
+        }
+    },
+
+<span id='Ext-view-MultiSelector-cfg-fieldName'>    /**
+</span>     * @cfg {String} [fieldName=&quot;name&quot;]
+     * The name of the data field to display in the primary column of the grid.
+     * @since 5.0.0
+     */
+    fieldName: &#39;name&#39;,
+
+<span id='Ext-view-MultiSelector-cfg-fieldTitle'>    /**
+</span>     * @cfg {String} [fieldTitle]
+     * The text to display in the column header for the primary column of the grid.
+     * @since 5.0.0
+     */
+    fieldTitle: null,
+
+<span id='Ext-view-MultiSelector-cfg-removeRowText'>    /**
+</span>     * @cfg {String} removeRowText
+     * The text to display in the &quot;remove this row&quot; column. By default this is a Unicode
+     * &quot;X&quot; looking glyph.
+     * @since 5.0.0
+     */
+    removeRowText: &#39;\u2716&#39;,
+
+<span id='Ext-view-MultiSelector-cfg-removeRowTip'>    /**
+</span>     * @cfg {String} removeRowTip
+     * The tooltip to display when the user hovers over the remove cell.
+     * @since 5.0.0
+     */
+    removeRowTip: &#39;Remove this item&#39;,
+
+<span id='Ext-view-MultiSelector-cfg-emptyText'>    emptyText: &#39;Nothing selected&#39;,
+</span>
+<span id='Ext-view-MultiSelector-cfg-addToolText'>    /**
+</span>     * @cfg {String} addToolText
+     * The tooltip to display when the user hovers over the &quot;+&quot; tool in the panel header.
+     * @since 5.0.0
+     */
+    addToolText: &#39;Search for items to add&#39;,
+
+<span id='Ext-view-MultiSelector-method-initComponent'>    initComponent: function () {
+</span>        var me = this,
+            emptyText = me.emptyText,
+            store = me.getStore(),
+            search = me.getSearch(),
+            fieldTitle = me.fieldTitle,
+            searchStore, model;
+
+        //&lt;debug&gt;
+        if (!search) {
+            Ext.raise(&#39;The search configuration is required for the multi selector&#39;);
+        }
+        //&lt;/debug&gt;
+
+        searchStore = search.store;
+        if (searchStore.isStore) {
+            model = searchStore.getModel();
+        } else {
+            model = searchStore.model;
+        }
+
+        if (!store) {
+            me.store = {
+                model: model
+            };
+        }
+
+        if (emptyText &amp;&amp; !me.viewConfig) {
+            me.viewConfig = {
+                deferEmptyText: false,
+                emptyText: emptyText
+            };
+        }
+
+        if (!me.columns) {
+            me.hideHeaders = !fieldTitle;
+            me.columns = [
+                { text: fieldTitle, dataIndex: me.fieldName, flex: 1 },
+                me.makeRemoveRowColumn()
+            ];
+        }
+
+        me.callParent();
+    },
+
+<span id='Ext-view-MultiSelector-method-addTools'>    addTools: function () {
+</span>        var me = this;
+
+        me.addTool({
+            type: &#39;plus&#39;,
+            tooltip: me.addToolText,
+            callback: &#39;onShowSearch&#39;,
+            scope: me
+        });
+        me.searchTool = me.tools[me.tools.length - 1];
+    },
+
+<span id='Ext-view-MultiSelector-property-convertSearchRecord'>    convertSearchRecord: Ext.identityFn,
+</span>
+<span id='Ext-view-MultiSelector-property-convertSelectionRecord'>    convertSelectionRecord: Ext.identityFn,
+</span>
+<span id='Ext-view-MultiSelector-method-makeRemoveRowColumn'>    makeRemoveRowColumn: function () {
+</span>        var me = this;
+
+        return {
+            width: 32,
+            align: &#39;center&#39;,
+            menuDisabled: true,
+            tdCls: Ext.baseCSSPrefix + &#39;multiselector-remove&#39;,
+            processEvent: me.processRowEvent.bind(me),
+            renderer: me.renderRemoveRow,
+            updater: Ext.emptyFn,
+            scope: me
+        };
+    },
+
+<span id='Ext-view-MultiSelector-method-processRowEvent'>    processRowEvent: function (type, view, cell, recordIndex, cellIndex, e, record, row) {
+</span>        var body = Ext.getBody();
+
+        if (e.type === &#39;click&#39; || (e.type === &#39;keydown&#39; &amp;&amp; (e.keyCode === e.SPACE || e.keyCode === e.ENTER))) {
+
+            // Deleting the focused row will momentarily focusLeave
+            // That would dismiss the popup, so disable that.
+            body.suspendFocusEvents();
+            this.store.remove(record);
+            body.resumeFocusEvents();
+            if (this.searchPopup) {
+                this.searchPopup.deselectRecords(record);
+            }
+        }
+    },
+
+<span id='Ext-view-MultiSelector-method-renderRemoveRow'>    renderRemoveRow: function () {
+</span>        return &#39;&lt;span data-qtip=&quot;&#39;+ this.removeRowTip + &#39;&quot; role=&quot;button&quot; tabIndex=&quot;0&quot;&gt;&#39; +
+            this.removeRowText + &#39;&lt;/span&gt;&#39;;
+    },
+
+<span id='Ext-view-MultiSelector-method-onFocusLeave'>    onFocusLeave: function(e) {
+</span>        this.onDismissSearch();
+        this.callParent([e]);
+    },
+
+<span id='Ext-view-MultiSelector-method-afterComponentLayout'>    afterComponentLayout: function(width, height, prevWidth, prevHeight) {
+</span>        var me = this,
+            popup = me.searchPopup;
+
+        me.callParent([width, height, prevWidth, prevHeight]);
+        if (popup &amp;&amp; popup.isVisible()) {
+            popup.showBy(me, me.popupAlign);
+        }
+    },
+
+<span id='Ext-view-MultiSelector-property-privates'>    privates: {
+</span>        popupAlign: &#39;tl-tr?&#39;,
+
+        onGlobalScroll: function (scroller) {
+            // Collapse if the scroll is anywhere but inside this selector or the popup
+            if (!this.owns(scroller.getElement())) {
+                this.onDismissSearch();
+            }
+        },
+
+        onDismissSearch: function (e) {
+            var searchPopup = this.searchPopup;
+            if (searchPopup &amp;&amp; (!e || !(searchPopup.owns(e.getTarget()) || this.owns(e.getTarget())))) {
+                this.scrollListeners.destroy();
+                this.touchListeners.destroy();
+                searchPopup.hide();
+            }
+        },
+
+        onShowSearch: function (panel, tool, event) {
+            var me = this,
+                searchPopup = me.searchPopup,
+                store = me.getStore();
+
+            if (!searchPopup) {
+                searchPopup = Ext.merge({
+                    owner: me,
+                    field: me.fieldName,
+                    floating: true,
+                    alignOnScroll: false
+                }, me.getSearch());
+                me.searchPopup = searchPopup = me.add(searchPopup);
+
+                // If we were configured with records prior to the UI requesting the popup,
+                // ensure that the records are selected in the popup.
+                if (store.getCount()) {
+                    searchPopup.selectRecords(store.getRange());
+                }
+            }
+
+            searchPopup.invocationEvent = event;
+            searchPopup.showBy(me, me.popupAlign);
+
+            // It only autofocuses its defaultFocus target if it was hidden.
+            // If they&#39;re reactivating the show tool, they&#39;ll expect to focus the search.
+            if (!event || event.pointerType !== &#39;touch&#39;) {
+                searchPopup.lookupReference(&#39;searchField&#39;).focus();
+            }
+
+            me.scrollListeners = Ext.on({
+                scroll: &#39;onGlobalScroll&#39;,
+                scope: me,
+                destroyable: true
+            });
+
+            // Dismiss on touch outside this component tree.
+            // Because touch platforms do not focus document.body on touch
+            // so no focusleave would occur to trigger a collapse.
+            me.touchListeners = Ext.getDoc().on({
+                // Do not translate on non-touch platforms.
+                // mousedown will blur the field.
+                translate:false,
+                touchstart: me.onDismissSearch,
+                scope: me,
+                delegated: false,
+                destroyable: true
+            });
+        }
+    }
+});
+</pre>
+</body>
+</html>

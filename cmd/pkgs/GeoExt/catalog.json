@@ -1,0 +1,33 @@
+{
+  "format": "1",
+  "packages": [
+    {
+      "name": "GeoExt",
+      "namespace": "GeoExt",
+      "format": "1",
+      "version": "3.0.0",
+      "creator": "GeoExt Contributors",
+      "summary": "GIS Package for ExtJS",
+      "detailedDescription": "GeoExt is Open Source and enables building desktop-like GIS applications through the web. It is a JavaScript framework that combines the GIS functionality of OpenLayers with the user interface savvy of the ExtJS library provided by Sencha.",
+      "type": "code",
+      "signatures": [
+        {
+          "name": "GeoExt Contributors",
+          "uuid": "5c08b4bf-e16b-42ef-9a5e-6b2ac7aed656",
+          "created": "2017-03-13T19:28:31Z",
+          "algorithm": "SHA1withRSA",
+          "nonce": "jUt3Oq7OKOA\u003d",
+          "signature": "qF/puLrsMVU4z0c0FeTc7LmR9Fzd5ui5Qw+eOrRWybXDG3gIniDcPI7vuUb+ZL3iCeb8dITtrV63sOgR/4cjcKL8kOBUQ6aHh4Ry/agvMRFo8v9Z0WEr9N/sfewNmWFcbk1O5KBq1ANC9rWvwbcDdB4b+j7jsZKHnCcvKT3wmgoqRJJv3YkHBlbTbn9lgJsmB8e07IeZ4bvkdh7RmrkDq+jWUEw2/JaX/Nszv6gXvXUJWfoii6HljigzZJuSz1zwU35GooGN0WNRcuL0mldgeGAJB3qoJDiCTw+cCnwZ1U/uzdpHL8FsK/upzZPKQ7mgq9XHsyxw0yFO5D7WTEyJfw\u003d\u003d"
+        }
+      ],
+      "slicer": {
+        "js": [
+          {
+            "path": "${package.dir}/sass/example/custom.js",
+            "isWidgetManifest": true
+          }
+        ]
+      }
+    }
+  ]
+}

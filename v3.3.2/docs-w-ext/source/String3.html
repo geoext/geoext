@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <title>The source code</title>
+  <link href="../resources/prettify/prettify.css" type="text/css" rel="stylesheet" />
+  <script type="text/javascript" src="../resources/prettify/prettify.js"></script>
+  <style type="text/css">
+    .highlight { display: block; background-color: #ddd; }
+  </style>
+  <script type="text/javascript">
+    function highlight() {
+      document.getElementById(location.hash.replace(/#/, "")).className = "highlight";
+    }
+  </script>
+</head>
+<body onload="prettyPrint(); highlight();">
+  <pre class="prettyprint lang-js"><span id='Ext-grid-filters-filter-String'>/**
+</span> * The string grid filter allows you to create a filter selection that limits results
+ * to values matching a particular string.  The filter can be set programmatically or via 
+ * user input with a configurable {@link Ext.form.field.Text text field} in the filter section 
+ * of the column header.
+ *
+ * Example String Filter Usage:
+ *
+ *     @example
+ *     var shows = Ext.create(&#39;Ext.data.Store&#39;, {
+ *         fields: [&#39;id&#39;,&#39;show&#39;],
+ *         data: [
+ *             {id: 0, show: &#39;Battlestar Galactica&#39;},
+ *             {id: 1, show: &#39;Doctor Who&#39;},
+ *             {id: 2, show: &#39;Farscape&#39;},
+ *             {id: 3, show: &#39;Firefly&#39;},
+ *             {id: 4, show: &#39;Star Trek&#39;},
+ *             {id: 5, show: &#39;Star Wars: Christmas Special&#39;}
+ *         ]
+ *     });
+ *   
+ *     Ext.create(&#39;Ext.grid.Panel&#39;, {
+ *         renderTo: Ext.getBody(),
+ *         title: &#39;Sci-Fi Television&#39;,
+ *         height: 250,
+ *         width: 250,
+ *         store: shows,
+ *         plugins: &#39;gridfilters&#39;,
+ *         columns: [{
+ *             dataIndex: &#39;id&#39;,
+ *             text: &#39;ID&#39;,
+ *             width: 50
+ *         },{
+ *             dataIndex: &#39;show&#39;,
+ *             text: &#39;Show&#39;,
+ *             flex: 1,
+ *             filter: {
+ *                 // required configs
+ *                 type: &#39;string&#39;,
+ *                 // optional configs
+ *                 value: &#39;star&#39;,  // setting a value makes the filter active. 
+ *                 itemDefaults: {
+ *                     // any Ext.form.field.Text configs accepted
+ *                 }
+ *             }
+ *         }]
+ *     }); 
+ */
+Ext.define(&#39;Ext.grid.filters.filter.String&#39;, {
+    extend: &#39;Ext.grid.filters.filter.SingleFilter&#39;,
+    alias: &#39;grid.filter.string&#39;,
+
+<span id='Ext-grid-filters-filter-String-property-type'>    type: &#39;string&#39;,
+</span>
+<span id='Ext-grid-filters-filter-String-property-operator'>    operator: &#39;like&#39;,
+</span>
+    //&lt;locale&gt;
+<span id='Ext-grid-filters-filter-String-cfg-emptyText'>    /**
+</span>     * @cfg {String} emptyText
+     * The empty text to show for each field.
+     */
+    emptyText: &#39;Enter Filter Text...&#39;,
+<span id='Ext-grid-filters-filter-String-cfg-itemDefaults'>    //&lt;/locale&gt;
+</span>
+    itemDefaults: {
+        xtype: &#39;textfield&#39;,
+        enableKeyEvents: true,
+        hideEmptyLabel: false,
+        iconCls: Ext.baseCSSPrefix + &#39;grid-filters-find&#39;,
+        labelSeparator: &#39;&#39;,
+        labelWidth: 29,
+        margin: 0,
+        selectOnFocus: true
+    },
+
+<span id='Ext-grid-filters-filter-String-cfg-menuDefaults'>    menuDefaults: {
+</span>        // A menu with only form fields needs some body padding. Normally this padding
+        // is managed by the items, but we have no normal menu items.
+        bodyPadding: 3,
+        showSeparator: false
+    },
+
+<span id='Ext-grid-filters-filter-String-method-createMenu'>    /**
+</span>     * @private
+     * Template method that is to initialize the filter and install required menu items.
+     */
+    createMenu: function () {
+        var me = this,
+            config;
+
+        me.callParent();
+
+        config = Ext.apply({}, me.getItemDefaults());
+        if (config.iconCls &amp;&amp; !(&#39;labelClsExtra&#39; in config)) {
+            config.labelClsExtra = Ext.baseCSSPrefix + &#39;grid-filters-icon &#39; + config.iconCls;
+        }
+        delete config.iconCls;
+
+        config.emptyText = config.emptyText || me.emptyText;
+        me.inputItem = me.menu.add(config);
+
+        me.inputItem.on({
+            scope: me,
+            keyup: me.onValueChange,
+            el: {
+                click: function(e) {
+                    e.stopPropagation();
+                }
+            }
+        });
+    },
+
+<span id='Ext-grid-filters-filter-String-method-setValue'>    /**
+</span>     * @private
+     * Template method that is to set the value of the filter.
+     * @param {Object} value The value to set the filter.
+     */
+    setValue: function (value) {
+        var me = this;
+
+        if (me.inputItem) {
+            me.inputItem.setValue(value);
+        }
+
+        me.filter.setValue(value);
+
+        if (value &amp;&amp; me.active) {
+            me.value = value;
+            me.updateStoreFilter();
+        } else {
+            me.setActive(!!value);
+        }
+    },
+
+<span id='Ext-grid-filters-filter-String-method-activateMenu'>    activateMenu: function () {
+</span>        this.inputItem.setValue(this.filter.getValue());
+    },
+    
+<span id='Ext-grid-filters-filter-String-method-createFilter'>    createFilter: function(config, key) {
+</span>        var me = this;
+        
+        if (me.filterFn) {
+            return new Ext.util.Filter({
+                filterFn: function(rec) {
+                    return Ext.callback(me.filterFn, me.scope, [rec, me.inputItem.getValue()]);
+                }
+            });
+        } else {
+            return me.callParent([config, key]);
+        }
+    }
+});
+</pre>
+</body>
+</html>

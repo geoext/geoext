@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <title>The source code</title>
+  <link href="../resources/prettify/prettify.css" type="text/css" rel="stylesheet" />
+  <script type="text/javascript" src="../resources/prettify/prettify.js"></script>
+  <style type="text/css">
+    .highlight { display: block; background-color: #ddd; }
+  </style>
+  <script type="text/javascript">
+    function highlight() {
+      document.getElementById(location.hash.replace(/#/, "")).className = "highlight";
+    }
+  </script>
+</head>
+<body onload="prettyPrint(); highlight();">
+  <pre class="prettyprint lang-js"><span id='Ext-util-Operators'>/**
+</span> * This class defines the operators that are shared by DomQuery and ComponentQuery
+ * @class Ext.util.Operators
+ * @private
+ */
+Ext.ns('Ext.util').Operators = {
+<span id='Ext-util-Operators-method-='>// @define Ext.util.Operators
+</span>    &quot;=&quot;: function(a, v) {
+        return a == v;
+    },
+<span id='Ext-util-Operators-method-!='>    &quot;!=&quot;: function(a, v) {
+</span>        return a != v;
+    },
+<span id='Ext-util-Operators-method-^='>    &quot;^=&quot;: function(a, v) {
+</span>        return a &amp;&amp; a.substr(0, v.length) == v;
+    },
+<span id='Ext-util-Operators-method-S-='>    &quot;$=&quot;: function(a, v) {
+</span>        return a &amp;&amp; a.substr(a.length - v.length) == v;
+    },
+<span id='Ext-util-Operators-method-*='>    &quot;*=&quot;: function(a, v) {
+</span>        return a &amp;&amp; a.indexOf(v) !== -1;
+    },
+<span id='Ext-util-Operators-method-%='>    &quot;%=&quot;: function(a, v) {
+</span>        return (a % v) === 0;
+    },
+<span id='Ext-util-Operators-method-|='>    &quot;|=&quot;: function(a, v) {
+</span>        return a &amp;&amp; (a == v || a.substr(0, v.length + 1) == v + '-');
+    },
+<span id='Ext-util-Operators-method-~='>    &quot;~=&quot;: function(a, v) {
+</span>        return a &amp;&amp; (' ' + a + ' ').indexOf(' ' + v + ' ') != -1;
+    }
+};</pre>
+</body>
+</html>

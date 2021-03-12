@@ -1,0 +1,986 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <title>The source code</title>
+  <link href="../resources/prettify/prettify.css" type="text/css" rel="stylesheet" />
+  <script type="text/javascript" src="../resources/prettify/prettify.js"></script>
+  <style type="text/css">
+    .highlight { display: block; background-color: #ddd; }
+  </style>
+  <script type="text/javascript">
+    function highlight() {
+      document.getElementById(location.hash.replace(/#/, "")).className = "highlight";
+    }
+  </script>
+</head>
+<body onload="prettyPrint(); highlight();">
+  <pre class="prettyprint lang-js"><span id='Ext-app-Controller'>/**
+</span> * Controllers are the glue that binds an application together. That said, their main 
+ * purpose is to listen for events (usually from views) and take some action. Here&#39;s how 
+ * we might create a Controller to manage Users:
+ *
+ *      Ext.define(&#39;MyApp.controller.Users&#39;, {
+ *          extend: &#39;Ext.app.Controller&#39;,
+ *
+ *          init: function() {
+ *              console.log(&#39;Initialized Users! This happens before &#39; +
+ *                          &#39;the Application launch() function is called&#39;);
+ *          }
+ *      });
+ *
+ * The init function is a special method that is called when your application boots. It is 
+ * called before the {@link Ext.app.Application Application}&#39;s launch function is executed. 
+ * This creates an area you can run code prior to Viewport creation.
+ *
+ * The controller&#39;s {@link #method-control} function
+ * makes it easy to listen to events on your view classes and take some action with a 
+ * handler function. Let&#39;s update our Users controller to tell us when the panel is 
+ * rendered:
+ *
+ *      Ext.define(&#39;MyApp.controller.Users&#39;, {
+ *          extend: &#39;Ext.app.Controller&#39;,
+ *
+ *          control: {
+ *              &#39;viewport &gt; panel&#39;: {
+ *                  render: &#39;onPanelRendered&#39;
+ *              }
+ *          }
+ *
+ *          onPanelRendered: function() {
+ *              console.log(&#39;The panel was rendered&#39;);
+ *          }
+ *      });
+ *
+ * The {@link Ext.app.BaseController#method-control control method} has now set up 
+ * listeners on views in our application. The control method uses the ComponentQuery 
+ * engine to quickly and easily get references to components on the page. If you are not 
+ * familiar with ComponentQuery yet, be sure to check out the 
+ * {@link Ext.ComponentQuery documentation}. In brief, it allows us to pass a 
+ * CSS-like selector that will find every matching component on the page.
+ *
+ * In our init function above, we supplied &#39;viewport &gt; panel&#39;, which translates to &quot;find me 
+ * every Panel that is a direct child of a Viewport&quot;. We then supplied an object that maps 
+ * event names (just &#39;render&#39; in this case) to handler functions. In short, whenever 
+ * a component that matches our selector fires a &#39;render&#39; event, our
+ * onPanelRendered function is called.
+ *
+ * ## Event domains
+ *
+ * In Ext JS 4.2, we introduced the concept of event domains. In terms of MVC, an event 
+ * domain is one or more base classes that fire events to which a Controller wants to 
+ * listen. Besides Component event domain that encompass {@link Ext.Component}-descended 
+ * Views, Controllers now can listen to events from data Stores, Ext Direct Providers, 
+ * other Controllers, and Ext.GlobalEvents. This feature provides a way to communicate 
+ * between parts of the whole application without the need to bind controllers together 
+ * tightly, and allows to develop and test application parts in isolation.
+ *
+ * See usage examples in {@link #method-listen} method documentation.
+ *
+ * ## Using refs
+ *
+ * One of the most useful parts of Controllers is the ref system. These use 
+ * {@link Ext.ComponentQuery} to make it really easy to get references to Views on your 
+ * page. Let&#39;s look at an example of this now:
+ *
+ *      Ext.define(&#39;MyApp.controller.Users&#39;, {
+ *          extend: &#39;Ext.app.Controller&#39;,
+ *          
+ *          refs: [{
+ *              ref: &#39;list&#39;,
+ *              selector: &#39;grid&#39;
+ *          }],
+ *          
+ *          control: {
+ *              &#39;button&#39;: {
+ *                  click: &#39;refreshGrid&#39;
+ *              }
+ *          },
+ *          
+ *          refreshGrid: function() {
+ *              this.getList().store.load();
+ *          }
+ *      });
+ *
+ * This example assumes the existence of a {@link Ext.grid.Panel Grid} on the page, which 
+ * contains a single button to refresh the Grid when clicked. In our refs array, we set up 
+ * a reference to the grid. There are two parts to this - the &#39;selector&#39;, which is a 
+ * {@link Ext.ComponentQuery ComponentQuery} selector which finds any grid on the page and
+ * assigns it to the reference &#39;list&#39;.
+ *
+ * By giving the reference a name, we get a number of things for free. The first is the 
+ * getList function that we use in the refreshGrid method above. This is generated 
+ * automatically by the Controller based on the name of our ref, which was capitalized and 
+ * prepended with get to go from &#39;list&#39; to &#39;getList&#39;.
+ *
+ * The way this works is that the first time getList is called by your code, the 
+ * ComponentQuery selector is run and the first component that matches the selector 
+ * (&#39;grid&#39; in this case) will be returned. All future calls to getList will use a cached 
+ * reference to that grid. Usually it is advised to use a specific ComponentQuery selector 
+ * that will only match a single View in your application (in the case above our selector 
+ * will match any grid on the page).
+ *
+ * Bringing it all together, we configure control
+ * to listen to any click on a {@link Ext.button.Button button} and call our refreshGrid 
+ * function (again, this will match any button on the page so we advise a more specific 
+ * selector than just &#39;button&#39;, but have left it this way for simplicity). When the button 
+ * is clicked we use out getList function to refresh the grid.
+ *
+ * You can create any number of refs and control any number of components this way, simply 
+ * adding more functions to your Controller as you go. For an example of real-world usage 
+ * of Controllers see the Feed Viewer example in the examples/app/feed-viewer folder in 
+ * the SDK download.
+ *
+ * ## Generated getter methods
+ *
+ * Refs aren&#39;t the only thing that generate convenient getter methods. Controllers often 
+ * have to deal with Models and Stores so the framework offers a couple of easy ways to 
+ * get access to those too. Let&#39;s look at another example:
+ *
+ *      Ext.define(&#39;MyApp.controller.Users&#39;, {
+ *          extend: &#39;Ext.app.Controller&#39;,
+ *
+ *          models: [&#39;User&#39;],
+ *          stores: [&#39;AllUsers&#39;, &#39;AdminUsers&#39;],
+ *
+ *          init: function() {
+ *              var User, allUsers, ed;
+ *              
+ *              User = this.getUserModel();
+ *              allUsers = this.getAllUsersStore();
+ *
+ *              ed = new User({ name: &#39;Ed&#39; });
+ *              allUsers.add(ed);
+ *          }
+ *      });
+ *
+ * By specifying Models and Stores that the Controller cares about, it again dynamically 
+ * loads them from the appropriate locations (app/model/User.js, app/store/AllUsers.js and 
+ * app/store/AdminUsers.js in this case) and creates getter functions for them all. The 
+ * example above will create a new User model instance and add it to the AllUsers Store.
+ * Of course, you could do anything in this function but in this case we just did 
+ * something simple to demonstrate the functionality.
+ *
+ * ## Further Reading
+ *
+ * For more information about writing Ext JS 5 applications, please see the
+ * [Application Architecture](../../../application_architecture/application_architecture.html). 
+ * Also see the {@link Ext.app.Application} documentation.
+ */
+Ext.define(&#39;Ext.app.Controller&#39;, {
+    extend: &#39;Ext.app.BaseController&#39;,
+    requires: [
+        &#39;Ext.app.Util&#39;,
+        &#39;Ext.data.StoreManager&#39;,
+        &#39;Ext.ComponentManager&#39;,
+        &#39;Ext.app.domain.Component&#39;,
+        &#39;Ext.app.domain.Store&#39;,
+        &#39;Ext.app.route.Router&#39;
+    ],
+
+    statics: {
+<span id='Ext-app-Controller-static-property-strings'>        strings: {
+</span>            model: {
+                getter: &#39;getModel&#39;,
+                upper: &#39;Model&#39;
+            },
+
+            view: {
+                getter: &#39;getView&#39;,
+                upper: &#39;View&#39;
+            },
+
+            controller: {
+                getter: &#39;getController&#39;,
+                upper: &#39;Controller&#39;
+            },
+
+            store: {
+                getter: &#39;getStore&#39;,
+                upper: &#39;Store&#39;
+            },
+
+            profile: {
+                getter: &#39;getProfile&#39;,
+                upper: &#39;Profiles&#39;
+            }
+        },
+
+<span id='Ext-app-Controller-static-property-controllerRegex'>        controllerRegex: /^(.*)\.controller\./,
+</span><span id='Ext-app-Controller-static-property-profileRegex'>        profileRegex: /^(.*)\.profile\./,
+</span>
+<span id='Ext-app-Controller-static-method-createGetter'>        createGetter: function(baseGetter, name) {
+</span>            return function () {
+                return this[baseGetter](name);
+            };
+        },
+
+<span id='Ext-app-Controller-static-method-getGetterName'>        getGetterName: function(name, kindUpper) {
+</span>            var fn       = &#39;get&#39;,
+                parts    = name.split(&#39;.&#39;),
+                numParts = parts.length,
+                index;
+
+            // Handle namespaced class names. E.g. feed.Add becomes getFeedAddView etc.
+            for (index = 0; index &lt; numParts; index++) {
+                fn += Ext.String.capitalize(parts[index]);
+            }
+
+            fn += kindUpper;
+            
+            return fn;
+        },
+
+<span id='Ext-app-Controller-static-method-resolveNamespace'>        resolveNamespace: function(cls, data) {
+</span>            var Controller = Ext.app.Controller,
+                namespaceRe = cls.prototype.isProfile ? Controller.profileRegex : Controller.controllerRegex,
+                className, namespace, match;
+            /*
+             * Namespace resolution is tricky business: we should know what namespace
+             * this Controller descendant belongs to, or model/store/view dependency
+             * resolution will be either ambiguous or plainly not possible. To avoid
+             * guessing games we try to look for a forward hint ($namespace) that
+             * Application class sets when its onClassExtended gets processed; if that
+             * fails we try to deduce namespace from class name.
+             *
+             * Note that for Ext.app.Application, Controller.onClassExtended gets executed
+             * *before* Application.onClassExtended so we have to delay namespace handling
+             * until after Application.onClassExtended kicks in, hence it is done in this hook.
+             */
+            className = Ext.getClassName(cls);
+            namespace = data.$namespace || data.namespace ||
+                Ext.app.getNamespace(className) ||
+                ((match = namespaceRe.exec(className)) &amp;&amp; match[1]);
+
+            //&lt;debug&gt;
+            if (!namespace) {
+                Ext.log.warn(&quot;Missing namespace for &quot; + className + &quot;, please define it &quot;+
+                    &quot;in namespaces property of your Application class.&quot;);
+            }
+            //&lt;/debug&gt;
+
+            return namespace;
+        },
+
+<span id='Ext-app-Controller-static-method-processDependencies'>        /**
+</span>         * This method is called like so:
+         *
+         *      Ext.app.Controller.processDependencies(proto, requiresArray, &#39;MyApp&#39;, &#39;model&#39;, [
+         *          &#39;User&#39;,
+         *          &#39;Item&#39;,
+         *          &#39;Foo@Common.model&#39;,
+         *          &#39;Bar.Baz@Common.model&#39;
+         *      ]);
+         *
+         * Required dependencies are added to requiresArray.
+         *
+         * @private
+         */
+        processDependencies: function(cls, requires, namespace, kind, names, profileName) {
+            if (!names || !names.length) {
+                return;
+            }
+
+            var me = this,
+                strings = me.strings[kind],
+                o, absoluteName, shortName, name, j, subLn, getterName, getter;
+                
+             if (!Ext.isArray(names)) {
+                 names = [names];
+             }
+
+            for (j = 0, subLn = names.length; j &lt; subLn; j++) {
+                name = names[j];
+                o = me.getFullName(name, kind, namespace, profileName);
+                // Update the name in the array to be the absolute name
+                names[j] = absoluteName = o.absoluteName;
+                shortName = o.shortName;
+
+                requires.push(absoluteName);
+                getterName = me.getGetterName(shortName, strings.upper);
+
+                if (!cls[getterName]) {
+                    cls[getterName] = getter = me.createGetter(strings.getter, name);
+                }
+                //&lt;debug&gt;
+                else if (getterName === &#39;getMainView&#39;) {
+                    Ext.log.warn(&#39;Cannot have a view named \&#39;Main\&#39; - getter conflicts with mainView config.&#39;)
+                }
+                //&lt;/debug&gt;
+
+                // Application class will init the controller getters
+                if (getter &amp;&amp; kind !== &#39;controller&#39;) {
+                    // This marker allows the constructor to easily/cheaply identify the
+                    // generated getter methods since they all need to be called to get
+                    // things initialized. We use a property name that deliberately does
+                    // not work with dot-access to reduce any chance of collision.
+                    getter[&#39;Ext.app.getter&#39;] = true;
+                }
+            }
+        },
+
+<span id='Ext-app-Controller-static-method-getFullName'>        getFullName: function(name, kind, namespace, profileName) {
+</span>            var shortName = name,
+                sep, absoluteName;
+
+            if ((sep = name.indexOf(&#39;@&#39;)) &gt; 0) {
+                // The unambiguous syntax is Model@Name.space (or &quot;space.Model@Name&quot;)
+                // which contains both the short name (&quot;Model&quot; or &quot;space.Model&quot;) and
+                // the full name (Name.space.Model).
+                //
+                shortName    = name.substring(0, sep); // &quot;Model&quot;
+                absoluteName = name.substring(sep + 1) + &#39;.&#39; + shortName; //  ex: &quot;Name.space.Model&quot;
+            }
+            // Deciding if a class name must be qualified:
+            //
+            // 1 - if the name doesn&#39;t contain a dot, we must qualify it
+            //
+            // 2 - the name may be a qualified name of a known class, but:
+            //
+            // 2.1 - in runtime, the loader may not know the class - specially in
+            //       production - so we must check the class manager
+            //
+            // 2.2 - in build time, the class manager may not know the class, but
+            //       the loader does, so we check the second one (the loader check
+            //       assures it&#39;s really a class, and not a namespace, so we can
+            //       have &#39;Books.controller.Books&#39;, and requesting a controller
+            //       called Books will not be underqualified)
+            //
+            else if (name.indexOf(&#39;.&#39;) &gt; 0 &amp;&amp; (Ext.ClassManager.isCreated(name) ||
+                     this.hasRegisteredPrefix(name))) {
+                absoluteName = name;
+                shortName = name.replace(namespace + &#39;.&#39; + kind + &#39;.&#39;, &#39;&#39;);
+            } else {
+                //&lt;debug&gt;
+                if (!namespace) {
+                    Ext.log.warn(&quot;Cannot find namespace for &quot; + kind + &quot; &quot; + name + &quot;, &quot; +
+                                 &quot;assuming it is fully qualified class name&quot;);
+                }
+                //&lt;/debug&gt;
+
+                if (namespace) {
+                    absoluteName = namespace + &#39;.&#39; + kind + &#39;.&#39; +
+                                    (profileName ? profileName + &#39;.&#39; + name : name);
+                    shortName    = name;
+                }
+                else {
+                    absoluteName = name;
+                }
+            }
+
+            return {
+                absoluteName: absoluteName,
+                shortName:    shortName
+            };
+        },
+
+<span id='Ext-app-Controller-static-method-hasRegisteredPrefix'>        hasRegisteredPrefix: function (className) {
+</span>            var inventory = Ext.ClassManager,
+                prefix = inventory.getPrefix(className);
+
+            // It&#39;s a class if className is not equal to any known namespace
+            return prefix &amp;&amp; prefix !== className;
+        }
+    },
+
+    // @cmd-auto-dependency {aliasPrefix : &quot;model.&quot;, mvc : true, blame: &quot;all&quot;}
+<span id='Ext-app-Controller-cfg-models'>    /**
+</span>     * @cfg {String/String[]} models
+     * Array of models to require from AppName.model namespace. For example:
+     *
+     *      Ext.define(&quot;MyApp.controller.Foo&quot;, {
+     *          extend: &quot;Ext.app.Controller&quot;,
+     *          models: [&#39;User&#39;, &#39;Vehicle&#39;]
+     *      });
+     *
+     * This is equivalent to:
+     *
+     *      Ext.define(&quot;MyApp.controller.Foo&quot;, {
+     *          extend: &quot;Ext.app.Controller&quot;,
+     *          requires: [&#39;MyApp.model.User&#39;, &#39;MyApp.model.Vehicle&#39;],
+     *          
+     *          getUserModel: function() {
+     *              return this.getModel(&quot;User&quot;);
+     *          },
+     *          
+     *          getVehicleModel: function() {
+     *              return this.getModel(&quot;Vehicle&quot;);
+     *          }
+     *      });
+     *
+     * **Note:** If the model has a different namespace than that of the 
+     * application you will need to specify the full class name as well as define a path 
+     * in the {@link Ext.Loader#cfg-paths Loader&#39;s paths} config or 
+     * {@link Ext.Loader#method-setPath setPath} method.
+     */
+    models: null,
+
+    // @cmd-auto-dependency {aliasPrefix: &quot;view.&quot;, mvc: true, blame: &quot;all&quot;}
+<span id='Ext-app-Controller-cfg-views'>    /**
+</span>     * @cfg {String/String[]} views
+     * Array of views to require from AppName.view namespace and to generate getter methods for.
+     * For example:
+     *
+     *      Ext.define(&quot;MyApp.controller.Foo&quot;, {
+     *          extend: &quot;Ext.app.Controller&quot;,
+     *          views: [&#39;List&#39;, &#39;Detail&#39;]
+     *      });
+     *
+     * This is equivalent to:
+     *
+     *      Ext.define(&quot;MyApp.controller.Foo&quot;, {
+     *          extend: &quot;Ext.app.Controller&quot;,
+     *          requires: [&#39;MyApp.view.List&#39;, &#39;MyApp.view.Detail&#39;],
+     *          
+     *          getListView: function() {
+     *              return this.getView(&quot;List&quot;);
+     *          },
+     *          
+     *          getDetailView: function() {
+     *              return this.getView(&quot;Detail&quot;);
+     *          }
+     *      });
+     * 
+     * **Note:** If the view has a different namespace than that of the 
+     * application you will need to specify the full class name as well as define a path 
+     * in the {@link Ext.Loader#cfg-paths Loader&#39;s paths} config or 
+     * {@link Ext.Loader#method-setPath setPath} method.
+     */
+    views: null,
+
+    // @cmd-auto-dependency {aliasPrefix: &quot;store.&quot;, mvc: true, blame: &quot;all&quot;}
+<span id='Ext-app-Controller-cfg-stores'>    /**
+</span>     * @cfg {String/String[]} stores
+     * Array of stores to require from AppName.store namespace and to generate getter methods for.
+     * For example:
+     *
+     *      Ext.define(&quot;MyApp.controller.Foo&quot;, {
+     *          extend: &quot;Ext.app.Controller&quot;,
+     *          stores: [&#39;Users&#39;, &#39;Vehicles&#39;]
+     *      });
+     *
+     * This is equivalent to:
+     *
+     *      Ext.define(&quot;MyApp.controller.Foo&quot;, {
+     *          extend: &quot;Ext.app.Controller&quot;,
+     *         
+     *          requires: [
+     *              &#39;MyApp.store.Users&#39;,
+     *              &#39;MyApp.store.Vehicles&#39;
+     *          ]
+     *         
+     *          getUsersStore: function() {
+     *              return this.getStore(&quot;Users&quot;);
+     *          },
+     *
+     *          getVehiclesStore: function() {
+     *              return this.getStore(&quot;Vehicles&quot;);
+     *          }
+     *      });
+     * 
+     * **Note:** If the store has a different namespace than that of the 
+     * application you will need to specify the full class name as well as define a path 
+     * in the {@link Ext.Loader#cfg-paths Loader&#39;s paths} config or 
+     * {@link Ext.Loader#method-setPath setPath} method.
+     */
+    stores: null,
+
+<span id='Ext-app-Controller-property-controllers'>    // @cmd-auto-dependency {aliasPrefix: &quot;controller.&quot;, mvc: true, blame: &quot;all&quot;}
+</span>    controllers: null,
+
+    config : {
+<span id='Ext-app-Controller-cfg-application'>        /**
+</span>         * @cfg {Ext.app.Application} application The {@link Ext.app.Application} for this controller accessible via the getApplication method.
+         * @accessor
+         * @readonly
+         */
+        application: null,
+        
+<span id='Ext-app-Controller-cfg-refs'>        /**
+</span>         * @cfg {Object/Object[]} refs
+         * @accessor
+         *
+         * The refs config creates a getter method on the controller that internally 
+         * uses Ext.ComponentQuery to fetch the component instance using the configured 
+         * selector.  The following example will add the `getList` method to 
+         * the controller and will return the first component in the application 
+         * hierarchy with an xtype of &quot;grid&quot;.  By default, *undefined* will be returned 
+         * when the query does not locate the target component.
+         *
+         *     Ext.define(&#39;MyApp.controller.Foo&#39;, {
+         *         extend: &#39;Ext.app.Controller&#39;,
+         *         
+         *         refs: [{
+         *             ref: &#39;list&#39;,
+         *             selector: &#39;grid&#39;
+         *         }]
+         *     });
+         *
+         * The following fields may be used in the ref definition:
+         *
+         * - `ref` - name of the reference.
+         * - `selector` - Ext.ComponentQuery selector to access the component.
+         * - `autoCreate` - True to create the component automatically if not found on 
+         * page.
+         * - `forceCreate` - True to force the creation of the component every time 
+         * reference is accessed (when `get&lt;REFNAME&gt;` is called).
+         * - `xtype` - Used to create the component by its xtype with `autoCreate` or 
+         * `forceCreate`. If you don&#39;t provide `xtype`, an Ext.Component instance will 
+         * be created.
+         * 
+         * The following example will create a `getList` and `getUser` method on the 
+         * controller.
+         * 
+         *     Ext.define(&#39;MyApp.controller.Foo&#39;, {
+         *         extend: &#39;Ext.app.Controller&#39;,
+         *     
+         *         refs: [{
+         *             list: &#39;grid&#39;,
+         *             user: {
+         *                 autoCreate: true,
+         *                 selector: &#39;form&#39;,
+         *                 xtype: &#39;form&#39;
+         *             }
+         *         }]
+         *     });
+         */
+        refs: null,
+
+<span id='Ext-app-Controller-cfg-active'>        active: true,
+</span>
+<span id='Ext-app-Controller-cfg-moduleClassName'>        /**
+</span>         * @private
+         */
+        moduleClassName: null
+    },
+
+<span id='Ext-app-Controller-method-onClassExtended'>    onClassExtended: function(cls, data, hooks) {
+</span>        var onBeforeClassCreated = hooks.onBeforeCreated;
+
+        hooks.onBeforeCreated = function(cls, data) {
+            var Controller = Ext.app.Controller,
+                requires   = [],
+                namespace, proto;
+
+            proto = cls.prototype;
+
+            namespace = Controller.resolveNamespace(cls, data);
+
+            if (namespace) {
+                proto.$namespace = namespace;
+            }
+
+            Controller.processDependencies(proto, requires, namespace, &#39;model&#39;,      data.models);
+            Controller.processDependencies(proto, requires, namespace, &#39;view&#39;,       data.views);
+            Controller.processDependencies(proto, requires, namespace, &#39;store&#39;,      data.stores);
+            Controller.processDependencies(proto, requires, namespace, &#39;controller&#39;, data.controllers);
+
+            Ext.require(requires, Ext.Function.pass(onBeforeClassCreated, arguments, this));
+        };
+    },
+
+<span id='Ext-app-Controller-method-constructor'>    /**
+</span>     * Creates new Controller.
+     *
+     * @param {Object} [config] Configuration object.
+     */
+    constructor: function(config) {
+        this.initAutoGetters();
+        this.callParent([config]);
+    },
+
+<span id='Ext-app-Controller-method-normalizeRefs'>    /**
+</span>     * @private
+     * Takes either an object and transforms it into an array. The following are valid refs values:
+     *
+     *     refs: {
+     *         myComponent: &#39;container&#39;
+     *     }
+     *
+     *     refs: {
+     *         myComponent: {
+     *             selector: &#39;container&#39;
+     *         }
+     *     }
+     *
+     *     refs: [
+     *         {
+     *             ref: &#39;myComponent&#39;,
+     *             selector: &#39;container&#39;
+     *         }
+     *     ]
+     *
+     * @param {Array|Object} refs The refs to normalize
+     * @param {Array} newRefs An array to place the normalized refs on to
+     * @return {Array} The normalized array of refs
+     */
+    normalizeRefs: function(refs) {
+        var me = this,
+            newRefs = [];
+
+        if (refs) {
+            if (Ext.isObject(refs)) {
+                Ext.Object.each(refs, function(key, value) {
+                    if (Ext.isString(value)) {
+                        value = {
+                            selector : value
+                        };
+                    }
+
+                    value.ref = key;
+
+                    newRefs.push(value);
+                });
+            } else if (Ext.isArray(refs)) {
+                newRefs = Ext.Array.merge(newRefs, refs);
+            }
+        }
+
+        refs = me.refs;
+
+        if (refs) {
+            me.refs = null;
+
+            refs = me.normalizeRefs(refs);
+
+            if (refs) {
+                newRefs = Ext.Array.merge(newRefs, refs);
+            }
+        }
+
+        return newRefs;
+    },
+
+<span id='Ext-app-Controller-method-getRefMap'>    /**
+</span>     * Returns a map of reference names to selectors
+     * @private
+     */
+    getRefMap: function() {
+        var me = this,
+            refMap = me._refMap,
+            refs, ref, ln, i;
+
+        if (!refMap) {
+            refs = me.getRefs();
+            refMap = me._refMap = {};
+
+            if (refs) {
+                for (i = 0, ln = refs.length; i &lt; ln; i++) {
+                    ref = refs[i];
+                    refMap[ref.ref] = ref.selector;
+                }
+            }
+        }
+
+        return refMap;
+    },
+
+<span id='Ext-app-Controller-method-applyId'>    applyId: function(id) {
+</span>        return id || Ext.app.Controller.getFullName(this.$className, &#39;controller&#39;, this.$namespace).shortName;
+    },
+
+<span id='Ext-app-Controller-method-applyRefs'>    applyRefs: function(refs) {
+</span>        return this.normalizeRefs(Ext.clone(refs));
+    },
+
+<span id='Ext-app-Controller-method-updateRefs'>    /**
+</span>     * @param {Object} refs The refs to pass to the {@link #ref} method.
+     * @private
+     */
+    updateRefs: function(refs) {
+        if (refs) {
+            this.ref(refs);
+        }
+    },
+
+<span id='Ext-app-Controller-method-initAutoGetters'>    initAutoGetters: function() {
+</span>        var proto = this.self.prototype,
+            prop, fn;
+
+        for (prop in proto) {
+            fn = proto[prop];
+
+            // Look for the marker placed on the getters by processDependencies so that
+            // we can know what to call cheaply:
+            if (fn &amp;&amp; fn[&#39;Ext.app.getter&#39;]) {
+                fn.call(this);
+            }
+        }
+    },
+
+<span id='Ext-app-Controller-method-doInit'>    doInit: function(app) {
+</span>        var me = this;
+
+        if (!me._initialized) {
+            me.init(app);
+            me._initialized = true;
+        }
+    },
+    
+<span id='Ext-app-Controller-method-finishInit'>    finishInit: function(app) {
+</span>        var me = this,
+            controllers = me.controllers,
+            controller, i, l;
+
+        if (me._initialized &amp;&amp; controllers &amp;&amp; controllers.length) {
+            for (i = 0, l = controllers.length; i &lt; l; i++) {
+                controller = me.getController(controllers[i]);
+                controller.finishInit(app);
+            }
+        }
+    },
+
+<span id='Ext-app-Controller-method-init'>    /**
+</span>     * @method
+     *
+     * A template method that is called when your application boots. It is called before the
+     * {@link Ext.app.Application Application}&#39;s launch function is executed so gives a hook point
+     * to run any code before your Viewport is created.
+     *
+     * @param {Ext.app.Application} application
+     *
+     * @template
+     */
+    init: Ext.emptyFn,
+
+<span id='Ext-app-Controller-method-onLaunch'>    /**
+</span>     * @method
+     *
+     * A template method like {@link #init}, but called after the viewport is created.
+     * This is called after the {@link Ext.app.Application#launch launch} method of Application
+     * is executed.
+     *
+     * @param {Ext.app.Application} application
+     *
+     * @template
+     */
+    onLaunch: Ext.emptyFn,
+    
+<span id='Ext-app-Controller-method-activate'>    /**
+</span>     * Allow the controller to resume receiving events from the event bus.
+     * Routes will also be able to begin firing on this controller.
+     * Also see {@link #deactivate}.
+     */
+    activate: function() {
+        this.setActive(true);
+    },
+    
+<span id='Ext-app-Controller-method-deactivate'>    /**
+</span>     * Prevent this controller from receiving events from the event bus.
+     * Routes will also not be triggered on inactive controllers unless
+     * the {@link Ext.app.route.Route#allowInactive} flag is set.
+     * Also see {@link #activate}.
+     */
+    deactivate: function() {
+        this.setActive(false);
+    },
+    
+<span id='Ext-app-Controller-method-isActive'>    /**
+</span>     * Checks if this controller is active. See {@link #activate} &amp; 
+     * {@link #deactivate}.
+     * @return {Boolean} `true` if this controller is active.
+     */
+    isActive: function() {
+        return this.getActive();
+    },
+
+<span id='Ext-app-Controller-method-ref'>    ref: function(refs) {
+</span>        var me = this,
+            i = 0,
+            length = refs.length,
+            info, ref, fn;
+
+        refs = Ext.Array.from(refs);
+
+        me.references = me.references || [];
+
+        for (; i &lt; length; i++) {
+            info = refs[i];
+            ref  = info.ref;
+            fn   = &#39;get&#39; + Ext.String.capitalize(ref);
+
+            if (!me[fn]) {
+                me[fn] = Ext.Function.pass(me.getRef, [ref, info], me);
+            }
+            me.references.push(ref.toLowerCase());
+        }
+    },
+
+<span id='Ext-app-Controller-method-addRef'>    /**
+</span>     * Registers one or more {@link #refs references}.
+     *
+     * @param {Object/Object[]} refs
+     */
+    addRef: function(refs) {
+        this.ref(refs);
+    },
+
+<span id='Ext-app-Controller-method-getRef'>    getRef: function(ref, info, config) {
+</span>        var me = this,
+            refCache = me.refCache || (me.refCache = {}),
+            cached = refCache[ref];
+
+        info = info || {};
+        config = config || {};
+
+        Ext.apply(info, config);
+
+        if (info.forceCreate) {
+            return Ext.ComponentManager.create(info, &#39;component&#39;);
+        }
+
+        if (!cached) {
+            if (info.selector) {
+                refCache[ref] = cached = Ext.ComponentQuery.query(info.selector)[0];
+            }
+            
+            if (!cached &amp;&amp; info.autoCreate) {
+                refCache[ref] = cached = Ext.ComponentManager.create(info, &#39;component&#39;);
+            }
+            
+            if (cached) {
+                cached.on(&#39;destroy&#39;, function() {
+                    refCache[ref] = null;
+                });
+            }
+        }
+
+        return cached;
+    },
+
+<span id='Ext-app-Controller-method-hasRef'>    /**
+</span>     * Returns `true` if a {@link #refs reference} is registered.
+     *
+     * @param {String} ref The name of the ref to check for.
+     * @return {Boolean}
+     */
+    hasRef: function(ref) {
+        var references = this.references;
+        return references &amp;&amp; Ext.Array.indexOf(references, ref.toLowerCase()) !== -1;
+    },
+
+<span id='Ext-app-Controller-method-getController'>    /**
+</span>     * Returns instance of a {@link Ext.app.Controller Controller} with the given id.
+     * When controller doesn&#39;t exist yet, it&#39;s created. Note that this method depends
+     * on Application instance and will return undefined when Application is not
+     * accessible. The only exception is when this Controller instance&#39;s id is requested;
+     * in that case we always return the instance even if Application is no available.
+     *
+     * @param {String} id
+     *
+     * @return {Ext.app.Controller} controller instance or undefined.
+     */
+    getController: function(id) {
+        var app = this.getApplication();
+
+        if (id === this.getId()) {
+            return this;
+        }
+
+        return app &amp;&amp; app.getController(id);
+    },
+
+<span id='Ext-app-Controller-method-getStore'>    /**
+</span>     * Returns instance of a {@link Ext.data.Store Store} with the given name.
+     * When store doesn&#39;t exist yet, it&#39;s created.
+     *
+     * @param {String} name
+     *
+     * @return {Ext.data.Store} a store instance.
+     */
+    getStore: function(name) {
+        var storeId, store;
+
+        storeId = (name.indexOf(&#39;@&#39;) === -1) ? name : name.split(&#39;@&#39;)[0];
+        store   = Ext.StoreManager.get(storeId);
+
+        if (!store) {
+            name = Ext.app.Controller.getFullName(name, &#39;store&#39;, this.$namespace);
+
+            if (name) {
+                store = Ext.create(name.absoluteName, {
+                    // Use id here. If the store has a configured storeId, 
+                    // that will take precedence
+                    id: storeId
+                });
+            }
+        }
+
+        return store;
+    },
+
+<span id='Ext-app-Controller-method-getModel'>    /**
+</span>     * Returns a {@link Ext.data.Model Model} class with the given name.
+     *
+     * @param {String} name
+     * @return {Ext.Class} A class ultimately derived from `Ext.data.Model`.
+     */
+    getModel: function(model) {
+        var name = Ext.app.Controller.getFullName(model, &#39;model&#39;, this.$namespace),
+            ret = Ext.ClassManager.get(name.absoluteName);
+
+        if (!ret) {
+            ret = Ext.data.schema.Schema.lookupEntity(model);
+        }
+
+        return ret;
+    },
+
+<span id='Ext-app-Controller-method-getProfile'>    /**
+</span>     * Returns instance of a {@link Ext.app.Profile Profile} with the given name.
+     *
+     * @param {String} name
+     *
+     * @return {String} a profile instance.
+     */
+    getProfile: function(name) {
+        name = Ext.app.Controller.getFullName(name, &#39;profile&#39;, this.$namespace);
+        return name;
+    },
+
+<span id='Ext-app-Controller-method-getView'>    /**
+</span>     * Returns a View class with the given name.  To create an instance of the view,
+     * you can use it like it&#39;s used by Application to create the Viewport:
+     *
+     *     this.getView(&#39;Viewport&#39;).create();
+     *
+     * @param {String} view
+     *
+     * @return {Ext.Base} a view class.
+     */
+    getView: function(view) {
+        var name = Ext.app.Controller.getFullName(view, &#39;view&#39;, this.$namespace);
+        return name &amp;&amp; Ext.ClassManager.get(name.absoluteName);
+    },
+
+<span id='Ext-app-Controller-method-destroy'>    /**
+</span>     * @inheritdoc
+     * @param destroyRefs (private)
+     * @param fromApp (private)
+     */
+    destroy: function(destroyRefs, fromApp) {
+        var me = this,
+            app = me.application,
+            refCache, ref;
+
+        if (!fromApp &amp;&amp; app) {
+            app.unregister(me);
+        }
+        
+        me.application = null;
+        
+        if (destroyRefs) {
+            // Possible destroy stores here too?
+            refCache = me.refCache;
+            for (ref in refCache) {
+                if (refCache.hasOwnProperty(ref)) {
+                    Ext.destroy(refCache[ref]);
+                }
+            }
+        }
+        me.callParent();
+    }
+});
+</pre>
+</body>
+</html>

@@ -1,0 +1,519 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <title>The source code</title>
+  <link href="../resources/prettify/prettify.css" type="text/css" rel="stylesheet" />
+  <script type="text/javascript" src="../resources/prettify/prettify.js"></script>
+  <style type="text/css">
+    .highlight { display: block; background-color: #ddd; }
+  </style>
+  <script type="text/javascript">
+    function highlight() {
+      document.getElementById(location.hash.replace(/#/, "")).className = "highlight";
+    }
+  </script>
+</head>
+<body onload="prettyPrint(); highlight();">
+  <pre class="prettyprint lang-js">/* Copyright (c) 2015-2017 The Open Source Geospatial Foundation
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see &lt;http://www.gnu.org/licenses/&gt;.
+ */
+<span id='GeoExt-component-Map'>/**
+</span> * A component that renders an `ol.Map` and that can be used in any ExtJS
+ * layout.
+ *
+ * An example: A map component rendered insiide of a panel:
+ *
+ *     @example preview
+ *     var mapComponent = Ext.create('GeoExt.component.Map', {
+ *         map: new ol.Map({
+ *             layers: [
+ *                 new ol.layer.Tile({
+ *                     source: new ol.source.OSM()
+ *                 })
+ *             ],
+ *             view: new ol.View({
+ *                 center: ol.proj.fromLonLat([-8.751278, 40.611368]),
+ *                 zoom: 12
+ *             })
+ *         })
+ *     });
+ *     var mapPanel = Ext.create('Ext.panel.Panel', {
+ *         title: 'GeoExt.component.Map Example',
+ *         height: 200,
+ *         items: [mapComponent],
+ *         renderTo: Ext.getBody()
+ *     });
+ *
+ * @class GeoExt.component.Map
+ */
+Ext.define('GeoExt.component.Map', {
+    extend: 'Ext.Component',
+    alias: [
+        'widget.gx_map',
+        'widget.gx_component_map'
+    ],
+    requires: [
+        'GeoExt.data.store.Layers'
+    ],
+    mixins: [
+        'GeoExt.mixin.SymbolCheck'
+    ],
+
+<span id='GeoExt-component-Map-property-symbols'>    // &lt;debug&gt;
+</span>    symbols: [
+        'ol.layer.Base',
+        'ol.Map',
+        'ol.Map#addLayer',
+        'ol.Map#getLayers',
+        'ol.Map#getSize',
+        'ol.Map#getView',
+        'ol.Map#removeLayer',
+        'ol.Map#setTarget',
+        'ol.Map#setView',
+        'ol.Map#updateSize',
+        'ol.View',
+        'ol.View#calculateExtent',
+        'ol.View#fit',
+        'ol.View#getCenter',
+        'ol.View#setCenter'
+    ],
+    // &lt;/debug&gt;
+
+<span id='GeoExt-component-Map-event-pointerrest'>    /**
+</span>     * @event pointerrest
+     *
+     * Fires if the user has left the pointer for an amount
+     * of #pointerRestInterval milliseconds at the *same location*. Use the
+     * configuration #pointerRestPixelTolerance to configure how long a pixel is
+     * considered to be on the *same location*.
+     *
+     * Please note that this event will only fire if the map has #pointerRest
+     * configured with `true`.
+     *
+     * @param {ol.MapBrowserEvent} olEvt The original and most recent
+     *     MapBrowserEvent event.
+     * @param {ol.Pixel} lastPixel The originally captured pixel, which defined
+     *     the center of the tolerance bounds (itself configurable with the the
+     *     configuration #pointerRestPixelTolerance). If this is null, a
+     *     completely *new* pointerrest event just happened.
+     */
+
+<span id='GeoExt-component-Map-event-pointerrestout'>    /**
+</span>     * @event pointerrestout
+     *
+     * Fires if the user first was resting his pointer on the map element, but
+     * then moved the pointer out of the map completely.
+     *
+     * Please note that this event will only fire if the map has #pointerRest
+     * configured with `true`.
+     *
+     * @param {ol.MapBrowserEvent} olEvt The MapBrowserEvent event.
+     */
+
+    config: {
+<span id='GeoExt-component-Map-cfg-map'>        /**
+</span>         * A configured map or a configuration object for the map constructor.
+         *
+         * @cfg {ol.Map} map
+         */
+        map: null,
+
+<span id='GeoExt-component-Map-cfg-pointerRest'>        /**
+</span>         * A boolean flag to control whether the map component will fire the
+         * events #pointerrest and #pointerrestout. If this is set to `false`
+         * (the default), no such events will be fired.
+         *
+         * @cfg {Boolean} pointerRest Whether the component shall provide the
+         *     `pointerrest` and `pointerrestout` events.
+         */
+        pointerRest: false,
+
+<span id='GeoExt-component-Map-cfg-pointerRestInterval'>        /**
+</span>         * The amount of milliseconds after which we will consider a rested
+         * pointer as `pointerrest`. Only relevant if #pointerRest is `true`.
+         *
+         * @cfg {Number} pointerRestInterval The interval in milliseconds.
+         */
+        pointerRestInterval: 1000,
+
+<span id='GeoExt-component-Map-cfg-pointerRestPixelTolerance'>        /**
+</span>         * The amount of pixels that a pointer may move in both vertical and
+         * horizontal direction, and still be considered to be a #pointerrest.
+         * Only relevant if #pointerRest is `true`.
+         *
+         * @cfg {Number} pointerRestPixelTolerance The tolerance in pixels.
+         */
+        pointerRestPixelTolerance: 3
+    },
+
+<span id='GeoExt-component-Map-property-mapRendered'>    /**
+</span>     * Whether we already rendered an ol.Map in this component. Will be
+     * updated in #onResize, after the first rendering happened.
+     *
+     * @property {Boolean} mapRendered
+     * @private
+     */
+    mapRendered: false,
+
+<span id='GeoExt-component-Map-property-layerStore'>    /**
+</span>     * @property {GeoExt.data.store.Layers} layerStore
+     * @private
+     */
+    layerStore: null,
+
+<span id='GeoExt-component-Map-property-lastPointerPixel'>    /**
+</span>     * The location of the last mousemove which we track to be able to fire
+     * the #pointerrest event. Only usable if #pointerRest is `true`.
+     *
+     * @property {ol.Pixel} lastPointerPixel
+     * @private
+     */
+    lastPointerPixel: null,
+
+<span id='GeoExt-component-Map-property-isMouseOverMapEl'>    /**
+</span>     * Whether the pointer is currently over the map component. Only usable if
+     * the configuration #pointerRest is `true`.
+     *
+     * @property {Boolean} isMouseOverMapEl
+     * @private
+     */
+    isMouseOverMapEl: null,
+
+<span id='GeoExt-component-Map-method-constructor'>    /**
+</span>     * @inheritdoc
+     */
+    constructor: function(config) {
+        var me = this;
+
+        me.callParent([config]);
+
+        if (!(me.getMap() instanceof ol.Map)) {
+            var olMap = new ol.Map({
+                view: new ol.View({
+                    center: [0, 0],
+                    zoom: 2
+                })
+            });
+            me.setMap(olMap);
+        }
+
+        me.layerStore = Ext.create('GeoExt.data.store.Layers', {
+            storeId: me.getId() + '-store',
+            map: me.getMap()
+        });
+
+        me.on('resize', me.onResize, me);
+    },
+
+<span id='GeoExt-component-Map-method-onResize'>    /**
+</span>     * (Re-)render the map when size changes.
+     */
+    onResize: function() {
+        // Get the corresponding view of the controller (the mapComponent).
+        var me = this;
+        if (!me.mapRendered) {
+            var el = me.getTargetEl ? me.getTargetEl() : me.element;
+            me.getMap().setTarget(el.dom);
+            me.mapRendered = true;
+        } else {
+            me.getMap().updateSize();
+        }
+    },
+
+<span id='GeoExt-component-Map-method-bufferedPointerMove'>    /**
+</span>     * Will contain a buffered version of #unbufferedPointerMove, but only if
+     * the configuration #pointerRest is true.
+     *
+     * @private
+     */
+    bufferedPointerMove: Ext.emptyFn,
+
+<span id='GeoExt-component-Map-method-unbufferedPointerMove'>    /**
+</span>     * Bound as a eventlistener for pointermove on the OpenLayers map, but only
+     * if the configuration #pointerRest is true. Will eventually fire the
+     * special events #pointerrest or #pointerrestout.
+     *
+     * @param {ol.MapBrowserEvent} olEvt The MapBrowserEvent event.
+     * @private
+     */
+    unbufferedPointerMove: function(olEvt) {
+        var me = this;
+        var tolerance = me.getPointerRestPixelTolerance();
+        var pixel = olEvt.pixel;
+
+        if (!me.isMouseOverMapEl) {
+            me.fireEvent('pointerrestout', olEvt);
+            return;
+        }
+
+        if (me.lastPointerPixel) {
+            var deltaX = Math.abs(me.lastPointerPixel[0] - pixel[0]);
+            var deltaY = Math.abs(me.lastPointerPixel[1] - pixel[1]);
+            if (deltaX &gt; tolerance || deltaY &gt; tolerance) {
+                me.lastPointerPixel = pixel;
+            } else {
+                // fire pointerrest, and include the original pointer pixel
+                me.fireEvent('pointerrest', olEvt, me.lastPointerPixel);
+                return;
+            }
+        } else {
+            me.lastPointerPixel = pixel;
+        }
+        // a new pointerrest event, the second argument (the 'original' pointer
+        // pixel) must be null, as we start from a totally new position
+        me.fireEvent('pointerrest', olEvt, null);
+    },
+
+<span id='GeoExt-component-Map-method-registerPointerRestEvents'>    /**
+</span>     * Creates #bufferedPointerMove from #unbufferedPointerMove and binds it
+     * to `pointermove` on the OpenLayers map.
+     *
+     * @private
+     */
+    registerPointerRestEvents: function() {
+        var me = this;
+        var map = me.getMap();
+
+        if (me.bufferedPointerMove === Ext.emptyFn) {
+            me.bufferedPointerMove = Ext.Function.createBuffered(
+                me.unbufferedPointerMove,
+                me.getPointerRestInterval(),
+                me
+            );
+        }
+
+        // Check if we have to fire any pointer* events
+        map.on('pointermove', me.bufferedPointerMove);
+
+        if (!me.rendered) {
+            // make sure we do not fire any if the pointer left the component
+            me.on('afterrender', me.bindOverOutListeners, me);
+        } else {
+            me.bindOverOutListeners();
+        }
+
+    },
+
+<span id='GeoExt-component-Map-method-bindOverOutListeners'>    /**
+</span>     * Registers listeners that'll take care of setting #isMouseOverMapEl to
+     * correct values.
+     *
+     * @private
+     */
+    bindOverOutListeners: function() {
+        var me = this;
+        var mapEl = me.getTargetEl ? me.getTargetEl() : me.element;
+        if (mapEl) {
+            mapEl.on({
+                mouseover: me.onMouseOver,
+                mouseout: me.onMouseOut,
+                scope: me
+            });
+        }
+    },
+
+<span id='GeoExt-component-Map-method-unbindOverOutListeners'>    /**
+</span>     * Unregisters listeners that'll take care of setting #isMouseOverMapEl to
+     * correct values.
+     *
+     * @private
+     */
+    unbindOverOutListeners: function() {
+        var me = this;
+        var mapEl = me.getTargetEl ? me.getTargetEl() : me.element;
+        if (mapEl) {
+            mapEl.un({
+                mouseover: me.onMouseOver,
+                mouseout: me.onMouseOut,
+                scope: me
+            });
+        }
+    },
+
+<span id='GeoExt-component-Map-method-onMouseOver'>    /**
+</span>     * Sets isMouseOverMapEl to true, see #pointerRest.
+     *
+     * @private
+     */
+    onMouseOver: function() {
+        this.isMouseOverMapEl = true;
+    },
+
+<span id='GeoExt-component-Map-method-onMouseOut'>    /**
+</span>     * Sets isMouseOverMapEl to false, see #pointerRest.
+     *
+     * @private
+     */
+    onMouseOut: function() {
+        this.isMouseOverMapEl = false;
+    },
+
+<span id='GeoExt-component-Map-method-unregisterPointerRestEvents'>    /**
+</span>     * Unregisters the #bufferedPointerMove event listener and unbinds the
+     * over- and out-listeners.
+     */
+    unregisterPointerRestEvents: function() {
+        var me = this;
+        var map = me.getMap();
+        me.unbindOverOutListeners();
+        if (map) {
+            map.un('pointermove', me.bufferedPointerMove);
+        }
+        me.bufferedPointerMove = Ext.emptyFn;
+    },
+
+<span id='GeoExt-component-Map-method-applyPointerRest'>    /**
+</span>     * Whenever the value of #pointerRest is changed, this method will take
+     * care of registering or unregistering internal event listeners.
+     *
+     * @param {Boolean} val The new value that someone set for `pointerRest`.
+     * @return {Boolean} The passed new value for `pointerRest` unchanged.
+     */
+    applyPointerRest: function(val) {
+        if (val) {
+            this.registerPointerRestEvents();
+        } else {
+            this.unregisterPointerRestEvents();
+        }
+        return val;
+    },
+
+<span id='GeoExt-component-Map-method-applyPointerRestInterval'>    /**
+</span>     * Whenever the value of #pointerRestInterval is changed, this method will
+     * take to reinitialize the #bufferedPointerMove method and handlers to
+     * actually trigger the event.
+     *
+     * @param {Boolean} val The new value that someone set for
+     *     `pointerRestInterval`.
+     * @return {Boolean} The passed new value for `pointerRestInterval`
+     *     unchanged.
+     */
+    applyPointerRestInterval: function(val) {
+        var me = this;
+        var isEnabled = me.getPointerRest();
+        if (isEnabled) {
+            // Toggle to rebuild the buffered pointer move.
+            me.setPointerRest(false);
+            me.setPointerRest(isEnabled);
+        }
+        return val;
+    },
+
+<span id='GeoExt-component-Map-method-getCenter'>    /**
+</span>     * Returns the center coordinate of the view.
+     *
+     * @return {ol.Coordinate} The center of the map view as `ol.Coordinate`.
+     */
+    getCenter: function() {
+        return this.getMap().getView().getCenter();
+    },
+
+<span id='GeoExt-component-Map-method-setCenter'>    /**
+</span>     * Set the center of the view.
+     *
+     * @param {ol.Coordinate} center The new center as `ol.Coordinate`.
+     */
+    setCenter: function(center) {
+        this.getMap().getView().setCenter(center);
+    },
+
+<span id='GeoExt-component-Map-method-getExtent'>    /**
+</span>     * Returns the extent of the current view.
+     *
+     * @return {ol.Extent} The extent of the map view as `ol.Extent`.
+     */
+    getExtent: function() {
+        return this.getView().calculateExtent(this.getMap().getSize());
+    },
+
+<span id='GeoExt-component-Map-method-setExtent'>    /**
+</span>     * Set the extent of the view.
+     *
+     * @param {ol.Extent} extent The extent as `ol.Extent`.
+     */
+    setExtent: function(extent) {
+        this.getView().fit(extent, this.getMap().getSize());
+    },
+
+<span id='GeoExt-component-Map-method-getLayers'>    /**
+</span>     * Returns the layers of the map.
+     *
+     * @return {ol.Collection} The layer collection.
+     */
+    getLayers: function() {
+        return this.getMap().getLayers();
+    },
+
+<span id='GeoExt-component-Map-method-addLayer'>    /**
+</span>     * Add a layer to the map.
+     *
+     * @param {ol.layer.Base} layer The layer to add.
+     */
+    addLayer: function(layer) {
+        if (layer instanceof ol.layer.Base) {
+            this.getMap().addLayer(layer);
+        } else {
+            Ext.Error.raise('Can not add layer ' + layer + ' as it is not ' +
+                'an instance of ol.layer.Base');
+        }
+    },
+
+<span id='GeoExt-component-Map-method-removeLayer'>    /**
+</span>     * Remove a layer from the map.
+     *
+     * @param {ol.layer.Base} layer The layer to remove.
+     */
+    removeLayer: function(layer) {
+        if (layer instanceof ol.layer.Base) {
+            if (Ext.Array.contains(this.getLayers().getArray(), layer)) {
+                this.getMap().removeLayer(layer);
+            }
+        } else {
+            Ext.Error.raise('Can not remove layer ' + layer + ' as it is not ' +
+                'an instance of ol.layer.Base');
+        }
+    },
+
+<span id='GeoExt-component-Map-method-getStore'>    /**
+</span>     * Returns the `GeoExt.data.store.Layers`.
+     *
+     * @return {GeoExt.data.store.Layers} The layer store.
+     */
+    getStore: function() {
+        return this.layerStore;
+    },
+
+<span id='GeoExt-component-Map-method-getView'>    /**
+</span>     * Returns the view of the map.
+     *
+     * @return {ol.View} The `ol.View` of the map.
+     */
+    getView: function() {
+        return this.getMap().getView();
+    },
+
+<span id='GeoExt-component-Map-method-setView'>    /**
+</span>     * Set the view of the map.
+     *
+     * @param {ol.View} view The `ol.View` to use for the map.
+     */
+    setView: function(view) {
+        this.getMap().setView(view);
+    }
+});
+</pre>
+</body>
+</html>

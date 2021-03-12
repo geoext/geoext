@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <title>The source code</title>
+  <link href="../resources/prettify/prettify.css" type="text/css" rel="stylesheet" />
+  <script type="text/javascript" src="../resources/prettify/prettify.js"></script>
+  <style type="text/css">
+    .highlight { display: block; background-color: #ddd; }
+  </style>
+  <script type="text/javascript">
+    function highlight() {
+      document.getElementById(location.hash.replace(/#/, "")).className = "highlight";
+    }
+  </script>
+</head>
+<body onload="prettyPrint(); highlight();">
+  <pre class="prettyprint lang-js"><span id='Ext-event-publisher-ElementSize'>/**
+</span> * @private
+ */
+Ext.define('Ext.event.publisher.ElementSize', {
+
+    extend: 'Ext.event.publisher.Publisher',
+
+    requires: [
+        'Ext.util.SizeMonitor'
+    ],
+
+<span id='Ext-event-publisher-ElementSize-property-type'>    type: 'size',
+</span>
+<span id='Ext-event-publisher-ElementSize-property-handledEvents'>    handledEvents: ['resize'],
+</span>
+<span id='Ext-event-publisher-ElementSize-method-constructor'>    constructor: function() {
+</span>        this.monitors = {};
+        this.subscribers = {};
+
+        this.callParent(arguments);
+    },
+
+<span id='Ext-event-publisher-ElementSize-method-subscribe'>    subscribe: function(element) {
+</span>        var id = element.id,
+            subscribers = this.subscribers,
+            monitors = this.monitors;
+
+        if (subscribers[id]) {
+            ++subscribers[id];
+        } else {
+            subscribers[id] = 1;
+
+            monitors[id] = new Ext.util.SizeMonitor({
+                element: element,
+                callback: this.onElementResize,
+                scope: this,
+                args: [element]
+            });
+        }
+
+        element.on('painted', 'forceRefresh', monitors[id]);
+
+        return true;
+    },
+
+<span id='Ext-event-publisher-ElementSize-method-unsubscribe'>    unsubscribe: function(element) {
+</span>        var id = element.id,
+            subscribers = this.subscribers,
+            monitors = this.monitors,
+            sizeMonitor;
+
+        if (subscribers[id] &amp;&amp; !--subscribers[id]) {
+            delete subscribers[id];
+            sizeMonitor = monitors[id];
+            element.un('painted', 'forceRefresh', sizeMonitor);
+            sizeMonitor.destroy();
+            delete monitors[id];
+        }
+    },
+
+<span id='Ext-event-publisher-ElementSize-method-onElementResize'>    onElementResize: function(element, info) {
+</span>        Ext.TaskQueue.requestRead('fire', this, [element, 'resize', [element, info]]);
+    }
+
+<span id='Ext-event-publisher-ElementSize-property-privates'>    //&lt;debug&gt;
+</span>    // This is useful for unit testing so we can force resizes
+    // to take place synchronously when we know they have changed
+    ,privates: {
+        syncRefresh: function(elements) {
+            elements = Ext.Array.from(elements);
+
+            var len = elements.length,
+                i = 0,
+                el, monitor;
+
+            for (i = 0; i &lt; len; ++i) {
+                el = elements[i];
+                if (typeof el !== 'string') {
+                    el = el.id;
+                }
+                monitor = this.monitors[el];
+                if (monitor) {
+                    monitor.forceRefresh();
+                }
+            }
+            Ext.TaskQueue.flush();
+        }
+    }
+    //&lt;/debug&gt;
+}, function(ElementSize) {
+    ElementSize.instance = new ElementSize();
+});
+</pre>
+</body>
+</html>

@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <title>The source code</title>
+  <link href="../resources/prettify/prettify.css" type="text/css" rel="stylesheet" />
+  <script type="text/javascript" src="../resources/prettify/prettify.js"></script>
+  <style type="text/css">
+    .highlight { display: block; background-color: #ddd; }
+  </style>
+  <script type="text/javascript">
+    function highlight() {
+      document.getElementById(location.hash.replace(/#/, "")).className = "highlight";
+    }
+  </script>
+</head>
+<body onload="prettyPrint(); highlight();">
+  <pre class="prettyprint lang-js"><span id='Ext-event-gesture-LongPress'>/**
+</span> * A event recognizer which knows when you tap and hold for more than 1 second.
+ */
+Ext.define(&#39;Ext.event.gesture.LongPress&#39;, {
+    extend: &#39;Ext.event.gesture.SingleTouch&#39;,
+
+<span id='Ext-event-gesture-LongPress-property-priority'>    priority: 400,
+</span>
+    config: {
+<span id='Ext-event-gesture-LongPress-cfg-moveDistance'>        moveDistance: 8,
+</span><span id='Ext-event-gesture-LongPress-cfg-minDuration'>        minDuration: 1000
+</span>    },
+
+<span id='Ext-event-gesture-LongPress-property-handledEvents'>    handledEvents: [&#39;longpress&#39;, &#39;taphold&#39;],
+</span>
+<span id='Ext-dom-Element-event-longpress'>    /**
+</span>     * @member Ext.dom.Element
+     * @event longpress
+     * Fires when you touch and hold still for more than 1 second.
+     * @param {Ext.event.Event} event The {@link Ext.event.Event} event encapsulating the DOM event.
+     * @param {HTMLElement} node The target of the event.
+     * @param {Object} options The options object passed to Ext.mixin.Observable.addListener.
+     */
+
+<span id='Ext-dom-Element-event-taphold'>    /**
+</span>     * @member Ext.dom.Element
+     * @event taphold
+     * @inheritdoc Ext.dom.Element#longpress
+     */
+
+    onTouchStart: function(e) {
+        var me = this,
+            ret = me.callParent([e]);
+
+        if (ret !== false) {
+            me.startPoint = e.changedTouches[0].point;
+            me.setLongPressTimer(e);
+        }
+
+        return ret;
+    },
+
+<span id='Ext-event-gesture-LongPress-method-setLongPressTimer'>    setLongPressTimer: function(e) {
+</span>        var me = this;
+
+        me.timer = Ext.defer(me.fireLongPress, me.getMinDuration(), me, [e]);
+    },
+
+<span id='Ext-event-gesture-LongPress-method-onTouchMove'>    onTouchMove: function(e) {
+</span>        var me = this,
+            point = e.changedTouches[0].point,
+            scale = Ext.Element.getViewportScale(),
+            // account for scale so that move distance is actual screen pixels, not page pixels
+            distance = Math.round(Math.abs(point.getDistanceTo(me.startPoint) * scale));
+
+        if (distance &gt;= me.getMoveDistance()) {
+            return me.cancel(e);
+        }
+    },
+
+<span id='Ext-event-gesture-LongPress-method-reset'>    reset: function() {
+</span>        var me = this;
+
+        clearTimeout(me.timer);
+
+        me.timer = me.startPoint = null;
+
+        return me.callParent();
+    },
+
+<span id='Ext-event-gesture-LongPress-method-fireLongPress'>    fireLongPress: function(e) {
+</span>        var me = this,
+            info = {
+                touch: e.changedTouches[0],
+                duration: me.getMinDuration(),
+                startDrag: me.startDrag
+            };
+
+        this.fire(&#39;taphold&#39;, e, info);
+        this.fire(&#39;longpress&#39;, e, info);
+
+        this.reset();
+    },
+
+<span id='Ext-event-Event-method-startDrag'>    /**
+</span>     * @member Ext.event.Event
+     * @method startDrag
+     *
+     * Initiates a drag gesture in response to this event
+     *
+     * Only available when `type` is `&#39;longpress&#39;`.  When invoked a dragstart event
+     * will be immediately fired at the coordinates of the longpress event.  Thereafter
+     * drag events will fire in response to movement on the screen without regard
+     * to the distance moved.
+     */
+    startDrag: function() {
+        // the longpress event object is decorated with this function, the scope object
+        // here is the event object, not the recognizer
+        var dragRecognizer = Ext.event.gesture.Drag.instance,
+            touchStartEvent = this.parentEvent;
+
+        dragRecognizer.doDragStart(touchStartEvent, true);
+        Ext.event.publisher.Gesture.instance.claimRecognizer(dragRecognizer, touchStartEvent);
+    }
+}, function(LongPress) {
+    var gestures = Ext.manifest.gestures;
+    LongPress.instance = new LongPress(gestures &amp;&amp; gestures.longPress);
+});
+</pre>
+</body>
+</html>

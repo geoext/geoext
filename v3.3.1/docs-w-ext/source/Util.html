@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <title>The source code</title>
+  <link href="../resources/prettify/prettify.css" type="text/css" rel="stylesheet" />
+  <script type="text/javascript" src="../resources/prettify/prettify.js"></script>
+  <style type="text/css">
+    .highlight { display: block; background-color: #ddd; }
+  </style>
+  <script type="text/javascript">
+    function highlight() {
+      document.getElementById(location.hash.replace(/#/, "")).className = "highlight";
+    }
+  </script>
+</head>
+<body onload="prettyPrint(); highlight();">
+  <pre class="prettyprint lang-js"><span id='Ext-app-Util'>/**
+</span> * @private 
+ * @class Ext.app.Util
+ */
+Ext.define(&#39;Ext.app.Util&#39;, {
+}, function() {
+    Ext.apply(Ext.app, {
+        namespaces: {
+            Ext: {}
+        },
+
+<span id='Ext-app-Util-method-addNamespaces'>       /**
+</span>        * Adds namespace(s) to known list.
+        * @private
+        *
+        * @param {String/String[]} namespace
+        */
+        addNamespaces: function(namespace) {
+            var namespaces = Ext.app.namespaces,
+                i, l;
+
+            if (!Ext.isArray(namespace)) {
+                namespace = [namespace];
+            }
+
+            for (i = 0, l = namespace.length; i &lt; l; i++) {
+                namespaces[namespace[i]] = true;
+            }
+        },
+
+<span id='Ext-app-Util-method-clearNamespaces'>       /**
+</span>        * Clear all namespaces from known list.
+        * @private
+        */
+        clearNamespaces: function() {
+            Ext.app.namespaces = {};
+        },
+
+<span id='Ext-app-Util-method-getNamespace'>       /**
+</span>        * Get namespace prefix for a class name.
+        * @private
+        * @param {String} className
+        *
+        * @return {String} Namespace prefix if it&#39;s known, otherwise undefined
+        */
+        getNamespace: function(className) {
+            var namespaces    = Ext.apply({}, Ext.ClassManager.paths, Ext.app.namespaces),
+                deepestPrefix = &#39;&#39;,
+                prefix;
+
+            for (prefix in namespaces) {
+                if (namespaces.hasOwnProperty(prefix)    &amp;&amp;
+                    prefix.length &gt; deepestPrefix.length &amp;&amp;
+                    (prefix + &#39;.&#39; === className.substring(0, prefix.length + 1))) {
+                    deepestPrefix = prefix;
+                }
+            }
+
+            return deepestPrefix === &#39;&#39; ? undefined : deepestPrefix;
+        },
+
+<span id='Ext-app-Util-method-setupPaths'>        /**
+</span>         * Sets up paths based on the `appFolder` and `paths` configs.
+         * @param {String} appName The application name (root namespace).
+         * @param {String} appFolder The folder for app sources (&quot;app&quot; by default).
+         * @param {Object} paths A set of namespace to path mappings.
+         * @private
+         * @since 6.0.0
+         */
+        setupPaths: function (appName, appFolder, paths) {
+            var manifestPaths = Ext.manifest,
+                ns;
+
+            // Ignore appFolder:null
+            if (appName &amp;&amp; appFolder !== null) {
+                manifestPaths = manifestPaths &amp;&amp; manifestPaths.paths;
+
+                // If the manifest has paths, only honor appFolder if defined. If the
+                // manifest has no paths (old school mode), then we want to default an
+                // unspecified appFolder value to &quot;app&quot;. Sencha Cmd will pass in paths
+                // to configure the loader via the &quot;paths&quot; property of the manifest so
+                // we don&#39;t want to try and be &quot;helpful&quot; in that case.
+                if (!manifestPaths || appFolder !== undefined) {
+                    Ext.Loader.setPath(appName, (appFolder === undefined) ? &#39;app&#39; : appFolder);
+                }
+            }
+
+            if (paths) {
+                for (ns in paths) {
+                    if (paths.hasOwnProperty(ns)) {
+                        Ext.Loader.setPath(ns, paths[ns]);
+                    }
+                }
+            }
+        }
+    });
+
+<span id='Ext-method-getNamespace'>    /**
+</span>     * @method getNamespace
+     * @member Ext
+     * @param {String} className
+     *
+     * @return {String} Namespace prefix if it&#39;s known, otherwise undefined
+     */
+    Ext.getNamespace = Ext.app.getNamespace;
+
+});
+</pre>
+</body>
+</html>

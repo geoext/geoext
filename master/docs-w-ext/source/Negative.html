@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <title>The source code</title>
+  <link href="../resources/prettify/prettify.css" type="text/css" rel="stylesheet" />
+  <script type="text/javascript" src="../resources/prettify/prettify.js"></script>
+  <style type="text/css">
+    .highlight { display: block; background-color: #ddd; }
+  </style>
+  <script type="text/javascript">
+    function highlight() {
+      document.getElementById(location.hash.replace(/#/, "")).className = "highlight";
+    }
+  </script>
+</head>
+<body onload="prettyPrint(); highlight();">
+  <pre class="prettyprint lang-js"><span id='Ext-data-identifier-Negative'>/**
+</span> * This class id generator produces successive negative numbers for id's. That is, -1, -2,
+ * etc..
+ *
+ * The advantage of this type of `identifier` is that these are seldom valid server-side
+ * id values (which typically start at 1 and increase from there) but are of the same
+ * data type (integer). This means that these values can typically be deserialized by a
+ * server and then recognized as provisionally generated.
+ */
+Ext.define('Ext.data.identifier.Negative', {
+    extend: 'Ext.data.identifier.Sequential',
+
+    alias: 'data.identifier.negative',
+
+    config: {
+<span id='Ext-data-identifier-Negative-cfg-increment'>        increment: -1,
+</span>
+<span id='Ext-data-identifier-Negative-cfg-seed'>        seed: -1
+</span>    }
+});
+</pre>
+</body>
+</html>

@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <title>The source code</title>
+  <link href="../resources/prettify/prettify.css" type="text/css" rel="stylesheet" />
+  <script type="text/javascript" src="../resources/prettify/prettify.js"></script>
+  <style type="text/css">
+    .highlight { display: block; background-color: #ddd; }
+  </style>
+  <script type="text/javascript">
+    function highlight() {
+      document.getElementById(location.hash.replace(/#/, "")).className = "highlight";
+    }
+  </script>
+</head>
+<body onload="prettyPrint(); highlight();">
+  <pre class="prettyprint lang-js">// @tag dom,core
+
+<span id='Ext-mixin-Identifiable'>/**
+</span> * An Identifiable mixin.
+ * @private
+ */
+Ext.define(&#39;Ext.mixin.Identifiable&#39;, {
+    statics: {
+<span id='Ext-mixin-Identifiable-static-property-uniqueIds'>        uniqueIds: {}
+</span>    },
+
+<span id='Ext-mixin-Identifiable-property-isIdentifiable'>    isIdentifiable: true,
+</span>
+<span id='Ext-mixin-Identifiable-property-mixinId'>    mixinId: &#39;identifiable&#39;,
+</span>
+<span id='Ext-mixin-Identifiable-property-idCleanRegex'>    idCleanRegex: /\.|[^\w\-]/g,
+</span>
+<span id='Ext-mixin-Identifiable-property-defaultIdPrefix'>    defaultIdPrefix: &#39;ext-&#39;,
+</span>
+<span id='Ext-mixin-Identifiable-property-defaultIdSeparator'>    defaultIdSeparator: &#39;-&#39;,
+</span>
+<span id='Ext-mixin-Identifiable-method-getOptimizedId'>    getOptimizedId: function() {
+</span>        return this.id;
+    },
+
+<span id='Ext-mixin-Identifiable-method-getUniqueId'>    getUniqueId: function() {
+</span>        var id = this.id,
+            prototype, separator, xtype, uniqueIds, prefix;
+
+        // Cannot test falsiness. Zero is a valid ID.
+        if (!(id || id === 0)) {
+            prototype = this.self.prototype;
+            separator = this.defaultIdSeparator;
+
+            uniqueIds = Ext.mixin.Identifiable.uniqueIds;
+
+            if (!prototype.hasOwnProperty(&#39;identifiablePrefix&#39;)) {
+                xtype = this.xtype;
+
+                if (xtype) {
+                    prefix = this.defaultIdPrefix + xtype.replace(this.idCleanRegex, separator) + separator;
+                } else if (!(prefix = prototype.$className)) {
+                    prefix = this.defaultIdPrefix + &#39;anonymous&#39; + separator;
+                } else {
+                    prefix = prefix.replace(this.idCleanRegex, separator).toLowerCase() + separator;
+                }
+
+                prototype.identifiablePrefix = prefix;
+            }
+
+            prefix = this.identifiablePrefix;
+
+            if (!uniqueIds.hasOwnProperty(prefix)) {
+                uniqueIds[prefix] = 0;
+            }
+
+            // The double assignment here and in setId is intentional to workaround a JIT 
+            // issue that prevents me.id from being assigned in random scenarios. The issue
+            // occurs on 4th gen iPads and lower, possibly other older iOS devices. See EXTJS-16494.
+            id = this.id = this.id = prefix + (++uniqueIds[prefix]);
+        }
+
+        this.getUniqueId = this.getOptimizedId;
+
+        return id;
+    },
+
+<span id='Ext-mixin-Identifiable-method-setId'>    setId: function(id) {
+</span>        // See getUniqueId()
+        this.id = this.id = id;
+    },
+
+<span id='Ext-mixin-Identifiable-method-getId'>    /**
+</span>     * Retrieves the id of this component. Will autogenerate an id if one has not already been set.
+     * @return {String} id
+     */
+    getId: function() {
+        var id = this.id;
+
+        if (!id) {
+            id = this.getUniqueId();
+        }
+
+        this.getId = this.getOptimizedId;
+
+        return id;
+    }
+});
+</pre>
+</body>
+</html>

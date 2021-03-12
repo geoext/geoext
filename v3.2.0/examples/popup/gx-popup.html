@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Popup Example</title>
+    <link rel="stylesheet" type="text/css" href="../lib/ol/ol.css">
+    <link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/extjs/6.2.0/classic/theme-crisp/resources/theme-crisp-all.css"/>
+
+    <link rel="stylesheet" type="text/css" href="../../resources/css/gx-popup.css">
+    <style>
+    .gx-popup p {
+        padding: 5px 5px 0 5px;
+        border-radius: 7px;
+        background-color: rgba(255,255,255,0.85);
+        border: 3px solid white;
+        margin: 0;
+        text-align: center;
+    }
+    </style>
+</head>
+
+<body>
+
+    <div id='description'>
+        <p>
+            This example shows a simple popup showing the position that was
+            hovered.
+        </p>
+        <p>
+            To achieve this effect, the <code>GeoExt.component.Map</code> is
+            instantiated with <code>pointerRest: true</code>, so that the
+            events <code>pointerrest</code> and <code>pointerout</code> become
+            available. Whenever <code>pointerrest</code> is fired, an instance
+            of <code>GeoExt.panel.Popup</code> is positioned and its HTML
+            updated.
+        </p>
+        <p>
+            Have a look at <a href="gx-popup.js">gx-popup.js</a> to see how this
+            is done.
+        </p>
+    </div>
+
+    <script src="../lib/ol/ol.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/extjs/6.2.0/ext-all.js"></script>
+    <script>
+        Ext.Loader.setConfig({
+            enabled: true,
+            paths: {
+                'GeoExt': '../../src/'
+            }
+        });
+    </script>
+
+    <script src="gx-popup.js"></script>
+</body>
+</html>

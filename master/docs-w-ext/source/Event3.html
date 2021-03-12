@@ -1,0 +1,1176 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <title>The source code</title>
+  <link href="../resources/prettify/prettify.css" type="text/css" rel="stylesheet" />
+  <script type="text/javascript" src="../resources/prettify/prettify.js"></script>
+  <style type="text/css">
+    .highlight { display: block; background-color: #ddd; }
+  </style>
+  <script type="text/javascript">
+    function highlight() {
+      document.getElementById(location.hash.replace(/#/, "")).className = "highlight";
+    }
+  </script>
+</head>
+<body onload="prettyPrint(); highlight();">
+  <pre class="prettyprint lang-js"><span id='Ext-event-Event'>/**
+</span> * Just as {@link Ext.dom.Element} wraps around a native DOM node, {@link Ext.event.Event} wraps the browser's native
+ * event-object normalizing cross-browser differences such as mechanisms to stop event-propagation along with a method
+ * to prevent default actions from taking place.
+ *
+ * Here is a simple example of how you use it:
+ *
+ *     @example preview
+ *     var container = Ext.create('Ext.Container', {
+ *         layout: 'fit',
+ *         renderTo: Ext.getBody(),
+ *         items: [{
+ *             id: 'logger',
+ *             styleHtmlContent: true,
+ *             html: 'Click somewhere!',
+ *             padding: 5
+ *         }]
+ *     });
+ *
+ *     container.getEl().on({
+ *         click: function(e, node) {
+ *             var string = '';
+ *
+ *             string += 'You clicked at: &lt;strong&gt;{ x: ' + e.pageX + ', y: ' + e.pageY + ' }&lt;/strong&gt; &lt;i&gt;(e.pageX &amp; e.pageY)&lt;/i&gt;';
+ *             string += '&lt;hr /&gt;';
+ *             string += 'The HTMLElement you clicked has the className of: &lt;strong&gt;' + e.target.className + '&lt;/strong&gt; &lt;i&gt;(e.target)&lt;/i&gt;';
+ *             string += '&lt;hr /&gt;';
+ *             string += 'The HTMLElement which has the listener has a className of: &lt;strong&gt;' + e.currentTarget.className + '&lt;/strong&gt; &lt;i&gt;(e.currentTarget)&lt;/i&gt;';
+ *
+ *             Ext.getCmp('logger').setHtml(string);
+ *         }
+ *     });
+ *
+ * ## Recognizers
+ *
+ * Ext JS includes many default event recognizers to know when a user interacts with the application.
+ *
+ * For a full list of default recognizers, and more information, please view the {@link Ext.event.gesture.Recognizer} documentation.
+ * 
+ * This class also provides a set of constants for use with key events.  These are useful
+ * for determining if a specific key was pressed, and are available both on instances,
+ * and as static properties of the class.  The following two statements are equivalent:
+ * 
+ *     if (e.getKey() === Ext.event.Event.TAB) {
+ *         // tab key was pressed
+ *     }
+ * 
+ *     if (e.getKey() === e.TAB) {
+ *         // tab key was pressed
+ *     }
+ */
+Ext.define('Ext.event.Event', {
+    alternateClassName: 'Ext.EventObjectImpl',
+
+    requires: [
+        'Ext.util.Point'
+    ],
+
+<span id='Ext-event-Event-property-distance'>    /**
+</span>     * @property {Number} distance
+     * The distance of the event.
+     *
+     * **This is only available when the event type is `swipe` and `pinch`.**
+     */
+
+<span id='Ext-event-Event-property-target'>    /**
+</span>     * @property {HTMLElement} target
+     * The element that fired this event.  For the element whose handlers are currently
+     * being processed, i.e. the element that the event handler was attached to, use
+     * `currentTarget`
+     */
+
+<span id='Ext-event-Event-property-currentTarget'>    /**
+</span>     * @property {HTMLElement} currentTarget
+     * Refers to the element the event handler was attached to, vs the `target`, which is
+     * the actual element that fired the event.  For example, if the event bubbles, the
+     * `target` element may be a descendant of the `currentTarget`, as the event may
+     * have been triggered on the `target` and then bubbled up to the `currentTarget`
+     * where it was handled.
+     */
+
+<span id='Ext-event-Event-property-delegatedTarget'>    /**
+</span>     * @property {HTMLElement} delegatedTarget
+     * Same as `currentTarget`
+     * @deprecated 5.0.0 use {@link #currentTarget} instead.
+     */
+    
+<span id='Ext-event-Event-property-button'>    /**
+</span>     * @property {Number} button
+     * Indicates which mouse button caused the event for mouse events, for example
+     * `mousedown`, `click`, `mouseup`:
+     * - `0` for left button.
+     * - `1` for middle button.
+     * - `2` for right button.
+     *
+     * *Note*: In IE8 &amp; IE9, the `click` event does not provide the button.
+     */
+
+<span id='Ext-event-Event-property-pageX'>    /**
+</span>     * @property {Number} pageX The browsers x coordinate of the event.
+     * Note: this only works in browsers that support pageX on the native browser event
+     * object (pageX is not natively supported in IE9 and earlier).  In Ext JS, for a
+     * cross browser normalized x-coordinate use {@link #getX}
+     */
+
+<span id='Ext-event-Event-property-pageY'>    /**
+</span>     * @property {Number} pageY The browsers y coordinate of the event.
+     * Note: this only works in browsers that support pageY on the native browser event
+     * object (pageY is not natively supported in IE9 and earlier).  In Ext JS, for a
+     * cross browser normalized y-coordinate use {@link #getY}
+     */
+
+<span id='Ext-event-Event-property-ctrlKey'>    /**
+</span>     * @property {Boolean} ctrlKey
+     * True if the control key was down during the event.
+     * In Mac this will also be true when meta key was down.
+     */
+<span id='Ext-event-Event-property-altKey'>    /**
+</span>     * @property {Boolean} altKey
+     * True if the alt key was down during the event.
+     */
+<span id='Ext-event-Event-property-shiftKey'>    /**
+</span>     * @property {Boolean} shiftKey
+     * True if the shift key was down during the event.
+     */
+
+<span id='Ext-event-Event-property-browserEvent'>    /**
+</span>     * @property {Event} browserEvent
+     * The raw browser event which this object wraps.
+     */
+    
+<span id='Ext-event-Event-property-pointerType'>    /**
+</span>     * @property {String} pointerType
+     * The pointer type for this event. May be empty if the event was
+     * not triggered by a pointer. Current available types are:
+     * - `mouse`
+     * - `touch`
+     * - `pen`
+     */
+
+<span id='Ext-event-Event-property-stopped'>    /**
+</span>     * @property {Boolean}
+     * `true` if {@link #stopPropagation} has been called on this instance
+     * @private
+     */
+    stopped: false,
+
+<span id='Ext-event-Event-property-claimed'>    /**
+</span>     * @property {Boolean}
+     * `true` if {@link #claimGesture} has been called on this instance
+     * @private
+     */
+    claimed: false,
+
+<span id='Ext-event-Event-property-defaultPrevented'>    /**
+</span>     * @property {Boolean}
+     * Indicates whether or not {@link #preventDefault preventDefault()} was called on the event.
+     */
+    defaultPrevented: false,
+
+<span id='Ext-event-Event-property-isEvent'>    isEvent: true,
+</span>
+    statics: {
+<span id='Ext-event-Event-static-method-resolveTextNode'>        resolveTextNode: function(node) {
+</span>            return (node &amp;&amp; node.nodeType === 3) ? node.parentNode : node;
+        },
+
+<span id='Ext-event-Event-static-property-pointerEvents'>        /**
+</span>         * @private
+         */
+        pointerEvents: {
+            pointerdown: 1,
+            pointermove: 1,
+            pointerup: 1,
+            pointercancel: 1,
+            pointerover: 1,
+            pointerout: 1,
+            pointerenter: 1,
+            pointerleave: 1,
+            MSPointerDown: 1,
+            MSPointerMove: 1,
+            MSPointerUp: 1,
+            MSPointerOver: 1,
+            MSPointerOut: 1,
+            MSPointerCancel: 1,
+            MSPointerEnter: 1,
+            MSPointerLeave: 1
+        },
+
+<span id='Ext-event-Event-static-property-mouseEvents'>        /**
+</span>         * @private
+         */
+        mouseEvents: {
+            mousedown: 1,
+            mousemove: 1,
+            mouseup: 1,
+            mouseover: 1,
+            mouseout: 1,
+            mouseenter: 1,
+            mouseleave: 1
+        },
+
+<span id='Ext-event-Event-static-property-clickEvents'>        /**
+</span>         * @private
+         * These are tracked separately from mouseEvents because the mouseEvents map
+         * is used by Dom publisher to eliminate duplicate events on devices that fire
+         * multiple kinds of events (mouse, touch, pointer).  Adding click events to the
+         * mouse events map can cause click events to be blocked from firing in some cases.
+         */
+        clickEvents: {
+            click: 1,
+            dblclick: 1
+        },
+
+<span id='Ext-event-Event-static-property-touchEvents'>        /**
+</span>         * @private
+         */
+        touchEvents: {
+            touchstart: 1,
+            touchmove: 1,
+            touchend: 1,
+            touchcancel: 1
+        },
+
+<span id='Ext-event-Event-static-property-focusEvents'>        /**
+</span>         * @private
+         */
+        focusEvents: {
+            focus: 1,
+            blur: 1,
+            focusin: 1,
+            focusout: 1,
+            focusenter: 1,
+            focusleave: 1
+        },
+
+<span id='Ext-event-Event-static-property-pointerTypeMap'>        // msPointerTypes in IE10 are numbers, in the w3c spec they are strings.
+</span>        // this map allows us to normalize the pointerType for an event
+        // http://www.w3.org/TR/pointerevents/#widl-PointerEvent-pointerType
+        // http://msdn.microsoft.com/en-us/library/ie/hh772359(v=vs.85).aspx
+        pointerTypeMap: {
+            2: 'touch',
+            3: 'pen',
+            4: 'mouse',
+            touch: 'touch',
+            pen: 'pen',
+            mouse: 'mouse'
+        },
+
+<span id='Ext-event-Event-static-property-keyFlags'>        keyFlags: {
+</span>            CTRL: 'ctrlKey',
+            CONTROL: 'ctrlKey',
+            ALT: 'altKey',
+            SHIFT: 'shiftKey',
+            CMD: 'metaKey',
+            COMMAND: 'metaKey',
+            CMDORCTRL: Ext.isMac ? 'metaKey' : 'ctrlKey',
+            COMMANDORCONTROL: Ext.isMac ? 'metaKey' : 'ctrlKey',
+            META: 'metaKey'
+        },
+
+<span id='Ext-event-Event-static-property-modifierGlyphs'>        modifierGlyphs: {
+</span>            ctrlKey: '\u2303',
+            altKey: '\u2325',
+            metaKey: Ext.isMac ? '\u2318' : '\u229e',
+            shiftKey: '\u21E7'
+        },
+
+<span id='Ext-event-Event-static-property-specialKeyGlyphs'>        specialKeyGlyphs: {
+</span>            BACKSPACE: '\u232B',
+            TAB: '\u21E5',
+            ENTER: '\u23CE',
+            RETURN: '\u23CE',
+            SPACE: '\u2423',
+            PAGE_UP: '\u21DE',
+            PAGE_DOWN: '\u21DF',
+            END: '\u21F2',
+            HOME: '\u2302',
+            LEFT: '\u2190',
+            UP: '\u2191',
+            RIGHT: '\u2192',
+            DOWN: '\u2193',
+            PRINT_SCREEN: '\u2399',
+            INSERT: '\u2380',
+            DELETE: '\u2326',
+            CONTEXT_MENU: '\u2630'
+        },
+
+<span id='Ext-event-Event-static-method-getKeyId'>        /**
+</span>         * Convert a key specification in the form eg: &quot;CTRL+ALT+DELETE&quot; to the glyph sequence
+         * for use in menu items, eg &quot;⌃⌥⌦&quot;.
+         * @private
+         */
+        getKeyId: function(keyName) {
+            keyName = keyName.toUpperCase();
+
+            var me = this,
+                parts = keyName.split('+'),
+                numModifiers = parts.length - 1,
+                rawKey = parts[numModifiers],
+                result = [],
+                eventFlag, i;
+
+            //&lt;debug&gt;
+            if (!Ext.event.Event[rawKey]) {
+                Ext.raise('Invalid key name: &quot;' + rawKey + '&quot;');
+            }
+            //&lt;/debug&gt;
+
+            for (i = 0; i &lt; numModifiers; i++) {
+                eventFlag = me.keyFlags[parts[i]];
+                //&lt;debug&gt;
+                if (!eventFlag) {
+                    Ext.raise('Invalid key modifier: &quot;' + parts[i] + '&quot;');
+                }
+                //&lt;/debug&gt;
+                result[eventFlag] = true;
+            }
+            if (result.ctrlKey) {
+                result.push(me.modifierGlyphs.ctrlKey)
+            }
+            if (result.altKey) {
+                result.push(me.modifierGlyphs.altKey)
+            }
+            if (result.shiftKey) {
+                result.push(me.modifierGlyphs.shiftKey)
+            }
+            if (result.metaKey) {
+                result.push(me.modifierGlyphs.metaKey)
+            }
+            result.push(this.specialKeyGlyphs[rawKey] || rawKey);
+            return result.join('');
+        }
+    },
+
+<span id='Ext-event-Event-method-constructor'>    constructor: function(event) {
+</span>        var me = this,
+            self = me.self,
+            resolveTextNode = me.self.resolveTextNode,
+            changedTouches = event.changedTouches,
+            // The target object from which to obtain the coordinates (pageX, pageY). For
+            // mouse and pointer events this is simply the event object itself, but touch
+            // events have their coordinates on the &quot;Touch&quot; object(s) instead.
+            coordinateOwner = changedTouches ? changedTouches[0] : event,
+            type = event.type,
+            pointerType, relatedTarget;
+
+        // Do not use event.timeStamp as it is not consistent cross browser (some browsers
+        // use high resolution time stamps, while others use milliseconds)
+        me.timeStamp = me.time = Ext.now();
+
+        me.pageX = coordinateOwner.pageX;
+        me.pageY = coordinateOwner.pageY;
+        me.clientX = coordinateOwner.clientX;
+        me.clientY = coordinateOwner.clientY;
+
+        me.target = me.delegatedTarget = resolveTextNode(event.target);
+        relatedTarget = event.relatedTarget;
+        if (relatedTarget) {
+            // When leaving the document, the relatedTarget can be incorrect in Gecko
+            if (Ext.isGecko &amp;&amp; type === 'dragenter' || type === 'dragleave') {
+                try {
+                    me.relatedTarget = resolveTextNode(relatedTarget);
+                } catch(e) {
+                    me.relatedTarget = null;
+                }
+            } else {
+                me.relatedTarget = resolveTextNode(relatedTarget);
+            }
+        }
+
+        me.browserEvent = me.event = event;
+        me.type = type;
+        // set button to 0 if undefined so that touchstart, touchend, and tap will quack
+        // like left mouse button mousedown mouseup, and click
+        me.button = event.button || 0;
+        me.shiftKey = event.shiftKey;
+        // mac metaKey behaves like ctrlKey
+        me.ctrlKey = event.ctrlKey || event.metaKey || false;
+        me.altKey = event.altKey;
+        me.charCode = event.charCode;
+        me.keyCode = event.keyCode;
+
+        me.buttons = event.buttons;
+        // When invoking synthetic events, current APIs do not
+        // have the ability to specify the buttons config, which
+        // defaults to button. For buttons, 0 means no button
+        // is pressed, whereas for button, 0 means left click.
+        // Normalize that here
+        if (me.button === 0 &amp;&amp; me.buttons === 0) {
+            me.buttons = 1;
+        }
+        
+        if (self.focusEvents[type]) {
+            if (self.forwardTab !== undefined) {
+                me.forwardTab = self.forwardTab;
+            }
+        }
+        else if (type !== 'keydown') {
+            // Normally this property should be cleaned up in keyup handler;
+            // however that one might never come if something prevented default
+            // on the keydown. Make sure the property won't get stuck.
+            delete self.forwardTab;
+        }
+
+        if (self.mouseEvents[type]) {
+            pointerType = 'mouse';
+        } else if (self.clickEvents[type]) {
+            pointerType = self.pointerTypeMap[event.pointerType] || 'mouse';
+        } else if (self.pointerEvents[type]) {
+            pointerType = self.pointerTypeMap[event.pointerType];
+        } else if (self.touchEvents[type]) {
+            pointerType = 'touch';
+        }
+
+        if (pointerType) {
+            me.pointerType = pointerType;
+        }
+
+        // Is this is not the primary touch for PointerEvents (first touch)
+        // or there are multiples touches for Touch Events
+        me.isMultitouch = event.isPrimary === false || (event.touches &amp;&amp; event.touches.length &gt; 1);
+    },
+
+<span id='Ext-event-Event-method-chain'>    /**
+</span>     * Creates a new Event object that is prototype-chained to this event.  Useful for
+     * creating identical events so that certain properties can be changed without
+     * affecting the original event.  For example, translated events have their &quot;type&quot;
+     * corrected in this manner.
+     * @param {Object} props properties to set on the chained event
+     * @private
+     */
+    chain: function(props) {
+        var e = Ext.Object.chain(this);
+        e.parentEvent = this; // needed for stopPropagation
+        return Ext.apply(e, props);
+    },
+
+<span id='Ext-event-Event-method-correctWheelDelta'>    /**
+</span>     * Correctly scales a given wheel delta.
+     * @param {Number} delta The delta value.
+     * @private
+     */
+    correctWheelDelta: function (delta) {
+        var scale = this.WHEEL_SCALE,
+            ret = Math.round(delta / scale);
+
+        if (!ret &amp;&amp; delta) {
+            ret = (delta &lt; 0) ? -1 : 1; // don't allow non-zero deltas to go to zero!
+        }
+
+        return ret;
+    },
+
+<span id='Ext-event-Event-method-getCharCode'>    /**
+</span>     * Gets the character code for the event.
+     * @return {Number}
+     */
+    getCharCode: function(){
+        return this.charCode || this.keyCode;
+    },
+
+<span id='Ext-event-Event-method-getKey'>    /**
+</span>     * Returns a normalized keyCode for the event.
+     * @return {Number} The key code
+     */
+    getKey: function(){
+        return this.keyCode || this.charCode;
+    },
+    
+<span id='Ext-event-Event-method-getKeyName'>    /**
+</span>     * Returns the name of the keyCode for the event.
+     * @return {String} The key name
+     */
+    getKeyName: function() {
+        return this.keyCodes[this.keyCode];
+    },
+    
+<span id='Ext-event-Event-method-getPoint'>    /**
+</span>     * Returns a point object that consists of the object coordinates.
+     * @return {Ext.util.Point} point
+     */
+    getPoint: function(){
+        var me = this,
+            point = me.point,
+            xy;
+
+        if (!point) {
+            xy = me.getXY();
+            point = me.point = new Ext.util.Point(xy[0], xy[1]);
+        }
+
+        return point;
+    },
+
+<span id='Ext-event-Event-method-getRelatedTarget'>    /**
+</span>     * Gets the related target.
+     * @param {String} [selector] A simple selector to filter the target or look for an
+     * ancestor of the target. See {@link Ext.dom.Query} for information about simple
+     * selectors.
+     * @param {Number/HTMLElement} [maxDepth] The max depth to search as a number or
+     * element (defaults to 10 || document.body).
+     * @param {Boolean} [returnEl] `true` to return a Ext.Element object instead of DOM
+     * node.
+     * @return {HTMLElement}
+     */
+    getRelatedTarget: function(selector, maxDepth, returnEl){
+        var relatedTarget = this.relatedTarget,
+            target = null;
+
+        // In some cases in IE10/11, when the mouse is leaving the document over a scrollbar
+        // the relatedTarget will be an empty object literal. So just check we have an element
+        // looking object here before we proceed.
+        if (relatedTarget &amp;&amp; relatedTarget.nodeType) {
+            if (selector) {
+                target = Ext.fly(relatedTarget).findParent(selector, maxDepth, returnEl);
+            } else {
+                target = returnEl ? Ext.get(relatedTarget) : relatedTarget;
+            }
+        }
+        return target;
+    },
+
+<span id='Ext-event-Event-method-getTarget'>    /**
+</span>     * Gets the target for the event.
+     * @param {String} selector (optional) A simple selector to filter the target or look
+     * for an ancestor of the target
+     * @param {Number/Mixed} [maxDepth=10||document.body] (optional) The max depth to
+     * search as a number or element (defaults to 10 || document.body)
+     * @param {Boolean} returnEl (optional) `true` to return a Ext.Element object instead
+     * of DOM node.
+     * @return {HTMLElement}
+     */
+    getTarget: function(selector, maxDepth, returnEl) {
+        return selector ? Ext.fly(this.target).findParent(selector, maxDepth, returnEl) :
+            (returnEl ? Ext.get(this.target) : this.target);
+    },
+
+<span id='Ext-event-Event-method-getTime'>    /**
+</span>     * Returns the time of the event.
+     * @return {Date}
+     */
+    getTime: function() {
+        return this.time;
+    },
+
+<span id='Ext-event-Event-method-getWheelDelta'>    /**
+</span>     * Normalizes mouse wheel y-delta across browsers. To get x-delta information, use
+     * {@link #getWheelDeltas} instead.
+     * @return {Number} The mouse wheel y-delta
+     */
+    getWheelDelta: function(){
+        var deltas = this.getWheelDeltas();
+
+        return deltas.y;
+    },
+
+<span id='Ext-event-Event-method-getWheelDeltas'>    /**
+</span>     * Returns the mouse wheel deltas for this event.
+     * @return {Object} An object with &quot;x&quot; and &quot;y&quot; properties holding the mouse wheel deltas.
+     */
+    getWheelDeltas: function () {
+        var me = this,
+            event = me.browserEvent,
+            dx = 0, dy = 0; // the deltas
+
+        if (Ext.isDefined(event.wheelDeltaX)) { // WebKit and Edge have both dimensions
+            dx = event.wheelDeltaX;
+            dy = event.wheelDeltaY;
+        } else if (event.wheelDelta) { // old WebKit and IE
+            dy = event.wheelDelta;
+        } else if ('deltaX' in event) { // IE11
+            dx = event.deltaX;
+            dy = -event.deltaY; // backwards
+        } else if (event.detail) { // Gecko
+            dy = -event.detail; // gecko is backwards
+
+            // Gecko sometimes returns really big values if the user changes settings to
+            // scroll a whole page per scroll
+            if (dy &gt; 100) {
+                dy = 3;
+            } else if (dy &lt; -100) {
+                dy = -3;
+            }
+
+            // Firefox 3.1 adds an axis field to the event to indicate direction of
+            // scroll.  See https://developer.mozilla.org/en/Gecko-Specific_DOM_Events
+            if (Ext.isDefined(event.axis) &amp;&amp; event.axis === event.HORIZONTAL_AXIS) {
+                dx = dy;
+                dy = 0;
+            }
+        }
+
+        return {
+            x: me.correctWheelDelta(dx),
+            y: me.correctWheelDelta(dy)
+        };
+    },
+
+<span id='Ext-event-Event-method-getX'>    /**
+</span>     * Gets the x coordinate of the event.
+     * @return {Number}
+     */
+    getX: function() {
+        return this.getXY()[0];
+    },
+
+<span id='Ext-event-Event-method-getXY'>    /**
+</span>     * Gets the X and Y coordinates of the event.
+     * @return {Number[]} The xy values like [x, y]
+     */
+    getXY: function() {
+        var me = this,
+            xy = me.xy;
+
+        if (!xy) {
+            xy = me.xy = [me.pageX, me.pageY];
+            //&lt;feature legacyBrowser&gt;
+            var x = xy[0],
+                browserEvent, doc, docEl, body;
+
+            // pageX/pageY not available (undefined, not null), use clientX/clientY instead
+            if (!x &amp;&amp; x !== 0) {
+                browserEvent = me.browserEvent;
+                doc = document;
+                docEl = doc.documentElement;
+                body = doc.body;
+                xy[0] = browserEvent.clientX +
+                    (docEl &amp;&amp; docEl.scrollLeft || body &amp;&amp; body.scrollLeft || 0) -
+                    (docEl &amp;&amp; docEl.clientLeft || body &amp;&amp; body.clientLeft || 0);
+                xy[1] = browserEvent.clientY +
+                    (docEl &amp;&amp; docEl.scrollTop  || body &amp;&amp; body.scrollTop  || 0) -
+                    (docEl &amp;&amp; docEl.clientTop  || body &amp;&amp; body.clientTop  || 0);
+            }
+            //&lt;/feature&gt;
+        }
+
+        return xy;
+    },
+
+<span id='Ext-event-Event-method-getY'>    /**
+</span>     * Gets the y coordinate of the event.
+     * @return {Number}
+     */
+    getY: function() {
+        return this.getXY()[1];
+    },
+
+<span id='Ext-event-Event-method-hasModifier'>   /**
+</span>    * Returns true if the control, meta, shift or alt key was pressed during this event.
+    * @return {Boolean}
+    */
+    hasModifier: function() {
+        var me = this;
+        return !!(me.ctrlKey || me.altKey || me.shiftKey || me.metaKey);
+    },
+
+<span id='Ext-event-Event-method-isNavKeyPress'>    /**
+</span>     * Checks if the key pressed was a &quot;navigation&quot; key. A navigation key is defined by
+     * these keys:
+     *
+     *  - Page Up
+     *  - Page Down
+     *  - End
+     *  - Home
+     *  - Left
+     *  - Up
+     *  - Right
+     *  - Down
+     *  - Return
+     *  - Tab
+     *  - Esc
+     *
+     * @param {Boolean} [scrollableOnly] Only check navigation keys that can cause
+     * element scrolling by their default action.
+     *
+     * @return {Boolean} `true` if the press is a navigation keypress
+     */
+    isNavKeyPress: function(scrollableOnly) {
+        var me = this,
+            k = me.keyCode,
+            isKeyPress = me.type === 'keypress';
+
+        // See specs for description of behaviour
+        return ((!isKeyPress || Ext.isGecko) &amp;&amp; k &gt;= 33 &amp;&amp; k &lt;= 40) ||  // Page Up/Down, End, Home, Left, Up, Right, Down
+               (!scrollableOnly &amp;&amp;
+               (k === me.RETURN ||
+                k === me.TAB ||
+                k === me.ESC));
+    },
+
+<span id='Ext-event-Event-method-isSpecialKey'>    /**
+</span>     * Checks if the key pressed was a &quot;special&quot; key. A special key is defined as one of
+     * these keys:
+     *
+     *  - Page Up
+     *  - Page Down
+     *  - End
+     *  - Home
+     *  - Left arrow
+     *  - Up arrow
+     *  - Right arrow
+     *  - Down arrow
+     *  - Return
+     *  - Tab
+     *  - Esc
+     *  - Backspace
+     *  - Delete
+     *  - Shift
+     *  - Ctrl
+     *  - Alt
+     *  - Pause
+     *  - Caps Lock
+     *  - Print Screen
+     *  - Insert
+     *
+     * @return {Boolean} `true` if the key for this event is special
+     */
+    isSpecialKey: function() {
+        var me = this,
+            k = me.keyCode,
+            isGecko = Ext.isGecko,
+            isKeyPress = me.type === 'keypress';
+        
+        // See specs for description of behaviour
+        return (isGecko &amp;&amp; isKeyPress &amp;&amp; me.charCode === 0) ||
+               (this.isNavKeyPress()) ||
+               (k === me.BACKSPACE) ||
+               (k === me.ENTER) ||
+               (k &gt;= 16 &amp;&amp; k &lt;= 20) ||              // Shift, Ctrl, Alt, Pause, Caps Lock
+               ((!isKeyPress || isGecko) &amp;&amp; k &gt;= 44 &amp;&amp; k &lt;= 46); // Print Screen, Insert, Delete
+    },
+
+<span id='Ext-event-Event-method-makeUnpreventable'>    makeUnpreventable: function() {
+</span>        this.browserEvent.preventDefault = Ext.emptyFn;
+    },
+
+<span id='Ext-event-Event-method-preventDefault'>    /**
+</span>     * Prevents the browsers default handling of the event.
+     * @chainable
+     */
+    preventDefault: function() {
+        var me = this,
+            parentEvent = me.parentEvent;
+
+        me.defaultPrevented = true;
+
+        // if the event was created by prototype-chaining a new object to an existing event
+        // instance, we need to make sure the parent event is defaultPrevented as well.
+        if (parentEvent) {
+            parentEvent.defaultPrevented = true;
+        }
+
+        me.browserEvent.preventDefault();
+
+        return me;
+    },
+
+<span id='Ext-event-Event-method-setCurrentTarget'>    setCurrentTarget: function(target) {
+</span>        this.currentTarget = this.delegatedTarget = target;
+    },
+
+<span id='Ext-event-Event-method-stopEvent'>    /**
+</span>     * Stop the event (`{@link #preventDefault}` and `{@link #stopPropagation}`).
+     * @chainable
+     */
+    stopEvent: function() {
+        return this.preventDefault().stopPropagation();
+    },
+
+<span id='Ext-event-Event-method-stopPropagation'>    /**
+</span>     * Cancels bubbling of the event.
+     * @chainable
+     */
+    stopPropagation: function() {
+        var me = this,
+            browserEvent = me.browserEvent,
+            parentEvent = me.parentEvent;
+
+        // Set stopped for delegated event listeners.  Dom publisher will check this
+        // property during its emulated propagation phase (see doPublish)
+        me.stopped = true;
+
+        // if the event was created by prototype-chaining a new object to an existing event
+        // instance, we need to make sure the parent event is stopped.  This feature most
+        // likely comes into play when dealing with event translation.  For example on touch
+        // browsers addListener('mousedown') actually attaches a 'touchstart' listener behind
+        // the scenes.  When the 'touchstart' event is dispatched, the event system will
+        // create a &quot;chained&quot; copy of the event object before correcting its type back to
+        // 'mousedown' and calling the handler.  When propagating the event we look at the
+        // original event, not the chained one to determine if propagation should continue,
+        // so the stopped property must be set on the parentEvent or stopPropagation
+        // will not work.
+        if (parentEvent &amp;&amp; !me.isGesture) {
+            parentEvent.stopped = true;
+        }
+
+        //&lt;feature legacyBrowser&gt;
+        if (!browserEvent.stopPropagation) {
+            // IE &lt; 10 does not have stopPropagation()
+            browserEvent.cancelBubble = true;
+            return me;
+        }
+        //&lt;/feature&gt;
+
+        // For non-delegated event listeners (those that are directly attached to the
+        // DOM element) we need to call the browserEvent's stopPropagation() method.
+        browserEvent.stopPropagation();
+
+        return me;
+    },
+
+<span id='Ext-event-Event-method-claimGesture'>    /**
+</span>     * Claims this event as the currently active gesture.  Once a gesture is claimed
+     * no other gestures will fire events until after the current gesture has completed.
+     * For example, if `claimGesture()` is invoked on a dragstart or drag event, no
+     * swipestart or swipe events will be fired until the drag gesture completes, even if
+     * the gesture also meets the required duration and distance requirements to be recognized
+     * as a swipe.
+     *
+     * If `claimGesture()` is invoked on a mouse, touch, or pointer event, it will disable
+     * all gesture events until termination of the current gesture is indicated by a
+     * mouseup, touchend, or pointerup event.
+     *
+     * @return {Ext.event.Event}
+     */
+    claimGesture: function() {
+        var me = this,
+            parentEvent = me.parentEvent;
+
+        me.claimed = true;
+
+        if (parentEvent &amp;&amp; !me.hasOwnProperty('isGesture')) {
+            parentEvent.claimGesture();
+        } else {
+            // Claiming a gesture should also prevent default browser actions like pan/zoom
+            // if possible (only works on browsers that support touch events - browsers that
+            // use pointer events must declare a CSS touch-action on elements to prevent the
+            // default touch action from occurring.
+            me.preventDefault();
+        }
+
+        return me;
+    },
+
+<span id='Ext-event-Event-method-within'>    /**
+</span>     * Returns true if the target of this event is a child of `el`.  Unless the allowEl
+     * parameter is set, it will return false if if the target is `el`.
+     * Example usage:
+     * 
+     *     // Handle click on any child of an element
+     *     Ext.getBody().on('click', function(e){
+     *         if(e.within('some-el')){
+     *             alert('Clicked on a child of some-el!');
+     *         }
+     *     });
+     * 
+     *     // Handle click directly on an element, ignoring clicks on child nodes
+     *     Ext.getBody().on('click', function(e,t){
+     *         if((t.id == 'some-el') &amp;&amp; !e.within(t, true)){
+     *             alert('Clicked directly on some-el!');
+     *         }
+     *     });
+     * 
+     * @param {String/HTMLElement/Ext.dom.Element} el The id, DOM element or Ext.Element to check
+     * @param {Boolean} [related] `true` to test if the related target is within el instead
+     * of the target
+     * @param {Boolean} [allowEl] `true` to also check if the passed element is the target
+     * or related target
+     * @return {Boolean}
+     */
+    within: function(el, related, allowEl){
+        var t;
+        if (el) {
+            t = related ? this.getRelatedTarget() : this.getTarget();
+        }
+
+        return t ? Ext.fly(el).contains(t) || !!(allowEl &amp;&amp; t === Ext.getDom(el)) : false;
+    },
+
+<span id='Ext-event-Event-property-deprecated'>    deprecated: {
+</span>        '4.0': {
+            methods: {
+
+<span id='Ext-event-Event-method-getPageX'>                /**
+</span>                 * Gets the x coordinate of the event.
+                 * @return {Number}
+                 * @deprecated 4.0 use {@link #getX} instead
+                 */
+                getPageX: 'getX',
+                
+<span id='Ext-event-Event-method-getPageY'>                /**
+</span>                 * Gets the y coordinate of the event.
+                 * @return {Number}
+                 * @deprecated 4.0 use {@link #getY} instead
+                 */
+                getPageY: 'getY'
+            }
+        }
+    }
+}, function(Event) {
+    var prototype = Event.prototype,
+        constants = {
+<span id='Ext-event-Event-property-BACKSPACE'>        /** Key constant @type Number */
+</span>        BACKSPACE: 8,
+<span id='Ext-event-Event-property-TAB'>        /** Key constant @type Number */
+</span>        TAB: 9,
+<span id='Ext-event-Event-property-NUM_CENTER'>        /** Key constant @type Number */
+</span>        NUM_CENTER: 12,
+<span id='Ext-event-Event-property-ENTER'>        /** Key constant @type Number */
+</span>        ENTER: 13,
+<span id='Ext-event-Event-property-RETURN'>        /** Key constant @type Number */
+</span>        RETURN: 13,
+<span id='Ext-event-Event-property-SHIFT'>        /** Key constant @type Number */
+</span>        SHIFT: 16,
+<span id='Ext-event-Event-property-CTRL'>        /** Key constant @type Number */
+</span>        CTRL: 17,
+<span id='Ext-event-Event-property-ALT'>        /** Key constant @type Number */
+</span>        ALT: 18,
+<span id='Ext-event-Event-property-PAUSE'>        /** Key constant @type Number */
+</span>        PAUSE: 19,
+<span id='Ext-event-Event-property-CAPS_LOCK'>        /** Key constant @type Number */
+</span>        CAPS_LOCK: 20,
+<span id='Ext-event-Event-property-ESC'>        /** Key constant @type Number */
+</span>        ESC: 27,
+<span id='Ext-event-Event-property-SPACE'>        /** Key constant @type Number */
+</span>        SPACE: 32,
+<span id='Ext-event-Event-property-PAGE_UP'>        /** Key constant @type Number */
+</span>        PAGE_UP: 33,
+<span id='Ext-event-Event-property-PAGE_DOWN'>        /** Key constant @type Number */
+</span>        PAGE_DOWN: 34,
+<span id='Ext-event-Event-property-END'>        /** Key constant @type Number */
+</span>        END: 35,
+<span id='Ext-event-Event-property-HOME'>        /** Key constant @type Number */
+</span>        HOME: 36,
+<span id='Ext-event-Event-property-LEFT'>        /** Key constant @type Number */
+</span>        LEFT: 37,
+<span id='Ext-event-Event-property-UP'>        /** Key constant @type Number */
+</span>        UP: 38,
+<span id='Ext-event-Event-property-RIGHT'>        /** Key constant @type Number */
+</span>        RIGHT: 39,
+<span id='Ext-event-Event-property-DOWN'>        /** Key constant @type Number */
+</span>        DOWN: 40,
+<span id='Ext-event-Event-property-PRINT_SCREEN'>        /** Key constant @type Number */
+</span>        PRINT_SCREEN: 44,
+<span id='Ext-event-Event-property-INSERT'>        /** Key constant @type Number */
+</span>        INSERT: 45,
+<span id='Ext-event-Event-property-DELETE'>        /** Key constant @type Number */
+</span>        DELETE: 46,
+<span id='Ext-event-Event-property-ZERO'>        /** Key constant @type Number */
+</span>        ZERO: 48,
+<span id='Ext-event-Event-property-ONE'>        /** Key constant @type Number */
+</span>        ONE: 49,
+<span id='Ext-event-Event-property-TWO'>        /** Key constant @type Number */
+</span>        TWO: 50,
+<span id='Ext-event-Event-property-THREE'>        /** Key constant @type Number */
+</span>        THREE: 51,
+<span id='Ext-event-Event-property-FOUR'>        /** Key constant @type Number */
+</span>        FOUR: 52,
+<span id='Ext-event-Event-property-FIVE'>        /** Key constant @type Number */
+</span>        FIVE: 53,
+<span id='Ext-event-Event-property-SIX'>        /** Key constant @type Number */
+</span>        SIX: 54,
+<span id='Ext-event-Event-property-SEVEN'>        /** Key constant @type Number */
+</span>        SEVEN: 55,
+<span id='Ext-event-Event-property-EIGHT'>        /** Key constant @type Number */
+</span>        EIGHT: 56,
+<span id='Ext-event-Event-property-NINE'>        /** Key constant @type Number */
+</span>        NINE: 57,
+<span id='Ext-event-Event-property-A'>        /** Key constant @type Number */
+</span>        A: 65,
+<span id='Ext-event-Event-property-B'>        /** Key constant @type Number */
+</span>        B: 66,
+<span id='Ext-event-Event-property-C'>        /** Key constant @type Number */
+</span>        C: 67,
+<span id='Ext-event-Event-property-D'>        /** Key constant @type Number */
+</span>        D: 68,
+<span id='Ext-event-Event-property-E'>        /** Key constant @type Number */
+</span>        E: 69,
+<span id='Ext-event-Event-property-F'>        /** Key constant @type Number */
+</span>        F: 70,
+<span id='Ext-event-Event-property-G'>        /** Key constant @type Number */
+</span>        G: 71,
+<span id='Ext-event-Event-property-H'>        /** Key constant @type Number */
+</span>        H: 72,
+<span id='Ext-event-Event-property-I'>        /** Key constant @type Number */
+</span>        I: 73,
+<span id='Ext-event-Event-property-J'>        /** Key constant @type Number */
+</span>        J: 74,
+<span id='Ext-event-Event-property-K'>        /** Key constant @type Number */
+</span>        K: 75,
+<span id='Ext-event-Event-property-L'>        /** Key constant @type Number */
+</span>        L: 76,
+<span id='Ext-event-Event-property-M'>        /** Key constant @type Number */
+</span>        M: 77,
+<span id='Ext-event-Event-property-N'>        /** Key constant @type Number */
+</span>        N: 78,
+<span id='Ext-event-Event-property-O'>        /** Key constant @type Number */
+</span>        O: 79,
+<span id='Ext-event-Event-property-P'>        /** Key constant @type Number */
+</span>        P: 80,
+<span id='Ext-event-Event-property-Q'>        /** Key constant @type Number */
+</span>        Q: 81,
+<span id='Ext-event-Event-property-R'>        /** Key constant @type Number */
+</span>        R: 82,
+<span id='Ext-event-Event-property-S'>        /** Key constant @type Number */
+</span>        S: 83,
+<span id='Ext-event-Event-property-T'>        /** Key constant @type Number */
+</span>        T: 84,
+<span id='Ext-event-Event-property-U'>        /** Key constant @type Number */
+</span>        U: 85,
+<span id='Ext-event-Event-property-V'>        /** Key constant @type Number */
+</span>        V: 86,
+<span id='Ext-event-Event-property-W'>        /** Key constant @type Number */
+</span>        W: 87,
+<span id='Ext-event-Event-property-X'>        /** Key constant @type Number */
+</span>        X: 88,
+<span id='Ext-event-Event-property-Y'>        /** Key constant @type Number */
+</span>        Y: 89,
+<span id='Ext-event-Event-property-Z'>        /** Key constant @type Number */
+</span>        Z: 90,
+<span id='Ext-event-Event-property-CONTEXT_MENU'>        /** Key constant @type Number */
+</span>        CONTEXT_MENU: 93,
+<span id='Ext-event-Event-property-NUM_ZERO'>        /** Key constant @type Number */
+</span>        NUM_ZERO: 96,
+<span id='Ext-event-Event-property-NUM_ONE'>        /** Key constant @type Number */
+</span>        NUM_ONE: 97,
+<span id='Ext-event-Event-property-NUM_TWO'>        /** Key constant @type Number */
+</span>        NUM_TWO: 98,
+<span id='Ext-event-Event-property-NUM_THREE'>        /** Key constant @type Number */
+</span>        NUM_THREE: 99,
+<span id='Ext-event-Event-property-NUM_FOUR'>        /** Key constant @type Number */
+</span>        NUM_FOUR: 100,
+<span id='Ext-event-Event-property-NUM_FIVE'>        /** Key constant @type Number */
+</span>        NUM_FIVE: 101,
+<span id='Ext-event-Event-property-NUM_SIX'>        /** Key constant @type Number */
+</span>        NUM_SIX: 102,
+<span id='Ext-event-Event-property-NUM_SEVEN'>        /** Key constant @type Number */
+</span>        NUM_SEVEN: 103,
+<span id='Ext-event-Event-property-NUM_EIGHT'>        /** Key constant @type Number */
+</span>        NUM_EIGHT: 104,
+<span id='Ext-event-Event-property-NUM_NINE'>        /** Key constant @type Number */
+</span>        NUM_NINE: 105,
+<span id='Ext-event-Event-property-NUM_MULTIPLY'>        /** Key constant @type Number */
+</span>        NUM_MULTIPLY: 106,
+<span id='Ext-event-Event-property-NUM_PLUS'>        /** Key constant @type Number */
+</span>        NUM_PLUS: 107,
+<span id='Ext-event-Event-property-NUM_MINUS'>        /** Key constant @type Number */
+</span>        NUM_MINUS: 109,
+<span id='Ext-event-Event-property-NUM_PERIOD'>        /** Key constant @type Number */
+</span>        NUM_PERIOD: 110,
+<span id='Ext-event-Event-property-NUM_DIVISION'>        /** Key constant @type Number */
+</span>        NUM_DIVISION: 111,
+<span id='Ext-event-Event-property-F1'>        /** Key constant @type Number */
+</span>        F1: 112,
+<span id='Ext-event-Event-property-F2'>        /** Key constant @type Number */
+</span>        F2: 113,
+<span id='Ext-event-Event-property-F3'>        /** Key constant @type Number */
+</span>        F3: 114,
+<span id='Ext-event-Event-property-F4'>        /** Key constant @type Number */
+</span>        F4: 115,
+<span id='Ext-event-Event-property-F5'>        /** Key constant @type Number */
+</span>        F5: 116,
+<span id='Ext-event-Event-property-F6'>        /** Key constant @type Number */
+</span>        F6: 117,
+<span id='Ext-event-Event-property-F7'>        /** Key constant @type Number */
+</span>        F7: 118,
+<span id='Ext-event-Event-property-F8'>        /** Key constant @type Number */
+</span>        F8: 119,
+<span id='Ext-event-Event-property-F9'>        /** Key constant @type Number */
+</span>        F9: 120,
+<span id='Ext-event-Event-property-F10'>        /** Key constant @type Number */
+</span>        F10: 121,
+<span id='Ext-event-Event-property-F11'>        /** Key constant @type Number */
+</span>        F11: 122,
+<span id='Ext-event-Event-property-F12'>        /** Key constant @type Number */
+</span>        F12: 123,
+
+<span id='Ext-event-Event-property-WHEEL_SCALE'>        /**
+</span>         * The mouse wheel delta scaling factor. This value depends on browser version and OS and
+         * attempts to produce a similar scrolling experience across all platforms and browsers.
+         *
+         * To change this value:
+         *
+         *      Ext.event.Event.prototype.WHEEL_SCALE = 72;
+         *
+         * @type Number
+         * @property
+         */
+        WHEEL_SCALE: (function () {
+            var scale;
+
+            if (Ext.isGecko) {
+                // Firefox uses 3 on all platforms
+                scale = 3;
+            } else if (Ext.isMac) {
+                // Continuous scrolling devices have momentum and produce much more scroll than
+                // discrete devices on the same OS and browser. To make things exciting, Safari
+                // (and not Chrome) changed from small values to 120 (like IE).
+
+                if (Ext.isSafari &amp;&amp; Ext.webKitVersion &gt;= 532.0) {
+                    // Safari changed the scrolling factor to match IE (for details see
+                    // https://bugs.webkit.org/show_bug.cgi?id=24368). The WebKit version where this
+                    // change was introduced was 532.0
+                    //      Detailed discussion:
+                    //      https://bugs.webkit.org/show_bug.cgi?id=29601
+                    //      http://trac.webkit.org/browser/trunk/WebKit/chromium/src/mac/WebInputEventFactory.mm#L1063
+                    scale = 120;
+                } else {
+                    // MS optical wheel mouse produces multiples of 12 which is close enough
+                    // to help tame the speed of the continuous mice...
+                    scale = 12;
+                }
+
+                // Momentum scrolling produces very fast scrolling, so increase the scale factor
+                // to help produce similar results cross platform. This could be even larger and
+                // it would help those mice, but other mice would become almost unusable as a
+                // result (since we cannot tell which device type is in use).
+                scale *= 3;
+            } else {
+                // IE, Opera and other Windows browsers use 120.
+                scale = 120;
+            }
+
+            return scale;
+        }())
+    },
+    keyCodes = {},
+    keyName, keyCode;
+
+    Ext.apply(Event, constants);
+    Ext.apply(prototype, constants);
+    
+    // Don't need that
+    delete constants.WHEEL_SCALE;
+    
+    // ENTER and RETURN has the same keyCode, but since RETURN
+    // comes later it will win over ENTER down there. However
+    // ENTER is used more often and feels more natural.
+    delete constants.RETURN;
+    
+    // We need this to do reverse lookup of key name by its code
+    for (keyName in constants) {
+        keyCode = constants[keyName];
+        keyCodes[keyCode] = keyName;
+    }
+    
+    prototype.keyCodes = keyCodes;
+    
+<span id='Ext-event-Event-property-getTrueXY'>    /**
+</span>     * @private
+     * Returns the X and Y coordinates of this event without regard to any RTL
+     * direction settings.
+     */
+    prototype.getTrueXY = prototype.getXY;
+});
+</pre>
+</body>
+</html>

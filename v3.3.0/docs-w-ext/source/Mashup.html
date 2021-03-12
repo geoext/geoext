@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <title>The source code</title>
+  <link href="../resources/prettify/prettify.css" type="text/css" rel="stylesheet" />
+  <script type="text/javascript" src="../resources/prettify/prettify.js"></script>
+  <style type="text/css">
+    .highlight { display: block; background-color: #ddd; }
+  </style>
+  <script type="text/javascript">
+    function highlight() {
+      document.getElementById(location.hash.replace(/#/, "")).className = "highlight";
+    }
+  </script>
+</head>
+<body onload="prettyPrint(); highlight();">
+  <pre class="prettyprint lang-js"><span id='Ext-mixin-Mashup'>/**
+</span> * This mixin allows users to easily require external scripts in their classes. This load
+ * process delays application launch (`Ext.onReady`) until all such scripts are loaded
+ * ensuring that your class will have access to its required scripts from the start.
+ *
+ * For example:
+ *
+ *      Ext.define(&#39;Feed&#39;, {
+ *          mixins: &#39;Ext.mixin.Mashup&#39;,
+ *
+ *          requiredScripts: [
+ *              &#39;http://www.foo.com/code/bar.js&#39;
+ *          ],
+ *
+ *          // The code in &quot;bar.js&quot; will be available at application launch
+ *      });
+ *
+ * @since 5.0.0
+ * @cmd.optimizer.requires.async
+ */
+Ext.define(&#39;Ext.mixin.Mashup&#39;, function (Mashup) { return {
+    extend: &#39;Ext.Mixin&#39;,
+
+    mixinConfig: {
+        id: &#39;mashup&#39;,
+
+        extended: function (baseClass, derivedClass) {
+            Mashup.process(derivedClass);
+        }
+    },
+
+    statics: {
+        process: function (targetClass) {
+            var body = targetClass.prototype,
+                requiredScripts = body.requiredScripts,
+                hooks = targetClass._classHooks,
+                onCreated = hooks.onCreated;
+
+            if (requiredScripts) {
+                delete body.requiredScripts;
+
+                hooks.onCreated = function () {
+                    var me = this,
+                        args = Ext.Array.slice(arguments);
+
+                    Ext.Loader.loadScripts({
+                        url: requiredScripts,
+                        cache: true, // no cache busting
+                        onLoad: function () {
+                            hooks.onCreated = onCreated;
+                            hooks.onCreated.call(me, args);
+                        }
+                    });
+                };
+            }
+        }
+    },
+
+    onClassMixedIn: function (targetClass) {
+        Mashup.process(targetClass);
+    }
+}});
+</pre>
+</body>
+</html>

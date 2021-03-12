@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <title>The source code</title>
+  <link href="../resources/prettify/prettify.css" type="text/css" rel="stylesheet" />
+  <script type="text/javascript" src="../resources/prettify/prettify.js"></script>
+  <style type="text/css">
+    .highlight { display: block; background-color: #ddd; }
+  </style>
+  <script type="text/javascript">
+    function highlight() {
+      document.getElementById(location.hash.replace(/#/, "")).className = "highlight";
+    }
+  </script>
+</head>
+<body onload="prettyPrint(); highlight();">
+  <pre class="prettyprint lang-js"><span id='Ext-picker-Color'>/**
+</span> * Color picker provides a simple color palette for choosing colors. The picker can be rendered to any container. The
+ * available default to a standard 40-color palette; this can be customized with the {@link #colors} config.
+ *
+ * Typically you will need to implement a handler function to be notified when the user chooses a color from the picker;
+ * you can register the handler using the {@link #event-select} event, or by implementing the {@link #handler} method.
+ *
+ *     @example
+ *     Ext.create(&#39;Ext.picker.Color&#39;, {
+ *         value: &#39;993300&#39;,  // initial selected color
+ *         renderTo: Ext.getBody(),
+ *         listeners: {
+ *             select: function(picker, selColor) {
+ *                 alert(selColor);
+ *             }
+ *         }
+ *     });
+ */
+Ext.define(&#39;Ext.picker.Color&#39;, {
+    extend: &#39;Ext.Component&#39;,
+    requires: &#39;Ext.XTemplate&#39;,
+    alias: &#39;widget.colorpicker&#39;,
+    alternateClassName: &#39;Ext.ColorPalette&#39;,
+    
+<span id='Ext-picker-Color-property-focusable'>    focusable: true,
+</span>
+<span id='Ext-picker-Color-cfg-componentCls'>    /**
+</span>     * @cfg {String} [componentCls=&#39;x-color-picker&#39;]
+     * The CSS class to apply to the containing element.
+     */
+    componentCls : Ext.baseCSSPrefix + &#39;color-picker&#39;,
+
+<span id='Ext-picker-Color-cfg-selectedCls'>    /**
+</span>     * @cfg {String} [selectedCls=&#39;x-color-picker-selected&#39;]
+     * The CSS class to apply to the selected element
+     */
+    selectedCls: Ext.baseCSSPrefix + &#39;color-picker-selected&#39;,
+
+<span id='Ext-picker-Color-cfg-itemCls'>    /**
+</span>     * @cfg {String} itemCls
+     * The CSS class to apply to the color picker&#39;s items
+     */
+    itemCls: Ext.baseCSSPrefix + &#39;color-picker-item&#39;,
+
+<span id='Ext-picker-Color-cfg-value'>    /**
+</span>     * @cfg {String} value
+     * The initial color to highlight (should be a valid 6-digit color hex code without the # symbol). Note that the hex
+     * codes are case-sensitive.
+     */
+    value : null,
+
+<span id='Ext-picker-Color-cfg-clickEvent'>    /**
+</span>     * @cfg {String} clickEvent
+     * The DOM event that will cause a color to be selected. This can be any valid event name (dblclick, contextmenu).
+     */
+    clickEvent :&#39;click&#39;,
+
+<span id='Ext-picker-Color-cfg-allowReselect'>    /**
+</span>     * @cfg {Boolean} allowReselect
+     * If set to true then reselecting a color that is already selected fires the {@link #event-select} event
+     */
+    allowReselect : false,
+
+<span id='Ext-picker-Color-property-colors'>    /**
+</span>     * @property {String[]} colors
+     * An array of 6-digit color hex code strings (without the # symbol). This array can contain any number of colors,
+     * and each hex code should be unique. The width of the picker is controlled via CSS by adjusting the width property
+     * of the &#39;x-color-picker&#39; class (or assigning a custom class), so you can balance the number of colors with the
+     * width setting until the box is symmetrical.
+     *
+     * You can override individual colors if needed:
+     *
+     *     var cp = new Ext.picker.Color();
+     *     cp.colors[0] = &#39;FF0000&#39;;  // change the first box to red
+     *
+     * Or you can provide a custom array of your own for complete control:
+     *
+     *     var cp = new Ext.picker.Color();
+     *     cp.colors = [&#39;000000&#39;, &#39;993300&#39;, &#39;333300&#39;];
+     */
+    colors : [
+        &#39;000000&#39;, &#39;993300&#39;, &#39;333300&#39;, &#39;003300&#39;, &#39;003366&#39;, &#39;000080&#39;, &#39;333399&#39;, &#39;333333&#39;,
+        &#39;800000&#39;, &#39;FF6600&#39;, &#39;808000&#39;, &#39;008000&#39;, &#39;008080&#39;, &#39;0000FF&#39;, &#39;666699&#39;, &#39;808080&#39;,
+        &#39;FF0000&#39;, &#39;FF9900&#39;, &#39;99CC00&#39;, &#39;339966&#39;, &#39;33CCCC&#39;, &#39;3366FF&#39;, &#39;800080&#39;, &#39;969696&#39;,
+        &#39;FF00FF&#39;, &#39;FFCC00&#39;, &#39;FFFF00&#39;, &#39;00FF00&#39;, &#39;00FFFF&#39;, &#39;00CCFF&#39;, &#39;993366&#39;, &#39;C0C0C0&#39;,
+        &#39;FF99CC&#39;, &#39;FFCC99&#39;, &#39;FFFF99&#39;, &#39;CCFFCC&#39;, &#39;CCFFFF&#39;, &#39;99CCFF&#39;, &#39;CC99FF&#39;, &#39;FFFFFF&#39;
+    ],
+
+<span id='Ext-picker-Color-cfg-handler'>    /**
+</span>     * @cfg {Function/String} handler
+     * A function that will handle the select event of this picker. The handler is passed the following parameters:
+     *
+     * - `picker` : ColorPicker
+     *
+     *   The {@link Ext.picker.Color picker}.
+     *
+     * - `color` : String
+     *
+     *   The 6-digit color hex code (without the # symbol).
+     * 
+     * @controllable
+     */
+
+<span id='Ext-picker-Color-cfg-scope'>    /**
+</span>     * @cfg {Object} scope
+     * The scope (`this` reference) in which the `{@link #handler}` function will be called.
+     *
+     * Defaults to this Color picker instance.
+     */
+
+    colorRe: /(?:^|\s)color-(.{6})(?:\s|$)/,
+    
+<span id='Ext-picker-Color-cfg-renderTpl'>    renderTpl: [
+</span>        &#39;&lt;tpl for=&quot;colors&quot;&gt;&#39;,
+            &#39;&lt;a href=&quot;#&quot; role=&quot;button&quot; class=&quot;color-{.} {parent.itemCls}&quot; hidefocus=&quot;on&quot;&gt;&#39;,
+                &#39;&lt;span class=&quot;{parent.itemCls}-inner&quot; style=&quot;background:#{.}&quot;&gt;&amp;#160;&lt;/span&gt;&#39;,
+            &#39;&lt;/a&gt;&#39;,
+        &#39;&lt;/tpl&gt;&#39;
+    ],
+
+<span id='Ext-picker-Color-event-select'>    /**
+</span>     * @event select
+     * Fires when a color is selected
+     * @param {Ext.picker.Color} this
+     * @param {String} color The 6-digit color hex code (without the # symbol)
+     */
+
+<span id='Ext-picker-Color-method-initComponent'>    /**
+</span>     * @private
+     */
+    initComponent : function(){
+        var me = this;
+
+        me.callParent(arguments);
+
+        if (me.handler) {
+            me.on(&#39;select&#39;, me.handler, me.scope, true);
+        }
+    },
+
+
+<span id='Ext-picker-Color-method-initRenderData'>    /**
+</span>     * @private
+     */
+    initRenderData : function(){
+        var me = this;
+        return Ext.apply(me.callParent(), {
+            itemCls: me.itemCls,
+            colors: me.colors
+        });
+    },
+
+<span id='Ext-picker-Color-method-onRender'>    onRender : function(){
+</span>        var me = this,
+            clickEvent = me.clickEvent;
+
+        me.callParent(arguments);
+
+        me.mon(me.el, clickEvent, me.handleClick, me, {delegate: &#39;a&#39;});
+        // always stop following the anchors
+        if (clickEvent !== &#39;click&#39;){
+            me.mon(me.el, &#39;click&#39;, Ext.emptyFn, me, {delegate: &#39;a&#39;, stopEvent: true});
+        }
+    },
+
+<span id='Ext-picker-Color-method-afterRender'>    /**
+</span>     * @private
+     */
+    afterRender : function(){
+        var me = this,
+            value;
+
+        me.callParent(arguments);
+        if (me.value) {
+            value = me.value;
+            me.value = null;
+            me.select(value, true);
+        }
+    },
+
+<span id='Ext-picker-Color-method-handleClick'>    /**
+</span>     * @private
+     */
+    handleClick : function(event){
+        var me = this,
+            color;
+
+        event.stopEvent();
+        if (!me.disabled) {
+            color = event.currentTarget.className.match(me.colorRe)[1];
+            me.select(color.toUpperCase());
+        }
+    },
+
+<span id='Ext-picker-Color-method-select'>    /**
+</span>     * Selects the specified color in the picker (fires the {@link #event-select} event)
+     * @param {String} color A valid 6-digit color hex code (# will be stripped if included)
+     * @param {Boolean} [suppressEvent=false] True to stop the select event from firing.
+     */
+    select : function(color, suppressEvent){
+
+        var me = this,
+            selectedCls = me.selectedCls,
+            value = me.value,
+            el, item;
+
+        color = color.replace(&#39;#&#39;, &#39;&#39;);
+        if (!me.rendered) {
+            me.value = color;
+            return;
+        }
+
+
+        if (color !== value || me.allowReselect) {
+            el = me.el;
+
+            if (me.value) {
+                item = el.down(&#39;a.color-&#39; + value, true);
+                Ext.fly(item).removeCls(selectedCls);
+            }
+            item = el.down(&#39;a.color-&#39; + color, true);
+            Ext.fly(item).addCls(selectedCls);
+            me.value = color;
+            if (suppressEvent !== true) {
+                me.fireEvent(&#39;select&#39;, me, color);
+            }
+        }
+    },
+    
+<span id='Ext-picker-Color-method-clear'>    /**
+</span>     * Clears any selection and sets the value to `null`.
+     */
+    clear: function(){
+        var me = this,
+            value = me.value,
+            el;
+            
+        if (value &amp;&amp; me.rendered) {
+            el = me.el.down(&#39;a.color-&#39; + value, true);
+            Ext.fly(el).removeCls(me.selectedCls);
+        }
+        me.value = null;  
+    },
+
+<span id='Ext-picker-Color-method-getValue'>    /**
+</span>     * Get the currently selected color value.
+     * @return {String} value The selected value. Null if nothing is selected.
+     */
+    getValue: function(){
+        return this.value || null;
+    }
+});
+</pre>
+</body>
+</html>

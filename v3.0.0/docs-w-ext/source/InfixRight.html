@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <title>The source code</title>
+  <link href="../resources/prettify/prettify.css" type="text/css" rel="stylesheet" />
+  <script type="text/javascript" src="../resources/prettify/prettify.js"></script>
+  <style type="text/css">
+    .highlight { display: block; background-color: #ddd; }
+  </style>
+  <script type="text/javascript">
+    function highlight() {
+      document.getElementById(location.hash.replace(/#/, "")).className = "highlight";
+    }
+  </script>
+</head>
+<body onload="prettyPrint(); highlight();">
+  <pre class="prettyprint lang-js"><span id='Ext-parse-symbol-InfixRight'>/**
+</span> * This class represents an right-associative, infix (binary) operator.
+ * @private
+ */
+Ext.define('Ext.parse.symbol.InfixRight', {
+    extend: 'Ext.parse.symbol.Infix',
+
+<span id='Ext-parse-symbol-InfixRight-method-led'>    led: function (left) {
+</span>        var me = this;
+
+        me.lhs = left;
+        me.rhs = me.parser.parseExpression(me.priority - 1);
+        // the next line is here in case this symbol already exists in the symbols table
+        // and this function overrides that symbol
+        me.arity = 'binary';
+        me.isBinary = true;
+
+        return me;
+    }
+});
+</pre>
+</body>
+</html>

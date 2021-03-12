@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <title>The source code</title>
+  <link href="../resources/prettify/prettify.css" type="text/css" rel="stylesheet" />
+  <script type="text/javascript" src="../resources/prettify/prettify.js"></script>
+  <style type="text/css">
+    .highlight { display: block; background-color: #ddd; }
+  </style>
+  <script type="text/javascript">
+    function highlight() {
+      document.getElementById(location.hash.replace(/#/, "")).className = "highlight";
+    }
+  </script>
+</head>
+<body onload="prettyPrint(); highlight();">
+  <pre class="prettyprint lang-js"><span id='Ext-data-JsonStore'>/**
+</span> * Small helper class to make creating {@link Ext.data.Store}s from JSON data easier.
+ * A JsonStore will be automatically configured with a {@link Ext.data.reader.Json}.
+ *
+ * A store configuration would be something like:
+ *
+ *     var store = new Ext.data.JsonStore({
+ *         // store configs
+ *         storeId: &#39;myStore&#39;,
+ *
+ *         proxy: {
+ *             type: &#39;ajax&#39;,
+ *             url: &#39;get-images.php&#39;,
+ *             reader: {
+ *                 type: &#39;json&#39;,
+ *                 rootProperty: &#39;images&#39;
+ *             }
+ *         },
+ *
+ *         //alternatively, a Model name can be given (see Ext.data.Store for an example)
+ *         fields: [&#39;name&#39;, &#39;url&#39;, {name:&#39;size&#39;, type: &#39;float&#39;}, {name:&#39;lastmod&#39;, type:&#39;date&#39;}]
+ *     });
+ *
+ * This store is configured to consume a returned object of the form:
+ *
+ *     {
+ *         images: [
+ *             {name: &#39;Image one&#39;, url:&#39;/GetImage.php?id=1&#39;, size:46.5, lastmod: new Date(2007, 10, 29)},
+ *             {name: &#39;Image Two&#39;, url:&#39;/GetImage.php?id=2&#39;, size:43.2, lastmod: new Date(2007, 10, 30)}
+ *         ]
+ *     }
+ *
+ * An object literal of this form could also be used as the {@link #cfg-data} config option.
+ */
+Ext.define(&#39;Ext.data.JsonStore&#39;,  {
+    extend: &#39;Ext.data.Store&#39;,
+    alias: &#39;store.json&#39;,
+    requires: [
+        &#39;Ext.data.proxy.Ajax&#39;,
+        &#39;Ext.data.reader.Json&#39;,
+        &#39;Ext.data.writer.Json&#39;
+    ],
+
+<span id='Ext-data-JsonStore-method-constructor'>    constructor: function(config) {
+</span>        config = Ext.apply({
+            proxy: {
+                type  : &#39;ajax&#39;,
+                reader: &#39;json&#39;,
+                writer: &#39;json&#39;
+            }
+        }, config);
+        this.callParent([config]);
+    }
+});</pre>
+</body>
+</html>

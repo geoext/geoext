@@ -1,0 +1,464 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <title>The source code</title>
+  <link href="../resources/prettify/prettify.css" type="text/css" rel="stylesheet" />
+  <script type="text/javascript" src="../resources/prettify/prettify.js"></script>
+  <style type="text/css">
+    .highlight { display: block; background-color: #ddd; }
+  </style>
+  <script type="text/javascript">
+    function highlight() {
+      document.getElementById(location.hash.replace(/#/, "")).className = "highlight";
+    }
+  </script>
+</head>
+<body onload="prettyPrint(); highlight();">
+  <pre class="prettyprint lang-js"><span id='Ext-AnimationQueue'>/**
+</span> * @private
+ */
+Ext.define('Ext.AnimationQueue', {
+    singleton: true,
+
+<span id='Ext-AnimationQueue-method-constructor'>    constructor: function() {
+</span>        var me = this;
+
+        me.queue = [];
+        me.taskQueue = [];
+        me.runningQueue = [];
+        me.idleQueue = [];
+        me.isRunning = false;
+        me.isIdle = true;
+
+        me.run = Ext.Function.bind(me.run, me);
+
+        // iOS has a nasty bug which causes pending requestAnimationFrame to not release
+        // the callback when the WebView is switched back and forth from / to being background process
+        // We use a watchdog timer to workaround this, and restore the pending state correctly if this happens
+        // This timer has to be set as an interval from the very beginning and we have to keep it running for
+        // as long as the app lives, setting it later doesn't seem to work
+        if (Ext.os.is.iOS) {
+            Ext.interval(me.watch, 500, me);
+        }
+    },
+
+<span id='Ext-AnimationQueue-method-start'>    /**
+</span>     *
+     * @param {Function} fn
+     * @param {Object} [scope]
+     * @param {Object} [args]
+     */
+    start: function(fn, scope, args) {
+        var me = this;
+
+        me.queue.push(arguments);
+
+        if (!me.isRunning) {
+            if (me.hasOwnProperty('idleTimer')) {
+                clearTimeout(me.idleTimer);
+                delete me.idleTimer;
+            }
+
+            if (me.hasOwnProperty('idleQueueTimer')) {
+                clearTimeout(me.idleQueueTimer);
+                delete me.idleQueueTimer;
+            }
+
+            me.isIdle = false;
+            me.isRunning = true;
+            //&lt;debug&gt;
+            me.startCountTime = Ext.now();
+            me.count = 0;
+            //&lt;/debug&gt;
+            me.doStart();
+        }
+    },
+
+<span id='Ext-AnimationQueue-method-watch'>    watch: function() {
+</span>        if (this.isRunning &amp;&amp; Ext.now() - this.lastRunTime &gt;= 500) {
+            this.run();
+        }
+    },
+
+<span id='Ext-AnimationQueue-method-run'>    run: function() {
+</span>        var me = this;
+
+        if (!me.isRunning) {
+            return;
+        }
+
+        var queue = me.runningQueue,
+            now = Ext.now(),
+            i, ln;
+
+        me.lastRunTime = now;
+        me.frameStartTime = now;
+
+        queue.push.apply(queue, me.queue); // take a snapshot of the current queue and run it
+
+        for (i = 0, ln = queue.length; i &lt; ln; i++) {
+            me.invoke(queue[i]);
+        }
+
+        queue.length = 0;
+
+        //&lt;debug&gt;
+        var elapse = me.frameStartTime - me.startCountTime,
+            count = ++me.count;
+
+        if (elapse &gt;= 200) {
+            me.onFpsChanged(count * 1000 / elapse, count, elapse);
+            me.startCountTime = me.frameStartTime;
+            me.count = 0;
+        }
+        //&lt;/debug&gt;
+
+        me.doIterate();
+    },
+
+<span id='Ext-AnimationQueue-method-onFpsChanged'>    //&lt;debug&gt;
+</span>    onFpsChanged: Ext.emptyFn,
+
+<span id='Ext-AnimationQueue-method-onStop'>    onStop: Ext.emptyFn,
+</span><span id='Ext-AnimationQueue-method-doStart'>    //&lt;/debug&gt;
+</span>
+    doStart: function() {
+        this.animationFrameId = Ext.Function.requestAnimationFrame(this.run);
+        this.lastRunTime = Ext.now();
+    },
+
+<span id='Ext-AnimationQueue-method-doIterate'>    doIterate: function() {
+</span>        this.animationFrameId = Ext.Function.requestAnimationFrame(this.run);
+    },
+
+<span id='Ext-AnimationQueue-method-doStop'>    doStop: function() {
+</span>        Ext.Function.cancelAnimationFrame(this.animationFrameId);
+    },
+
+<span id='Ext-AnimationQueue-method-stop'>    /**
+</span>     *
+     * @param {Function} fn
+     * @param {Object} [scope]
+     * @param {Object} [args]
+     */
+    stop: function(fn, scope, args) {
+        var me = this;
+
+        if (!me.isRunning) {
+            return;
+        }
+
+        var queue = me.queue,
+            ln = queue.length,
+            i, item;
+
+        for (i = 0; i &lt; ln; i++) {
+            item = queue[i];
+            if (item[0] === fn &amp;&amp; item[1] === scope &amp;&amp; item[2] === args) {
+                queue.splice(i, 1);
+                i--;
+                ln--;
+            }
+        }
+
+        if (ln === 0) {
+            me.doStop();
+            //&lt;debug&gt;
+            me.onStop();
+            //&lt;/debug&gt;
+            me.isRunning = false;
+
+            me.idleTimer = Ext.defer(me.whenIdle, 100, me);
+        }
+    },
+
+<span id='Ext-AnimationQueue-method-onIdle'>    onIdle: function(fn, scope, args) {
+</span>        var listeners = this.idleQueue,
+            i, ln, listener;
+
+        for (i = 0, ln = listeners.length; i &lt; ln; i++) {
+            listener = listeners[i];
+            if (fn === listener[0] &amp;&amp; scope === listener[1] &amp;&amp; args === listener[2]) {
+                return;
+            }
+        }
+
+        listeners.push(arguments);
+
+        if (this.isIdle) {
+            this.processIdleQueue();
+        }
+    },
+
+<span id='Ext-AnimationQueue-method-unIdle'>    unIdle: function(fn, scope, args) {
+</span>        var listeners = this.idleQueue,
+            i, ln, listener;
+
+        for (i = 0, ln = listeners.length; i &lt; ln; i++) {
+            listener = listeners[i];
+            if (fn === listener[0] &amp;&amp; scope === listener[1] &amp;&amp; args === listener[2]) {
+                listeners.splice(i, 1);
+                return true;
+            }
+        }
+
+        return false;
+    },
+
+<span id='Ext-AnimationQueue-method-queueTask'>    queueTask: function(fn, scope, args) {
+</span>        this.taskQueue.push(arguments);
+        this.processTaskQueue();
+    },
+
+<span id='Ext-AnimationQueue-method-dequeueTask'>    dequeueTask: function(fn, scope, args) {
+</span>        var listeners = this.taskQueue,
+            i, ln, listener;
+
+        for (i = 0, ln = listeners.length; i &lt; ln; i++) {
+            listener = listeners[i];
+            if (fn === listener[0] &amp;&amp; scope === listener[1] &amp;&amp; args === listener[2]) {
+                listeners.splice(i, 1);
+                i--;
+                ln--;
+            }
+        }
+    },
+
+<span id='Ext-AnimationQueue-method-invoke'>    invoke: function(listener) {
+</span>        var fn = listener[0],
+            scope = listener[1],
+            args = listener[2];
+
+        fn = (typeof fn == 'string' ? scope[fn] : fn);
+
+        if (Ext.isArray(args)) {
+            fn.apply(scope, args);
+        }
+        else {
+            fn.call(scope, args);
+        }
+    },
+
+<span id='Ext-AnimationQueue-method-whenIdle'>    whenIdle: function() {
+</span>        this.isIdle = true;
+        this.processIdleQueue();
+    },
+
+<span id='Ext-AnimationQueue-method-processIdleQueue'>    processIdleQueue: function() {
+</span>        if (!this.hasOwnProperty('idleQueueTimer')) {
+            this.idleQueueTimer = Ext.defer(this.processIdleQueueItem, 1, this);
+        }
+    },
+
+<span id='Ext-AnimationQueue-method-processIdleQueueItem'>    processIdleQueueItem: function() {
+</span>        delete this.idleQueueTimer;
+
+        if (!this.isIdle) {
+            return;
+        }
+
+        var listeners = this.idleQueue,
+            listener;
+
+        if (listeners.length &gt; 0) {
+            listener = listeners.shift();
+            this.invoke(listener);
+            this.processIdleQueue();
+        }
+    },
+
+<span id='Ext-AnimationQueue-method-processTaskQueue'>    processTaskQueue: function() {
+</span>        if (!this.hasOwnProperty('taskQueueTimer')) {
+            this.taskQueueTimer = Ext.defer(this.processTaskQueueItem, 15, this);
+        }
+    },
+
+<span id='Ext-AnimationQueue-method-processTaskQueueItem'>    processTaskQueueItem: function() {
+</span>        delete this.taskQueueTimer;
+
+        var listeners = this.taskQueue,
+            listener;
+
+        if (listeners.length &gt; 0) {
+            listener = listeners.shift();
+            this.invoke(listener);
+            this.processTaskQueue();
+        }
+    }
+    //&lt;debug&gt;
+    ,
+
+<span id='Ext-AnimationQueue-method-showFps'>    /**
+</span>     *
+     * @param {Number} fps Frames per second.
+     * @param {Number} count Actual number of frames rendered during interval.
+     * @param {Number} interval Interval duration.
+     */
+    showFps: function () {
+        var styleTpl = {
+            color: 'white',
+            'background-color': 'black',
+            'text-align': 'center',
+            'font-family': 'sans-serif',
+            'font-size': '8px',
+            'font-weight': 'normal',
+            'font-style': 'normal',
+            'line-height': '20px',
+            '-webkit-font-smoothing': 'antialiased',
+
+            'zIndex': 100000,
+            position: 'absolute'
+        };
+
+        Ext.getBody().append([
+            // --- Average ---
+            {
+                style: Ext.applyIf({
+                    bottom: '50px',
+                    left: 0,
+                    width: '50px',
+                    height: '20px'
+                }, styleTpl),
+                html: 'Average'
+            },
+            {
+                style: Ext.applyIf({
+                    'background-color': 'red',
+                    'font-size': '18px',
+                    'line-height': '50px',
+
+                    bottom: 0,
+                    left: 0,
+                    width: '50px',
+                    height: '50px'
+                }, styleTpl),
+                id: '__averageFps',
+                html: '0'
+            },
+            // --- Min ---
+            {
+                style: Ext.applyIf({
+                    bottom: '50px',
+                    left: '50px',
+                    width: '50px',
+                    height: '20px'
+                }, styleTpl),
+                html: 'Min (Last 1k)'
+            },
+            {
+                style: Ext.applyIf({
+                    'background-color': 'orange',
+                    'font-size': '18px',
+                    'line-height': '50px',
+
+                    bottom: 0,
+                    left: '50px',
+                    width: '50px',
+                    height: '50px'
+                }, styleTpl),
+                id: '__minFps',
+                html: '0'
+            },
+            // --- Max ---
+            {
+                style: Ext.applyIf({
+                    bottom: '50px',
+                    left: '100px',
+                    width: '50px',
+                    height: '20px'
+                }, styleTpl),
+                html: 'Max (Last 1k)'
+            },
+            {
+                style: Ext.applyIf({
+                    'background-color': 'maroon',
+                    'font-size': '18px',
+                    'line-height': '50px',
+
+                    bottom: 0,
+                    left: '100px',
+                    width: '50px',
+                    height: '50px'
+                }, styleTpl),
+                id: '__maxFps',
+                html: '0'
+            },
+            // --- Current ---
+            {
+                style: Ext.applyIf({
+                    bottom: '50px',
+                    left: '150px',
+                    width: '50px',
+                    height: '20px'
+                }, styleTpl),
+                html: 'Current'
+            },
+            {
+                style: Ext.applyIf({
+                    'background-color': 'green',
+                    'font-size': '18px',
+                    'line-height': '50px',
+
+                    bottom: 0,
+                    left: '150px',
+                    width: '50px',
+                    height: '50px'
+                }, styleTpl),
+                id: '__currentFps',
+                html: '0'
+            }
+        ]);
+
+        Ext.AnimationQueue.resetFps();
+    },
+
+<span id='Ext-AnimationQueue-method-resetFps'>    resetFps: function () {
+</span>        var currentFps = Ext.get('__currentFps'),
+            averageFps = Ext.get('__averageFps'),
+            minFps = Ext.get('__minFps'),
+            maxFps = Ext.get('__maxFps'),
+            min = 1000,
+            max = 0,
+            count = 0,
+            sum = 0;
+
+        if (!currentFps) {
+            return;
+        }
+
+        Ext.AnimationQueue.onFpsChanged = function (fps) {
+            count++;
+
+            if (!(count % 10)) {
+                min = 1000;
+                max = 0;
+            }
+
+            sum += fps;
+            min = Math.min(min, fps);
+            max = Math.max(max, fps);
+            currentFps.setHtml(Math.round(fps));
+            // All-time average since last reset.
+            averageFps.setHtml(Math.round(sum / count));
+            minFps.setHtml(Math.round(min));
+            maxFps.setHtml(Math.round(max));
+        };
+    }
+
+}, function () {
+    /*
+        Global FPS indicator. Add ?showfps to use in any application. Note that this REQUIRES true requestAnimationFrame
+        to be accurate.
+     */
+    var paramsString = window.location.search.substr(1),
+        paramsArray = paramsString.split(&quot;&amp;&quot;);
+
+    if (Ext.Array.contains(paramsArray, &quot;showfps&quot;)) {
+        Ext.onReady(Ext.Function.bind(this.showFps, this));
+    }
+//&lt;/debug&gt;
+});
+</pre>
+</body>
+</html>

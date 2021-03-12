@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <title>The source code</title>
+  <link href="../resources/prettify/prettify.css" type="text/css" rel="stylesheet" />
+  <script type="text/javascript" src="../resources/prettify/prettify.js"></script>
+  <style type="text/css">
+    .highlight { display: block; background-color: #ddd; }
+  </style>
+  <script type="text/javascript">
+    function highlight() {
+      document.getElementById(location.hash.replace(/#/, "")).className = "highlight";
+    }
+  </script>
+</head>
+<body onload="prettyPrint(); highlight();">
+  <pre class="prettyprint lang-js"><span id='Ext-fx-easing-Abstract'>/**
+</span> * @private
+ */
+Ext.define('Ext.fx.easing.Abstract', {
+
+    config: {
+<span id='Ext-fx-easing-Abstract-cfg-startTime'>        startTime: 0,
+</span><span id='Ext-fx-easing-Abstract-cfg-startValue'>        startValue: 0
+</span>    },
+
+<span id='Ext-fx-easing-Abstract-property-isEasing'>    isEasing: true,
+</span>
+<span id='Ext-fx-easing-Abstract-property-isEnded'>    isEnded: false,
+</span>
+<span id='Ext-fx-easing-Abstract-method-constructor'>    constructor: function(config) {
+</span>        this.initConfig(config);
+
+        return this;
+    },
+
+<span id='Ext-fx-easing-Abstract-method-applyStartTime'>    applyStartTime: function(startTime) {
+</span>        if (!startTime) {
+            startTime = Ext.Date.now();
+        }
+
+        return startTime;
+    },
+
+<span id='Ext-fx-easing-Abstract-method-updateStartTime'>    updateStartTime: function(startTime) {
+</span>        this.reset();
+    },
+
+<span id='Ext-fx-easing-Abstract-method-reset'>    reset: function() {
+</span>        this.isEnded = false;
+    },
+
+<span id='Ext-fx-easing-Abstract-method-getValue'>    getValue: Ext.emptyFn
+</span>});
+</pre>
+</body>
+</html>

@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <title>The source code</title>
+  <link href="../resources/prettify/prettify.css" type="text/css" rel="stylesheet" />
+  <script type="text/javascript" src="../resources/prettify/prettify.js"></script>
+  <style type="text/css">
+    .highlight { display: block; background-color: #ddd; }
+  </style>
+  <script type="text/javascript">
+    function highlight() {
+      document.getElementById(location.hash.replace(/#/, "")).className = "highlight";
+    }
+  </script>
+</head>
+<body onload="prettyPrint(); highlight();">
+  <pre class="prettyprint lang-js"><span id='Ext-menu-ColorPicker'>/**
+</span> * A menu containing a Ext.picker.Color Component.
+ *
+ * Notes:
+ *
+ *   - Although not listed here, the **constructor** for this class accepts all of the
+ *     configuration options of {@link Ext.picker.Color}.
+ *   - If subclassing ColorMenu, any configuration options for the ColorPicker must be
+ *     applied to the **initialConfig** property of the ColorMenu. Applying
+ *     {@link Ext.picker.Color ColorPicker} configuration settings to `this` will **not**
+ *     affect the ColorPicker&#39;s configuration.
+ *
+ * Example:
+ *
+ *     @example
+ *     var colorPicker = Ext.create(&#39;Ext.menu.ColorPicker&#39;, {
+ *         value: &#39;000000&#39;
+ *     });
+ *
+ *     Ext.create(&#39;Ext.menu.Menu&#39;, {
+ *         items: [{
+ *             text: &#39;Choose a color&#39;,
+ *             menu: colorPicker
+ *         },{
+ *             iconCls: &#39;add16&#39;,
+ *             text: &#39;Icon item&#39;
+ *         },{
+ *             text: &#39;Regular item&#39;
+ *         }]
+ *     }).showAt([5, 5]);
+ */
+ Ext.define(&#39;Ext.menu.ColorPicker&#39;, {
+     extend: &#39;Ext.menu.Menu&#39;,
+
+     alias: &#39;widget.colormenu&#39;,
+
+     requires: [
+        &#39;Ext.picker.Color&#39;
+     ],
+
+<span id='Ext-menu-ColorPicker-cfg-hideOnClick'>    /**
+</span>     * @cfg {Boolean} hideOnClick
+     * False to continue showing the menu after a color is selected.
+     */
+    hideOnClick : true,
+
+<span id='Ext-menu-ColorPicker-cfg-pickerId'>    /**
+</span>     * @cfg {String} pickerId
+     * An id to assign to the underlying color picker.
+     */
+    pickerId : null,
+
+<span id='Ext-menu-ColorPicker-cfg-maxHeight'>    /**
+</span>     * @cfg {Number} maxHeight
+     * @private
+     */
+
+<span id='Ext-menu-ColorPicker-property-picker'>    /**
+</span>     * @property {Ext.picker.Color} picker
+     * The {@link Ext.picker.Color} instance for this ColorMenu
+     */
+
+<span id='Ext-menu-ColorPicker-event-click'>    /**
+</span>     * @event click
+     * @private
+     */
+
+    initComponent : function(){
+        var me = this,
+            cfg = Ext.apply({}, me.initialConfig);
+
+        // Ensure we don&#39;t get duplicate listeners
+        delete cfg.listeners;
+        Ext.apply(me, {
+            plain: true,
+            showSeparator: false,
+            bodyPadding: 0,
+            items: Ext.applyIf({
+                cls: Ext.baseCSSPrefix + &#39;menu-color-item&#39;,
+                margin: 0,
+                id: me.pickerId,
+                xtype: &#39;colorpicker&#39;
+            }, cfg)
+        });
+
+        me.callParent(arguments);
+
+        me.picker = me.down(&#39;colorpicker&#39;);
+
+<span id='Ext-menu-ColorPicker-event-select'>        /**
+</span>         * @event select
+         * @inheritdoc Ext.picker.Color#select
+         */
+        me.relayEvents(me.picker, [&#39;select&#39;]);
+
+        if (me.hideOnClick) {
+            me.on(&#39;select&#39;, me.hidePickerOnSelect, me);
+        }
+    },
+
+<span id='Ext-menu-ColorPicker-method-hidePickerOnSelect'>    /**
+</span>     * Hides picker on select if hideOnClick is true
+     * @private
+     */
+    hidePickerOnSelect: function() {
+        Ext.menu.Manager.hideAll();
+    }
+ });</pre>
+</body>
+</html>

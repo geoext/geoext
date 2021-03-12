@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <title>The source code</title>
+  <link href="../resources/prettify/prettify.css" type="text/css" rel="stylesheet" />
+  <script type="text/javascript" src="../resources/prettify/prettify.js"></script>
+  <style type="text/css">
+    .highlight { display: block; background-color: #ddd; }
+  </style>
+  <script type="text/javascript">
+    function highlight() {
+      document.getElementById(location.hash.replace(/#/, "")).className = "highlight";
+    }
+  </script>
+</head>
+<body onload="prettyPrint(); highlight();">
+  <pre class="prettyprint lang-js"><span id='Ext-util-Sorter'>/**
+</span> * Represents a single sorter that can be used as part of the sorters configuration in Ext.mixin.Sortable.
+ *
+ * A common place for Sorters to be used are {@link Ext.data.Store Stores}. For example:
+ *
+ *      @example
+ *      var store = Ext.create('Ext.data.Store', {
+ *           fields: ['firstName', 'level'],
+ *           sorters: 'level',
+ *        
+ *           data: [
+ *               { firstName: 'Mitch',  level: 9000},
+ *               { firstName: 'Seth',   level: 42},
+ *               { firstName: 'Fred',   level: 510},
+ *               { firstName: 'Israel', level: 690},
+ *               { firstName: 'Greg',   level: 101},
+ *               { firstName: 'Pat',    level: 0},              
+ *               { firstName: 'Kevin',  level: 17},
+ *               { firstName: 'Brandon',level: 690},
+ *               { firstName: 'Gary',   level: 409},
+ *               { firstName: 'Scott',  level: 789}
+ *           ]
+ *        });
+ *        
+ *        Ext.create('Ext.grid.Panel', {
+ *            title: 'Support',
+ *            store: store,
+ *            columns: [
+ *                { text: 'Name',  dataIndex: 'firstName' },
+ *                { text: 'Level', dataIndex: 'level' }
+ *            ],
+ *            height: 300,
+ *            width: 200,
+ *            renderTo: Ext.getBody()
+ *        });  
+ *
+ * In the next example, we specify a custom sorter function:
+ *
+ *        @example
+ *        var store = Ext.create('Ext.data.Store', {
+ *           fields: ['firstName', 'spiritAnimal'],
+ *            sorters: [
+ *                {
+ *                    // Sort by first letter of second word of spirit animal, in descending order
+ *                    sorterFn: function(record1, record2) {
+ *                        var name1 = record1.data.spiritAnimal.split(' ')[1].substr(0,1),
+ *                            name2 = record2.data.spiritAnimal.split(' ')[1].substr(0,1);
+ * 
+ *                        return name1 &gt; name2 ? 1 : (name1 === name2) ? 0 : -1;
+ *                    },
+ *                    direction: 'DESC'
+ *                }
+ *            ],
+ *         
+ *           data: [
+ *               { firstName: 'Mitch',  spiritAnimal: &quot;Panda Bear&quot;},
+ *               { firstName: 'Seth',   spiritAnimal: &quot;Tina Belcher&quot;},
+ *               { firstName: 'Fred',   spiritAnimal: &quot;Honey Badger&quot;},
+ *               { firstName: 'Israel', spiritAnimal: &quot;Mysterious Capybara&quot;},
+ *               { firstName: 'Greg',   spiritAnimal: &quot;Majestic Platypus&quot;},
+ *               { firstName: 'Kevin',  spiritAnimal: &quot;Sparkling Unicorn&quot;},
+ *               { firstName: 'Brandon',spiritAnimal: &quot;Pygmy Goat&quot;},
+ *               { firstName: 'Gary',   spiritAnimal: &quot;Suri Alpaca&quot;},
+ *               { firstName: 'Scott',  spiritAnimal: &quot;Ripe Armadillo&quot;},
+ *               { firstName: 'Pat',    spiritAnimal: &quot;The Cougar&quot;}
+ *           ]
+ *        });
+ *        
+ *        Ext.create('Ext.grid.Panel', {
+ *            title: 'Support',
+ *            store: store,
+ *            columns: [
+ *                { text: 'Name',          dataIndex: 'firstName' },
+ *                { text: 'Spirit Animal', dataIndex: 'spiritAnimal', flex: 1 }
+ *            ],
+ *            height: 310,
+ *            renderTo: Ext.getBody()
+ *        });
+ */
+Ext.define('Ext.util.Sorter', {
+<span id='Ext-util-Sorter-property-isSorter'>    isSorter: true,
+</span>
+    config: {
+<span id='Ext-util-Sorter-cfg-property'>        /**
+</span>         * @cfg {String} property The property to sort by. Required unless `sorterFn` is provided
+         */
+        property: null,
+
+<span id='Ext-util-Sorter-cfg-sorterFn'>        /**
+</span>         * @cfg {Function} sorterFn A specific sorter function to execute. Can be passed instead of {@link #property}.
+         * This function should compare the two passed arguments, returning -1, 0 or 1 depending on if item 1 should be
+         * sorted before, at the same level, or after item 2.
+         *
+         *     sorterFn: function(person1, person2) {
+         *         return (person1.age &gt; person2.age) ? 1 : (person1.age === person2.age ? 0 : -1);
+         *     }
+         */
+        sorterFn: null,
+
+<span id='Ext-util-Sorter-cfg-root'>        /**
+</span>         * @cfg {String} root Optional root property. This is mostly useful when sorting a Store, in which case we set the
+         * root to 'data' to make the filter pull the {@link #property} out of the data object of each item
+         */
+        root: null,
+
+<span id='Ext-util-Sorter-cfg-transform'>        /**
+</span>         * @cfg {Function} transform A function that will be run on each value before
+         * it is compared in the sorter. The function will receive a single argument,
+         * the value.
+         */
+        transform: null,
+
+<span id='Ext-util-Sorter-cfg-direction'>        /**
+</span>         * @cfg {String} direction The direction to sort by. Valid values are &quot;ASC&quot;, and &quot;DESC&quot;.
+         */
+        direction: &quot;ASC&quot;,
+
+<span id='Ext-util-Sorter-cfg-id'>        /**
+</span>         * @cfg {Mixed} id An optional id this sorter can be keyed by in Collections. If
+         * no id is specified it will use the property name used in this Sorter. If no
+         * property is specified, e.g. when adding a custom sorter function we will generate
+         * a random id.
+         */
+        id: undefined
+    },
+
+    statics: {
+<span id='Ext-util-Sorter-static-method-createComparator'>        /**
+</span>         * Creates a comparator function (a function that can be passed to `Array.sort`)
+         * given one or more `Sorter` instances.
+         *
+         * The returned function retains a reference to the collection or array of sorters
+         * passed. This means the function will produce a comparison based on the current
+         * content of the collection or array, and not based on the content at the time of
+         * this call.
+         *
+         * @param {Ext.util.Sorter[]/Ext.util.Collection} sorters The `Sorter` instances.
+         * @param [nextFn] The next comparator function to call if all the `sorters` end
+         * with equality.
+         * @return {Function} The comparator function.
+         */
+        createComparator: function (sorters, nextFn) {
+            nextFn = nextFn || 0;
+            return function (lhs, rhs) {
+                var items = sorters.isCollection ? sorters.items : sorters,
+                    n = items.length,
+                    comp, i;
+
+                for (i = 0; i &lt; n; ++i) {
+                    comp = items[i].sort(lhs, rhs);
+                    if (comp) {
+                        return comp;
+                    }
+                }
+
+                return nextFn &amp;&amp; nextFn(lhs, rhs);
+            };
+        }
+    },
+
+<span id='Ext-util-Sorter-property-multiplier'>    /**
+</span>     * This value is set based on the `direction` config to be either 1 or -1. This is used
+     * as a multiplier for the raw comparison value to factor in the direction.
+     * @private
+     * @readonly
+     */
+    multiplier: 1,
+
+<span id='Ext-util-Sorter-method-constructor'>    constructor: function(config) {
+</span>        //&lt;debug&gt;
+        if (config &amp;&amp; !this.isGrouper) {
+            if (!config.property === !config.sorterFn) {
+                // the above is a &quot;not XOR&quot; - both true or both false
+                Ext.raise(&quot;A Sorter requires either a property or a sorterFn.&quot;);
+            }
+        }
+        //&lt;/debug&gt;
+
+        this.initConfig(config);
+    },
+
+<span id='Ext-util-Sorter-method-getId'>    getId: function () {
+</span>        var id = this._id;
+
+        if (!id) {
+            id = this.getProperty();
+            if (!id) {
+                id = Ext.id(null, 'ext-sorter-');
+            }
+            this._id = id;
+        }
+
+        return id;
+    },
+
+<span id='Ext-util-Sorter-method-sort'>    sort: function (lhs, rhs) {
+</span>        return this.multiplier * this.sortFn(lhs, rhs);
+    },
+
+<span id='Ext-util-Sorter-method-sortFn'>    /**
+</span>     * @private
+     * Basic default sorter function that just compares the defined property of each object.
+     * This is hidden by the `sorterFn` provided by the user.
+     */
+    sortFn: function (item1, item2) {
+        var me = this,
+            transform = me._transform,
+            root = me._root,
+            property = me._property,
+            lhs, rhs;
+
+        if (root) {
+            item1 = item1[root];
+            item2 = item2[root];
+        }
+
+        lhs = item1[property];
+        rhs = item2[property];
+
+        if (transform) {
+            lhs = transform(lhs);
+            rhs = transform(rhs);
+        }
+
+        return (lhs &gt; rhs) ? 1 : (lhs &lt; rhs ? -1 : 0);
+    },
+    
+<span id='Ext-util-Sorter-method-applyDirection'>    applyDirection: function(direction) {
+</span>        return direction ? direction : 'ASC';
+    },
+
+<span id='Ext-util-Sorter-method-updateDirection'>    updateDirection: function (direction) {
+</span>        this.multiplier = (direction.toUpperCase() === &quot;DESC&quot;) ? -1 : 1;
+    },
+
+<span id='Ext-util-Sorter-method-updateProperty'>    updateProperty: function (property) {
+</span>        if (property) {
+            // Unhide the default sortFn on our prototype
+            delete this.sortFn;
+        }
+    },
+
+<span id='Ext-util-Sorter-method-updateSorterFn'>    updateSorterFn: function (sorterFn) {
+</span>        // Hide the default sortFn on our prototype
+        this.sortFn = sorterFn;
+    },
+
+<span id='Ext-util-Sorter-method-toggle'>    /**
+</span>     * Toggles the direction of this Sorter. Note that when you call this function,
+     * the Collection this Sorter is part of does not get refreshed automatically.
+     */
+    toggle: function() {
+        this.setDirection(Ext.String.toggle(this.getDirection(), &quot;ASC&quot;, &quot;DESC&quot;));
+    },
+
+<span id='Ext-util-Sorter-method-getState'>    /**
+</span>     * Returns this sorter's state.
+     * @return {Object}
+     */
+    getState: function() {
+        var me = this,
+            result = {
+                root: me.getRoot(),
+                property: me.getProperty(),
+                direction: me.getDirection()
+            };
+
+        // Do not use getId() which will create an identifier if we have none.
+        // We need to know if we really are identifiable.
+        if (me._id) {
+            result.id = me._id;
+        }
+        
+        return result;
+    },
+
+<span id='Ext-util-Sorter-method-serialize'>    /**
+</span>     * Returns this sorter's serialized state. This is used when transmitting this sorter
+     * to a server.
+     * @return {Object}
+     */
+    serialize: function () {
+        return {
+            property: this.getProperty(),
+            direction: this.getDirection()
+        };
+    }
+});
+</pre>
+</body>
+</html>

@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <title>The source code</title>
+  <link href="../resources/prettify/prettify.css" type="text/css" rel="stylesheet" />
+  <script type="text/javascript" src="../resources/prettify/prettify.js"></script>
+  <style type="text/css">
+    .highlight { display: block; background-color: #ddd; }
+  </style>
+  <script type="text/javascript">
+    function highlight() {
+      document.getElementById(location.hash.replace(/#/, "")).className = "highlight";
+    }
+  </script>
+</head>
+<body onload="prettyPrint(); highlight();">
+  <pre class="prettyprint lang-js">/* Copyright (c) 2015-present The Open Source Geospatial Foundation
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see &lt;http://www.gnu.org/licenses/&gt;.
+ */
+<span id='GeoExt-data-model-OlObject'>/**
+</span> * Simple model that maps an ol.Object to an Ext.data.Model.
+ *
+ * @class GeoExt.data.model.OlObject
+ */
+Ext.define(&#39;GeoExt.data.model.OlObject&#39;, {
+    extend: &#39;GeoExt.data.model.Base&#39;,
+    mixins: [
+        &#39;GeoExt.mixin.SymbolCheck&#39;
+    ],
+
+<span id='GeoExt-data-model-OlObject-property-symbols'>    // &lt;debug&gt;
+</span>    symbols: [
+        &#39;ol&#39;,
+        &#39;ol.Object&#39;,
+        &#39;ol.Object#on&#39;,
+        &#39;ol.Object#get&#39;,
+        &#39;ol.Object#set&#39;
+    ],
+    // &lt;/debug&gt;
+
+    inheritableStatics: {
+<span id='GeoExt-data-model-OlObject-static-method-getOlCLassRef'>        /**
+</span>         * Gets a reference to an ol contructor function.
+         *
+         * @param {String} str Description of the form `&quot;ol.layer.Base&quot;`.
+         * @return {Function} the ol constructor.
+         * @static
+         */
+        getOlCLassRef: function(str) {
+            var ref = ol;
+            var members;
+
+            if (Ext.isString(str)) {
+                members = str.split(&#39;.&#39;);
+                // shift if description contains namespace
+                if (Ext.Array.indexOf(members, &#39;ol&#39;) === 0) {
+                    members.shift();
+                }
+                // traverse namespace to ref
+                Ext.Array.each(members, function(member) {
+                    ref = ref[member];
+                });
+            }
+
+            return ref;
+        }
+    },
+
+<span id='GeoExt-data-model-OlObject-property-olClass'>    /**
+</span>     * String description of the reference path to the wrapped ol class.
+     *
+     * @property {String}
+     */
+    olClass: &#39;ol.Object&#39;,
+
+<span id='GeoExt-data-model-OlObject-property-olObject'>    /**
+</span>     * The underlying ol.Object.
+     *
+     * @property {ol.Object}
+     */
+    olObject: null,
+
+<span id='GeoExt-data-model-OlObject-property-proxy'>    proxy: {
+</span>        type: &#39;memory&#39;,
+        reader: &#39;json&#39;
+    },
+
+<span id='GeoExt-data-model-OlObject-method-constructor'>    /**
+</span>     * @inheritdoc
+     */
+    constructor: function(data) {
+        var me = this;
+        var statics = this.statics();
+        var OlClass = statics.getOlCLassRef(this.olClass);
+
+        data = data || {};
+
+        // init ol object if plain data is handed over
+        if (!(data instanceof OlClass)) {
+            data = new OlClass(data);
+        }
+
+        me.olObject = data;
+
+        // init record with properties of underlying ol object
+        me.callParent([this.olObject.getProperties()]);
+
+        me.olObject.on(&#39;propertychange&#39;, me.onPropertychange, me);
+    },
+
+<span id='GeoExt-data-model-OlObject-method-onPropertychange'>    /**
+</span>     * Listener to propertychange events of the underlying `ol.Object`. All
+     * changes on the object will be forwarded to the Ext.data.Model.
+     *
+     * @param  {ol.ObjectEvent} evt The `ol.ObjectEvent` we receive as handler.
+     * @private
+     */
+    onPropertychange: function(evt) {
+        var target = evt.target;
+        var key = evt.key;
+
+        if (!this.__updating) {
+            this.set(key, target.get(key));
+        }
+    },
+
+<span id='GeoExt-data-model-OlObject-method-set'>    /**
+</span>     * Overriden to foward changes to the underlying `ol.Object`. All changes on
+     * the Ext.data.Models properties will be set on the `ol.Object` as well.
+     *
+     * @param {String|Object} key The key to set.
+     * @param {Object} newValue The value to set.
+     *
+     * @inheritdoc
+     */
+    set: function(key, newValue) {
+        var o = {};
+
+        this.callParent(arguments);
+
+        // forward changes to ol object
+        this.__updating = true;
+
+        // wrap simple set operations into an object
+        if (Ext.isString(key)) {
+            o[key] = newValue;
+        } else {
+            o = key;
+        }
+
+        // iterate over object setting changes to ol.Object
+        Ext.Object.each(o, function(k, v) {
+            this.olObject.set(k, v);
+        }, this);
+
+        this.__updating = false;
+    },
+
+<span id='GeoExt-data-model-OlObject-method-destroy'>    /**
+</span>     * Overriden to unregister all added event listeners on the ol.Object.
+     *
+     * @inheritdoc
+     */
+    destroy: function() {
+        this.olObject.un(&#39;propertychange&#39;, this.onPropertychange, this);
+
+        this.callParent(arguments);
+    }
+});
+</pre>
+</body>
+</html>

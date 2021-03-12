@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <title>The source code</title>
+  <link href="../resources/prettify/prettify.css" type="text/css" rel="stylesheet" />
+  <script type="text/javascript" src="../resources/prettify/prettify.js"></script>
+  <style type="text/css">
+    .highlight { display: block; background-color: #ddd; }
+  </style>
+  <script type="text/javascript">
+    function highlight() {
+      document.getElementById(location.hash.replace(/#/, "")).className = "highlight";
+    }
+  </script>
+</head>
+<body onload="prettyPrint(); highlight();">
+  <pre class="prettyprint lang-js"><span id='Ext-util-Fly'>/**
+</span> * This class is a base for classes that want to provide a `fly` static method.
+ *
+ * For example:
+ *
+ *      Ext.define(&#39;Foo.util.Thing&#39;, {
+ *          extend: &#39;Ext.util.Fly&#39;,
+ *
+ *          // useful stuff
+ *      });
+ *
+ *      var thing = Ext.util.Thing.fly(42);  // passes 42 to the reset method
+ *
+ *      // use &quot;thing&quot;
+ *
+ *      thing.release();   // return to the pool for future reuse
+ *
+ * @private
+ */
+Ext.define(&#39;Ext.util.Fly&#39;, {
+    inheritableStatics: {
+<span id='Ext-util-Fly-static-property-flyPoolSize'>        flyPoolSize: 2,
+</span>
+<span id='Ext-util-Fly-static-method-fly'>        /**
+</span>         * @method
+         * Returns a flyweight instance. These instances should be returned when no
+         * longer needed by calling `release`.
+         *
+         * Additional arguments passed to this method will be passed on to the `reset`
+         * method.
+         *
+         * @return {Ext.util.Fly} the flyweight instance
+         */
+        fly: function () {
+            var T = this,
+                flyweights = T.flyweights || (T.flyweights = []),
+                instance = flyweights.length ? flyweights.pop() : new T();
+
+            instance.reset.apply(instance, arguments);
+            return instance;
+        }
+    },
+
+<span id='Ext-util-Fly-method-release'>    /**
+</span>     * This method should be called when a flyweight instance is no longer needed and
+     * should be returned to the flyweight pool.
+     */
+    release: function () {
+        var me = this,
+            T = me.self,
+            flyweights = T.flyweights || (T.flyweights = []);
+
+        me.reset();
+
+        if (flyweights.length &lt; T.flyPoolSize) {
+            flyweights.push(me);
+        }
+    },
+
+<span id='Ext-util-Fly-method-reset'>    /**
+</span>     * Resets this instance to prepare for use. Derived classes may accept additional
+     * arguments.
+     *
+     * When called with no arguments, the class should relinquish any resources it can
+     * and prepare to wait for potential reuse.
+     *
+     * @method reset
+     * @chainable
+     * @return {Ext.util.Fly} this
+     */
+    reset: Ext.emptyFn
+});
+</pre>
+</body>
+</html>

@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <title>The source code</title>
+  <link href="../resources/prettify/prettify.css" type="text/css" rel="stylesheet" />
+  <script type="text/javascript" src="../resources/prettify/prettify.js"></script>
+  <style type="text/css">
+    .highlight { display: block; background-color: #ddd; }
+  </style>
+  <script type="text/javascript">
+    function highlight() {
+      document.getElementById(location.hash.replace(/#/, "")).className = "highlight";
+    }
+  </script>
+</head>
+<body onload="prettyPrint(); highlight();">
+  <pre class="prettyprint lang-js"><span id='Ext-sparkline-VmlCanvas'>/**
+</span> * @private
+ */
+Ext.define(&#39;Ext.sparkline.VmlCanvas&#39;, {
+    extend: &#39;Ext.sparkline.CanvasBase&#39;,
+
+<span id='Ext-sparkline-VmlCanvas-method-setWidth'>    setWidth: function(width) {
+</span>        var me = this;
+
+        me.callParent(arguments);
+        me.owner.groupEl.dom.coordsize = me.width + &#39; &#39; + (me.height || 0);
+        me.owner.groupEl.dom.style.width = width + &#39;px&#39;;
+    },
+
+<span id='Ext-sparkline-VmlCanvas-method-setHeight'>    setHeight: function(height) {
+</span>        var me = this;
+
+        me.callParent(arguments);
+        me.owner.groupEl.dom.coordsize = (me.width || 0) + &#39; &#39; + me.height;
+        me.owner.groupEl.dom.style.height = height + &#39;px&#39;;
+    },
+
+<span id='Ext-sparkline-VmlCanvas-method-onOwnerUpdate'>    onOwnerUpdate: function () {
+</span>        var me = this;
+
+        me.group = me.owner.groupEl;
+        me.el = me.owner.element;
+        me.prerender = [];
+    },
+
+<span id='Ext-sparkline-VmlCanvas-method-_drawShape'>    _drawShape: function (shapeid, path, lineColor, fillColor, lineWidth) {
+</span>        var vpath = [],
+            initial, stroke, fill, closed, plen, i;
+
+        for (i = 0, plen = path.length; i &lt; plen; i++) {
+            vpath[i] = (path[i][0]) + &#39;,&#39; + (path[i][1]);
+        }
+        initial = vpath.splice(0, 1);
+        lineWidth = lineWidth == null ? 1 : lineWidth;
+        stroke = lineColor == null ? &#39; stroked=&quot;false&quot; &#39; : &#39; strokeWeight=&quot;&#39; + lineWidth + &#39;px&quot; strokeColor=&quot;&#39; + lineColor + &#39;&quot; &#39;;
+        fill = fillColor == null ? &#39; filled=&quot;false&quot;&#39; : &#39; fillColor=&quot;&#39; + fillColor + &#39;&quot; filled=&quot;true&quot; &#39;;
+        closed = vpath[0] === vpath[vpath.length - 1] ? &#39;x &#39; : &#39;&#39;;
+        return [&#39;&lt;svml:shape coordorigin=&quot;0 0&quot; coordsize=&quot;&#39;, this.pixelWidth, &#39; &#39;, this.pixelHeight,
+                &#39;&quot; id=&quot;jqsshape&#39;, shapeid, &#39;&quot; &#39;,
+                stroke,
+                fill,
+            &#39; style=&quot;position:absolute;height:&#39;, this.pixelHeight, &#39;px;width:&#39;, this.pixelWidth, &#39;px&quot; &#39;,
+            &#39; path=&quot;m &#39;, initial, &#39; l &#39;, vpath.join(&#39;, &#39;), &#39; &#39;, closed, &#39;e&quot;&gt;&lt;/svml:shape&gt;&#39;
+        ].join(&#39;&#39;);
+    },
+
+<span id='Ext-sparkline-VmlCanvas-method-_drawCircle'>    _drawCircle: function (shapeid, x, y, radius, lineColor, fillColor, lineWidth) {
+</span>        var circumference = radius * 2,
+            stroke, fill;
+
+        x -= radius;
+        y -= radius;
+        stroke = lineColor == null ? &#39; stroked=&quot;false&quot; &#39; : &#39; strokeWeight=&quot;&#39; + lineWidth + &#39;px&quot; strokeColor=&quot;&#39; + lineColor + &#39;&quot; &#39;;
+        fill = fillColor == null ? &#39; filled=&quot;false&quot;&#39; : &#39; fillColor=&quot;&#39; + fillColor + &#39;&quot; filled=&quot;true&quot; &#39;;
+        return [&#39;&lt;svml:oval id=&quot;jqsshape&#39;, shapeid, &#39;&quot; &#39;,
+            stroke,
+            fill,
+            &#39; style=&quot;position:absolute;top:&#39;, y, &#39;px; left:&#39;, x, &#39;px;width:&#39;, circumference, &#39;px;height:&#39;, circumference, &#39;px&quot;&gt;&lt;/svml:oval&gt;&#39;
+        ].join(&#39;&#39;);
+    },
+
+<span id='Ext-sparkline-VmlCanvas-method-_drawPieSlice'>    _drawPieSlice: function (shapeid, x, y, radius, startAngle, endAngle, lineColor, fillColor) {
+</span>        var vpath,
+            width = this.pixelWidth,
+            height = this.pixelHeight,
+            startx,
+            starty,
+            endx,
+            endy,
+            stroke = lineColor == null ? &#39; stroked=&quot;false&quot; &#39; : &#39; strokeWeight=&quot;1px&quot; strokeColor=&quot;&#39; + lineColor + &#39;&quot; &#39;,
+            fill = fillColor == null ? &#39; filled=&quot;false&quot;&#39; : &#39; fillColor=&quot;&#39; + fillColor + &#39;&quot; filled=&quot;true&quot; &#39;;
+
+        // VML cannot handle start &amp; end angle the same.
+        if (startAngle === endAngle) {
+            return &#39;&#39;;
+        }
+        if ((endAngle - startAngle) === (2 * Math.PI)) {
+            startAngle = 0.0;  // VML seems to have a problem when drawing a full circle that doesn&#39;t start 0
+            endAngle = (2 * Math.PI);
+        }
+
+        startx = x + Math.round(Math.cos(startAngle) * radius);
+        starty = y + Math.round(Math.sin(startAngle) * radius);
+        endx = x + Math.round(Math.cos(endAngle) * radius);
+        endy = y + Math.round(Math.sin(endAngle) * radius);
+
+        if (startx === endx &amp;&amp; starty === endy) {
+            if ((endAngle - startAngle) &lt; Math.PI) {
+                // Prevent very small slices from being mistaken as a whole pie
+                return &#39;&#39;;
+            }
+            // essentially going to be the entire circle, so ignore startAngle
+            startx = endx = x + radius;
+            starty = endy = y;
+        }
+
+        if (startx === endx &amp;&amp; starty === endy &amp;&amp; (endAngle - startAngle) &lt; Math.PI) {
+            return &#39;&#39;;
+        }
+
+        vpath = [x - radius, y - radius, x + radius, y + radius, startx, starty, endx, endy];
+        return [&#39;&lt;svml:shape coordorigin=&quot;0 0&quot; coordsize=&quot;&#39;, width, &#39; &#39;, height,
+            &#39;&quot; id=&quot;jqsshape&#39;, shapeid, &#39;&quot; &#39;,
+            stroke,
+            fill,
+            &#39; style=&quot;position:absolute;height:&#39;, height, &#39;px;width:&#39;, width,
+            &#39;px&quot; path=&quot;m &#39;, x, &#39;,&#39;, y, &#39; wa &#39;, vpath.join(&#39;, &#39;), &#39; x e&quot;&gt;&lt;/svml:shape&gt;&#39;
+        ].join(&#39;&#39;);
+    },
+
+<span id='Ext-sparkline-VmlCanvas-method-_drawRect'>    _drawRect: function (shapeid, x, y, width, height, lineColor, fillColor) {
+</span>        return this._drawShape(shapeid, [[x, y], [x, y + height], [x + width, y + height], [x + width, y], [x, y]], lineColor, fillColor);
+    },
+
+<span id='Ext-sparkline-VmlCanvas-method-reset'>    reset: function () {
+</span>        Ext.fly(this.group).empty();
+    },
+
+<span id='Ext-sparkline-VmlCanvas-method-appendShape'>    appendShape: function (shape) {
+</span>        this.prerender.push(this[&#39;_draw&#39; + shape.type].apply(this, shape.args));
+        this.lastShapeId = shape.id;
+        return shape.id;
+    },
+
+<span id='Ext-sparkline-VmlCanvas-method-replaceWithShape'>    replaceWithShape: function (shapeid, shape) {
+</span>        var existing = this.el.getById(&#39;jqsshape&#39; + shapeid, true),
+            vel = this[&#39;_draw&#39; + shape.type].apply(this, shape.args);
+
+        existing.outerHTML = vel;
+    },
+
+<span id='Ext-sparkline-VmlCanvas-method-replaceWithShapes'>    replaceWithShapes: function (shapeids, shapes) {
+</span>        // replace the first shapeid with all the new shapes then toast the remaining old shapes
+        var existing = this.el.getById(&#39;jqsshape&#39; + shapeids[0], true),
+            replace = &#39;&#39;,
+            slen = shapes.length,
+            i;
+
+        for (i = 0; i &lt; slen; i++) {
+            replace += this[&#39;_draw&#39; + shapes[i].type].apply(this, shapes[i].args);
+        }
+        existing.outerHTML = replace;
+        for (i = 1; i &lt; shapeids.length; i++) {
+            this.el.getById(&#39;jqsshape&#39; + shapeids[i]).destroy();
+        }
+    },
+
+<span id='Ext-sparkline-VmlCanvas-method-insertAfterShape'>    insertAfterShape: function (shapeid, shape) {
+</span>        var existing = this.el.getById(&#39;jqsshape&#39; + shapeid, true),
+                vel = this[&#39;_draw&#39; + shape.type].apply(this, shape.args);
+        existing.insertAdjacentHTML(&#39;afterEnd&#39;, vel);
+    },
+
+<span id='Ext-sparkline-VmlCanvas-method-removeShapeId'>    removeShapeId: function (shapeid) {
+</span>        var existing = this.el.getById(&#39;jqsshape&#39; + shapeid, true);
+        this.group.removeChild(existing);
+    },
+
+<span id='Ext-sparkline-VmlCanvas-method-getShapeAt'>    getShapeAt: function (x, y) {
+</span>        var shapeid = this.el.id.substr(8);
+        return shapeid;
+    },
+
+<span id='Ext-sparkline-VmlCanvas-method-render'>    render: function () {
+</span>        this.group.dom.innerHTML = this.prerender.join(&#39;&#39;);
+    }
+}, function() {
+    Ext.onInternalReady(function() {
+        var doc = document;
+    
+        if (doc.namespaces &amp;&amp; !doc.namespaces.svml) {
+            doc.namespaces.add(&quot;svml&quot;, &quot;urn:schemas-microsoft-com:vml&quot;, &#39;#default#VML&#39;);
+        }
+    });
+});
+</pre>
+</body>
+</html>

@@ -1,0 +1,1123 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <title>The source code</title>
+  <link href="../resources/prettify/prettify.css" type="text/css" rel="stylesheet" />
+  <script type="text/javascript" src="../resources/prettify/prettify.js"></script>
+  <style type="text/css">
+    .highlight { display: block; background-color: #ddd; }
+  </style>
+  <script type="text/javascript">
+    function highlight() {
+      document.getElementById(location.hash.replace(/#/, "")).className = "highlight";
+    }
+  </script>
+</head>
+<body onload="prettyPrint(); highlight();">
+  <pre class="prettyprint lang-js">// @tag core
+<span id='Ext'>/**
+</span> * @class Ext
+ *
+ * The Ext namespace (global object) encapsulates all classes, singletons, and
+ * utility methods provided by Sencha&#39;s libraries.
+ *
+ * Most user interface Components are at a lower level of nesting in the namespace,
+ * but many common utility functions are provided as direct properties of the Ext namespace.
+ *
+ * Also many frequently used methods from other classes are provided as shortcuts
+ * within the Ext namespace. For example {@link Ext#getCmp Ext.getCmp} aliases
+ * {@link Ext.ComponentManager#get Ext.ComponentManager.get}.
+ *
+ * Many applications are initiated with {@link Ext#application Ext.application} which is
+ * called once the DOM is ready. This ensures all scripts have been loaded, preventing
+ * dependency issues. For example:
+ *
+ *      Ext.application({
+ *          name: &#39;MyApp&#39;,
+ *
+ *          launch: function () {
+ *              Ext.Msg.alert(this.name, &#39;Ready to go!&#39;);
+ *          }
+ *      });
+ *
+ * &lt;b&gt;&lt;a href=&quot;http://www.sencha.com/products/sencha-cmd/&quot;&gt;Sencha Cmd&lt;/a&gt;&lt;/b&gt; is a free tool
+ * for helping you generate and build Ext JS (and Sencha Touch) applications. See
+ * `{@link Ext.app.Application Application}` for more information about creating an app.
+ *
+ * A lower-level technique that does not use the `Ext.app.Application` architecture is
+ * {@link Ext#onReady Ext.onReady}.
+ *
+ * For more information about how to use the Ext classes, see:
+ *
+ * - &lt;a href=&quot;http://www.sencha.com/learn/&quot;&gt;The Learning Center&lt;/a&gt;
+ * - &lt;a href=&quot;http://www.sencha.com/learn/Ext_FAQ&quot;&gt;The FAQ&lt;/a&gt;
+ * - &lt;a href=&quot;http://www.sencha.com/forum/&quot;&gt;The forums&lt;/a&gt;
+ *
+ * @singleton
+ */
+var Ext = Ext || {}; // jshint ignore:line
+// @define Ext
+
+(function() {
+    var global = this,
+        objectPrototype = Object.prototype,
+        toString = objectPrototype.toString,
+        enumerables = [//&#39;hasOwnProperty&#39;, &#39;isPrototypeOf&#39;, &#39;propertyIsEnumerable&#39;,
+                       &#39;valueOf&#39;, &#39;toLocaleString&#39;, &#39;toString&#39;, &#39;constructor&#39;],
+        emptyFn = function () {},
+        privateFn = function () {},
+        identityFn = function(o) { return o; },
+        // This is the &quot;$previous&quot; method of a hook function on an instance. When called, it
+        // calls through the class prototype by the name of the called method.
+        callOverrideParent = function () {
+            var method = callOverrideParent.caller.caller; // skip callParent (our caller)
+            return method.$owner.prototype[method.$name].apply(this, arguments);
+        },
+        manifest = Ext.manifest || {},
+        i,
+        iterableRe = /\[object\s*(?:Array|Arguments|\w*Collection|\w*List|HTML\s+document\.all\s+class)\]/,
+        MSDateRe = /^\\?\/Date\(([-+])?(\d+)(?:[+-]\d{4})?\)\\?\/$/;
+
+    Ext.global = global;
+
+<span id='Ext-method-now'>    /**
+</span>     * Returns the current timestamp.
+     * @return {Number} Milliseconds since UNIX epoch.
+     * @method now
+     * @member Ext
+     */
+    Ext.now = Date.now || (Date.now = function() {
+        return +new Date();
+    });
+
+<span id='Ext-method-ticks'>    /**
+</span>     * Returns the current high-resolution timestamp.
+     * @return {Number} Milliseconds ellapsed since arbitrary epoch.
+     * @method ticks
+     * @member Ext
+     * @since 6.0.1
+     */
+    Ext.ticks = (global.performance &amp;&amp; global.performance.now) ? function() {
+        return performance.now(); // jshint ignore:line
+    } : Ext.now;
+
+    Ext._startTime = Ext.ticks();
+
+    // Mark these special fn&#39;s for easy identification:
+    emptyFn.$nullFn = identityFn.$nullFn = emptyFn.$emptyFn = identityFn.$identityFn =
+        privateFn.$nullFn = true;
+    privateFn.$privacy = &#39;framework&#39;;
+    
+    // We also want to prevent these functions from being cleaned up on destroy
+    emptyFn.$noClearOnDestroy = identityFn.$noClearOnDestroy = true;
+    privateFn.$noClearOnDestroy = true;
+
+    // These are emptyFn&#39;s in core and are redefined only in Ext JS (we use this syntax
+    // so Cmd does not detect them):
+    Ext[&#39;suspendLayouts&#39;] = Ext[&#39;resumeLayouts&#39;] = emptyFn; // jshint ignore:line
+
+    for (i in { toString: 1 }) {
+        enumerables = null;
+    }
+
+<span id='Ext-property-enumerables'>    /**
+</span>     * An array containing extra enumerables for old browsers
+     * @property {String[]}
+     */
+    Ext.enumerables = enumerables;
+
+<span id='Ext-method-apply'>    /**
+</span>     * Copies all the properties of `config` to the specified `object`. There are two levels
+     * of defaulting supported:
+     * 
+     *      Ext.apply(obj, { a: 1 }, { a: 2 });
+     *      //obj.a === 1
+     * 
+     *      Ext.apply(obj, {  }, { a: 2 });
+     *      //obj.a === 2
+     * 
+     * Note that if recursive merging and cloning without referencing the original objects
+     * or arrays is needed, use {@link Ext.Object#merge} instead.
+     * 
+     * @param {Object} object The receiver of the properties.
+     * @param {Object} config The primary source of the properties.
+     * @param {Object} [defaults] An object that will also be applied for default values.
+     * @return {Object} returns `object`.
+     */
+    Ext.apply = function(object, config, defaults) {
+        if (defaults) {
+            Ext.apply(object, defaults);
+        }
+
+        if (object &amp;&amp; config &amp;&amp; typeof config === &#39;object&#39;) {
+            var i, j, k;
+
+            for (i in config) {
+                object[i] = config[i];
+            }
+
+            if (enumerables) {
+                for (j = enumerables.length; j--;) {
+                    k = enumerables[j];
+                    if (config.hasOwnProperty(k)) {
+                        object[k] = config[k];
+                    }
+                }
+            }
+        }
+
+        return object;
+    };
+
+    // Used by Ext.override
+    function addInstanceOverrides(target, owner, overrides) {
+        var name, value;
+
+        for (name in overrides) {
+            if (overrides.hasOwnProperty(name)) {
+                value = overrides[name];
+
+                if (typeof value === &#39;function&#39;) {
+                    //&lt;debug&gt;
+                    if (owner.$className) {
+                        value.name = owner.$className + &#39;#&#39; + name;
+                    }
+                    //&lt;/debug&gt;
+
+                    value.$name = name;
+                    value.$owner = owner;
+
+                    value.$previous = target.hasOwnProperty(name) ?
+                        target[name] // already hooked, so call previous hook
+                        : callOverrideParent; // calls by name on prototype
+                }
+
+                target[name] = value;
+            }
+        }
+    }
+
+    Ext.buildSettings = Ext.apply({
+        baseCSSPrefix: &#39;x-&#39;
+    }, Ext.buildSettings || {});
+
+    Ext.apply(Ext, {
+<span id='Ext-property-idSeed'>        /**
+</span>         * @private
+         */
+        idSeed: 0,
+
+<span id='Ext-property-idPrefix'>        /**
+</span>         * @private
+         */
+        idPrefix: &#39;ext-&#39;,
+
+<span id='Ext-property-isSecure'>        /**
+</span>         * @property {Boolean} isSecure
+         * True if the page is running over SSL
+         * @readonly
+         */
+        isSecure: /^https/i.test(window.location.protocol),
+
+<span id='Ext-property-enableGarbageCollector'>        /**
+</span>         * `true` to automatically uncache orphaned Ext.Elements periodically. If set to
+         * `false`, the application will be required to clean up orphaned Ext.Elements and
+         * it&#39;s listeners as to not cause memory leakage.
+         */
+        enableGarbageCollector: false,
+
+<span id='Ext-property-enableListenerCollection'>        /**
+</span>         * True to automatically purge event listeners during garbageCollection.
+         */
+        enableListenerCollection: true,
+
+<span id='Ext-property-name'>        /**
+</span>         * @property {String} [name=&#39;Ext&#39;]
+         * &lt;p&gt;The name of the property in the global namespace (The &lt;code&gt;window&lt;/code&gt; in browser environments) which refers to the current instance of Ext.&lt;/p&gt;
+         * &lt;p&gt;This is usually &lt;code&gt;&quot;Ext&quot;&lt;/code&gt;, but if a sandboxed build of ExtJS is being used, this will be an alternative name.&lt;/p&gt;
+         * &lt;p&gt;If code is being generated for use by &lt;code&gt;eval&lt;/code&gt; or to create a &lt;code&gt;new Function&lt;/code&gt;, and the global instance
+         * of Ext must be referenced, this is the name that should be built into the code.&lt;/p&gt;
+         */
+        name: Ext.sandboxName || &#39;Ext&#39;,
+
+<span id='Ext-property-privateFn'>        /**
+</span>         * @property {Function}
+         * A reusable empty function for use as `privates` members.
+         *
+         *      Ext.define(&#39;MyClass&#39;, {
+         *          nothing: Ext.emptyFn,
+         *
+         *          privates: {
+         *              privateNothing: Ext.privateFn
+         *          }
+         *      });
+         *
+         */
+        privateFn: privateFn,
+
+<span id='Ext-property-emptyFn'>        /**
+</span>         * @property {Function}
+         * A reusable empty function.
+         */
+        emptyFn: emptyFn,
+
+<span id='Ext-property-identityFn'>        /**
+</span>         * @property {Function}
+         * A reusable identity function that simply returns its first argument.
+         */
+        identityFn: identityFn,
+
+<span id='Ext-property-frameStartTime'>        /**
+</span>         * This indicate the start timestamp of current cycle.
+         * It is only reliable during dom-event-initiated cycles and
+         * {@link Ext.draw.Animator} initiated cycles.
+         */
+        frameStartTime: Ext.now(),
+
+<span id='Ext-cfg-manifest'>        /**
+</span>         * This object is initialized prior to loading the framework (Ext JS or Sencha
+         * Touch) and contains settings and other information describing the application.
+         *
+         * For applications built using Sencha Cmd, this is produced from the `&quot;app.json&quot;`
+         * file with information extracted from all of the required packages&#39; `&quot;package.json&quot;`
+         * files. This can be set to a string when your application is using the
+         * (microloader)[#/guide/microloader]. In this case, the string of &quot;foo&quot; will be
+         * requested as `&quot;foo.json&quot;` and the object in that JSON file will parsed and set
+         * as this object.
+         *
+         * @cfg {String/Object} manifest
+         *
+         * @cfg {String/Object} manifest.compatibility An object keyed by package name with
+         * the value being to desired compatibility level as a version number. If this is
+         * just a string, this version is assumed to apply to the framework (&#39;ext&#39; or
+         * &#39;touch&#39;). Setting this value to less than 5 for &#39;ext&#39; will enable the compatibility
+         * layer to assist in the application upgrade process. For details on the upgrade
+         * process, see the (Upgrade Guide)[#/guides/upgrade_50].
+         *
+         * @cfg {Object} manifest.debug An object configuring the debugging characteristics
+         * of the framework. See `Ext.debugConfig` which is set to this value.
+         *
+         * @cfg {Object} manifest.packages An object keyed by package name with the value
+         * being a subset of the package&#39;s `&quot;package.json&quot;` descriptor.
+         * @since 5.0.0
+         */
+        manifest: manifest,
+
+        //&lt;debug&gt;
+<span id='Ext-cfg-debugConfig'>        /**
+</span>         * @cfg {Object} [debugConfig]
+         * This object is used to enable or disable debugging for classes or namespaces. The
+         * default instance looks like this:
+         *
+         *      Ext.debugConfig = {
+         *          hooks: {
+         *              &#39;*&#39;: true
+         *          }
+         *      };
+         *
+         * Typically applications will set this in their `&quot;app.json&quot;` like so:
+         *
+         *      {
+         *          &quot;debug&quot;: {
+         *              &quot;hooks&quot;: {
+         *                  // Default for all namespaces:
+         *                  &#39;*&#39;: true,
+         *
+         *                  // Except for Ext namespace which is disabled
+         *                  &#39;Ext&#39;: false,
+         *
+         *                  // Except for Ext.layout namespace which is enabled
+         *                  &#39;Ext.layout&#39;: true
+         *              }
+         *          }
+         *      }
+         *
+         * Alternatively, because this property is consumed very early in the load process of
+         * the framework, this can be set in a `script` tag that is defined prior to loading
+         * the framework itself.
+         *
+         * For example, to enable debugging for the `Ext.layout` namespace only:
+         *
+         *      var Ext = Ext || {};
+         *      Ext.debugConfig = {
+         *          hooks: {
+         *              //...
+         *          }
+         *      };
+         *
+         * For any class declared, the longest matching namespace specified determines if its
+         * `debugHooks` will be enabled. The default setting is specified by the &#39;*&#39; property.
+         *
+         * **NOTE:** This option only applies to debug builds. All debugging is disabled in
+         * production builds.
+         */
+        debugConfig: Ext.debugConfig || manifest.debug || {
+            hooks: {
+                &#39;*&#39;: true
+            }
+        },
+        //&lt;/debug&gt;
+        
+<span id='Ext-property-enableAria'>        /**
+</span>         * @property {Boolean} [enableAria=true] This property is provided for backward
+         * compatibility with previous versions of Ext JS. Accessibility is always enabled
+         * in Ext JS 6.0+.
+         *
+         * This property is deprecated. To disable WAI-ARIA compatibility warnings,
+         * override `Ext.ariaWarn` function in your application startup code:
+         *
+         *      Ext.application({
+         *          launch: function() {
+         *              Ext.ariaWarn = Ext.emptyFn;
+         *          }
+         *      });
+         *
+         * For stricter compatibility with WAI-ARIA requirements, replace `Ext.ariaWarn`
+         * with a function that will raise an error instead:
+         *
+         *      Ext.application({
+         *          launch: function() {
+         *              Ext.ariaWarn = function(target, msg) {
+         *                  Ext.raise({
+         *                      msg: msg,
+         *                      component: target
+         *                  });
+         *              };
+         *          }
+         *      });
+         *
+         * @since 6.0.0
+         * @deprecated 6.0.2
+         */
+        enableAria: true,
+        
+        startsWithHashRe: /^#/,
+        
+<span id='Ext-property-validIdRe'>        /**
+</span>         * @property {RegExp}
+         * @private
+         * Regular expression used for validating identifiers.
+         */
+        validIdRe: /^[a-z_][a-z0-9\-_]*$/i,
+
+<span id='Ext-property-BLANK_IMAGE_URL'>        /**
+</span>         * @property {String} BLANK_IMAGE_URL
+         * URL to a 1x1 transparent gif image used by Ext to create inline icons with
+         * CSS background images.
+         */
+        BLANK_IMAGE_URL: &#39;data:image/gif;base64,R0lGODlhAQABAID/AMDAwAAAACH5BAEAAAAALAAAAAABAAEAAAICRAEAOw==&#39;,
+
+<span id='Ext-method-makeIdSelector'>        /**
+</span>         * Converts an id (`&#39;foo&#39;`) into an id selector (`&#39;#foo&#39;`).  This method is used
+         * internally by the framework whenever an id needs to be converted into a selector
+         * and is provided as a hook for those that need to escape IDs selectors since,
+         * as of Ext 5.0, the framework no longer escapes IDs by default.
+         * @private
+         * @param {String} id
+         * @return {String}
+         */
+        makeIdSelector: function(id) {
+            //&lt;debug&gt;
+            if (!Ext.validIdRe.test(id)) {
+                Ext.raise(&#39;Invalid id selector: &quot;&#39; + id + &#39;&quot;&#39;);
+            }
+            //&lt;/debug&gt;
+            return &#39;#&#39; + id;
+        },
+
+<span id='Ext-method-id'>        /**
+</span>        * Generates unique ids. If the object/element is passes and it already has an `id`, it is unchanged.
+        * @param {Object} [o] The object to generate an id for.
+        * @param {String} [prefix=ext-gen] (optional) The `id` prefix.
+        * @return {String} The generated `id`.
+        */
+        id: function(o, prefix) {
+            if (o &amp;&amp; o.id) {
+                return o.id;
+            }
+
+            var id = (prefix || Ext.idPrefix) + (++Ext.idSeed);
+            
+            if (o) {
+                o.id = id;
+            }
+
+            return id;
+        },
+
+<span id='Ext-method-returnId'>        /**
+</span>         * A reusable function which returns the value of `getId()` called upon a single passed parameter.
+         * Useful when creating a {@link Ext.util.MixedCollection} of objects keyed by an identifier returned from a `getId` method.
+         */
+        returnId: function(o) {
+            return o.getId();
+        },
+
+<span id='Ext-method-returnTrue'>        /**
+</span>         * A reusable function which returns `true`.
+         */
+        returnTrue: function() {
+            return true;
+        },
+
+<span id='Ext-property-emptyString'>        /**
+</span>         * A zero length string which will pass a truth test. Useful for passing to methods
+         * which use a truth test to reject &lt;i&gt;falsy&lt;/i&gt; values where a string value must be cleared.
+         */
+        emptyString: new String(), // jshint ignore:line
+
+<span id='Ext-property-baseCSSPrefix'>        /**
+</span>         * @property {String} [baseCSSPrefix=&#39;x-&#39;]
+         * The base prefix to use for all `Ext` components. To configure this property, you should use the
+         * Ext.buildSettings object before the framework is loaded:
+         *
+         *     Ext.buildSettings = {
+         *         baseCSSPrefix : &#39;abc-&#39;
+         *     };
+         *
+         * or you can change it before any components are rendered:
+         *
+         *     Ext.baseCSSPrefix = Ext.buildSettings.baseCSSPrefix = &#39;abc-&#39;;
+         *
+         * This will change what CSS classes components will use and you should
+         * then recompile the SASS changing the `$prefix` SASS variable to match.
+         */
+        baseCSSPrefix: Ext.buildSettings.baseCSSPrefix,
+
+<span id='Ext-property-S-eventNameMap'>        /**
+</span>         * @property {Object} $eventNameMap
+         * A map of event names which contained the lower-cased versions of any mixed
+         * case event names.
+         * @private
+         */
+        $eventNameMap: {},
+
+        // Vendor-specific events do not work if lower-cased.  This regex specifies event
+        // prefixes for names that should NOT be lower-cased by Ext.canonicalEventName()
+        $vendorEventRe: /^(DOMMouse|Moz.+|MS.+|webkit.+)/,
+
+        // TODO: inlinable function - SDKTOOLS-686
+<span id='Ext-method-canonicalEventName'>        /**
+</span>         * @private
+         * @inline
+         */
+        canonicalEventName: function(name) {
+            return Ext.$eventNameMap[name] || (Ext.$eventNameMap[name] =
+                (Ext.$vendorEventRe.test(name) ? name : name.toLowerCase()));
+        },
+
+<span id='Ext-method-applyIf'>        /**
+</span>         * Copies all the properties of config to object if they don&#39;t already exist.
+         * @param {Object} object The receiver of the properties
+         * @param {Object} config The source of the properties
+         * @return {Object} returns obj
+         */
+        applyIf: function(object, config) {
+            var property;
+
+            if (object) {
+                for (property in config) {
+                    if (object[property] === undefined) {
+                        object[property] = config[property];
+                    }
+                }
+            }
+
+            return object;
+        },
+
+<span id='Ext-method-destroy'>        /**
+</span>         * Destroys all of the given objects. If arrays are passed, the elements of these
+         * are destroyed recursively.
+         *
+         * What it means to &quot;destroy&quot; an object depends on the type of object.
+         *
+         *  * `Array`: Each element of the array is destroyed recursively.
+         *  * `Object`: Any object with a `destroy` method will have that method called.
+         *
+         * @param {Mixed...} args Any number of objects or arrays.
+         */
+        destroy: function() {
+            var ln = arguments.length,
+            i, arg;
+
+            for (i = 0; i &lt; ln; i++) {
+                arg = arguments[i];
+                if (arg) {
+                    if (Ext.isArray(arg)) {
+                        this.destroy.apply(this, arg);
+                    } else if (Ext.isFunction(arg.destroy)) {
+                        arg.destroy();
+                    }
+                }
+            }
+            return null;
+        },
+
+<span id='Ext-method-destroyMembers'>        /**
+</span>         * Destroys the specified named members of the given object using `Ext.destroy`. These
+         * properties will be set to `null`.
+         * @param {Object} object The object who&#39;s properties you wish to destroy.
+         * @param {String...} args One or more names of the properties to destroy and remove from the object.
+         */
+        destroyMembers: function (object) {
+            for (var ref, name, i = 1, a = arguments, len = a.length; i &lt; len; i++) {
+                ref = object[name = a[i]];
+
+                // Avoid adding the property if it does not already exist
+                if (ref != null) {
+                    object[name] = Ext.destroy(ref);
+                }
+            }
+        },
+
+<span id='Ext-method-override'>        /**
+</span>         * Overrides members of the specified `target` with the given values.
+         *
+         * If the `target` is a class declared using {@link Ext#define Ext.define}, the
+         * `override` method of that class is called (see {@link Ext.Base#override}) given
+         * the `overrides`.
+         *
+         * If the `target` is a function, it is assumed to be a constructor and the contents
+         * of `overrides` are applied to its `prototype` using {@link Ext#apply Ext.apply}.
+         *
+         * If the `target` is an instance of a class declared using {@link Ext#define Ext.define},
+         * the `overrides` are applied to only that instance. In this case, methods are
+         * specially processed to allow them to use {@link Ext.Base#callParent}.
+         *
+         *      var panel = new Ext.Panel({ ... });
+         *
+         *      Ext.override(panel, {
+         *          initComponent: function () {
+         *              // extra processing...
+         *
+         *              this.callParent();
+         *          }
+         *      });
+         *
+         * If the `target` is none of these, the `overrides` are applied to the `target`
+         * using {@link Ext#apply Ext.apply}.
+         *
+         * Please refer to {@link Ext#define Ext.define} and {@link Ext.Base#override} for
+         * further details.
+         *
+         * @param {Object} target The target to override.
+         * @param {Object} overrides The properties to add or replace on `target`.
+         * @method override
+         */
+        override: function (target, overrides) {
+            if (target.$isClass) {
+                target.override(overrides);
+            } else if (typeof target === &#39;function&#39;) {
+                Ext.apply(target.prototype, overrides);
+            } else {
+                var owner = target.self,
+                    privates;
+
+                if (owner &amp;&amp; owner.$isClass) { // if (instance of Ext.define&#39;d class)
+                    privates = overrides.privates;
+                    if (privates) {
+                        overrides = Ext.apply({}, overrides);
+                        delete overrides.privates;
+                        addInstanceOverrides(target, owner, privates);
+                    }
+
+                    addInstanceOverrides(target, owner, overrides);
+                } else {
+                    Ext.apply(target, overrides);
+                }
+            }
+
+            return target;
+        },
+
+<span id='Ext-method-valueFrom'>        /**
+</span>         * Returns the given value itself if it&#39;s not empty, as described in {@link Ext#isEmpty}; returns the default
+         * value (second argument) otherwise.
+         *
+         * @param {Object} value The value to test.
+         * @param {Object} defaultValue The value to return if the original value is empty.
+         * @param {Boolean} [allowBlank=false] `true` to allow zero length strings to qualify as non-empty.
+         * @return {Object} value, if non-empty, else defaultValue.
+         */
+        valueFrom: function(value, defaultValue, allowBlank){
+            return Ext.isEmpty(value, allowBlank) ? defaultValue : value;
+        },
+
+<span id='Ext-method-isEmpty'>        /**
+</span>         * Returns true if the passed value is empty, false otherwise. The value is deemed to be empty if it is either:
+         *
+         * - `null`
+         * - `undefined`
+         * - a zero-length array
+         * - a zero-length string (Unless the `allowEmptyString` parameter is set to `true`)
+         *
+         * @param {Object} value The value to test.
+         * @param {Boolean} [allowEmptyString=false] `true` to allow empty strings.
+         * @return {Boolean}
+         */
+        isEmpty: function(value, allowEmptyString) {
+            return (value == null) || (!allowEmptyString ? value === &#39;&#39; : false) || (Ext.isArray(value) &amp;&amp; value.length === 0);
+        },
+
+<span id='Ext-method-isArray'>        /**
+</span>         * Returns `true` if the passed value is a JavaScript Array, `false` otherwise.
+         *
+         * @param {Object} target The target to test.
+         * @return {Boolean}
+         * @method
+         */
+        isArray: (&#39;isArray&#39; in Array) ? Array.isArray : function(value) {
+            return toString.call(value) === &#39;[object Array]&#39;;
+        },
+
+<span id='Ext-method-isDate'>        /**
+</span>         * Returns `true` if the passed value is a JavaScript Date object, `false` otherwise.
+         * @param {Object} object The object to test.
+         * @return {Boolean}
+         */
+        isDate: function(value) {
+            return toString.call(value) === &#39;[object Date]&#39;;
+        },
+
+<span id='Ext-method-isMSDate'>        /**
+</span>         * Returns &#39;true&#39; if the passed value is a String that matches the MS Date JSON
+         * encoding format.
+         * @param {String} value The string to test.
+         * @return {Boolean}
+         */
+        isMSDate: function(value) {
+            if (!Ext.isString(value)) {
+                return false;
+            }
+            return MSDateRe.test(value);
+        },
+
+<span id='Ext-method-isObject'>        /**
+</span>         * Returns `true` if the passed value is a JavaScript Object, `false` otherwise.
+         * @param {Object} value The value to test.
+         * @return {Boolean}
+         * @method
+         */
+        isObject: (toString.call(null) === &#39;[object Object]&#39;) ?
+        function(value) {
+            // check ownerDocument here as well to exclude DOM nodes
+            return value !== null &amp;&amp; value !== undefined &amp;&amp; toString.call(value) === &#39;[object Object]&#39; &amp;&amp; value.ownerDocument === undefined;
+        } :
+        function(value) {
+            return toString.call(value) === &#39;[object Object]&#39;;
+        },
+
+<span id='Ext-method-isSimpleObject'>        /**
+</span>         * @private
+         */
+        isSimpleObject: function(value) {
+            return value instanceof Object &amp;&amp; value.constructor === Object;
+        },
+
+<span id='Ext-method-isPrimitive'>        /**
+</span>         * Returns `true` if the passed value is a JavaScript &#39;primitive&#39;, a string, number
+         * or boolean.
+         * @param {Object} value The value to test.
+         * @return {Boolean}
+         */
+        isPrimitive: function(value) {
+            var type = typeof value;
+
+            return type === &#39;string&#39; || type === &#39;number&#39; || type === &#39;boolean&#39;;
+        },
+
+<span id='Ext-method-isFunction'>        /**
+</span>         * Returns `true` if the passed value is a JavaScript Function, `false` otherwise.
+         * @param {Object} value The value to test.
+         * @return {Boolean}
+         * @method
+         */
+        isFunction:
+        // Safari 3.x and 4.x returns &#39;function&#39; for typeof &lt;NodeList&gt;, hence we need to fall back to using
+        // Object.prototype.toString (slower)
+        (typeof document !== &#39;undefined&#39; &amp;&amp; typeof document.getElementsByTagName(&#39;body&#39;) === &#39;function&#39;) ? function(value) {
+            return !!value &amp;&amp; toString.call(value) === &#39;[object Function]&#39;;
+        } : function(value) {
+            return !!value &amp;&amp; typeof value === &#39;function&#39;;
+        },
+
+<span id='Ext-method-isNumber'>        /**
+</span>         * Returns `true` if the passed value is a number. Returns `false` for non-finite numbers.
+         * @param {Object} value The value to test.
+         * @return {Boolean}
+         */
+        isNumber: function(value) {
+            return typeof value === &#39;number&#39; &amp;&amp; isFinite(value);
+        },
+
+<span id='Ext-method-isNumeric'>        /**
+</span>         * Validates that a value is numeric.
+         * @param {Object} value Examples: 1, &#39;1&#39;, &#39;2.34&#39;
+         * @return {Boolean} True if numeric, false otherwise
+         */
+        isNumeric: function(value) {
+            return !isNaN(parseFloat(value)) &amp;&amp; isFinite(value);
+        },
+
+<span id='Ext-method-isString'>        /**
+</span>         * Returns `true `if the passed value is a string.
+         * @param {Object} value The value to test.
+         * @return {Boolean}
+         */
+        isString: function(value) {
+            return typeof value === &#39;string&#39;;
+        },
+
+<span id='Ext-method-isBoolean'>        /**
+</span>         * Returns `true` if the passed value is a boolean.
+         *
+         * @param {Object} value The value to test.
+         * @return {Boolean}
+         */
+        isBoolean: function(value) {
+            return typeof value === &#39;boolean&#39;;
+        },
+
+<span id='Ext-method-isElement'>        /**
+</span>         * Returns `true` if the passed value is an HTMLElement
+         * @param {Object} value The value to test.
+         * @return {Boolean}
+         */
+        isElement: function(value) {
+            return value ? value.nodeType === 1 : false;
+        },
+
+<span id='Ext-method-isTextNode'>        /**
+</span>         * Returns `true` if the passed value is a TextNode
+         * @param {Object} value The value to test.
+         * @return {Boolean}
+         */
+        isTextNode: function(value) {
+            return value ? value.nodeName === &quot;#text&quot; : false;
+        },
+
+<span id='Ext-method-isDefined'>        /**
+</span>         * Returns `true` if the passed value is defined.
+         * @param {Object} value The value to test.
+         * @return {Boolean}
+         */
+        isDefined: function(value) {
+            return typeof value !== &#39;undefined&#39;;
+        },
+
+<span id='Ext-method-isIterable'>        /**
+</span>         * Returns `true` if the passed value is iterable, that is, if elements of it are addressable using array
+         * notation with numeric indices, `false` otherwise.
+         *
+         * Arrays and function `arguments` objects are iterable. Also HTML collections such as `NodeList` and `HTMLCollection&#39;
+         * are iterable.
+         *
+         * @param {Object} value The value to test
+         * @return {Boolean}
+         */
+        isIterable: function(value) {
+            // To be iterable, the object must have a numeric length property and must not be a string or function.
+            if (!value || typeof value.length !== &#39;number&#39; || typeof value === &#39;string&#39; || Ext.isFunction(value)) {
+                return false;
+            }
+
+            // Certain &quot;standard&quot; collections in IE (such as document.images) do not offer the correct
+            // Javascript Object interface; specifically, they lack the propertyIsEnumerable method.
+            // And the item property while it does exist is not typeof &quot;function&quot;
+            if (!value.propertyIsEnumerable) {
+                return !!value.item;
+            }
+
+            // If it is a regular, interrogatable JS object (not an IE ActiveX object), then...
+            // If it has its own property called &quot;length&quot;, but not enumerable, it&#39;s iterable
+            if (value.hasOwnProperty(&#39;length&#39;) &amp;&amp; !value.propertyIsEnumerable(&#39;length&#39;)) {
+                return true;
+            }
+
+            // Test against whitelist which includes known iterable collection types
+            return iterableRe.test(toString.call(value));
+        },
+
+<span id='Ext-method-isDebugEnabled'>        /**
+</span>         * This method returns `true` if debug is enabled for the specified class. This is
+         * done by checking the `Ext.debugConfig.hooks` config for the closest match to the
+         * given `className`.
+         * @param {String} className The name of the class.
+         * @return {Boolean} `true` if debug is enabled for the specified class.
+         */
+        isDebugEnabled:
+            //&lt;debug&gt;
+            function (className, defaultEnabled) {
+                var debugConfig = Ext.debugConfig.hooks;
+
+                if (debugConfig.hasOwnProperty(className)) {
+                    return debugConfig[className];
+                }
+
+                var enabled = debugConfig[&#39;*&#39;],
+                    prefixLength = 0;
+
+                if (defaultEnabled !== undefined) {
+                    enabled = defaultEnabled;
+                }
+                if (!className) {
+                    return enabled;
+                }
+
+                for (var prefix in debugConfig) {
+                    var value = debugConfig[prefix];
+
+                    // if prefix==&#39;Ext&#39; match &#39;Ext.foo.Bar&#39; but not &#39;Ext4.foo.Bar&#39;
+                    if (className.charAt(prefix.length) === &#39;.&#39;) {
+                        if (className.substring(0, prefix.length) === prefix) {
+                            if (prefixLength &lt; prefix.length) {
+                                prefixLength = prefix.length;
+                                enabled = value;
+                            }
+                        }
+                    }
+                }
+
+                return enabled;
+            } ||
+            //&lt;/debug&gt;
+            emptyFn,
+
+<span id='Ext-method-clone'>        /**
+</span>         * Clone simple variables including array, {}-like objects, DOM nodes and Date without keeping the old reference.
+         * A reference for the object itself is returned if it&#39;s not a direct descendant of Object. For model cloning,
+         * see {@link Ext.data.Model#copy Model.copy}.
+         *
+         * @param {Object} item The variable to clone
+         * @param {Boolean} [cloneDom=true] `true` to clone DOM nodes.
+         * @return {Object} clone
+         */
+        clone: function(item, cloneDom) {
+            if (item === null || item === undefined) {
+                return item;
+            }
+
+            // DOM nodes
+            // TODO proxy this to Ext.Element.clone to handle automatic id attribute changing
+            // recursively
+            if (cloneDom !== false &amp;&amp; item.nodeType &amp;&amp; item.cloneNode) {
+                return item.cloneNode(true);
+            }
+
+            var type = toString.call(item),
+                i, j, k, clone, key;
+
+            // Date
+            if (type === &#39;[object Date]&#39;) {
+                return new Date(item.getTime());
+            }
+
+            // Array
+            if (type === &#39;[object Array]&#39;) {
+                i = item.length;
+
+                clone = [];
+
+                while (i--) {
+                    clone[i] = Ext.clone(item[i], cloneDom);
+                }
+            }
+            // Object
+            else if (type === &#39;[object Object]&#39; &amp;&amp; item.constructor === Object) {
+                clone = {};
+
+                for (key in item) {
+                    clone[key] = Ext.clone(item[key], cloneDom);
+                }
+
+                if (enumerables) {
+                    for (j = enumerables.length; j--;) {
+                        k = enumerables[j];
+                        if (item.hasOwnProperty(k)) {
+                            clone[k] = item[k];
+                        }
+                    }
+                }
+            }
+
+            return clone || item;
+        },
+
+<span id='Ext-method-getUniqueGlobalNamespace'>        /**
+</span>         * @private
+         * Generate a unique reference of Ext in the global scope, useful for sandboxing
+         */
+        getUniqueGlobalNamespace: function() {
+            var uniqueGlobalNamespace = this.uniqueGlobalNamespace,
+                i;
+
+            if (uniqueGlobalNamespace === undefined) {
+                i = 0;
+
+                do {
+                    uniqueGlobalNamespace = &#39;ExtBox&#39; + (++i);
+                } while (global[uniqueGlobalNamespace] !== undefined);
+
+                global[uniqueGlobalNamespace] = Ext;
+                this.uniqueGlobalNamespace = uniqueGlobalNamespace;
+            }
+
+            return uniqueGlobalNamespace;
+        },
+
+<span id='Ext-property-functionFactoryCache'>        /**
+</span>         * @private
+         */
+        functionFactoryCache: {},
+
+        cacheableFunctionFactory: function() {
+            var me = this,
+                args = Array.prototype.slice.call(arguments),
+                cache = me.functionFactoryCache,
+                idx, fn, ln;
+
+             if (Ext.isSandboxed) {
+                ln = args.length;
+                if (ln &gt; 0) {
+                    ln--;
+                    args[ln] = &#39;var Ext=window.&#39; + Ext.name + &#39;;&#39; + args[ln];
+                }
+            }
+            idx = args.join(&#39;&#39;);
+            fn = cache[idx];
+            if (!fn) {
+                fn = Function.prototype.constructor.apply(Function.prototype, args);
+
+                cache[idx] = fn;
+            }
+            return fn;
+        },
+
+        functionFactory: function() {
+            var args = Array.prototype.slice.call(arguments),
+                ln;
+
+            if (Ext.isSandboxed) {
+                ln = args.length;
+                if (ln &gt; 0) {
+                    ln--;
+                    args[ln] = &#39;var Ext=window.&#39; + Ext.name + &#39;;&#39; + args[ln];
+                }
+            }
+
+            return Function.prototype.constructor.apply(Function.prototype, args);
+        },
+
+<span id='Ext-property-Logger'>        /**
+</span>         * @private
+         */
+        Logger: {
+        //&lt;feature logger&gt;
+            log: function(message, priority) {
+                if (message &amp;&amp; global.console) {
+                    if (!priority || !(priority in global.console)) {
+                        priority = &#39;log&#39;;
+                    }
+                    message = &#39;[&#39; + priority.toUpperCase() + &#39;] &#39; + message;
+                    global.console[priority](message);
+                }
+            },
+            verbose: function(message) {
+                this.log(message, &#39;verbose&#39;);
+            },
+            info: function(message) {
+                this.log(message, &#39;info&#39;);
+            },
+            warn: function(message) {
+                this.log(message, &#39;warn&#39;);
+            },
+            error: function(message) {
+                throw new Error(message);
+            },
+            deprecate: function(message) {
+                this.log(message, &#39;warn&#39;);
+            }
+        } || {
+        //&lt;/feature&gt;
+            verbose: emptyFn,
+            log: emptyFn,
+            info: emptyFn,
+            warn: emptyFn,
+            error: function(message) {
+                throw new Error(message);
+            },
+            deprecate: emptyFn
+        },
+        
+        ariaWarn: function(target, msg) {
+            // The checks still can be disabled by setting Ext.enableAria to false;
+            // this is for backwards compatibility. Also make sure we&#39;re not running
+            // under the slicer, warnings are pointless in that case.
+            if (Ext.enableAria &amp;&amp; !Ext.slicer) {
+                if (!Ext.ariaWarn.first) {
+                    Ext.ariaWarn.first = true;
+                    Ext.log.warn(&quot;WAI-ARIA compatibility warnings can be suppressed &quot; +
+                                 &quot;by adding the following to application startup code:&quot;);
+                    Ext.log.warn(&quot;    Ext.ariaWarn = Ext.emptyFn;&quot;);
+                }
+                
+                Ext.log.warn({
+                    msg: msg,
+                    dump: target
+                });
+            }
+        },
+
+<span id='Ext-method-getElementById'>        /**
+</span>         * @private
+         */
+        getElementById: function(id) {
+            return document.getElementById(id);
+        },
+
+<span id='Ext-property-splitAndUnescape'>        /**
+</span>         * @member Ext
+         * @private
+         */
+        splitAndUnescape: (function() {
+            var cache = {};
+    
+            return function(origin, delimiter) {
+                if (!origin) {
+                    return [];
+                }
+                else if (!delimiter) {
+                    return [origin];
+                }
+    
+                var replaceRe = cache[delimiter] || (cache[delimiter] = new RegExp(&#39;\\\\&#39; + delimiter, &#39;g&#39;)),
+                    result = [],
+                    parts, part;
+    
+                parts = origin.split(delimiter);
+    
+                while ((part = parts.shift()) !== undefined) {
+                    // If any of the parts ends with the delimiter that means
+                    // the delimiter was escaped and the split was invalid. Roll back.
+                    while (part.charAt(part.length - 1) === &#39;\\&#39; &amp;&amp; parts.length &gt; 0) {
+                        part = part + delimiter + parts.shift();
+                    }
+    
+                    // Now that we have split the parts, unescape the delimiter char
+                    part = part.replace(replaceRe, delimiter);
+    
+                    result.push(part);
+                }
+    
+                return result;
+            };
+        })()
+    }); // Ext.apply(Ext
+
+    Ext.returnTrue.$nullFn = Ext.returnId.$nullFn = true;
+}());
+</pre>
+</body>
+</html>

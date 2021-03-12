@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <title>The source code</title>
+  <link href="../resources/prettify/prettify.css" type="text/css" rel="stylesheet" />
+  <script type="text/javascript" src="../resources/prettify/prettify.js"></script>
+  <style type="text/css">
+    .highlight { display: block; background-color: #ddd; }
+  </style>
+  <script type="text/javascript">
+    function highlight() {
+      document.getElementById(location.hash.replace(/#/, "")).className = "highlight";
+    }
+  </script>
+</head>
+<body onload="prettyPrint(); highlight();">
+  <pre class="prettyprint lang-js"><span id='Ext-app-domain-Global'>/**
+</span> * This class implements the global event domain. This domain represents event fired from
+ * {@link Ext.GlobalEvents} Observable instance. No selectors are supported for this domain.
+ * 
+ * @private
+ */
+Ext.define(&#39;Ext.app.domain.Global&#39;, {
+    extend: &#39;Ext.app.EventDomain&#39;,
+    requires: [&#39;Ext.GlobalEvents&#39;],
+    singleton: true,
+
+<span id='Ext-app-domain-Global-property-type'>    type: &#39;global&#39;,
+</span>
+<span id='Ext-app-domain-Global-method-constructor'>    constructor: function() {
+</span>        var me = this;
+        
+        me.callParent();
+        me.monitor(Ext.GlobalEvents);
+    },
+
+<span id='Ext-app-domain-Global-method-listen'>    /**
+</span>     * This method adds listeners on behalf of a controller. Since Global domain does not
+     * support selectors, we skip this layer and just accept an object keyed by events.
+     * For example:
+     *
+     *      domain.listen({
+     *          idle: function() { ... },
+     *          afterlayout: {
+     *              fn: function() { ... },
+     *              delay: 10
+     *          }
+     *      });
+     *
+     * @param {Object} listeners Config object containing listeners.
+     * @param {Object} controller A controller to force execution scope on
+     *
+     * @private
+     */              
+    listen: function(listeners, controller) {
+        this.callParent([{ global: listeners }, controller]);
+    },
+
+<span id='Ext-app-domain-Global-property-match'>    match: Ext.returnTrue
+</span>});
+</pre>
+</body>
+</html>

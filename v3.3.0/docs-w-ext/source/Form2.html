@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <title>The source code</title>
+  <link href="../resources/prettify/prettify.css" type="text/css" rel="stylesheet" />
+  <script type="text/javascript" src="../resources/prettify/prettify.js"></script>
+  <style type="text/css">
+    .highlight { display: block; background-color: #ddd; }
+  </style>
+  <script type="text/javascript">
+    function highlight() {
+      document.getElementById(location.hash.replace(/#/, "")).className = "highlight";
+    }
+  </script>
+</head>
+<body onload="prettyPrint(); highlight();">
+  <pre class="prettyprint lang-js"><span id='Ext-layout-container-Form'>/**
+</span> * This is a layout that will render form Fields, one under the other all stretched to the Container width.
+ *
+ *     @example
+ *     Ext.create(&#39;Ext.Panel&#39;, {
+ *         width: 500,
+ *         height: 300,
+ *         title: &quot;FormLayout Panel&quot;,
+ *         layout: &#39;form&#39;,
+ *         renderTo: Ext.getBody(),
+ *         bodyPadding: 5,
+ *         defaultType: &#39;textfield&#39;,
+ *         items: [{
+ *            fieldLabel: &#39;First Name&#39;,
+ *             name: &#39;first&#39;,
+ *             allowBlank:false
+ *         },{
+ *             fieldLabel: &#39;Last Name&#39;,
+ *             name: &#39;last&#39;
+ *         },{
+ *             fieldLabel: &#39;Company&#39;,
+ *             name: &#39;company&#39;
+ *         }, {
+ *             fieldLabel: &#39;Email&#39;,
+ *             name: &#39;email&#39;,
+ *             vtype:&#39;email&#39;
+ *         }, {
+ *             fieldLabel: &#39;DOB&#39;,
+ *             name: &#39;dob&#39;,
+ *             xtype: &#39;datefield&#39;
+ *         }, {
+ *             fieldLabel: &#39;Age&#39;,
+ *             name: &#39;age&#39;,
+ *             xtype: &#39;numberfield&#39;,
+ *             minValue: 0,
+ *             maxValue: 100
+ *         }, {
+ *             xtype: &#39;timefield&#39;,
+ *             fieldLabel: &#39;Time&#39;,
+ *             name: &#39;time&#39;,
+ *             minValue: &#39;8:00am&#39;,
+ *             maxValue: &#39;6:00pm&#39;
+ *         }]
+ *     });
+ */
+Ext.define(&#39;Ext.layout.container.Form&#39;, {
+    extend: &#39;Ext.layout.container.Auto&#39;,
+    alternateClassName: &#39;Ext.layout.FormLayout&#39;,
+    alias: &#39;layout.form&#39;,
+<span id='Ext-layout-container-Form-property-type'>    type: &#39;form&#39;,
+</span>
+<span id='Ext-layout-container-Form-property-formWrapCls'>    formWrapCls: Ext.baseCSSPrefix + &#39;form-layout-wrap&#39;,
+</span><span id='Ext-layout-container-Form-property-formWrapAutoLabelCls'>    formWrapAutoLabelCls: Ext.baseCSSPrefix + &#39;form-layout-auto-label&#39;,
+</span><span id='Ext-layout-container-Form-property-formWrapSizedLabelCls'>    formWrapSizedLabelCls: Ext.baseCSSPrefix + &#39;form-layout-sized-label&#39;,
+</span><span id='Ext-layout-container-Form-property-formColGroupCls'>    formColGroupCls: Ext.baseCSSPrefix + &#39;form-layout-colgroup&#39;,
+</span><span id='Ext-layout-container-Form-property-formColumnCls'>    formColumnCls: Ext.baseCSSPrefix + &#39;form-layout-column&#39;,
+</span><span id='Ext-layout-container-Form-property-formLabelColumnCls'>    formLabelColumnCls: Ext.baseCSSPrefix + &#39;form-layout-label-column&#39;,
+</span>
+<span id='Ext-layout-container-Form-cfg-itemSpacing'>    /**
+</span>     * @cfg {Number} itemSpacing
+     * The amount of space, in pixels, to use between the items. Defaults to the value
+     * inherited from the theme&#39;s stylesheet as configured by
+     * {@link Ext.form.Labelable#$form-item-margin-bottom $form-item-margin-bottom}.
+     */
+
+<span id='Ext-layout-container-Form-cfg-labelWidth'>    /**
+</span>     * @cfg {Number/String} labelWidth
+     * The width of the labels. This can be either a number in pixels, or a valid CSS
+     * &quot;width&quot; style, e.g. `&#39;100px&#39;`, or `&#39;30%&#39;`.  When configured, all labels will assume
+     * this width, and any {@link Ext.form.Labelable#labelWidth labelWidth} specified
+     * on the items will be ignored.
+     *
+     * The default behavior of this layout when no no labelWidth is specified is to size
+     * the labels to the text-width of the label with the longest text.
+     */
+
+    childEls: [&#39;formWrap&#39;, &#39;labelColumn&#39;],
+
+<span id='Ext-layout-container-Form-property-beforeBodyTpl'>    beforeBodyTpl:
+</span>        &#39;&lt;div id=&quot;{ownerId}-formWrap&quot; data-ref=&quot;formWrap&quot; class=&quot;{formWrapCls}&quot;&#39; +
+            &#39;&lt;tpl if=&quot;itemSpacing&quot;&gt; style=&quot;border-spacing:{itemSpacing}px&quot;&lt;/tpl&gt;&gt;&#39; +
+            &#39;&lt;div class=&quot;{formColGroupCls}&quot;&gt;&#39; +
+                &#39;&lt;div id=&quot;{ownerId}-labelColumn&quot; data-ref=&quot;labelColumn&quot; class=&quot;{formColumnCls} {formLabelColumnCls}&quot;&#39; +
+                    &#39;&lt;tpl if=&quot;labelWidth&quot;&gt; style=&quot;width:{labelWidth}&quot;&lt;/tpl&gt;&gt;&#39; +
+                &#39;&lt;/div&gt;&#39; +
+                &#39;&lt;div class=&quot;{formColumnCls}&quot;&gt;&lt;/div&gt;&#39; +
+            &#39;&lt;/div&gt;&#39;,
+
+<span id='Ext-layout-container-Form-property-afterBodyTpl'>    afterBodyTpl: &#39;&lt;/div&gt;&#39;,
+</span>
+<span id='Ext-layout-container-Form-method-getRenderData'>    getRenderData: function() {
+</span>        var me = this,
+            labelWidth = me.labelWidth,
+            formWrapCls = me.formWrapCls,
+            data = me.callParent();
+
+        if (labelWidth) {
+            if (typeof labelWidth === &#39;number&#39;) {
+                labelWidth += &#39;px&#39;;
+            }
+            data.labelWidth = labelWidth;
+            formWrapCls += &#39; &#39; + me.formWrapSizedLabelCls;
+        } else {
+            formWrapCls += &#39; &#39; + me.formWrapAutoLabelCls;
+        }
+
+        data.formWrapCls = formWrapCls;
+        data.formColGroupCls = me.formColGroupCls;
+        data.formColumnCls = me.formColumnCls;
+        data.formLabelColumnCls = me.formLabelColumnCls;
+
+        return data;
+    },
+
+<span id='Ext-layout-container-Form-method-getRenderTarget'>    getRenderTarget: function() {
+</span>        return this.formWrap;
+    }
+});
+</pre>
+</body>
+</html>

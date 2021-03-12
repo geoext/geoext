@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <title>The source code</title>
+  <link href="../resources/prettify/prettify.css" type="text/css" rel="stylesheet" />
+  <script type="text/javascript" src="../resources/prettify/prettify.js"></script>
+  <style type="text/css">
+    .highlight { display: block; background-color: #ddd; }
+  </style>
+  <script type="text/javascript">
+    function highlight() {
+      document.getElementById(location.hash.replace(/#/, "")).className = "highlight";
+    }
+  </script>
+</head>
+<body onload="prettyPrint(); highlight();">
+  <pre class="prettyprint lang-js"><span id='Ext-event-gesture-Swipe'>/**
+</span> * A gesture recognizer for swipe events
+ */
+Ext.define('Ext.event.gesture.Swipe', {
+    extend: 'Ext.event.gesture.SingleTouch',
+
+<span id='Ext-event-gesture-Swipe-property-priority'>    priority: 600,
+</span>
+<span id='Ext-event-gesture-Swipe-property-handledEvents'>    handledEvents: ['swipestart', 'swipe', 'swipecancel'],
+</span>
+<span id='Ext-dom-Element-event-swipe'>    /**
+</span>     * @member Ext.dom.Element
+     * @event swipe
+     * Fires when there is a swipe
+     * When listening to this, ensure you know about the {@link Ext.event.Event#direction} property in the `event` object.
+     * @param {Ext.event.Event} event The {@link Ext.event.Event} event encapsulating the DOM event.
+     * @param {HTMLElement} node The target of the event.
+     * @param {Object} options The options object passed to Ext.mixin.Observable.addListener.
+     */
+
+<span id='Ext-event-Event-property-direction'>    /**
+</span>     * @property {Number} direction
+     * The direction of the swipe. Available options are:
+     *
+     * - up
+     * - down
+     * - left
+     * - right
+     *
+     * **This is only available when the event type is `swipe`**
+     * @member Ext.event.Event
+     */
+
+<span id='Ext-event-Event-property-duration'>    /**
+</span>     * @property {Number} duration
+     * The duration of the swipe.
+     *
+     * **This is only available when the event type is `swipe`**
+     * @member Ext.event.Event
+     */
+
+    config: {
+<span id='Ext-event-gesture-Swipe-cfg-minDistance'>        minDistance: 80,
+</span><span id='Ext-event-gesture-Swipe-cfg-maxOffset'>        maxOffset: 35,
+</span><span id='Ext-event-gesture-Swipe-cfg-maxDuration'>        maxDuration: 1000
+</span>    },
+
+<span id='Ext-event-gesture-Swipe-method-onTouchStart'>    onTouchStart: function(e) {
+</span>        var me = this,
+            ret = me.callParent([e]),
+            touch;
+
+        if (ret !== false) {
+            touch = e.changedTouches[0];
+
+            me.startTime = e.time;
+
+            me.isHorizontal = true;
+            me.isVertical = true;
+
+            me.startX = touch.pageX;
+            me.startY = touch.pageY;
+        }
+
+        return ret;
+    },
+
+<span id='Ext-event-gesture-Swipe-method-onTouchMove'>    onTouchMove: function(e) {
+</span>        var me = this,
+            touch = e.changedTouches[0],
+            x = touch.pageX,
+            y = touch.pageY,
+            deltaX = x - me.startX,
+            deltaY = y - me.startY,
+            absDeltaX = Math.abs(x - me.startX),
+            absDeltaY = Math.abs(y - me.startY),
+            duration = e.time - me.startTime,
+            minDistance, direction, distance;
+
+        // If delta is 0 on both axes that's not swipe
+        if ((absDeltaX === 0 &amp;&amp; absDeltaY === 0) || (duration &gt; me.getMaxDuration())) {
+            return me.cancel(e);
+        }
+
+        if (me.isHorizontal &amp;&amp; absDeltaY &gt; me.getMaxOffset()) {
+            me.isHorizontal = false;
+        }
+
+        if (me.isVertical &amp;&amp; absDeltaX &gt; me.getMaxOffset()) {
+            me.isVertical = false;
+        }
+
+        if (!me.isVertical || !me.isHorizontal) {
+            minDistance = me.getMinDistance();
+
+            if (me.isHorizontal &amp;&amp; absDeltaX &lt; minDistance) {
+                direction = (deltaX &lt; 0) ? 'left' : 'right';
+                distance = absDeltaX;
+            }
+            else if (me.isVertical &amp;&amp; absDeltaY &lt; minDistance) {
+                direction = (deltaY &lt; 0) ? 'up' : 'down';
+                distance = absDeltaY;
+            }
+        }
+
+        if (!me.isHorizontal &amp;&amp; !me.isVertical) {
+            return me.cancel(e);
+        }
+
+        if (direction &amp;&amp; !me.isStarted) {
+            me.isStarted = true;
+
+            me.fire('swipestart', e, {
+                touch: touch,
+                direction: direction,
+                distance: distance,
+                duration: duration
+            });
+        }
+    },
+
+<span id='Ext-event-gesture-Swipe-method-onTouchEnd'>    onTouchEnd: function(e) {
+</span>        var me = this,
+            touch, x, y, deltaX, deltaY, absDeltaX, absDeltaY, minDistance, duration,
+            direction, distance;
+
+        if (me.onTouchMove(e) !== false) {
+            touch = e.changedTouches[0];
+            x = touch.pageX;
+            y = touch.pageY;
+            deltaX = x - me.startX;
+            deltaY = y - me.startY;
+            absDeltaX = Math.abs(deltaX);
+            absDeltaY = Math.abs(deltaY);
+            minDistance = me.getMinDistance();
+            duration = e.time - me.startTime;
+
+            if (me.isVertical &amp;&amp; absDeltaY &lt; minDistance) {
+                me.isVertical = false;
+            }
+
+            if (me.isHorizontal &amp;&amp; absDeltaX &lt; minDistance) {
+                me.isHorizontal = false;
+            }
+
+            if (me.isHorizontal) {
+                direction = (deltaX &lt; 0) ? 'left' : 'right';
+                distance = absDeltaX;
+            } else if (me.isVertical) {
+                direction = (deltaY &lt; 0) ? 'up' : 'down';
+                distance = absDeltaY;
+            }
+
+            me.fire('swipe', e, {
+                touch: touch,
+                direction: direction,
+                distance: distance,
+                duration: duration
+            });
+        }
+
+        return this.callParent([e]);
+    },
+
+<span id='Ext-event-gesture-Swipe-method-onCancel'>    onCancel: function(e) {
+</span>        this.fire('swipecancel', e, null, true);
+    },
+
+<span id='Ext-event-gesture-Swipe-method-reset'>    reset: function() {
+</span>        var me = this;
+
+        me.startTime = me.isHorizontal = me.isVertical = me.startX = me.startY = null;
+
+        return me.callParent();
+    }
+}, function(Swipe) {
+    var gestures = Ext.manifest.gestures;
+    Swipe.instance = new Swipe(gestures &amp;&amp; gestures.swipe);
+});
+</pre>
+</body>
+</html>

@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <title>The source code</title>
+  <link href="../resources/prettify/prettify.css" type="text/css" rel="stylesheet" />
+  <script type="text/javascript" src="../resources/prettify/prettify.js"></script>
+  <style type="text/css">
+    .highlight { display: block; background-color: #ddd; }
+  </style>
+  <script type="text/javascript">
+    function highlight() {
+      document.getElementById(location.hash.replace(/#/, "")).className = "highlight";
+    }
+  </script>
+</head>
+<body onload="prettyPrint(); highlight();">
+  <pre class="prettyprint lang-js"><span id='Ext-Evented'>/**
+</span> * @private
+ */
+Ext.define('Ext.Evented', {
+
+    alternateClassName: 'Ext.EventedBase',
+
+    mixins: [
+        'Ext.mixin.Observable'
+    ],
+
+<span id='Ext-Evented-property-initialized'>    initialized: false,
+</span>
+<span id='Ext-Evented-method-constructor'>    constructor: function(config) {
+</span>        this.mixins.observable.constructor.call(this, config);
+        this.initialized = true;
+    },
+
+<span id='Ext-Evented-method-onClassExtended'>    onClassExtended: function(cls, data) {
+</span>        if (!data.hasOwnProperty('eventedConfig')) {
+            return;
+        }
+
+        var config = data.config,
+            eventedConfig = data.eventedConfig,
+            name, cfg;
+
+        if (config) {
+            Ext.applyIf(config, eventedConfig);
+        } else {
+            cls.addConfig(eventedConfig);
+        }
+
+        /*
+         * These are generated setters for eventedConfig
+         *
+         * If the component is initialized, it invokes fireAction to fire the event as well,
+         * which indicate something has changed. Otherwise, it just executes the action
+         * (happens during initialization)
+         *
+         * This is helpful when we only want the event to be fired for subsequent changes.
+         * Also it's a major performance improvement for instantiation when fired events
+         * are mostly useless since there's no listeners
+         */
+
+        //TODO: Move this into Observable
+        for (name in eventedConfig) {
+            if (eventedConfig.hasOwnProperty(name)) {
+                cfg = Ext.Config.get(name);
+                data[cfg.names.set] = cfg.eventedSetter || cfg.getEventedSetter();
+            }
+        }
+    }
+});
+</pre>
+</body>
+</html>

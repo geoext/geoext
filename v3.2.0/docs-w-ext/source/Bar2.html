@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <title>The source code</title>
+  <link href="../resources/prettify/prettify.css" type="text/css" rel="stylesheet" />
+  <script type="text/javascript" src="../resources/prettify/prettify.js"></script>
+  <style type="text/css">
+    .highlight { display: block; background-color: #ddd; }
+  </style>
+  <script type="text/javascript">
+    function highlight() {
+      document.getElementById(location.hash.replace(/#/, "")).className = "highlight";
+    }
+  </script>
+</head>
+<body onload="prettyPrint(); highlight();">
+  <pre class="prettyprint lang-js"><span id='Ext-menu-Bar'>/**
+</span> * Horizontal Menu bar widget, a specialized version of the {@link Ext.menu.Menu}.
+ *
+ *      @example
+ *      new Ext.menu.Bar({
+ *          renderTo: Ext.getBody(),
+ *          width: 200,
+ *          items: [{
+ *              text: 'File',
+ *              menu: [
+ *                  { text: 'Open...' },
+ *                  '-',
+ *                  { text: 'Close' }
+ *              ]
+ *          }, {
+ *              text: 'Edit',
+ *              menu: [
+ *                  { text: 'Cut' },
+ *                  { text: 'Copy' }
+ *                  { text: 'Paste' }
+ *              ]
+ *          }]
+ *      });
+ */
+Ext.define('Ext.menu.Bar', {
+    extend: 'Ext.menu.Menu',
+    xtype: 'menubar',
+    
+<span id='Ext-menu-Bar-property-isMenuBar'>    isMenuBar: true,
+</span>    
+<span id='Ext-menu-Bar-property-defaultMenuAlign'>    /**
+</span>     * @config {String} defaultMenuAlign The default {@link Ext.menu.Item#menuAlign} config
+     * for direct child items of this Menu bar.
+     */
+    defaultMenuAlign: 'tl-bl?',
+    
+<span id='Ext-menu-Bar-property-floating'>    floating: false,
+</span><span id='Ext-menu-Bar-cfg-constrain'>    constrain: false,
+</span><span id='Ext-menu-Bar-cfg-showSeparator'>    showSeparator: false,
+</span><span id='Ext-menu-Bar-cfg-allowOtherMenus'>    allowOtherMenus: true,
+</span>    
+<span id='Ext-menu-Bar-property-ariaRole'>    ariaRole: 'menubar',
+</span>    
+<span id='Ext-menu-Bar-cfg-ui'>    ui: 'default-menubar',
+</span>    
+<span id='Ext-menu-Bar-cfg-layout'>    layout: {
+</span>        type: 'hbox',
+        align: 'stretchmax',
+        pack: 'start',
+        overflowHandler: 'menu'
+    },
+    
+<span id='Ext-menu-Bar-method-lookupComponent'>    lookupComponent: function(comp) {
+</span>        comp = this.callParent([comp]);
+        
+        if (comp.isMenuItem) {
+            comp.menuAlign = this.defaultMenuAlign;
+        }
+        
+        return comp;
+    },
+    
+<span id='Ext-menu-Bar-property-privates'>    privates: {
+</span>        onFocusableContainerLeftKey: function(e) {
+            // The default action is to scroll the nearest horizontally scrollable container
+            e.preventDefault();
+            
+            this.mixins.focusablecontainer.onFocusableContainerLeftKey.call(this, e);
+        },
+        
+        onFocusableContainerRightKey: function(e) {
+            // Ditto
+            e.preventDefault();
+            
+            this.mixins.focusablecontainer.onFocusableContainerRightKey.call(this, e);
+        },
+        
+        onFocusableContainerUpKey: function(e) {
+            var focusItem = this.lastFocusedChild;
+            
+            e.preventDefault();
+            
+            // As per WAI-ARIA, both Up and Down arrow keys open submenu
+            if (focusItem &amp;&amp; focusItem.expandMenu) {
+                focusItem.expandMenu(e, 0);
+            }
+        },
+        
+        onFocusableContainerDownKey: function(e) {
+            var focusItem = this.lastFocusedChild;
+            
+            e.preventDefault();
+            
+            if (focusItem &amp;&amp; focusItem.expandMenu) {
+                focusItem.expandMenu(e, 0);
+            }
+        }
+    }
+});
+</pre>
+</body>
+</html>

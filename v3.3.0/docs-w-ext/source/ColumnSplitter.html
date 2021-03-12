@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <title>The source code</title>
+  <link href="../resources/prettify/prettify.css" type="text/css" rel="stylesheet" />
+  <script type="text/javascript" src="../resources/prettify/prettify.js"></script>
+  <style type="text/css">
+    .highlight { display: block; background-color: #ddd; }
+  </style>
+  <script type="text/javascript">
+    function highlight() {
+      document.getElementById(location.hash.replace(/#/, "")).className = "highlight";
+    }
+  </script>
+</head>
+<body onload="prettyPrint(); highlight();">
+  <pre class="prettyprint lang-js"><span id='Ext-layout-container-ColumnSplitter'>/**
+</span> */
+Ext.define(&#39;Ext.layout.container.ColumnSplitter&#39;, {
+    extend: &#39;Ext.resizer.Splitter&#39;,
+    xtype: &#39;columnsplitter&#39;,
+
+    requires: [
+        &#39;Ext.layout.container.ColumnSplitterTracker&#39;
+    ],
+
+<span id='Ext-layout-container-ColumnSplitter-property-isSplitter'>    isSplitter: true,
+</span>
+<span id='Ext-layout-container-ColumnSplitter-property-synthetic'>    synthetic  : true,
+</span>
+<span id='Ext-layout-container-ColumnSplitter-cfg-cls'>    cls : Ext.baseCSSPrefix + &#39;splitter-vertical&#39;,
+</span>
+<span id='Ext-layout-container-ColumnSplitter-property-orientation'>    orientation: &#39;vertical&#39;,
+</span>
+<span id='Ext-layout-container-ColumnSplitter-property-collapseDirection'>    collapseDirection: &#39;left&#39;,
+</span>
+<span id='Ext-layout-container-ColumnSplitter-property-trackerClass'>    trackerClass: &#39;Ext.layout.container.ColumnSplitterTracker&#39;,
+</span>
+<span id='Ext-layout-container-ColumnSplitter-cfg-width'>    width: 7,
+</span>
+<span id='Ext-layout-container-ColumnSplitter-cfg-height'>    height: 1,
+</span>
+<span id='Ext-layout-container-ColumnSplitter-method-getTrackerConfig'>    getTrackerConfig: function () {
+</span>        var tracker = this.callParent();
+        tracker.xclass = this.trackerClass;
+        return tracker;
+    }
+});
+</pre>
+</body>
+</html>

@@ -1,0 +1,73 @@
+{
+  "name": "GeoExt",
+  "namespace": "GeoExt",
+  "format": "1",
+  "version": "3.0.0",
+  "creator": "GeoExt Contributors",
+  "summary": "GIS Package for ExtJS",
+  "detailedDescription": "GeoExt is Open Source and enables building desktop-like GIS applications through the web. It is a JavaScript framework that combines the GIS functionality of OpenLayers with the user interface savvy of the ExtJS library provided by Sencha.",
+  "type": "code",
+  "signatures": [
+    {
+      "name": "GeoExt Contributors",
+      "uuid": "5c08b4bf-e16b-42ef-9a5e-6b2ac7aed656",
+      "created": "2017-03-13T19:28:31Z",
+      "algorithm": "SHA1withRSA",
+      "nonce": "jUt3Oq7OKOA\u003d",
+      "signature": "qF/puLrsMVU4z0c0FeTc7LmR9Fzd5ui5Qw+eOrRWybXDG3gIniDcPI7vuUb+ZL3iCeb8dITtrV63sOgR/4cjcKL8kOBUQ6aHh4Ry/agvMRFo8v9Z0WEr9N/sfewNmWFcbk1O5KBq1ANC9rWvwbcDdB4b+j7jsZKHnCcvKT3wmgoqRJJv3YkHBlbTbn9lgJsmB8e07IeZ4bvkdh7RmrkDq+jWUEw2/JaX/Nszv6gXvXUJWfoii6HljigzZJuSz1zwU35GooGN0WNRcuL0mldgeGAJB3qoJDiCTw+cCnwZ1U/uzdpHL8FsK/upzZPKQ7mgq9XHsyxw0yFO5D7WTEyJfw\u003d\u003d"
+    }
+  ],
+  "slicer": {
+    "js": [
+      {
+        "path": "${package.dir}/sass/example/custom.js",
+        "isWidgetManifest": true
+      }
+    ]
+  },
+  "license": "GPL-3.0",
+  "output": "${package.dir}/build",
+  "theme": "theme-neptune",
+  "toolkit": "classic",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/geoext/geoext3.git"
+  },
+  "scripts": {
+    "clean": "rm -rf coverage apidoc",
+    "postinstall": "node ./bin/fetch-external-resources.js",
+    "lint": "eslint src/ examples/ \u0026\u0026 eslint -c test/.eslintrc test/",
+    "lint:fix": "eslint --fix src/ examples/ \u0026\u0026 eslint --fix -c test/.eslintrc test/",
+    "pretest": "npm run-script lint",
+    "test": "karma start test/karma.conf.js --single-run",
+    "test:debug": "karma start test/karma.conf.js --single-run --debug",
+    "test:coverage": "karma start test/karma.conf.js --single-run --reporters coverage",
+    "test:watch": "karma start test/karma.conf.js",
+    "test:watch:debug": "karma start test/karma.conf.js --debug",
+    "start": "browser-sync start --server --directory --files \u0027src, test, examples\u0027",
+    "coveralls": "cat coverage/lcov.info | coveralls",
+    "generate:example": "node bin/example-generator/index.js",
+    "generate:docs": "jsduck --config jsduck.json"
+  },
+  "dependencies": {},
+  "devDependencies": {
+    "browser-sync": "2.18.8",
+    "coveralls": "2.12.0",
+    "eslint": "3.17.1",
+    "eslint-config-openlayers": "7.0.0",
+    "expect.js": "0.3.1",
+    "karma": "1.5.0",
+    "karma-coverage": "1.1.1",
+    "karma-eslint": "2.2.0",
+    "karma-expect": "1.1.3",
+    "karma-mocha": "1.3.0",
+    "karma-phantomjs-launcher": "1.0.4",
+    "karma-sinon": "1.0.5",
+    "log-update": "1.0.2",
+    "mkdirp": "0.5.1",
+    "mocha": "3.2.0",
+    "openlayers": "3.20.1",
+    "phantomjs-prebuilt": "2.1.14",
+    "sinon": "1.17.7"
+  }
+}

@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <title>The source code</title>
+  <link href="../resources/prettify/prettify.css" type="text/css" rel="stylesheet" />
+  <script type="text/javascript" src="../resources/prettify/prettify.js"></script>
+  <style type="text/css">
+    .highlight { display: block; background-color: #ddd; }
+  </style>
+  <script type="text/javascript">
+    function highlight() {
+      document.getElementById(location.hash.replace(/#/, "")).className = "highlight";
+    }
+  </script>
+</head>
+<body onload="prettyPrint(); highlight();">
+  <pre class="prettyprint lang-js"><span id='Ext-fx-layout-Card'>/**
+</span> * @private
+ */
+Ext.define('Ext.fx.layout.Card', {
+    requires: [
+        'Ext.fx.layout.card.Slide',
+        'Ext.fx.layout.card.Cover',
+        'Ext.fx.layout.card.Reveal',
+        'Ext.fx.layout.card.Fade',
+        'Ext.fx.layout.card.Flip',
+        'Ext.fx.layout.card.Pop',
+//        'Ext.fx.layout.card.Cube',
+        'Ext.fx.layout.card.Scroll'
+    ],
+
+<span id='Ext-fx-layout-Card-method-constructor'>    constructor: function(config) {
+</span>        var defaultClass = Ext.fx.layout.card.Abstract,
+            type;
+
+        if (!config) {
+            return null;
+        }
+
+        if (typeof config == 'string') {
+            type = config;
+
+            config = {};
+        }
+        else if (config.type) {
+            type = config.type;
+        }
+
+        config.elementBox = false;
+
+        if (type) {
+
+            defaultClass = Ext.ClassManager.getByAlias('fx.layout.card.' + type);
+
+            //&lt;debug&gt;
+            if (!defaultClass) {
+                Ext.Logger.error(&quot;Unknown card animation type: '&quot; + type + &quot;'&quot;);
+            }
+            //&lt;/debug&gt;
+        }
+
+        return Ext.factory(config, defaultClass);
+    }
+});
+</pre>
+</body>
+</html>

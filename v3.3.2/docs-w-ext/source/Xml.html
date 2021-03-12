@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <title>The source code</title>
+  <link href="../resources/prettify/prettify.css" type="text/css" rel="stylesheet" />
+  <script type="text/javascript" src="../resources/prettify/prettify.js"></script>
+  <style type="text/css">
+    .highlight { display: block; background-color: #ddd; }
+  </style>
+  <script type="text/javascript">
+    function highlight() {
+      document.getElementById(location.hash.replace(/#/, "")).className = "highlight";
+    }
+  </script>
+</head>
+<body onload="prettyPrint(); highlight();">
+  <pre class="prettyprint lang-js"><span id='Ext-data-writer-Xml'>/**
+</span> * @class Ext.data.writer.Xml
+ * This class is used to write {@link Ext.data.Model} data to the server in an XML format.
+ * The {@link #documentRoot} property is used to specify the root element in the XML document.
+ * The {@link #record} option is used to specify the element name for each record that will make up the XML document.
+ */
+Ext.define(&#39;Ext.data.writer.Xml&#39;, {
+    
+    /* Begin Definitions */
+    
+    extend: &#39;Ext.data.writer.Writer&#39;,
+    alternateClassName: &#39;Ext.data.XmlWriter&#39;,
+    
+    alias: &#39;writer.xml&#39;,
+    
+    /* End Definitions */
+    
+    config: {
+<span id='Ext-data-writer-Xml-cfg-documentRoot'>        /**
+</span>         * @cfg {String} documentRoot The name of the root element of the document. Defaults to &lt;tt&gt;&#39;xmlData&#39;&lt;/tt&gt;.
+         * If there is more than 1 record and the root is not specified, the default document root will still be used
+         * to ensure a valid XML document is created.
+         *
+         * If the {@link #record} mapping includes a root element name, eg: &quot;SystemInfo&gt;Operation&quot;, and
+         * the selector includes the root element name, then you must configure this as `false`
+         */
+        documentRoot: &#39;xmlData&#39;,
+        
+<span id='Ext-data-writer-Xml-cfg-defaultDocumentRoot'>        /**
+</span>         * @cfg {String} defaultDocumentRoot The root to be used if {@link #documentRoot} is empty and a root is required
+         * to form a valid XML document.
+         */
+        defaultDocumentRoot: &#39;xmlData&#39;,
+    
+<span id='Ext-data-writer-Xml-cfg-header'>        /**
+</span>         * @cfg {String} header A header to use in the XML document (such as setting the encoding or version).
+         * Defaults to &lt;tt&gt;&#39;&#39;&lt;/tt&gt;.
+         */
+        header: &#39;&#39;,
+    
+<span id='Ext-data-writer-Xml-cfg-record'>        /**
+</span>         * @cfg {String} record The name of the node to use for each record. Defaults to
+         * the owning {@link Ext.data.proxy.Proxy Proxy}&#39;s {@link Ext.data.reader.Xml Reader}&#39;s
+         * {@link Ext.data.reader.Xml#record} setting, or `&#39;record&#39;`.
+         */
+        record: &#39;record&#39;
+    },
+
+<span id='Ext-data-writer-Xml-property-selectorRe'>    // To break simple XPath selectors like &quot;SystemInfo&gt;SystemName&quot; into [&quot;SystemInfo&quot;, &quot;SystemName&quot;]
+</span>    selectorRe: /[^&gt;\s]+/g,
+
+<span id='Ext-data-writer-Xml-method-writeRecords'>    writeRecords: function(request, data) {
+</span>        var me = this,
+            xml = [],
+            i = 0,
+            len = data.length,
+            root = me.getDocumentRoot(),
+            recordName = me.getRecord(),
+
+            // Convert eg &#39;Items&gt;Item&#39; into [&#39;Items&#39;, &#39;Item&#39;]
+            record = recordName.match(this.selectorRe),
+            recLen = record.length,
+
+            // Need a containing element if there are multiple data records and
+            // it&#39;s not a compound record selector
+            needsRoot = data.length !== 1 &amp;&amp; recLen === 1,
+            transform;
+            
+        transform = this.getTransform();
+        if (transform) {
+            data = transform(data, request);
+        }
+        
+        // may not exist
+        xml.push(me.getHeader() || &#39;&#39;);
+        
+        if (!root &amp;&amp; needsRoot) {
+            root = me.getDefaultDocumentRoot();
+        }
+
+        // May not exist if configured as false, and the record selector is rooted, eg &quot;Items&gt;Item&quot;
+        if (root) {
+            xml.push(&#39;&lt;&#39;, root, &#39;&gt;&#39;);
+        }
+
+        // Output record nodes&#39; wrapping, eg &quot;&lt;Items&gt;&quot; from record &quot;Items&gt;Item&quot;-&gt;[&quot;Items&quot;, &quot;Item&quot;]
+        for (i = 0; i &lt; recLen - 1; i++) {
+            xml.push(&#39;&lt;&#39;, record[i], &#39;&gt;&#39;);
+        }
+        recordName = record[i];
+        for (i = 0; i &lt; len; ++i) {
+            this.objectToElement(recordName, data[i], xml);
+        }
+        
+        // Close record nodes&#39; wrapping, eg &quot;&lt;/Items&gt;&quot; from record &quot;Items&gt;Item&quot;-&gt;[&quot;Items&quot;, &quot;Item&quot;]
+        for (i = recLen - 2; i &gt; -1; i--) {
+            xml.push(&#39;&lt;/&#39;, record[i], &#39;&gt;&#39;);
+        }
+        if (root) {
+            xml.push(&#39;&lt;/&#39;, root, &#39;&gt;&#39;);
+        }
+            
+        request.setXmlData(xml.join(&#39;&#39;));
+        return request;
+    },
+
+<span id='Ext-data-writer-Xml-method-objectToElement'>    /**
+</span>     * Serializes an object to XML.
+     * Properties will be serialized as child elements unless their first character is `&#39;@&#39;`
+     *
+     * For example:
+     *
+     *    myWriter.objectToElement(&#39;SystemComponent&#39;, {
+     *        &quot;@SystemNumber&quot;: &#39;10118795&#39;,
+     *        &quot;SystemInfo&gt;SystemName&quot;: &#39;Phase Noise Measurement System&#39;,
+     *        AssetId: &#39;DE3208&#39;,
+     *        AgilentModel: &#39;E5505A&#39;,
+     *        SerialNumber: &#39;US44101357&#39;,
+     *    }, []).join(&#39;&#39;);
+     *
+     * becomes
+     *
+     *    &lt;SystemComponent SystemNumber=&quot;10118795&quot;&gt;
+     *      &lt;SystemInfo&gt;
+     *          &lt;SystemName&gt;Phase Noise Measurement System&lt;/SystemName&gt;
+     *      &lt;/SystemInfo&gt;
+     *      &lt;AssetId&gt;DE3208&lt;/AssetId&gt;
+     *      &lt;AgilentModel&gt;E5505A&lt;/AgilentModel&gt;
+     *      &lt;SerialNumber&gt;US44101357&lt;/SerialNumber&gt;
+     *    &lt;/SystemComponent&gt;
+     *    
+     * @param {String} name The element name for the object.
+     * @param {Object} o The object to serialize.
+     * @param {Array} [output] The array into which to serialize the object.
+     * @return {undefined}
+     */
+    objectToElement: function(name, o, output) {
+        var key,
+            datum,
+            subOutput = [],
+            subKeys,
+            subKeyLen,
+            i,
+            subObject,
+            subObjects,
+            lastObject,
+            lastKey;
+
+        if (!output) {
+            output = [];
+        }
+
+        // Open the record node, eg &quot;&lt;Item&quot;
+        // Stop there because some child properties may be attributes.
+        output.push(&#39;&lt;&#39;, name);
+        for (key in o) {
+            datum = o[key];
+
+            // Attribute node
+            if (key[0] === &#39;@&#39;) {
+                output.push(&#39; &#39;, key.substr(1), &#39;=&quot;&#39;, datum, &#39;&quot;&#39;);
+            }
+            // Child element node
+            else {
+                // Object properties become child elements
+                if (typeof datum === &#39;object&#39;) {
+                    this.objectToElement(key, datum, subOutput);
+                } else {
+                    // Is it a selector?
+                    subKeys = key.match(this.selectorRe);
+
+                    // key was eg &quot;foo &gt; bar&quot;.
+                    // Ensure looks like contains {foo: {bar: {}}}
+                    if ((subKeyLen = subKeys.length) &gt; 1) {
+                        subObjects = subObjects || {};
+                        for (subObject = subObjects, i = 0; i &lt; subKeyLen; i++) {
+                            lastObject = subObject;
+                            lastKey = subKeys[i];
+                            subObject = subObject[lastKey] || (subObject[lastKey] = {});
+                        }
+                        // lastObject is now the bar property in the above example
+                        lastObject[lastKey] = datum;
+                    } else {
+                        subOutput.push(&#39;&lt;&#39;, key, &#39;&gt;&#39;, datum, &#39;&lt;/&#39;, key, &#39;&gt;&#39;);
+                    }
+                }
+            }
+        }
+        output.push(&#39;&gt;&#39;);
+        output.push.apply(output, subOutput);
+
+        // Output any embedded nodes that were specified by child element mappings like &quot;SystemInfo&gt;SystemName&quot;
+        if (subObjects) {
+            for (key in subObjects) {
+                datum = subObjects[key];
+                this.objectToElement(key, datum, output);
+            }
+        }
+
+        // Close the record node, eg &quot;&lt;/Item&gt;&quot;
+        output.push(&#39;&lt;/&#39;, name, &#39;&gt;&#39;);
+
+        return output;
+    }
+});
+</pre>
+</body>
+</html>

@@ -1,0 +1,640 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <title>The source code</title>
+  <link href="../resources/prettify/prettify.css" type="text/css" rel="stylesheet" />
+  <script type="text/javascript" src="../resources/prettify/prettify.js"></script>
+  <style type="text/css">
+    .highlight { display: block; background-color: #ddd; }
+  </style>
+  <script type="text/javascript">
+    function highlight() {
+      document.getElementById(location.hash.replace(/#/, "")).className = "highlight";
+    }
+  </script>
+</head>
+<body onload="prettyPrint(); highlight();">
+  <pre class="prettyprint lang-js"><span id='Ext-app-BaseController'>/**
+</span> * @protected
+ * @class Ext.app.BaseController
+ * Base class for Controllers.
+ * 
+ */
+Ext.define(&#39;Ext.app.BaseController&#39;, {
+    requires: [
+        &#39;Ext.app.EventBus&#39;,
+        &#39;Ext.app.domain.Global&#39;
+    ],
+    
+    uses: [
+        &#39;Ext.app.domain.Controller&#39;
+    ],
+
+    mixins: [&#39;Ext.mixin.Observable&#39;],
+
+<span id='Ext-app-BaseController-property-isController'>    isController: true,
+</span>
+    config : {
+<span id='Ext-app-BaseController-cfg-id'>        /**
+</span>         * @cfg {String} id The id of this controller. You can use this id when dispatching.
+         * 
+         * For an example of dispatching, see the examples under the 
+         * {@link Ext.app.Controller#cfg-listen listen} config.
+         *
+         * If an id is not explicitly set, it will default to the controller&#39;s full classname.
+         * 
+         * @accessor
+         */
+        id: undefined,
+       
+<span id='Ext-app-BaseController-cfg-control'>        /**
+</span>         * @cfg {Object} control
+         * @accessor
+         *
+         * Adds listeners to components selected via {@link Ext.ComponentQuery}. Accepts an
+         * object containing component paths mapped to a hash of listener functions.  
+         * The function value may also be a string matching the name of a method on the 
+         * controller.
+         *
+         * In the following example the `updateUser` function is mapped to to the `click`
+         * event on a button component, which is a child of the `useredit` component.
+         *
+         *      Ext.define(&#39;MyApp.controller.Users&#39;, {
+         *          extend: &#39;Ext.app.Controller&#39;,
+         *
+         *          control: {
+         *              &#39;useredit button[action=save]&#39;: {
+         *                  click: &#39;updateUser&#39;
+         *              }
+         *          },
+         *
+         *          updateUser: function(button) {
+         *              console.log(&#39;clicked the Save button&#39;);
+         *          }
+         *      });
+         *
+         * The method you pass to the listener will automatically be resolved on the controller.
+         * In this case, the `updateUser` method that will get executed on the `button` `click`
+         * event will resolve to the `updateUser` method on the controller,
+         *
+         * See {@link Ext.ComponentQuery} for more information on component selectors.
+         */
+
+        control: null,
+
+<span id='Ext-app-BaseController-cfg-listen'>        /**
+</span>         * @cfg {Object} listen
+         * @accessor
+         *
+         * Adds listeners to different event sources (also called &quot;event domains&quot;). The
+         * primary event domain is that of components, but there are also other event domains:
+         * {@link Ext.app.domain.Global Global} domain that intercepts events fired from
+         * {@link Ext.GlobalEvents} Observable instance, 
+         * {@link Ext.app.domain.Controller Controller} domain can be used to listen to events 
+         * fired by other Controllers, {@link Ext.app.domain.Store Store} domain gives access to 
+         * Store events, and {@link Ext.app.domain.Direct Direct} domain can be used with 
+         * Ext Direct Providers to listen to their events.
+         *
+         * To listen to &quot;bar&quot; events fired by a controller with id=&quot;foo&quot;:
+         *
+         *      Ext.define(&#39;AM.controller.Users&#39;, {
+         *          extend: &#39;Ext.app.Controller&#39;,
+         *
+         *          listen: {
+         *              controller: {
+         *                  &#39;#foo&#39;: {
+         *                      bar: &#39;onFooBar&#39;
+         *                  }
+         *              }
+         *          }
+         *      });
+         *
+         * To listen to &quot;bar&quot; events fired by any controller, and &quot;baz&quot; events
+         * fired by Store with storeId=&quot;baz&quot;:
+         *
+         *      Ext.define(&#39;AM.controller.Users&#39;, {
+         *          extend: &#39;Ext.app.Controller&#39;,
+         *
+         *          listen: {
+         *              controller: {
+         *                  &#39;*&#39;: {
+         *                      bar: &#39;onAnyControllerBar&#39;
+         *                  }
+         *              },
+         *              store: {
+         *                  &#39;#baz&#39;: {
+         *                      baz: &#39;onStoreBaz&#39;
+         *                  }
+         *              }
+         *          }
+         *      });
+         *
+         * To listen to &quot;idle&quot; events fired by {@link Ext.GlobalEvents} when other event
+         * processing is complete and Ext JS is about to return control to the browser:
+         *
+         *      Ext.define(&#39;AM.controller.Users&#39;, {
+         *          extend: &#39;Ext.app.Controller&#39;,
+         *
+         *          listen: {
+         *              global: {            // Global events are always fired
+         *                  idle: &#39;onIdle&#39;   // from the same object, so there
+         *              }                    // are no selectors
+         *          }
+         *      });
+         *
+         * As this relates to components, the following example:
+         *
+         *      Ext.define(&#39;AM.controller.Users&#39;, {
+         *          extend: &#39;Ext.app.Controller&#39;,
+         *
+         *          listen: {
+         *              component: {
+         *                  &#39;useredit button[action=save]&#39;: {
+         *                      click: &#39;updateUser&#39;
+         *                  }
+         *              }
+         *          }
+         *      });
+         *
+         * Is equivalent to:
+         *
+         *      Ext.define(&#39;AM.controller.Users&#39;, {
+         *          extend: &#39;Ext.app.Controller&#39;,
+         *
+         *          control: {
+         *              &#39;useredit button[action=save]&#39;: {
+         *                  click: &#39;updateUser&#39;
+         *              }
+         *          }
+         *      });
+         *
+         * Of course, these can all be combined in a single call and used instead of
+         * `control`, like so:
+         *
+         *      Ext.define(&#39;AM.controller.Users&#39;, {
+         *          extend: &#39;Ext.app.Controller&#39;,
+         *
+         *          listen: {
+         *              global: {
+         *                  idle: &#39;onIdle&#39;
+         *              },
+         *              controller: {
+         *                  &#39;*&#39;: {
+         *                      foobar: &#39;onAnyFooBar&#39;
+         *                  },
+         *                  &#39;#foo&#39;: {
+         *                      bar: &#39;onFooBar&#39;
+         *                  }
+         *              },
+         *              component: {
+         *                  &#39;useredit button[action=save]&#39;: {
+         *                      click: &#39;updateUser&#39;
+         *                  }
+         *              },
+         *              store: {
+         *                  &#39;#qux&#39;: {
+         *                      load: &#39;onQuxLoad&#39;
+         *                  }
+         *              }
+         *          }
+         *      });
+         */
+        listen: null,
+
+<span id='Ext-app-BaseController-cfg-routes'>        /**
+</span>         * @cfg {Object} routes
+         * @accessor
+         *
+         * An object of routes to handle hash changes. A route can be defined in a simple way:
+         *
+         *     routes : {
+         *         &#39;foo/bar&#39;  : &#39;handleFoo&#39;,
+         *         &#39;user/:id&#39; : &#39;showUser&#39;
+         *     }
+         *
+         * Where the property is the hash (which can accept a parameter defined by a colon) and the value
+         * is the method on the controller to execute. The parameters will get sent in the action method.
+         *
+         * At the application level, you can define a event that will be executed when no matching
+         * routes are found.
+         *
+         *     Ext.application({
+         *         name: &#39;MyApp&#39;,
+         *         listen: {
+         *             controller: {
+         *                 &#39;#&#39;: {
+         *                     unmatchedroute: &#39;onUnmatchedRoute&#39;
+         *                 }
+         *             }
+         *         },
+         *
+         *         onUnmatchedRoute: function(hash) {
+         *             console.log(&#39;Unmatched&#39;, hash);
+         *             // Do something...
+         *         }
+         *     });
+         *
+         * There is also a complex means of defining a route where you can use a before action and even
+         * specify your own RegEx for the parameter:
+         *
+         *     routes : {
+         *         &#39;foo/bar&#39;  : {
+         *             action  : &#39;handleFoo&#39;,
+         *             before  : &#39;beforeHandleFoo&#39;
+         *         },
+         *         &#39;user/:id&#39; : {
+         *             action     : &#39;showUser&#39;,
+         *             before     : &#39;beforeShowUser&#39;,
+         *             conditions : {
+         *                 &#39;:id&#39; : &#39;([0-9]+)&#39;
+         *             }
+         *         }
+         *     }
+         *
+         * This will only match if the `id` parameter is a number.
+         *
+         * The before action allows you to cancel an action. Every before action will get passed an `action` argument with
+         * a `resume` and `stop` methods as the last argument of the method and you *MUST* execute either method:
+         *
+         *     beforeHandleFoo : function(action) {
+         *         //some logic here
+         *
+         *         //this will allow the handleFoo action to be executed
+         *         action.resume();
+         *     },
+         *     handleFoo : function() {
+         *         //will get executed due to true being passed in callback in beforeHandleFoo
+         *     },
+         *     beforeShowUser : function(id, action) {
+         *         //allows for async process like an Ajax
+         *         Ext.Ajax.request({
+         *             url     : &#39;foo.php&#39;,
+         *             success : function() {
+         *                 //will not allow the showUser method to be executed but will continue other queued actions.
+         *                 action.stop();
+         *             },
+         *             failure : function() {
+         *                 //will not allow the showUser method to be executed and will not allow other queued actions to be executed.
+         *                 action.stop(true);
+         *             }
+         *         });
+         *     },
+         *     showUser : function(id) {
+         *         //will not get executed due to false being passed in callback in beforeShowUser
+         *     }
+         *
+         * You *MUST* execute the `resume` or `stop` method on the `action` argument. Executing `action.resume();` will continue
+         * the action, `action.stop();` will not allow the action to resume but will allow other queued actions to resume,
+         * `action.stop(true);` will not allow the action and any other queued actions to resume.
+         *
+         * The default RegEx that will be used is `([%a-zA-Z0-9\\-\\_\\s,]+)` but you can specify any
+         * that may suit what you need to accomplish. An example of an advanced condition may be to make
+         * a parameter optional and case-insensitive:
+         *
+         *     routes : {
+         *         &#39;user:id&#39; : {
+         *             action     : &#39;showUser&#39;,
+         *             before     : &#39;beforeShowUser&#39;,
+         *             conditions : {
+         *                 &#39;:id&#39; : &#39;(?:(?:\/){1}([%a-z0-9_,\s\-]+))?&#39;
+         *             }
+         *         }
+         *     }
+         */
+        routes : null,
+<span id='Ext-app-BaseController-cfg-before'>        before : null
+</span>    },
+
+<span id='Ext-app-BaseController-method-constructor'>    /**
+</span>     * Creates new Controller.
+     *
+     * @param {Object} [config] Configuration object.
+     */
+    constructor: function(config) {
+        var me = this;
+
+        // In versions prior to 5.1, this constructor used to call the Ext.util.Observable
+        // constructor (which applied the config properties directly to the instance)
+        // AND it used to call initConfig as well.  Since the constructor of
+        // Ext.mixin.Observable calls initConfig, but does not apply the properties to
+        // the instance, we do that here for backward compatibility.
+        Ext.apply(me, config);
+        // The control and listen properties are also methods so we need to delete them
+        // from the instance after applying the config object.
+        delete me.control;
+        delete me.listen;
+
+        me.eventbus = Ext.app.EventBus;
+
+        //need to have eventbus property set before we initialize the config
+        me.mixins.observable.constructor.call(me, config);
+    },
+
+<span id='Ext-app-BaseController-method-updateId'>    updateId: function(id) {
+</span>        this.id = id;
+    },
+
+<span id='Ext-app-BaseController-method-applyListen'>    applyListen: function(listen) {
+</span>        if (Ext.isObject(listen)) {
+            listen = Ext.clone(listen);
+        }
+
+        return listen;
+    },
+
+<span id='Ext-app-BaseController-method-applyControl'>    applyControl: function(control) {
+</span>        if (Ext.isObject(control)) {
+            control = Ext.clone(control);
+        }
+
+        return control;
+    },
+
+<span id='Ext-app-BaseController-method-updateControl'>    /**
+</span>     * @param {Object} control The object to pass to the {@link #method-control} method
+     * @private
+     */
+    updateControl: function(control) {
+        this.getId();
+        if (control) {
+            this.control(control);
+        }
+    },
+
+<span id='Ext-app-BaseController-method-updateListen'>    /**
+</span>     * @param {Object} listen The object to pass to the {@link #method-listen} method
+     * @private
+     */
+    updateListen: function(listen) {
+        this.getId();
+        if (listen) {
+            this.listen(listen);
+        }
+    },
+
+<span id='Ext-app-BaseController-method-updateRoutes'>    /**
+</span>     * @param {Object} routes The routes to connect to the {@link Ext.app.route.Router}
+     * @private
+     */
+    updateRoutes : function(routes) {
+        if (routes) {
+            var me = this,
+                befores = me.getBefore() || {},
+                Router = Ext.app.route.Router,
+                url, config, method;
+
+            for (url in routes) {
+                config = routes[url];
+
+                if (Ext.isString(config)) {
+                    config = {
+                        action : config
+                    };
+                }
+
+                method = config.action;
+
+                if (!config.before) {
+                    config.before = befores[method];
+                }
+                //&lt;debug&gt;
+                else if (befores[method]) {
+                    Ext.log.warn(&#39;You have a before method configured on a route (&quot;&#39; + url + &#39;&quot;) and in the before object property also in the &quot;&#39; +
+                        me.self.getName() + &#39;&quot; controller. Will use the before method in the route and disregard the one in the before property.&#39;);
+                }
+                //&lt;/debug&gt;
+
+                //connect the route config to the Router
+                Router.connect(url, config, me);
+            }
+        }
+    },
+
+<span id='Ext-app-BaseController-method-isActive'>    isActive: function() {
+</span>        return true;
+    },
+
+<span id='Ext-app-BaseController-method-control'>    /**
+</span>     * Adds listeners to components selected via {@link Ext.ComponentQuery}. Accepts an
+     * object containing component paths mapped to a hash of listener functions.
+     *
+     * In the following example the `updateUser` function is mapped to to the `click`
+     * event on a button component, which is a child of the `useredit` component.
+     *
+     *      Ext.define(&#39;AM.controller.Users&#39;, {
+     *          init: function() {
+     *              this.control({
+     *                  &#39;useredit button[action=save]&#39;: {
+     *                      click: this.updateUser
+     *                  }
+     *              });
+     *          },
+     *          
+     *          updateUser: function(button) {
+     *              console.log(&#39;clicked the Save button&#39;);
+     *          }
+     *      });
+     *
+     * Or alternatively one call `control` with two arguments:
+     *
+     *      this.control(&#39;useredit button[action=save]&#39;, {
+     *          click: this.updateUser
+     *      });
+     *
+     * See {@link Ext.ComponentQuery} for more information on component selectors.
+     *
+     * @param {String/Object} selectors If a String, the second argument is used as the
+     * listeners, otherwise an object of selectors -&gt; listeners is assumed
+     * @param {Object} [listeners] Config for listeners.
+     */
+    control: function(selectors, listeners, controller) {
+        var me = this,
+            ctrl = controller,
+            obj;
+
+        if (Ext.isString(selectors)) {
+            obj = {};
+            obj[selectors] = listeners;
+        }
+        else {
+            obj = selectors;
+            ctrl = listeners;
+        }
+
+        me.eventbus.control(obj, ctrl || me);
+    },
+
+<span id='Ext-app-BaseController-method-listen'>    /**
+</span>     * Adds listeners to different event sources (also called &quot;event domains&quot;). The
+     * primary event domain is that of components, but there are also other event domains:
+     * {@link Ext.app.domain.Global Global} domain that intercepts events fired from
+     * {@link Ext.GlobalEvents} Observable instance, {@link Ext.app.domain.Controller Controller}
+     * domain can be used to listen to events fired by other Controllers,
+     * {@link Ext.app.domain.Store Store} domain gives access to Store events, and
+     * {@link Ext.app.domain.Direct Direct} domain can be used with Ext Direct Providers
+     * to listen to their events.
+     * 
+     * To listen to &quot;bar&quot; events fired by a controller with id=&quot;foo&quot;:
+     *
+     *      Ext.define(&#39;AM.controller.Users&#39;, {
+     *          init: function() {
+     *              this.listen({
+     *                  controller: {
+     *                      &#39;#foo&#39;: {
+     *                         bar: this.onFooBar
+     *                      }
+     *                  }
+     *              });
+     *          },
+     *          ...
+     *      });
+     * 
+     * To listen to &quot;bar&quot; events fired by any controller, and &quot;baz&quot; events
+     * fired by Store with storeId=&quot;baz&quot;:
+     *
+     *      Ext.define(&#39;AM.controller.Users&#39;, {
+     *          init: function() {
+     *              this.listen({
+     *                  controller: {
+     *                      &#39;*&#39;: {
+     *                         bar: this.onAnyControllerBar
+     *                      }
+     *                  },
+     *                  store: {
+     *                      &#39;#baz&#39;: {
+     *                          baz: this.onStoreBaz
+     *                      }
+     *                  }
+     *              });
+     *          },
+     *          ...
+     *      });
+     *
+     * To listen to &quot;idle&quot; events fired by {@link Ext.GlobalEvents} when other event
+     * processing is complete and Ext JS is about to return control to the browser:
+     *
+     *      Ext.define(&#39;AM.controller.Users&#39;, {
+     *          init: function() {
+     *              this.listen({
+     *                  global: {               // Global events are always fired
+     *                      idle: this.onIdle   // from the same object, so there
+     *                  }                       // are no selectors
+     *              });
+     *          }
+     *      });
+     * 
+     * As this relates to components, the following example:
+     *
+     *      Ext.define(&#39;AM.controller.Users&#39;, {
+     *          init: function() {
+     *              this.listen({
+     *                  component: {
+     *                      &#39;useredit button[action=save]&#39;: {
+     *                         click: this.updateUser
+     *                      }
+     *                  }
+     *              });
+     *          },
+     *          ...
+     *      });
+     * 
+     * Is equivalent to:
+     *
+     *      Ext.define(&#39;AM.controller.Users&#39;, {
+     *          init: function() {
+     *              this.control({
+     *                  &#39;useredit button[action=save]&#39;: {
+     *                     click: this.updateUser
+     *                  }
+     *              });
+     *          },
+     *          ...
+     *      });
+     *
+     * Of course, these can all be combined in a single call and used instead of
+     * `control`, like so:
+     *
+     *      Ext.define(&#39;AM.controller.Users&#39;, {
+     *          init: function() {
+     *              this.listen({
+     *                  global: {
+     *                      idle: this.onIdle
+     *                  },
+     *                  controller: {
+     *                      &#39;*&#39;: {
+     *                         foobar: this.onAnyFooBar
+     *                      },
+     *                      &#39;#foo&#39;: {
+     *                         bar: this.onFooBar
+     *                      }
+     *                  },
+     *                  component: {
+     *                      &#39;useredit button[action=save]&#39;: {
+     *                         click: this.updateUser
+     *                      }
+     *                  },
+     *                  store: {
+     *                      &#39;#qux&#39;: {
+     *                          load: this.onQuxLoad
+     *                      }
+     *                  }
+     *              });
+     *          },
+     *          ...
+     *      });
+     *
+     * @param {Object} to Config object containing domains, selectors and listeners.
+     * @param {Ext.app.Controller} [controller] The controller to add the listeners to. Defaults to the current controller.
+     */
+    listen: function (to, controller) {
+        this.eventbus.listen(to, controller || this);
+    },
+    
+<span id='Ext-app-BaseController-method-destroy'>    destroy: function() {
+</span>        var me = this,
+            bus = me.eventbus;
+
+        Ext.app.route.Router.disconnectAll(me);
+
+        if (bus) {
+            bus.unlisten(me);
+            me.eventbus = null;
+        }
+        me.callParent();
+    },
+
+<span id='Ext-app-BaseController-method-redirectTo'>    /**
+</span>     * Update the hash. By default, it will not execute the routes if the current token and the
+     * token passed are the same.
+     * 
+     * @param {String/Ext.data.Model} token The token to redirect to.  Can be either a String
+     * or a {@link Ext.data.Model Model} instance - if a Model instance is passed it will
+     * internally be converted into a String token by calling the Model&#39;s
+     * {@link Ext.data.Model#toUrl toUrl} function.
+     *
+     * @param {Boolean} force Force the update of the hash regardless of the current token.
+     * 
+     * @return {Boolean} Will return `true` if the token was updated.
+     */
+    redirectTo: function(token, force) {
+        if (token.isModel) {
+            token = token.toUrl();
+        }
+
+        var isCurrent = Ext.util.History.getToken() === token,
+            ret = false;
+
+        if (!isCurrent) {
+            ret = true;
+            Ext.util.History.add(token);
+        } else if (force) {
+            ret = true;
+            Ext.app.route.Router.onStateChange(token);
+        }
+        return ret;
+    }
+});
+</pre>
+</body>
+</html>
