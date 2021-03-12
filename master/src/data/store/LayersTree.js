@@ -1,4 +1,4 @@
-/* Copyright (c) 2015-2017 The Open Source Geospatial Foundation
+/* Copyright (c) 2015-present The Open Source Geospatial Foundation
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -353,9 +353,9 @@ Ext.define('GeoExt.data.store.LayersTree', {
      * Bound as an eventlistener for layer nodes which are a folder / group on
      * the beforecollapse event. Whenever a folder gets collapsed, ExtJS seems
      * to actually remove the children from the store, triggering the removal
-     * of the actual layers in the map. This is an undesired behviour. We handle
-     * this as follows: Before the collapsing happens, we mark the childNodes,
-     * so we effectively opt-out in #handleRemove.
+     * of the actual layers in the map. This is an undesired behaviour. We
+     * handle this as follows: Before the collapsing happens, we mark the
+     * childNodes, so we effectively opt-out in #handleRemove.
      *
      * @param {Ext.data.NodeInterface} node The collapsible folder node.
      * @private

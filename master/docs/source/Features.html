@@ -15,7 +15,7 @@
   </script>
 </head>
 <body onload="prettyPrint(); highlight();">
-  <pre class="prettyprint lang-js">/* Copyright (c) 2015-2017 The Open Source Geospatial Foundation
+  <pre class="prettyprint lang-js">/* Copyright (c) 2015-present The Open Source Geospatial Foundation
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -35,31 +35,31 @@
  *
  * @class GeoExt.data.store.Features
  */
-Ext.define('GeoExt.data.store.Features', {
-    extend: 'GeoExt.data.store.OlObjects',
+Ext.define(&#39;GeoExt.data.store.Features&#39;, {
+    extend: &#39;GeoExt.data.store.OlObjects&#39;,
     mixins: [
-        'GeoExt.mixin.SymbolCheck'
+        &#39;GeoExt.mixin.SymbolCheck&#39;
     ],
 
 <span id='GeoExt-data-store-Features-property-symbols'>    // &lt;debug&gt;
 </span>    symbols: [
-        'ol.Collection',
-        'ol.layer.Vector',
-        'ol.Map',
-        'ol.Map#addLayer',
-        'ol.Map#removeLayer',
-        'ol.source.Vector',
-        'ol.source.Vector#getFeatures',
-        'ol.source.Vector#on',
-        'ol.source.Vector#un',
-        'ol.style.Circle',
-        'ol.style.Fill',
-        'ol.style.Stroke',
-        'ol.style.Style'
+        &#39;ol.Collection&#39;,
+        &#39;ol.layer.Vector&#39;,
+        &#39;ol.Map&#39;,
+        &#39;ol.Map#addLayer&#39;,
+        &#39;ol.Map#removeLayer&#39;,
+        &#39;ol.source.Vector&#39;,
+        &#39;ol.source.Vector#getFeatures&#39;,
+        &#39;ol.source.Vector#on&#39;,
+        &#39;ol.source.Vector#un&#39;,
+        &#39;ol.style.Circle&#39;,
+        &#39;ol.style.Fill&#39;,
+        &#39;ol.style.Stroke&#39;,
+        &#39;ol.style.Style&#39;
     ],
 <span id='GeoExt-data-store-Features-property-model'>    // &lt;/debug&gt;
 </span>
-    model: 'GeoExt.data.model.Feature',
+    model: &#39;GeoExt.data.model.Feature&#39;,
 
     config: {
 
@@ -119,7 +119,7 @@ Ext.define('GeoExt.data.store.Features', {
 </span>     * Setting this flag to true the filter of the store will be
      * applied to the underlying vector #layer.
      * This will only have an effect if the source of the #layer is NOT
-     * configured with an 'url' parameter.
+     * configured with an &#39;url&#39; parameter.
      *
      * @cfg {Boolean}
      */
@@ -140,10 +140,10 @@ Ext.define('GeoExt.data.store.Features', {
                 image: new ol.style.Circle({
                     radius: 6,
                     fill: new ol.style.Fill({
-                        color: '#3399CC'
+                        color: &#39;#3399CC&#39;
                     }),
                     stroke: new ol.style.Stroke({
-                        color: '#fff',
+                        color: &#39;#fff&#39;,
                         width: 2
                     })
                 })
@@ -170,13 +170,13 @@ Ext.define('GeoExt.data.store.Features', {
         }
 
         if (cfg.features instanceof ol.Collection) {
-            this.olCollection.on('add', this.onOlCollectionAdd, this);
-            this.olCollection.on('remove', this.onOlCollectionRemove, this);
+            this.olCollection.on(&#39;add&#39;, this.onOlCollectionAdd, this);
+            this.olCollection.on(&#39;remove&#39;, this.onOlCollectionRemove, this);
         }
         me.bindLayerEvents();
 
         if (me.passThroughFilter === true) {
-            me.on('filterchange', me.onFilterChange);
+            me.on(&#39;filterchange&#39;, me.onFilterChange);
         }
     },
 
@@ -255,8 +255,8 @@ Ext.define('GeoExt.data.store.Features', {
      */
     destroy: function() {
         if (this.olCollection) {
-            this.olCollection.un('add', this.onCollectionAdd, this);
-            this.olCollection.un('remove', this.onCollectionRemove, this);
+            this.olCollection.un(&#39;add&#39;, this.onCollectionAdd, this);
+            this.olCollection.un(&#39;remove&#39;, this.onCollectionRemove, this);
         }
 
         var me = this;
@@ -295,7 +295,7 @@ Ext.define('GeoExt.data.store.Features', {
     },
 
 <span id='GeoExt-data-store-Features-method-bindLayerEvents'>    /**
-</span>     * Bind the 'addfeature' and 'removefeature' events to sync the features
+</span>     * Bind the &#39;addfeature&#39; and &#39;removefeature&#39; events to sync the features
      * in #layer with this store.
      *
      * @private
@@ -304,13 +304,13 @@ Ext.define('GeoExt.data.store.Features', {
         var me = this;
         if (me.layer &amp;&amp; me.layer.getSource() instanceof ol.source.Vector) {
             // bind feature add / remove events of the layer
-            me.layer.getSource().on('addfeature', me.onFeaturesAdded, me);
-            me.layer.getSource().on('removefeature', me.onFeaturesRemoved, me);
+            me.layer.getSource().on(&#39;addfeature&#39;, me.onFeaturesAdded, me);
+            me.layer.getSource().on(&#39;removefeature&#39;, me.onFeaturesRemoved, me);
         }
     },
 
 <span id='GeoExt-data-store-Features-method-unbindLayerEvents'>    /**
-</span>     * Unbind the 'addfeature' and 'removefeature' events of the #layer.
+</span>     * Unbind the &#39;addfeature&#39; and &#39;removefeature&#39; events of the #layer.
      *
      * @private
      */
@@ -318,13 +318,13 @@ Ext.define('GeoExt.data.store.Features', {
         var me = this;
         if (me.layer &amp;&amp; me.layer.getSource() instanceof ol.source.Vector) {
             // unbind feature add / remove events of the layer
-            me.layer.getSource().un('addfeature', me.onFeaturesAdded, me);
-            me.layer.getSource().un('removefeature', me.onFeaturesRemoved, me);
+            me.layer.getSource().un(&#39;addfeature&#39;, me.onFeaturesAdded, me);
+            me.layer.getSource().un(&#39;removefeature&#39;, me.onFeaturesRemoved, me);
         }
     },
 
 <span id='GeoExt-data-store-Features-method-onFeaturesAdded'>    /**
-</span>     * Handler for #layer 'addfeature' event.
+</span>     * Handler for #layer &#39;addfeature&#39; event.
      *
      * @param {Object} evt The event object of OpenLayers.
      * @private
@@ -334,7 +334,7 @@ Ext.define('GeoExt.data.store.Features', {
     },
 
 <span id='GeoExt-data-store-Features-method-onFeaturesRemoved'>    /**
-</span>     * Handler for #layer 'removefeature' event.
+</span>     * Handler for #layer &#39;removefeature&#39; event.
      *
      * @param {Object} evt The event object of OpenLayers.
      * @private
@@ -352,7 +352,7 @@ Ext.define('GeoExt.data.store.Features', {
     },
 
 <span id='GeoExt-data-store-Features-method-onFilterChange'>    /**
-</span>     * Handles the 'filterchange'-event.
+</span>     * Handles the &#39;filterchange&#39;-event.
      * Applies the filter of this store to the underlying layer.
      * @private
      */

@@ -15,7 +15,7 @@
   </script>
 </head>
 <body onload="prettyPrint(); highlight();">
-  <pre class="prettyprint lang-js">/* Copyright (c) 2015-2018 The Open Source Geospatial Foundation
+  <pre class="prettyprint lang-js">/* Copyright (c) 2015-present The Open Source Geospatial Foundation
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -33,18 +33,21 @@
 <span id='GeoExt-state-PermalinkProvider'>/**
 </span> * The permalink provider.
  *
+ * **CAUTION: This class is only usable in applications using the classic
+ * toolkit of ExtJS 6.**
+ *
  * Sample code displaying a new permalink each time the map is moved:
  *
  *     @example preview
  *     // create permalink provider
- *     var permalinkProvider = Ext.create('GeoExt.state.PermalinkProvider', {});
+ *     var permalinkProvider = Ext.create(&#39;GeoExt.state.PermalinkProvider&#39;, {});
  *     // set it in the state manager
  *     Ext.state.Manager.setProvider(permalinkProvider);
  *
  *     // create a map panel, and make it stateful
- *     var mapComponent = Ext.create('GeoExt.component.Map', {
+ *     var mapComponent = Ext.create(&#39;GeoExt.component.Map&#39;, {
  *         stateful: true,
- *         stateId: 'gx_mapstate',
+ *         stateId: &#39;gx_mapstate&#39;,
  *         map: new ol.Map({
  *             layers: [
  *                 new ol.layer.Tile({
@@ -57,8 +60,8 @@
  *             })
  *         })
  *     });
- *     var mapPanel = Ext.create('Ext.panel.Panel', {
- *         title: 'GeoExt.component.Map Example',
+ *     var mapPanel = Ext.create(&#39;Ext.panel.Panel&#39;, {
+ *         title: &#39;GeoExt.component.Map Example&#39;,
  *         height: 200,
  *         items: [mapComponent],
  *         renderTo: Ext.getBody()
@@ -72,11 +75,11 @@
  *
  * @class GeoExt.state.PermalinkProvider
  */
-Ext.define('GeoExt.state.PermalinkProvider', {
-    extend: 'Ext.state.Provider',
+Ext.define(&#39;GeoExt.state.PermalinkProvider&#39;, {
+    extend: &#39;Ext.state.Provider&#39;,
     requires: [],
 
-    alias: 'state.gx_permalinkprovider',
+    alias: &#39;state.gx_permalinkprovider&#39;,
 
 <span id='GeoExt-state-PermalinkProvider-property-mapState'>    /**
 </span>     * Current map state object.
@@ -91,7 +94,7 @@ Ext.define('GeoExt.state.PermalinkProvider', {
 
         me.callParent(arguments);
 
-        if (window.location.hash !== '') {
+        if (window.location.hash !== &#39;&#39;) {
             me.mapState = me.readPermalinkHash(window.location.hash);
         }
     },
@@ -107,8 +110,8 @@ Ext.define('GeoExt.state.PermalinkProvider', {
     readPermalinkHash: function(plHash) {
         var mapState;
         // try to restore center, zoom-level and rotation from the URL
-        var hash = plHash.replace('#map=', '');
-        var parts = hash.split('/');
+        var hash = plHash.replace(&#39;#map=&#39;, &#39;&#39;);
+        var parts = hash.split(&#39;/&#39;);
 
         if (parts.length === 4) {
             mapState = {
@@ -143,10 +146,10 @@ Ext.define('GeoExt.state.PermalinkProvider', {
             centerY = Math.round(centerY * 100) / 100;
         }
 
-        var hash = '#map=' +
-            mapState.zoom + '/' +
-            centerX + '/' +
-            centerY + '/' +
+        var hash = &#39;#map=&#39; +
+            mapState.zoom + &#39;/&#39; +
+            centerX + &#39;/&#39; +
+            centerY + &#39;/&#39; +
             mapState.rotation;
 
         return hash;
@@ -162,7 +165,7 @@ Ext.define('GeoExt.state.PermalinkProvider', {
         var me = this;
         // keep our mapState object in sync with the state
         me.mapState = value;
-        // call 'set' of super class
+        // call &#39;set&#39; of super class
         me.callParent(arguments);
     }
 });

@@ -15,7 +15,7 @@
   </script>
 </head>
 <body onload="prettyPrint(); highlight();">
-  <pre class="prettyprint lang-js">/* Copyright (c) 2015-2017 The Open Source Geospatial Foundation
+  <pre class="prettyprint lang-js">/* Copyright (c) 2015-present The Open Source Geospatial Foundation
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -36,25 +36,25 @@
  *
  * @class GeoExt.data.MapfishPrintProvider
  */
-Ext.define('GeoExt.data.MapfishPrintProvider', {
-    extend: 'Ext.Base',
+Ext.define(&#39;GeoExt.data.MapfishPrintProvider&#39;, {
+    extend: &#39;Ext.Base&#39;,
     mixins: [
-        'Ext.mixin.Observable',
-        'GeoExt.mixin.SymbolCheck'
+        &#39;Ext.mixin.Observable&#39;,
+        &#39;GeoExt.mixin.SymbolCheck&#39;
     ],
     requires: [
-        'GeoExt.data.model.print.Capability',
-        'Ext.data.JsonStore'
+        &#39;GeoExt.data.model.print.Capability&#39;,
+        &#39;Ext.data.JsonStore&#39;
     ],
 <span id='GeoExt-data-MapfishPrintProvider-property-symbols'>    // &lt;debug&gt;
 </span>    symbols: [
-        'ol.Collection',
-        'ol.geom.Polygon.fromExtent',
-        'ol.Feature',
-        'ol.layer.Layer#getSource',
-        'ol.layer.Group',
-        'ol.source.Vector.prototype.addFeature',
-        'ol.View#calculateExtent'
+        &#39;ol.Collection&#39;,
+        &#39;ol.geom.Polygon.fromExtent&#39;,
+        &#39;ol.Feature&#39;,
+        &#39;ol.layer.Layer#getSource&#39;,
+        &#39;ol.layer.Group&#39;,
+        &#39;ol.source.Vector.prototype.addFeature&#39;,
+        &#39;ol.View#calculateExtent&#39;
     ],
     // &lt;/debug&gt;
 
@@ -68,7 +68,8 @@ Ext.define('GeoExt.data.MapfishPrintProvider', {
 
     config: {
 <span id='GeoExt-data-MapfishPrintProvider-cfg-capabilities'>        capabilities: null,
-</span><span id='GeoExt-data-MapfishPrintProvider-cfg-url'>        url: ''
+</span><span id='GeoExt-data-MapfishPrintProvider-cfg-url'>        url: &#39;&#39;,
+</span><span id='GeoExt-data-MapfishPrintProvider-cfg-useJsonp'>        useJsonp: true
 </span>    },
 
     inheritableStatics: {
@@ -144,8 +145,8 @@ Ext.define('GeoExt.data.MapfishPrintProvider', {
                 }
             });
             if (!serializer) {
-                Ext.log.warn('Couldn\'t find a suitable serializer for source.'
-                    + ' Did you require() an appropriate serializer class?');
+                Ext.log.warn(&#39;Couldn\&#39;t find a suitable serializer for source.&#39;
+                    + &#39; Did you require() an appropriate serializer class?&#39;);
             }
             return serializer;
         },
@@ -156,7 +157,7 @@ Ext.define('GeoExt.data.MapfishPrintProvider', {
          * from returning array
          *
          * @param {GeoExt.data.store.Layers|ol.Collection|ol.layer.Base[]} coll
-         *     The 'collection' of layers to get as array. If passed as
+         *     The &#39;collection&#39; of layers to get as array. If passed as
          *     ol.Collection, all items must be `ol.layer.Base`.
          * @return {Array} The flat layers array.
          */
@@ -206,7 +207,7 @@ Ext.define('GeoExt.data.MapfishPrintProvider', {
          *     layer and serialize it.
          * @param {Object} [filterScope] The scope in which the filtering
          *     function will be executed.
-         * @return {Array&lt;Object&gt;} An array of serialized layers.
+         * @return {Object[]} An array of serialized layers.
          * @static
          */
         getSerializedLayers: function(mapComponent, filterFn, filterScope) {
@@ -227,7 +228,8 @@ Ext.define('GeoExt.data.MapfishPrintProvider', {
 
                 var serializer = this.findSerializerBySource(source);
                 if (serializer) {
-                    serialized = serializer.serialize(layer, source, viewRes);
+                    serialized = serializer.serialize(layer, source, viewRes,
+                        mapComponent.map);
                     serializedLayers.push(serialized);
                 }
             }, this);
@@ -280,8 +282,8 @@ Ext.define('GeoExt.data.MapfishPrintProvider', {
     },
 
 <span id='GeoExt-data-MapfishPrintProvider-property-capabilityRec'>    /**
-</span>     * The capabiltyRec is an instance of 'GeoExt.data.model.print.Capability'
-     * and contans the PrintCapabilities of the Printprovider.
+</span>     * The capabiltyRec is an instance of &#39;GeoExt.data.model.print.Capability&#39;
+     * and contains the PrintCapabilities of the Printprovider.
      *
      * @property
      * @readonly
@@ -291,7 +293,7 @@ Ext.define('GeoExt.data.MapfishPrintProvider', {
 <span id='GeoExt-data-MapfishPrintProvider-method-constructor'>    constructor: function(cfg) {
 </span>        this.mixins.observable.constructor.call(this, cfg);
         if (!cfg.capabilities &amp;&amp; !cfg.url) {
-            Ext.Error.raise('Print capabilities or Url required');
+            Ext.Error.raise(&#39;Print capabilities or Url required&#39;);
         }
         this.initConfig(cfg);
         this.fillCapabilityRec();
@@ -310,14 +312,14 @@ Ext.define('GeoExt.data.MapfishPrintProvider', {
         var fillRecordAndFireEvent = function() {
             this.capabilityRec = store.getAt(0);
             if (!this.capabilityRec) {
-                this.fireEvent('error', this);
+                this.fireEvent(&#39;error&#39;, this);
             } else {
-                this.fireEvent('ready', this);
+                this.fireEvent(&#39;ready&#39;, this);
             }
         };
         if (capabilities) { // if capability object is passed
-            store = Ext.create('Ext.data.JsonStore', {
-                model: 'GeoExt.data.model.print.Capability',
+            store = Ext.create(&#39;Ext.data.JsonStore&#39;, {
+                model: &#39;GeoExt.data.model.print.Capability&#39;,
                 listeners: {
                     datachanged: fillRecordAndFireEvent,
                     scope: this
@@ -325,14 +327,22 @@ Ext.define('GeoExt.data.MapfishPrintProvider', {
             });
             store.loadRawData(capabilities);
         } else if (url) { // if servlet url is passed
-            store = Ext.create('Ext.data.Store', {
+            var proxy = {
+                url: url
+            };
+            if (this.getUseJsonp()) {
+                proxy.type = &#39;jsonp&#39;;
+                proxy.callbackKey = &#39;jsonp&#39;;
+            } else {
+                proxy.type = &#39;ajax&#39;;
+                proxy.reader = {
+                    type: &#39;json&#39;
+                };
+            }
+            store = Ext.create(&#39;Ext.data.Store&#39;, {
                 autoLoad: true,
-                model: 'GeoExt.data.model.print.Capability',
-                proxy: {
-                    type: 'jsonp',
-                    url: url,
-                    callbackKey: 'jsonp'
-                },
+                model: &#39;GeoExt.data.model.print.Capability&#39;,
+                proxy: proxy,
                 listeners: {
                     load: fillRecordAndFireEvent,
                     scope: this

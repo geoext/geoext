@@ -15,7 +15,7 @@
   </script>
 </head>
 <body onload="prettyPrint(); highlight();">
-  <pre class="prettyprint lang-js">/* Copyright (c) 2015-2017 The Open Source Geospatial Foundation
+  <pre class="prettyprint lang-js">/* Copyright (c) 2015-present The Open Source Geospatial Foundation
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -51,86 +51,86 @@
  *             rotation: -Math.PI / 6
  *         })
  *     });
- *     var mapComponent = Ext.create('GeoExt.component.Map', {
+ *     var mapComponent = Ext.create(&#39;GeoExt.component.Map&#39;, {
  *         map: olMap
  *     });
- *     var mapPanel = Ext.create('Ext.panel.Panel', {
- *        title: 'Map',
- *        region: 'center',
- *        layout: 'fit',
+ *     var mapPanel = Ext.create(&#39;Ext.panel.Panel&#39;, {
+ *        title: &#39;Map&#39;,
+ *        region: &#39;center&#39;,
+ *        layout: &#39;fit&#39;,
  *        items: mapComponent
  *     });
- *     var overviewMapPanel = Ext.create('Ext.panel.Panel', {
- *         title: 'OverviewMap',
- *         region: 'west',
- *         layout: 'fit',
+ *     var overviewMapPanel = Ext.create(&#39;Ext.panel.Panel&#39;, {
+ *         title: &#39;OverviewMap&#39;,
+ *         region: &#39;west&#39;,
+ *         layout: &#39;fit&#39;,
  *         width: 160,
  *         // create the overview by passing the ol.Map:
- *         items: Ext.create('GeoExt.component.OverviewMap', {
+ *         items: Ext.create(&#39;GeoExt.component.OverviewMap&#39;, {
  *             parentMap: olMap
  *         })
  *     });
- *     Ext.create('Ext.panel.Panel', {
+ *     Ext.create(&#39;Ext.panel.Panel&#39;, {
  *        height: 300,
- *        layout: 'border',
+ *        layout: &#39;border&#39;,
  *        items: [mapPanel, overviewMapPanel],
  *        renderTo: Ext.getBody()
  *     });
  *
  * @class GeoExt.component.OverviewMap
  */
-Ext.define('GeoExt.component.OverviewMap', {
-    extend: 'Ext.Component',
+Ext.define(&#39;GeoExt.component.OverviewMap&#39;, {
+    extend: &#39;Ext.Component&#39;,
     alias: [
-        'widget.gx_overview',
-        'widget.gx_overviewmap',
-        'widget.gx_component_overviewmap'
+        &#39;widget.gx_overview&#39;,
+        &#39;widget.gx_overviewmap&#39;,
+        &#39;widget.gx_component_overviewmap&#39;
     ],
     requires: [
-        'GeoExt.util.Version'
+        &#39;GeoExt.util.Version&#39;
     ],
     mixins: [
-        'GeoExt.mixin.SymbolCheck'
+        &#39;GeoExt.mixin.SymbolCheck&#39;
     ],
 
 <span id='GeoExt-component-OverviewMap-property-symbols'>    // &lt;debug&gt;
 </span>    symbols: [
         // For ol4 support we can no longer require this symbols:
-        // 'ol.animation.pan',
-        // 'ol.Map#beforeRender',
-        'ol.Collection',
-        'ol.Feature',
-        'ol.Feature#setGeometry',
-        'ol.Feature#setStyle',
-        'ol.geom.Point',
-        'ol.geom.Point#getCoordinates',
-        'ol.geom.Point#setCoordinates',
-        'ol.geom.Polygon',
-        'ol.geom.Polygon#getCoordinates',
-        'ol.geom.Polygon#setCoordinates',
-        'ol.interaction.Translate',
-        'ol.layer.Image', // we should get rid of this requirement
-        'ol.layer.Tile', // we should get rid of this requirement
-        'ol.layer.Vector',
-        'ol.layer.Vector#getSource',
-        'ol.Map',
-        'ol.Map#addLayer',
-        'ol.Map#getView',
-        'ol.Map#on',
-        'ol.Map#updateSize',
-        'ol.Map#un',
-        'ol.source.Vector',
-        'ol.source.Vector#addFeatures',
-        'ol.View',
-        'ol.View#calculateExtent',
-        'ol.View#getCenter',
-        'ol.View#getProjection',
-        'ol.View#getRotation',
-        'ol.View#getZoom',
-        'ol.View#on',
-        'ol.View#set',
-        'ol.View#setCenter',
-        'ol.View#un'
+        // &#39;ol.animation.pan&#39;,
+        // &#39;ol.Map#beforeRender&#39;,
+        &#39;ol.Collection&#39;,
+        &#39;ol.Feature&#39;,
+        &#39;ol.Feature#setGeometry&#39;,
+        &#39;ol.Feature#setStyle&#39;,
+        &#39;ol.geom.Point&#39;,
+        &#39;ol.geom.Point#getCoordinates&#39;,
+        &#39;ol.geom.Point#setCoordinates&#39;,
+        &#39;ol.geom.Polygon&#39;,
+        &#39;ol.geom.Polygon#getCoordinates&#39;,
+        &#39;ol.geom.Polygon#setCoordinates&#39;,
+        &#39;ol.interaction.Translate&#39;,
+        &#39;ol.layer.Image&#39;, // we should get rid of this requirement
+        &#39;ol.layer.Tile&#39;, // we should get rid of this requirement
+        &#39;ol.layer.Vector&#39;,
+        &#39;ol.layer.Vector#getSource&#39;,
+        &#39;ol.Map&#39;,
+        &#39;ol.Map#addLayer&#39;,
+        &#39;ol.Map#getView&#39;,
+        &#39;ol.Map#on&#39;,
+        &#39;ol.Map#updateSize&#39;,
+        &#39;ol.Map#un&#39;,
+        &#39;ol.source.Vector&#39;,
+        &#39;ol.source.Vector#addFeatures&#39;,
+        &#39;ol.View&#39;,
+        &#39;ol.View#calculateExtent&#39;,
+        &#39;ol.View#getCenter&#39;,
+        &#39;ol.View#getProjection&#39;,
+        &#39;ol.View#getRotation&#39;,
+        &#39;ol.View#getZoom&#39;,
+        &#39;ol.View#on&#39;,
+        &#39;ol.View#set&#39;,
+        &#39;ol.View#setCenter&#39;,
+        &#39;ol.View#un&#39;
     ],
     // &lt;/debug&gt;
 
@@ -309,16 +309,16 @@ Ext.define('GeoExt.component.OverviewMap', {
         var me = this;
 
         if (!me.getParentMap()) {
-            Ext.Error.raise('No parentMap defined for overviewMap');
+            Ext.Error.raise(&#39;No parentMap defined for overviewMap&#39;);
         } else if (!(me.getParentMap() instanceof ol.Map)) {
-            Ext.Error.raise('parentMap is not an instance of ol.Map');
+            Ext.Error.raise(&#39;parentMap is not an instance of ol.Map&#39;);
         }
 
         me.initOverviewMap();
 
-        me.on('beforedestroy', me.onBeforeDestroy, me);
-        me.on('resize', me.onResize, me);
-        me.on('afterrender', me.updateBox, me);
+        me.on(&#39;beforedestroy&#39;, me.onBeforeDestroy, me);
+        me.on(&#39;resize&#39;, me.onResize, me);
+        me.on(&#39;afterrender&#39;, me.updateBox, me);
 
         me.callParent();
     },
@@ -379,14 +379,14 @@ Ext.define('GeoExt.component.OverviewMap', {
 
         // Set the OverviewMaps center or resolution, on property changed
         // in parentMap.
-        parentMap.getView().on('propertychange', me.onParentViewPropChange, me);
+        parentMap.getView().on(&#39;propertychange&#39;, me.onParentViewPropChange, me);
 
         // Update the box after rendering a new frame of the parentMap.
         me.enableBoxUpdate();
 
         // Initially set the center and resolution of the overviewMap.
-        me.setOverviewMapProperty('center');
-        me.setOverviewMapProperty('resolution');
+        me.setOverviewMapProperty(&#39;center&#39;);
+        me.setOverviewMapProperty(&#39;resolution&#39;);
 
         me.extentLayer.getSource().addFeatures([
             me.boxFeature,
@@ -408,10 +408,10 @@ Ext.define('GeoExt.component.OverviewMap', {
         dragInteraction.setActive(true);
         // disable the box update during the translation
         // because it interferes when dragging the feature
-        dragInteraction.on('translatestart', me.disableBoxUpdate, me);
-        dragInteraction.on('translating', me.repositionAnchorFeature, me);
-        dragInteraction.on('translateend', me.recenterParentFromBox, me);
-        dragInteraction.on('translateend', me.enableBoxUpdate, me);
+        dragInteraction.on(&#39;translatestart&#39;, me.disableBoxUpdate, me);
+        dragInteraction.on(&#39;translating&#39;, me.repositionAnchorFeature, me);
+        dragInteraction.on(&#39;translateend&#39;, me.recenterParentFromBox, me);
+        dragInteraction.on(&#39;translateend&#39;, me.enableBoxUpdate, me);
         me.dragInteraction = dragInteraction;
     },
 
@@ -423,7 +423,7 @@ Ext.define('GeoExt.component.OverviewMap', {
         var me = this;
         var parentMap = me.getParentMap();
         if (parentMap) {
-            parentMap.un('postrender', me.updateBox, me);
+            parentMap.un(&#39;postrender&#39;, me.updateBox, me);
         }
     },
 
@@ -435,7 +435,7 @@ Ext.define('GeoExt.component.OverviewMap', {
         var me = this;
         var parentMap = me.getParentMap();
         if (parentMap) {
-            parentMap.on('postrender', me.updateBox, me);
+            parentMap.on(&#39;postrender&#39;, me.updateBox, me);
         }
     },
 
@@ -452,10 +452,10 @@ Ext.define('GeoExt.component.OverviewMap', {
         }
         dragInteraction.setActive(false);
         me.getMap().removeInteraction(dragInteraction);
-        dragInteraction.un('translatestart', me.disableBoxUpdate, me);
-        dragInteraction.un('translating', me.repositionAnchorFeature, me);
-        dragInteraction.un('translateend', me.recenterParentFromBox, me);
-        dragInteraction.un('translateend', me.enableBoxUpdate, me);
+        dragInteraction.un(&#39;translatestart&#39;, me.disableBoxUpdate, me);
+        dragInteraction.un(&#39;translating&#39;, me.repositionAnchorFeature, me);
+        dragInteraction.un(&#39;translateend&#39;, me.recenterParentFromBox, me);
+        dragInteraction.un(&#39;translateend&#39;, me.enableBoxUpdate, me);
         me.dragInteraction = null;
     },
 
@@ -519,7 +519,7 @@ Ext.define('GeoExt.component.OverviewMap', {
      * @private
      */
     onParentViewPropChange: function(evt) {
-        if (evt.key === 'center' || evt.key === 'resolution') {
+        if (evt.key === &#39;center&#39; || evt.key === &#39;resolution&#39;) {
             this.setOverviewMapProperty(evt.key);
         }
     },
@@ -592,8 +592,8 @@ Ext.define('GeoExt.component.OverviewMap', {
 <span id='GeoExt-component-OverviewMap-method-setOverviewMapProperty'>    /**
 </span>     * Set an OverviewMap property (center or resolution).
      *
-     * @param {String} key The name of the property, either `'center'` or
-     *     `'resolution'`
+     * @param {String} key The name of the property, either `&#39;center&#39;` or
+     *     `&#39;resolution&#39;`
      */
     setOverviewMapProperty: function(key) {
         var me = this;
@@ -605,17 +605,17 @@ Ext.define('GeoExt.component.OverviewMap', {
 
         var overviewCenter = parentView.getCenter();
 
-        if (key === 'center') {
+        if (key === &#39;center&#39;) {
             // transform if necessary
             if (!ol.proj.equivalent(parentProjection, overviewProjection)) {
                 overviewCenter = ol.proj.transform(overviewCenter,
                     parentProjection, overviewProjection);
             }
-            overviewView.set('center', overviewCenter);
+            overviewView.set(&#39;center&#39;, overviewCenter);
         }
-        if (key === 'resolution') {
+        if (key === &#39;resolution&#39;) {
             if (ol.proj.equivalent(parentProjection, overviewProjection)) {
-                overviewView.set('resolution',
+                overviewView.set(&#39;resolution&#39;,
                     me.getMagnification() * parentView.getResolution());
             } else if (me.mapRendered === true) {
                 var parentExtent = parentView.calculateExtent(
@@ -640,7 +640,7 @@ Ext.define('GeoExt.component.OverviewMap', {
                     );
                 }
                 overviewView.set(
-                    'resolution',
+                    &#39;resolution&#39;,
                     me.getMagnification() * overviewView.getResolution()
                 );
             }
@@ -648,7 +648,7 @@ Ext.define('GeoExt.component.OverviewMap', {
             // equivalent and mapRendered is false as me.getMap().getSize()
             // would not be reliable here.
             // Note: As soon as mapRendered will be set to true (in onResize())
-            // setOverviewMapProperty('resolution') will be called explicitly
+            // setOverviewMapProperty(&#39;resolution&#39;) will be called explicitly
         }
     },
 
@@ -666,16 +666,16 @@ Ext.define('GeoExt.component.OverviewMap', {
         var map = me.getMap();
 
         if (!map) {
-            me.addListener('afterrender', function() {
-                // set the property again, and re-trigger the 'apply…'-sequence
+            me.addListener(&#39;afterrender&#39;, function() {
+                // set the property again, and re-trigger the &#39;apply…&#39;-sequence
                 me.setRecenterOnClick(shallRecenter);
             }, me, {single: true});
             return shallRecenter;
         }
         if (shallRecenter) {
-            map.on('click', me.overviewMapClicked, me);
+            map.on(&#39;click&#39;, me.overviewMapClicked, me);
         } else {
-            map.un('click', me.overviewMapClicked, me);
+            map.un(&#39;click&#39;, me.overviewMapClicked, me);
         }
         return shallRecenter;
     },
@@ -694,8 +694,8 @@ Ext.define('GeoExt.component.OverviewMap', {
         var map = me.getMap();
 
         if (!map) {
-            me.addListener('afterrender', function() {
-                // set the property again, and re-trigger the 'apply…'-sequence
+            me.addListener(&#39;afterrender&#39;, function() {
+                // set the property again, and re-trigger the &#39;apply…&#39;-sequence
                 me.setEnableBoxDrag(shallEnableBoxDrag);
             }, me, {single: true});
             return shallEnableBoxDrag;
@@ -719,7 +719,7 @@ Ext.define('GeoExt.component.OverviewMap', {
 
         if (map) {
             // unbind recenter listener, if any
-            map.un('click', me.overviewMapClicked, me);
+            map.un(&#39;click&#39;, me.overviewMapClicked, me);
         }
 
         me.destroyDragBehaviour();
@@ -727,7 +727,7 @@ Ext.define('GeoExt.component.OverviewMap', {
         if (parentMap) {
             // unbind parent listeners
             me.disableBoxUpdate();
-            parentView.un('propertychange', me.onParentViewPropChange, me);
+            parentView.un(&#39;propertychange&#39;, me.onParentViewPropChange, me);
         }
     },
 
@@ -751,7 +751,7 @@ Ext.define('GeoExt.component.OverviewMap', {
             // explicit call to assure that magnification mechanism will also
             // work initially if projections of parent and overview are
             // not equal
-            me.setOverviewMapProperty('resolution');
+            me.setOverviewMapProperty(&#39;resolution&#39;);
         } else {
             me.getMap().updateSize();
         }

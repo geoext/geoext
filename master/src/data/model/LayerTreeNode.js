@@ -1,4 +1,4 @@
-/* Copyright (c) 2015-2017 The Open Source Geospatial Foundation
+/* Copyright (c) 2015-present The Open Source Geospatial Foundation
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -98,7 +98,7 @@ Ext.define('GeoExt.data.model.LayerTreeNode', {
     },
 
     /**
-     * Overriden to forward changes to the underlying `ol.Object`. All changes
+     * Overridden to forward changes to the underlying `ol.Object`. All changes
      * on the {Ext.data.Model} properties will be set on the `ol.Object` as
      * well.
      *
@@ -115,6 +115,11 @@ Ext.define('GeoExt.data.model.LayerTreeNode', {
 
         // forward changes to ol object
         if (key === 'checked') {
+            if (me.get('__toggleMode') === 'ol3') {
+                me.getOlLayer().set('visible', newValue);
+                return;
+            }
+
             me.__updating = true;
             if (me.get('isLayerGroup') && classicMode) {
                 me.getOlLayer().set('visible', newValue);

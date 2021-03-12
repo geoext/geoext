@@ -15,7 +15,7 @@
   </script>
 </head>
 <body onload="prettyPrint(); highlight();">
-  <pre class="prettyprint lang-js">/* Copyright (c) 2015-2017 The Open Source Geospatial Foundation
+  <pre class="prettyprint lang-js">/* Copyright (c) 2015-present The Open Source Geospatial Foundation
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -35,19 +35,19 @@
  *
  * @class GeoExt.data.serializer.Base
  */
-Ext.define('GeoExt.data.serializer.Base', {
-    extend: 'Ext.Base',
+Ext.define(&#39;GeoExt.data.serializer.Base&#39;, {
+    extend: &#39;Ext.Base&#39;,
     requires: [
-        'GeoExt.data.MapfishPrintProvider'
+        &#39;GeoExt.data.MapfishPrintProvider&#39;
     ],
     mixins: [
-        'GeoExt.mixin.SymbolCheck'
+        &#39;GeoExt.mixin.SymbolCheck&#39;
     ],
 
 <span id='GeoExt-data-serializer-Base-property-symbols'>    // &lt;debug&gt;
 </span>    symbols: [
-        'ol.layer.Layer',
-        'ol.source.Source'
+        &#39;ol.layer.Layer&#39;,
+        &#39;ol.source.Source&#39;
     ],
     // &lt;/debug&gt;
 
@@ -71,14 +71,14 @@ Ext.define('GeoExt.data.serializer.Base', {
          * @return {Object} A serialized representation of source and layer.
          */
         serialize: function() {
-            Ext.raise('This method must be overriden by subclasses.');
+            Ext.raise(&#39;This method must be overridden by subclasses.&#39;);
             return null; // so that we can have a shared JSDoc comment.
         },
 
 <span id='GeoExt-data-serializer-Base-static-method-register'>        /**
 </span>         * Given a subclass of GeoExt.data.serializer.Base, register the class
-         * with the GeoExt.data.MapfishPrintProvider. This method is ususally
-         * called inside the 'after-create' function of `Ext.class` definitions.
+         * with the GeoExt.data.MapfishPrintProvider. This method is usually
+         * called inside the &#39;after-create&#39; function of `Ext.class` definitions.
          *
          * @param {GeoExt.data.serializer.Base} subCls The class to register.
          * @protected
@@ -93,14 +93,14 @@ Ext.define('GeoExt.data.serializer.Base', {
 <span id='GeoExt-data-serializer-Base-static-method-validateSource'>        /**
 </span>         * Given a concrete `ol.source.Source` instance, this method checks if
          * the non-abstract subclass is capable of serializing the source. Will
-         * throw an exception if the source isn't valid for the serializer.
+         * throw an exception if the source isn&#39;t valid for the serializer.
          *
          * @param {ol.source.Source} source The source to test.
          * @protected
          */
         validateSource: function(source) {
             if (!(source instanceof this.sourceCls)) {
-                Ext.raise('Cannot serialize this source with this serializer');
+                Ext.raise(&#39;Cannot serialize this source with this serializer&#39;);
             }
         }
     }

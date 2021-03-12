@@ -34,32 +34,32 @@
 </span> * A component that renders a `ol.style.Style` with an optional `ol.Feature`.
  *
  *     @example preview
- *     var poly = Ext.create('GeoExt.component.FeatureRenderer', {
+ *     var poly = Ext.create(&#39;GeoExt.component.FeatureRenderer&#39;, {
  *         symbolizers: new ol.style.Style({
- *             fill: new ol.style.Fill({color: 'red'})
+ *             fill: new ol.style.Fill({color: &#39;red&#39;})
  *         })
  *     });
- *     var line = Ext.create('GeoExt.component.FeatureRenderer', {
+ *     var line = Ext.create(&#39;GeoExt.component.FeatureRenderer&#39;, {
  *         symbolizers: new ol.style.Style({
- *             stroke: new ol.style.Stroke({color: 'orange', width: 3}),
+ *             stroke: new ol.style.Stroke({color: &#39;orange&#39;, width: 3}),
  *         }),
- *         symbolType: 'Line'
+ *         symbolType: &#39;Line&#39;
  *     });
- *     var point = Ext.create('GeoExt.component.FeatureRenderer', {
+ *     var point = Ext.create(&#39;GeoExt.component.FeatureRenderer&#39;, {
  *         symbolizers: new ol.style.Style({
  *             image: new ol.style.Circle({
  *                 radius: 7,
- *                 fill: new ol.style.Fill({color: 'gray'}),
- *                 stroke: new ol.style.Stroke({color: 'black', width: 3}),
+ *                 fill: new ol.style.Fill({color: &#39;gray&#39;}),
+ *                 stroke: new ol.style.Stroke({color: &#39;black&#39;, width: 3}),
  *             })
  *         }),
- *         symbolType: 'Point'
+ *         symbolType: &#39;Point&#39;
  *     });
- *     var star = Ext.create('GeoExt.component.FeatureRenderer', {
+ *     var star = Ext.create(&#39;GeoExt.component.FeatureRenderer&#39;, {
  *         symbolizers: new ol.style.Style({
  *             image: new ol.style.RegularShape({
- *                 fill: new ol.style.Fill({color: 'blue'}),
- *                 stroke: new ol.style.Stroke({color: 'green', width: 3}),
+ *                 fill: new ol.style.Fill({color: &#39;blue&#39;}),
+ *                 stroke: new ol.style.Stroke({color: &#39;green&#39;, width: 3}),
  *                 points: 7,
  *                 radius: 15,
  *                 radius2: 7,
@@ -68,10 +68,10 @@
  *         }),
  *         minWidth: 40,
  *         minHeight: 40,
- *         symbolType: 'Point'
+ *         symbolType: &#39;Point&#39;
  *     });
- *     Ext.create('Ext.panel.Panel', {
- *         title: 'Rendering of ol.Features in a panel',
+ *     Ext.create(&#39;Ext.panel.Panel&#39;, {
+ *         title: &#39;Rendering of ol.Features in a panel&#39;,
  *         items: [poly, line, point, star],
  *         border: false,
  *         renderTo: Ext.getBody()
@@ -79,39 +79,39 @@
  *
  * @class GeoExt.component.FeatureRenderer
  */
-Ext.define('GeoExt.component.FeatureRenderer', {
-    extend: 'Ext.Component',
-    alias: 'widget.gx_renderer',
+Ext.define(&#39;GeoExt.component.FeatureRenderer&#39;, {
+    extend: &#39;Ext.Component&#39;,
+    alias: &#39;widget.gx_renderer&#39;,
     requires: [
-        'GeoExt.util.Version'
+        &#39;GeoExt.util.Version&#39;
     ],
     mixins: [
-        'GeoExt.mixin.SymbolCheck'
+        &#39;GeoExt.mixin.SymbolCheck&#39;
     ],
 
 <span id='GeoExt-component-FeatureRenderer-property-symbols'>    // &lt;debug&gt;
 </span>    symbols: [
-        'ol.extent.getCenter',
-        'ol.extent.getWidth',
-        'ol.extent.getHeight',
-        'ol.Feature',
-        'ol.Feature#getGeometry',
-        'ol.Feature#setStyle',
-        'ol.geom.Geometry#getExtent',
-        'ol.geom.Point',
-        'ol.geom.LineString',
-        'ol.geom.Polygon',
-        'ol.layer.Vector',
-        'ol.layer.Vector#getSource',
-        'ol.Map#getSize',
-        'ol.Map#getView',
-        'ol.Map#setView',
-        'ol.Map#updateSize',
-        'ol.proj.Projection',
-        'ol.source.Vector',
-        'ol.source.Vector#addFeature',
-        'ol.View',
-        'ol.View#fit'
+        &#39;ol.extent.getCenter&#39;,
+        &#39;ol.extent.getWidth&#39;,
+        &#39;ol.extent.getHeight&#39;,
+        &#39;ol.Feature&#39;,
+        &#39;ol.Feature#getGeometry&#39;,
+        &#39;ol.Feature#setStyle&#39;,
+        &#39;ol.geom.Geometry#getExtent&#39;,
+        &#39;ol.geom.Point&#39;,
+        &#39;ol.geom.LineString&#39;,
+        &#39;ol.geom.Polygon&#39;,
+        &#39;ol.layer.Vector&#39;,
+        &#39;ol.layer.Vector#getSource&#39;,
+        &#39;ol.Map#getSize&#39;,
+        &#39;ol.Map#getView&#39;,
+        &#39;ol.Map#setView&#39;,
+        &#39;ol.Map#updateSize&#39;,
+        &#39;ol.proj.Projection&#39;,
+        &#39;ol.source.Vector&#39;,
+        &#39;ol.source.Vector#addFeature&#39;,
+        &#39;ol.View&#39;,
+        &#39;ol.View#fit&#39;
     ],
     // &lt;/debug&gt;
 
@@ -128,7 +128,7 @@ Ext.define('GeoExt.component.FeatureRenderer', {
          *
          * @cfg {String}
          */
-        imgCls: '',
+        imgCls: &#39;&#39;,
 
 <span id='GeoExt-component-FeatureRenderer-cfg-minWidth'>        /**
 </span>         * The minimum width.
@@ -201,7 +201,7 @@ Ext.define('GeoExt.component.FeatureRenderer', {
          *
          * @cfg {String}
          */
-        symbolType: 'Polygon'
+        symbolType: &#39;Polygon&#39;
     },
 
     inheritableStatics: {
@@ -213,7 +213,6 @@ Ext.define('GeoExt.component.FeatureRenderer', {
          *     styler for.
          * @return {ol.style.Style[]|ol.style.Style} The style(s) applied to the
          *     given feature record.
-         * @public
          */
         determineStyle: function(record) {
             var feature = record.getFeature();
@@ -230,9 +229,9 @@ Ext.define('GeoExt.component.FeatureRenderer', {
         var me = this;
         var id = me.getId();
         me.autoEl = {
-            'id': id,
-            'tag': 'div',
-            'class': this.getImgCls()
+            &#39;id&#39;: id,
+            &#39;tag&#39;: &#39;div&#39;,
+            &#39;class&#39;: this.getImgCls()
         };
         if (!me.getLineFeature()) {
             me.setLineFeature(new ol.Feature({
@@ -279,7 +278,7 @@ Ext.define('GeoExt.component.FeatureRenderer', {
         });
         var feature = me.getFeature();
         if (!feature) {
-            me.setFeature(me['get' + me.getSymbolType() + 'Feature']());
+            me.setFeature(me[&#39;get&#39; + me.getSymbolType() + &#39;Feature&#39;]());
         } else {
             me.applyFeature(feature);
         }
@@ -311,7 +310,7 @@ Ext.define('GeoExt.component.FeatureRenderer', {
     initCustomEvents: function() {
         var me = this;
         me.clearCustomEvents();
-        me.el.on('click', me.onClick, me);
+        me.el.on(&#39;click&#39;, me.onClick, me);
     },
 <span id='GeoExt-component-FeatureRenderer-method-clearCustomEvents'>    /**
 </span>     * Unbinds previously bound listeners on #el.
@@ -330,7 +329,7 @@ Ext.define('GeoExt.component.FeatureRenderer', {
      * @private
      */
     onClick: function() {
-        this.fireEvent('click', this);
+        this.fireEvent(&#39;click&#39;, this);
     },
 <span id='GeoExt-component-FeatureRenderer-method-beforeDestroy'>    /**
 </span>     * Private method called during the destroy sequence.
@@ -345,7 +344,7 @@ Ext.define('GeoExt.component.FeatureRenderer', {
         }
     },
 <span id='GeoExt-component-FeatureRenderer-method-onResize'>    /**
-</span>     * When resizing has happened, we might need to re-set the renderer's
+</span>     * When resizing has happened, we might need to re-set the renderer&#39;s
      * dimensions via #setRendererDimensions.
      *
      * @private
@@ -391,8 +390,8 @@ Ext.define('GeoExt.component.FeatureRenderer', {
             minResolution: resolution,
             maxResolution: resolution,
             projection: new ol.proj.Projection({
-                code: '',
-                units: 'pixels'
+                code: &#39;&#39;,
+                units: &#39;pixels&#39;
             })
         }));
         // determine height and width of element
@@ -422,7 +421,7 @@ Ext.define('GeoExt.component.FeatureRenderer', {
         }
     },
 <span id='GeoExt-component-FeatureRenderer-method-applySymbolizers'>    /**
-</span>     * We're setting the symbolizers on the feature.
+</span>     * We&#39;re setting the symbolizers on the feature.
      *
      * @param {ol.style.Style[]|ol.style.Style} symbolizers The style (or
      *     array of styles) that have been set.
@@ -439,7 +438,7 @@ Ext.define('GeoExt.component.FeatureRenderer', {
     },
 
 <span id='GeoExt-component-FeatureRenderer-method-applyFeature'>    /**
-</span>     * We're setting the feature and add it to the source.
+</span>     * We&#39;re setting the feature and add it to the source.
      *
      * @param {ol.Feature} feature The feature that has been set.
      * @return {ol.Feature} feature The feature that has been set.

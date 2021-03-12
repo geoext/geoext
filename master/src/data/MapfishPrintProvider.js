@@ -1,4 +1,4 @@
-/* Copyright (c) 2015-2017 The Open Source Geospatial Foundation
+/* Copyright (c) 2015-present The Open Source Geospatial Foundation
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -51,7 +51,8 @@ Ext.define('GeoExt.data.MapfishPrintProvider', {
 
     config: {
         capabilities: null,
-        url: ''
+        url: '',
+        useJsonp: true
     },
 
     inheritableStatics: {
@@ -189,7 +190,7 @@ Ext.define('GeoExt.data.MapfishPrintProvider', {
          *     layer and serialize it.
          * @param {Object} [filterScope] The scope in which the filtering
          *     function will be executed.
-         * @return {Array<Object>} An array of serialized layers.
+         * @return {Object[]} An array of serialized layers.
          * @static
          */
         getSerializedLayers: function(mapComponent, filterFn, filterScope) {
@@ -210,7 +211,8 @@ Ext.define('GeoExt.data.MapfishPrintProvider', {
 
                 var serializer = this.findSerializerBySource(source);
                 if (serializer) {
-                    serialized = serializer.serialize(layer, source, viewRes);
+                    serialized = serializer.serialize(layer, source, viewRes,
+                        mapComponent.map);
                     serializedLayers.push(serialized);
                 }
             }, this);
@@ -264,7 +266,7 @@ Ext.define('GeoExt.data.MapfishPrintProvider', {
 
     /**
      * The capabiltyRec is an instance of 'GeoExt.data.model.print.Capability'
-     * and contans the PrintCapabilities of the Printprovider.
+     * and contains the PrintCapabilities of the Printprovider.
      *
      * @property
      * @readonly
@@ -308,14 +310,22 @@ Ext.define('GeoExt.data.MapfishPrintProvider', {
             });
             store.loadRawData(capabilities);
         } else if (url) { // if servlet url is passed
+            var proxy = {
+                url: url
+            };
+            if (this.getUseJsonp()) {
+                proxy.type = 'jsonp';
+                proxy.callbackKey = 'jsonp';
+            } else {
+                proxy.type = 'ajax';
+                proxy.reader = {
+                    type: 'json'
+                };
+            }
             store = Ext.create('Ext.data.Store', {
                 autoLoad: true,
                 model: 'GeoExt.data.model.print.Capability',
-                proxy: {
-                    type: 'jsonp',
-                    url: url,
-                    callbackKey: 'jsonp'
-                },
+                proxy: proxy,
                 listeners: {
                     load: fillRecordAndFireEvent,
                     scope: this

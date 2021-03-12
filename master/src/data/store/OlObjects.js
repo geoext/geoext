@@ -1,4 +1,4 @@
-/* Copyright (c) 2015-2017 The Open Source Geospatial Foundation
+/* Copyright (c) 2015-present The Open Source Geospatial Foundation
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -65,7 +65,12 @@ Ext.define('GeoExt.data.store.OlObjects', {
 
             store.__updating = true;
             for (i = 0; i < length; i++) {
-                coll.insertAt(index + i, records[i].olObject);
+                if (!Ext.Array.contains(
+                    store.olCollection.getArray(),
+                    records[i].olObject)
+                ) {
+                    coll.insertAt(index + i, records[i].olObject);
+                }
             }
             store.__updating = false;
         },

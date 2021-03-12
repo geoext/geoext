@@ -1,4 +1,4 @@
-/* Copyright (c) 2015-2017 The Open Source Geospatial Foundation
+/* Copyright (c) 2015-present The Open Source Geospatial Foundation
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -54,13 +54,13 @@ Ext.define('GeoExt.data.serializer.Base', {
          * @return {Object} A serialized representation of source and layer.
          */
         serialize: function() {
-            Ext.raise('This method must be overriden by subclasses.');
+            Ext.raise('This method must be overridden by subclasses.');
             return null; // so that we can have a shared JSDoc comment.
         },
 
         /**
          * Given a subclass of GeoExt.data.serializer.Base, register the class
-         * with the GeoExt.data.MapfishPrintProvider. This method is ususally
+         * with the GeoExt.data.MapfishPrintProvider. This method is usually
          * called inside the 'after-create' function of `Ext.class` definitions.
          *
          * @param {GeoExt.data.serializer.Base} subCls The class to register.

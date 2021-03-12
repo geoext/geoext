@@ -1,4 +1,4 @@
-/* Copyright (c) 2015-2017 The Open Source Geospatial Foundation
+/* Copyright (c) 2015-present The Open Source Geospatial Foundation
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -36,7 +36,7 @@ Ext.define('GeoExt.data.model.OlObject', {
 
     inheritableStatics: {
         /**
-         * Gets a reference to an ol contructor function.
+         * Gets a reference to an ol constructor function.
          *
          * @param {String} str Description of the form `"ol.layer.Base"`.
          * @return {Function} the ol constructor.
@@ -121,8 +121,9 @@ Ext.define('GeoExt.data.model.OlObject', {
     },
 
     /**
-     * Overriden to foward changes to the underlying `ol.Object`. All changes on
-     * the Ext.data.Models properties will be set on the `ol.Object` as well.
+     * Overridden to forward changes to the underlying `ol.Object`. All changes
+     * on the `Ext.data.Model` properties will be set on the `ol.Object` as
+     * well.
      *
      * @param {String|Object} key The key to set.
      * @param {Object} newValue The value to set.
@@ -153,7 +154,7 @@ Ext.define('GeoExt.data.model.OlObject', {
     },
 
     /**
-     * Overriden to unregister all added event listeners on the ol.Object.
+     * Overridden to unregister all added event listeners on the ol.Object.
      *
      * @inheritdoc
      */

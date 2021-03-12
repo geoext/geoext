@@ -15,7 +15,7 @@
   </script>
 </head>
 <body onload="prettyPrint(); highlight();">
-  <pre class="prettyprint lang-js">/* Copyright (c) 2015-2017 The Open Source Geospatial Foundation
+  <pre class="prettyprint lang-js">/* Copyright (c) 2015-present The Open Source Geospatial Foundation
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -35,17 +35,17 @@
  *
  * @class GeoExt.data.model.Layer
  */
-Ext.define('GeoExt.data.model.Layer', {
-    extend: 'GeoExt.data.model.Base',
+Ext.define(&#39;GeoExt.data.model.Layer&#39;, {
+    extend: &#39;GeoExt.data.model.Base&#39;,
     mixins: [
-        'GeoExt.mixin.SymbolCheck'
+        &#39;GeoExt.mixin.SymbolCheck&#39;
     ],
 
 <span id='GeoExt-data-model-Layer-property-symbols'>    // &lt;debug&gt;
 </span>    symbols: [
-        'ol.layer.Group',
-        'ol.layer.Base',
-        'ol.layer.Base#get'
+        &#39;ol.layer.Group&#39;,
+        &#39;ol.layer.Base&#39;,
+        &#39;ol.layer.Base#get&#39;
     ],
     // &lt;/debug&gt;
 
@@ -54,14 +54,14 @@ Ext.define('GeoExt.data.model.Layer', {
      *
      * @cfg {String}
      */
-    textProperty: 'name',
+    textProperty: &#39;name&#39;,
 
 <span id='GeoExt-data-model-Layer-cfg-descriptionProperty'>    /**
 </span>     * The layer property that will be used to describe the model in views.
      *
      * @cfg {String}
      */
-    descriptionProperty: 'description',
+    descriptionProperty: &#39;description&#39;,
 
 <span id='GeoExt-data-model-Layer-cfg-unnamedLayerText'>    /**
 </span>     * The text label that will be shown in model views representing unnamed
@@ -69,7 +69,7 @@ Ext.define('GeoExt.data.model.Layer', {
      *
      * @cfg {String}
      */
-    unnamedLayerText: 'Unnamed Layer',
+    unnamedLayerText: &#39;Unnamed Layer&#39;,
 
 <span id='GeoExt-data-model-Layer-cfg-unnamedGroupLayerText'>    /**
 </span>     * The text label that will be shown in model views representing unnamed
@@ -77,12 +77,12 @@ Ext.define('GeoExt.data.model.Layer', {
      *
      * @cfg {String}
      */
-    unnamedGroupLayerText: 'Unnamed Group Layer',
+    unnamedGroupLayerText: &#39;Unnamed Group Layer&#39;,
 
 <span id='GeoExt-data-model-Layer-property-fields'>    fields: [
 </span>        {
-            name: 'isLayerGroup',
-            type: 'boolean',
+            name: &#39;isLayerGroup&#39;,
+            type: &#39;boolean&#39;,
             persist: false,
             convert: function(v, record) {
                 var layer = record.getOlLayer();
@@ -94,8 +94,8 @@ Ext.define('GeoExt.data.model.Layer', {
             }
         },
         {
-            name: 'text',
-            type: 'string',
+            name: &#39;text&#39;,
+            type: &#39;string&#39;,
             persist: false,
             convert: function(v, record) {
                 var name = v;
@@ -104,7 +104,7 @@ Ext.define('GeoExt.data.model.Layer', {
 
                 if (!name) {
                     textProp = record.textProperty;
-                    defaultName = (record.get('isLayerGroup')
+                    defaultName = (record.get(&#39;isLayerGroup&#39;)
                         ? record.unnamedGroupLayerText
                         : record.unnamedLayerText);
                     name = record.getOlLayerProp(textProp, defaultName);
@@ -114,51 +114,51 @@ Ext.define('GeoExt.data.model.Layer', {
             }
         },
         {
-            name: 'opacity',
-            type: 'number',
+            name: &#39;opacity&#39;,
+            type: &#39;number&#39;,
             persist: false,
             convert: function(v, record) {
-                return record.getOlLayerProp('opacity');
+                return record.getOlLayerProp(&#39;opacity&#39;);
             }
         },
         {
-            name: 'minResolution',
-            type: 'number',
+            name: &#39;minResolution&#39;,
+            type: &#39;number&#39;,
             persist: false,
             convert: function(v, record) {
-                return record.getOlLayerProp('minResolution');
+                return record.getOlLayerProp(&#39;minResolution&#39;);
             }
         },
         {
-            name: 'maxResolution',
-            type: 'number',
+            name: &#39;maxResolution&#39;,
+            type: &#39;number&#39;,
             persist: false,
             convert: function(v, record) {
-                return record.getOlLayerProp('maxResolution');
+                return record.getOlLayerProp(&#39;maxResolution&#39;);
             }
         },
         {
-            name: 'qtip',
-            type: 'string',
+            name: &#39;qtip&#39;,
+            type: &#39;string&#39;,
             persist: false,
             convert: function(v, record) {
-                return record.getOlLayerProp(record.descriptionProperty, '');
+                return record.getOlLayerProp(record.descriptionProperty, &#39;&#39;);
             }
         },
         {
-            name: 'qtitle',
-            type: 'string',
+            name: &#39;qtitle&#39;,
+            type: &#39;string&#39;,
             persist: false,
             convert: function(v, record) {
-                return record.get('text');
+                return record.get(&#39;text&#39;);
             }
         }
     ],
 
 <span id='GeoExt-data-model-Layer-property-proxy'>    proxy: {
-</span>        type: 'memory',
+</span>        type: &#39;memory&#39;,
         reader: {
-            type: 'json'
+            type: &#39;json&#39;
         }
     },
 
@@ -179,8 +179,8 @@ Ext.define('GeoExt.data.model.Layer', {
      * returned.
      *
      * @param  {string} prop         The property key.
-     * @param  {object} defaultValue The optional default value.
-     * @return {object}              The returned property.
+     * @param  {Object} defaultValue The optional default value.
+     * @return {Object}              The returned property.
      */
     getOlLayerProp: function(prop, defaultValue) {
         var layer = this.getOlLayer();

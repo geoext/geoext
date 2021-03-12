@@ -1,4 +1,4 @@
-/* Copyright (c) 2015-2017 The Open Source Geospatial Foundation
+/* Copyright (c) 2015-present The Open Source Geospatial Foundation
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -162,8 +162,8 @@ Ext.define('GeoExt.data.model.Layer', {
      * returned.
      *
      * @param  {string} prop         The property key.
-     * @param  {object} defaultValue The optional default value.
-     * @return {object}              The returned property.
+     * @param  {Object} defaultValue The optional default value.
+     * @return {Object}              The returned property.
      */
     getOlLayerProp: function(prop, defaultValue) {
         var layer = this.getOlLayer();

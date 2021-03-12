@@ -1,4 +1,4 @@
-/* Copyright (c) 2015-2017 The Open Source Geospatial Foundation
+/* Copyright (c) 2015-present The Open Source Geospatial Foundation
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -181,17 +181,21 @@ Ext.define('GeoExt.data.serializer.Vector', {
         /**
          * @inheritdoc
          */
-        serialize: function(layer, source, viewRes) {
+        serialize: function(layer, source, viewRes, map) {
             var me = this;
             me.validateSource(source);
-            var features = source.getFeatures();
+            var extent;
+
+            if (map) {
+                extent = map.getView().calculateExtent();
+            }
             var format = me.format;
             var geoJsonFeatures = [];
             var mapfishStyleObject = {
                 version: 2
             };
 
-            Ext.each(features, function(feature) {
+            var processFeatures = function(feature) {
                 var geometry = feature.getGeometry();
                 if (Ext.isEmpty(geometry)) {
                     // no need to encode features with no geometry
@@ -239,7 +243,12 @@ Ext.define('GeoExt.data.serializer.Vector', {
                         geojsonFeature.properties[featureStyleProp] = styleId;
                     });
                 }
-            });
+            };
+            if (extent) {
+                source.forEachFeatureInExtent(extent, processFeatures);
+            } else {
+                Ext.each(source.getFeatures(), processFeatures);
+            }
 
             var serialized;
 
@@ -445,6 +454,15 @@ Ext.define('GeoExt.data.serializer.Vector', {
                 // Mapfish Print expects a string to rotate text
                 var strRotationDeg = (labelRotation * 180 / Math.PI) + '';
                 symbolizer.labelRotation = strRotationDeg;
+            }
+
+            var offsetX = textStyle.getOffsetX();
+            var offsetY = textStyle.getOffsetY();
+            if (offsetX) {
+                symbolizer.labelXOffset = offsetX;
+            }
+            if (offsetY) {
+                symbolizer.labelYOffset = -offsetY;
             }
 
             var fontStyle = textStyle.getFont();

@@ -15,7 +15,7 @@
   </script>
 </head>
 <body onload="prettyPrint(); highlight();">
-  <pre class="prettyprint lang-js">/* Copyright (c) 2015-2017 The Open Source Geospatial Foundation
+  <pre class="prettyprint lang-js">/* Copyright (c) 2015-present The Open Source Geospatial Foundation
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -37,10 +37,10 @@
  *
  * @class GeoExt.data.model.print.Layout
  */
-Ext.define('GeoExt.data.model.print.Layout', {
-    extend: 'GeoExt.data.model.Base',
+Ext.define(&#39;GeoExt.data.model.print.Layout&#39;, {
+    extend: &#39;GeoExt.data.model.Base&#39;,
     requires: [
-        'GeoExt.data.model.print.LayoutAttribute'
+        &#39;GeoExt.data.model.print.LayoutAttribute&#39;
     ],
 
 <span id='GeoExt-data-model-print-Layout-method-getCapability'>    /**
@@ -58,12 +58,12 @@ Ext.define('GeoExt.data.model.print.Layout', {
      */
 
     fields: [
-        {name: 'name', type: 'string'},
+        {name: &#39;name&#39;, type: &#39;string&#39;},
         {
-            name: 'capabilityId',
+            name: &#39;capabilityId&#39;,
             reference: {
-                type: 'print.Capability',
-                inverse: 'layouts'
+                type: &#39;print.Capability&#39;,
+                inverse: &#39;layouts&#39;
             }
         }
     ]

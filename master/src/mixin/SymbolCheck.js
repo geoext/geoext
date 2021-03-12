@@ -1,4 +1,4 @@
-/* Copyright (c) 2015-2017 The Open Source Geospatial Foundation
+/* Copyright (c) 2015-present The Open Source Geospatial Foundation
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -70,7 +70,7 @@ Ext.define('GeoExt.mixin.SymbolCheck', {
          * @private
          */
         _checked: {
-            // will be filled while we are checking stuff for existance
+            // will be filled while we are checking stuff for existence
         },
 
         /**

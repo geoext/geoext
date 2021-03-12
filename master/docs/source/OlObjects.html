@@ -15,7 +15,7 @@
   </script>
 </head>
 <body onload="prettyPrint(); highlight();">
-  <pre class="prettyprint lang-js">/* Copyright (c) 2015-2017 The Open Source Geospatial Foundation
+  <pre class="prettyprint lang-js">/* Copyright (c) 2015-present The Open Source Geospatial Foundation
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -35,22 +35,22 @@
  *
  * @class GeoExt.data.store.OlObjects
  */
-Ext.define('GeoExt.data.store.OlObjects', {
-    extend: 'Ext.data.Store',
+Ext.define(&#39;GeoExt.data.store.OlObjects&#39;, {
+    extend: &#39;Ext.data.Store&#39;,
     requires: [
-        'GeoExt.data.model.OlObject'
+        &#39;GeoExt.data.model.OlObject&#39;
     ],
 
     mixins: [
-        'GeoExt.mixin.SymbolCheck'
+        &#39;GeoExt.mixin.SymbolCheck&#39;
     ],
 
 <span id='GeoExt-data-store-OlObjects-property-symbols'>    // &lt;debug&gt;
 </span>    symbols: [
-        'ol.Collection',
-        'ol.Collection#getArray',
-        'ol.Collection#insertAt',
-        'ol.Collection#removeAt'
+        &#39;ol.Collection&#39;,
+        &#39;ol.Collection#getArray&#39;,
+        &#39;ol.Collection#insertAt&#39;,
+        &#39;ol.Collection#removeAt&#39;
     ],
     // &lt;/debug&gt;
 
@@ -61,11 +61,11 @@ Ext.define('GeoExt.data.store.OlObjects', {
      */
     olCollection: null,
 
-<span id='GeoExt-data-store-OlObjects-property-model'>    model: 'GeoExt.data.model.OlObject',
+<span id='GeoExt-data-store-OlObjects-property-model'>    model: &#39;GeoExt.data.model.OlObject&#39;,
 </span>
 <span id='GeoExt-data-store-OlObjects-property-proxy'>    proxy: {
-</span>        type: 'memory',
-        reader: 'json'
+</span>        type: &#39;memory&#39;,
+        reader: &#39;json&#39;
     },
 
 <span id='GeoExt-data-store-OlObjects-property-listeners'>    listeners: {
@@ -82,7 +82,12 @@ Ext.define('GeoExt.data.store.OlObjects', {
 
             store.__updating = true;
             for (i = 0; i &lt; length; i++) {
-                coll.insertAt(index + i, records[i].olObject);
+                if (!Ext.Array.contains(
+                    store.olCollection.getArray(),
+                    records[i].olObject)
+                ) {
+                    coll.insertAt(index + i, records[i].olObject);
+                }
             }
             store.__updating = false;
         },

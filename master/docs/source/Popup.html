@@ -15,7 +15,7 @@
   </script>
 </head>
 <body onload="prettyPrint(); highlight();">
-  <pre class="prettyprint lang-js">/* Copyright (c) 2015-2017 The Open Source Geospatial Foundation
+  <pre class="prettyprint lang-js">/* Copyright (c) 2015-present The Open Source Geospatial Foundation
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -47,7 +47,7 @@
  *             zoom: 12
  *         })
  *     })
- *     var mapComponent = Ext.create('GeoExt.component.Map', {
+ *     var mapComponent = Ext.create(&#39;GeoExt.component.Map&#39;, {
  *         map: olMap,
  *         pointerRest: true,
  *         pointerRestInterval: 750,
@@ -55,21 +55,21 @@
  *         renderTo: Ext.getBody(),
  *         height: 200
  *     });
- *     var popup = Ext.create('GeoExt.component.Popup', {
+ *     var popup = Ext.create(&#39;GeoExt.component.Popup&#39;, {
  *         map: olMap,
  *         width: 140
  *     });
- *     mapComponent.on('pointerrest', function(evt) {
+ *     mapComponent.on(&#39;pointerrest&#39;, function(evt) {
  *         var coord = evt.coordinate;
  *         var transformed = ol.proj.toLonLat(coord);
  *         var hdms = ol.coordinate.toStringHDMS(transformed);
- *         hdms = hdms.replace(/([NS])/, '$1&lt;br&gt;');
- *         popup.setHtml('&lt;p&gt;&lt;strong&gt;Pointer rested on&lt;/strong&gt;' +
- *                 '&lt;br /&gt;&lt;code&gt;' + hdms + '&lt;/code&gt;&lt;/p&gt;');
+ *         hdms = hdms.replace(/([NS])/, &#39;$1&lt;br&gt;&#39;);
+ *         popup.setHtml(&#39;&lt;p&gt;&lt;strong&gt;Pointer rested on&lt;/strong&gt;&#39; +
+ *                 &#39;&lt;br /&gt;&lt;code&gt;&#39; + hdms + &#39;&lt;/code&gt;&lt;/p&gt;&#39;);
  *         popup.position(coord);
  *         popup.show();
  *     });
- *     mapComponent.on('pointerrestout', popup.hide, popup);
+ *     mapComponent.on(&#39;pointerrestout&#39;, popup.hide, popup);
  *
  * The above example loads the provided CSS-file `resources/css/gx-popup.css`
  * and also uses the following inline CSS:
@@ -85,12 +85,12 @@
  *
  * @class GeoExt.component.Popup
  */
-Ext.define('GeoExt.component.Popup', {
+Ext.define(&#39;GeoExt.component.Popup&#39;, {
     requires: [],
-    extend: 'Ext.Component',
+    extend: &#39;Ext.Component&#39;,
     alias: [
-        'widget.gx_popup',
-        'widget.gx_component_popup'
+        &#39;widget.gx_popup&#39;,
+        &#39;widget.gx_component_popup&#39;
     ],
 
     config: {
@@ -119,7 +119,7 @@ Ext.define('GeoExt.component.Popup', {
 <span id='GeoExt-component-Popup-property-cls'>    /**
 </span>     * The CSS class of the popup.
      */
-    cls: 'gx-popup',
+    cls: &#39;gx-popup&#39;,
 
 <span id='GeoExt-component-Popup-method-constructor'>    /**
 </span>     * Construct a popup.
@@ -132,7 +132,7 @@ Ext.define('GeoExt.component.Popup', {
         var overlayElement;
 
         if (!Ext.isDefined(cfg.map)) {
-            Ext.Error.raise('Required configuration \'map\' not passed');
+            Ext.Error.raise(&#39;Required configuration \&#39;map\&#39; not passed&#39;);
         }
         if (Ext.isDefined(cfg.renderTo)) {
             // use the passed element/string
@@ -140,7 +140,7 @@ Ext.define('GeoExt.component.Popup', {
         } else {
             // create a div we can reference in
             // order to bind this div to an ol overlay
-            overlayElement = Ext.dom.Helper.append(Ext.getBody(), '&lt;div&gt;');
+            overlayElement = Ext.dom.Helper.append(Ext.getBody(), &#39;&lt;div&gt;&#39;);
             // keep track of the fact that we created the element, we should
             // also clean it up once we are being destroyed.
             me.overlayElementCreated = true;
@@ -178,7 +178,7 @@ Ext.define('GeoExt.component.Popup', {
 
         me.getMap().addOverlay(overlay);
         // fix layout of popup when its position changes
-        overlay.on('change:position', me.updateLayout, me);
+        overlay.on(&#39;change:position&#39;, me.updateLayout, me);
 
         // make accessible as member
         me.setOverlay(overlay);
@@ -189,7 +189,7 @@ Ext.define('GeoExt.component.Popup', {
      */
     setOverlayElement: function() {
         // bind our containing div to the ol overlay
-        this.getOverlay().set('element', this.overlayElement);
+        this.getOverlay().set(&#39;element&#39;, this.overlayElement);
     },
 
 <span id='GeoExt-component-Popup-method-position'>    /**
@@ -212,7 +212,7 @@ Ext.define('GeoExt.component.Popup', {
             var parent = me.overlayElement.parentNode;
             parent.removeChild(me.overlayElement);
         }
-        me.getOverlay().un('change:position', me.doLayout, me);
+        me.getOverlay().un(&#39;change:position&#39;, me.doLayout, me);
     }
 });
 </pre>
