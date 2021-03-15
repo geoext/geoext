@@ -6405,15 +6405,15 @@ Ext.define('GeoExt.data.store.WfsFeatures', {
             url: url,
             method: me.requestMethod,
             params: params,
-            success: function(response) {
+            success: function(resp) {
                 // set number of total features (needed for paging)
-                me.cachedTotalCount = me.getTotalFeatureCount(response);
+                me.cachedTotalCount = me.getTotalFeatureCount(resp);
                 if (!skipLoad) {
                     me.loadWfs();
                 }
             },
-            failure: function(response) {
-                Ext.Logger.warn('Error while requesting features from WFS: ' + response.responseText + ' Status: ' + response.status);
+            failure: function(resp) {
+                Ext.Logger.warn('Error while requesting features from WFS: ' + resp.responseText + ' Status: ' + resp.status);
             }
         });
     },
@@ -6490,7 +6490,7 @@ Ext.define('GeoExt.data.store.WfsFeatures', {
             url: url,
             method: me.requestMethod,
             params: params,
-            success: function(response) {
+            success: function(resp) {
                 if (!me.format) {
                     Ext.Logger.warn('No format given for WfsFeatureStore. ' + 'Skip parsing feature data.');
                     return;
@@ -6500,12 +6500,12 @@ Ext.define('GeoExt.data.store.WfsFeatures', {
                     me.totalCount = me.cachedTotalCount;
                 } else {
                     // set number of total features (needed for paging)
-                    me.totalCount = me.getTotalFeatureCount(response);
+                    me.totalCount = me.getTotalFeatureCount(resp);
                 }
                 // parse WFS response to OL features
                 var wfsFeats = [];
                 try {
-                    wfsFeats = me.format.readFeatures(response.responseText);
+                    wfsFeats = me.format.readFeatures(resp.responseText);
                 } catch (error) {
                     Ext.Logger.warn('Error parsing features into the ' + 'OpenLayers format. Check the server response.');
                 }
@@ -6518,8 +6518,10 @@ Ext.define('GeoExt.data.store.WfsFeatures', {
                 }
                 me.fireEvent('gx-wfsstoreload', me, wfsFeats, true);
             },
-            failure: function(response) {
-                Ext.Logger.warn('Error while requesting features from WFS: ' + response.responseText + ' Status: ' + response.status);
+            failure: function(resp) {
+                if (resp.aborted !== true) {
+                    Ext.Logger.warn('Error while requesting features from WFS: ' + resp.responseText + ' Status: ' + resp.status);
+                }
                 me.fireEvent('gx-wfsstoreload', me, null, false);
             }
         });
