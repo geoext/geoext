@@ -1,4 +1,4 @@
-/* Copyright (c) 2015-2017 The Open Source Geospatial Foundation
+/* Copyright (c) 2015-present The Open Source Geospatial Foundation
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -38,7 +38,7 @@ Ext.define('GeoExt.util.Version', {
     }
 });
 
-/* Copyright (c) 2015-2017 The Open Source Geospatial Foundation
+/* Copyright (c) 2015-present The Open Source Geospatial Foundation
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -109,7 +109,7 @@ Ext.define('GeoExt.mixin.SymbolCheck', {
          * @private
          */
         _checked: {},
-        // will be filled while we are checking stuff for existance
+        // will be filled while we are checking stuff for existence
         /**
          * Checks whether the required symbols of the given class are defined
          * in the global context. Will log to the console if a symbol cannot be
@@ -411,7 +411,6 @@ Ext.define('GeoExt.component.FeatureRenderer', {
          *     styler for.
          * @return {ol.style.Style[]|ol.style.Style} The style(s) applied to the
          *     given feature record.
-         * @public
          */
         determineStyle: function(record) {
             var feature = record.getFeature();
@@ -709,7 +708,7 @@ Ext.define('GeoExt.component.FeatureRenderer', {
     }
 });
 
-/* Copyright (c) 2015-2017 The Open Source Geospatial Foundation
+/* Copyright (c) 2015-present The Open Source Geospatial Foundation
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -763,7 +762,7 @@ Ext.define('GeoExt.data.model.Base', {
     }
 });
 
-/* Copyright (c) 2015-2017 The Open Source Geospatial Foundation
+/* Copyright (c) 2015-present The Open Source Geospatial Foundation
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -912,8 +911,8 @@ Ext.define('GeoExt.data.model.Layer', {
      * returned.
      *
      * @param  {string} prop         The property key.
-     * @param  {object} defaultValue The optional default value.
-     * @return {object}              The returned property.
+     * @param  {Object} defaultValue The optional default value.
+     * @return {Object}              The returned property.
      */
     getOlLayerProp: function(prop, defaultValue) {
         var layer = this.getOlLayer();
@@ -922,7 +921,7 @@ Ext.define('GeoExt.data.model.Layer', {
     }
 });
 
-/* Copyright (c) 2015-2017 The Open Source Geospatial Foundation
+/* Copyright (c) 2015-present The Open Source Geospatial Foundation
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -938,8 +937,8 @@ Ext.define('GeoExt.data.model.Layer', {
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 /**
- * A store that synchronizes a layers array of an OpenLayers.Map with a
- * layer store holding GeoExt.data.model.layer.Base instances.
+ * A store that synchronizes a collection of layers (e.g. of an OpenLayers.Map)
+ * with a layer store holding GeoExt.data.model.Layer instances.
  *
  * @class GeoExt.data.store.Layers
  */
@@ -972,11 +971,25 @@ Ext.define('GeoExt.data.store.Layers', {
     model: 'GeoExt.data.model.Layer',
     config: {
         /**
-         * A configured map or a configuration object for the map constructor.
+         * An OL map instance, whose layers will be managed by the store.
          *
-         * @cfg {ol.Map/Object} map
+         * @cfg {ol.Map} map
          */
-        map: null
+        map: null,
+        /**
+         * A collection of ol.layer.Base objects, which will be managed by
+         * the store.
+         *
+         * @cfg {ol.Collection} layers
+         */
+        layers: null,
+        /**
+         * An optional function called to filter records used in changeLayer
+         * function
+         *
+         * @cfg {Function} changeLayerFilterFn
+         */
+        changeLayerFilterFn: null
     },
     /**
      * Constructs an instance of the layer store.
@@ -990,30 +1003,34 @@ Ext.define('GeoExt.data.store.Layers', {
         ]);
         if (config.map) {
             this.bindMap(config.map);
+        } else if (config.layers) {
+            this.bindLayers(config.layers);
         }
     },
     /**
-     * Bind this store to a map instance; once bound, the store is synchronized
-     * with the map and vice-versa.
+     * Bind this store to a collection of layers; once bound, the store is
+     * synchronized with the layer collection and vice-versa.
      *
-     * @param {ol.Map} map The map instance.
+     * @param  {ol.Collection} layers The layer collection (`ol.layer.Base`).
+     * @param  {ol.Map} map Optional map from which the layers were derived
      */
-    bindMap: function(map) {
+    bindLayers: function(layers, map) {
         var me = this;
-        if (!me.map) {
-            me.map = map;
+        if (!me.layers) {
+            me.layers = layers;
         }
-        if (map instanceof ol.Map) {
-            var mapLayers = map.getLayers();
-            mapLayers.forEach(function(layer) {
-                me.loadRawData(layer, true);
-            });
-            mapLayers.forEach(function(layer) {
-                layer.on('propertychange', me.onChangeLayer, me);
-            });
-            mapLayers.on('add', me.onAddLayer, me);
-            mapLayers.on('remove', me.onRemoveLayer, me);
+        if (me.layers instanceof ol.layer.Group) {
+            me.layers = me.layers.getLayers();
         }
+        var mapLayers = me.layers;
+        mapLayers.forEach(function(layer) {
+            me.loadRawData(layer, true);
+        });
+        mapLayers.forEach(function(layer) {
+            layer.on('propertychange', me.onChangeLayer, me);
+        });
+        mapLayers.on('add', me.onAddLayer, me);
+        mapLayers.on('remove', me.onRemoveLayer, me);
         me.on({
             'load': me.onLoad,
             'clear': me.onClear,
@@ -1029,13 +1046,29 @@ Ext.define('GeoExt.data.store.Layers', {
         me.fireEvent('bind', me, map);
     },
     /**
-     * Unbind this store from the map it is currently bound.
+     * Bind this store to a map instance; once bound, the store is synchronized
+     * with the map and vice-versa.
+     *
+     * @param {ol.Map} map The map instance.
      */
-    unbindMap: function() {
+    bindMap: function(map) {
         var me = this;
-        if (me.map && me.map.getLayers()) {
-            me.map.getLayers().un('add', me.onAddLayer, me);
-            me.map.getLayers().un('remove', me.onRemoveLayer, me);
+        if (!me.map) {
+            me.map = map;
+        }
+        if (map instanceof ol.Map) {
+            var mapLayers = map.getLayers();
+            me.bindLayers(mapLayers, map);
+        }
+    },
+    /**
+     * Unbind this store from the layer collection it is currently bound.
+     */
+    unbindLayers: function() {
+        var me = this;
+        if (me.layers) {
+            me.layers.un('add', me.onAddLayer, me);
+            me.layers.un('remove', me.onRemoveLayer, me);
         }
         me.un('load', me.onLoad, me);
         me.un('clear', me.onClear, me);
@@ -1043,6 +1076,13 @@ Ext.define('GeoExt.data.store.Layers', {
         me.un('remove', me.onRemove, me);
         me.un('update', me.onStoreUpdate, me);
         me.data.un('replace', me.onReplace, me);
+    },
+    /**
+     * Unbind this store from the map it is currently bound.
+     */
+    unbindMap: function() {
+        var me = this;
+        me.unbindLayers();
         me.map = null;
     },
     /**
@@ -1053,14 +1093,22 @@ Ext.define('GeoExt.data.store.Layers', {
      * @private
      */
     onChangeLayer: function(evt) {
+        var me = this;
         var layer = evt.target;
-        var recordIndex = this.findBy(function(rec) {
+        var recordIndex = -1;
+        if (Ext.isFunction(me.changeLayerFilterFn)) {
+            recordIndex = this.findBy(me.changeLayerFilterFn.bind(layer));
+        } else {
+            recordIndex = this.findBy(function(rec) {
                 return rec.getOlLayer() === layer;
             });
+        }
         if (recordIndex > -1) {
             var record = this.getAt(recordIndex);
             if (evt.key === 'title') {
                 record.set('title', layer.get('title'));
+            } else if (evt.key === 'description') {
+                record.set('qtip', layer.get('description'));
             } else {
                 this.fireEvent('update', this, record, Ext.data.Record.EDIT, null, {});
             }
@@ -1074,7 +1122,7 @@ Ext.define('GeoExt.data.store.Layers', {
      */
     onAddLayer: function(evt) {
         var layer = evt.element;
-        var index = this.map.getLayers().getArray().indexOf(layer);
+        var index = this.layers.getArray().indexOf(layer);
         var me = this;
         layer.on('propertychange', me.onChangeLayer, me);
         if (!me._adding) {
@@ -1121,10 +1169,10 @@ Ext.define('GeoExt.data.store.Layers', {
             }
             if (!me._addRecords) {
                 me._removing = true;
-                me.map.getLayers().forEach(function(layer) {
+                me.layers.forEach(function(layer) {
                     layer.un('propertychange', me.onChangeLayer, me);
                 });
-                me.map.getLayers().clear();
+                me.layers.getLayers().clear();
                 delete me._removing;
             }
             var len = records.length;
@@ -1135,7 +1183,7 @@ Ext.define('GeoExt.data.store.Layers', {
                     layers[i].on('propertychange', me.onChangeLayer, me);
                 }
                 me._adding = true;
-                me.map.getLayers().extend(layers);
+                me.layers.extend(layers);
                 delete me._adding;
             }
         }
@@ -1149,10 +1197,10 @@ Ext.define('GeoExt.data.store.Layers', {
     onClear: function() {
         var me = this;
         me._removing = true;
-        me.map.getLayers().forEach(function(layer) {
+        me.layers.forEach(function(layer) {
             layer.un('propertychange', me.onChangeLayer, me);
         });
-        me.map.getLayers().clear();
+        me.layers.clear();
         delete me._removing;
     },
     /**
@@ -1175,9 +1223,9 @@ Ext.define('GeoExt.data.store.Layers', {
                 layer = records[i].getOlLayer();
                 layer.on('propertychange', me.onChangeLayer, me);
                 if (index === 0) {
-                    me.map.getLayers().push(layer);
+                    me.layers.push(layer);
                 } else {
-                    me.map.getLayers().insertAt(index, layer);
+                    me.layers.insertAt(index, layer);
                 }
             }
             delete me._adding;
@@ -1210,7 +1258,7 @@ Ext.define('GeoExt.data.store.Layers', {
                 layer = record.getOlLayer();
                 found = false;
                 layer.un('propertychange', me.onChangeLayer, me);
-                me.map.getLayers().forEach(compareFunc);
+                me.layers.forEach(compareFunc);
                 if (found) {
                     me._removing = true;
                     me.removeMapLayer(record);
@@ -1246,7 +1294,7 @@ Ext.define('GeoExt.data.store.Layers', {
      * @private
      */
     removeMapLayer: function(record) {
-        this.map.getLayers().remove(record.getOlLayer());
+        this.layers.remove(record.getOlLayer());
     },
     /**
      * Handler for a store's data collections' `replace` event.
@@ -1275,12 +1323,14 @@ Ext.define('GeoExt.data.store.Layers', {
         }
     },
     /**
-     * Unbinds listeners by calling #unbind prior to being destroyed.
+     * Unbinds listeners by calling #unbindMap (thus #unbindLayers) prior to
+     * being destroyed.
      *
      * @private
      */
     destroy: function() {
-        this.unbind();
+        // unbindMap calls unbindLayers
+        this.unbindMap();
         this.callParent();
     },
     /**
@@ -1320,7 +1370,7 @@ Ext.define('GeoExt.data.store.Layers', {
     }
 });
 
-/* Copyright (c) 2015-2017 The Open Source Geospatial Foundation
+/* Copyright (c) 2015-present The Open Source Geospatial Foundation
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -1339,7 +1389,7 @@ Ext.define('GeoExt.data.store.Layers', {
  * A component that renders an `ol.Map` and that can be used in any ExtJS
  * layout.
  *
- * An example: A map component rendered insiide of a panel:
+ * An example: A map component rendered inside of a panel:
  *
  *     @example preview
  *     var mapComponent = Ext.create('GeoExt.component.Map', {
@@ -1467,7 +1517,17 @@ Ext.define('GeoExt.component.Map', {
          *
          * @cfg {Number} pointerRestPixelTolerance The tolerance in pixels.
          */
-        pointerRestPixelTolerance: 3
+        pointerRestPixelTolerance: 3,
+        /**
+         * List of css selectors for the element(s) on which neither
+         * the pointerrest event, nor the pointerrestout event
+         * should be fired.
+         *
+         * @cfg {String[]} ignorePointerRestSelectors The css selectors
+         *      on which no `pointerrest` and `pointerrestout` events
+         *      should be fired.
+         */
+        ignorePointerRestSelectors: []
     },
     /**
      * Whether we already rendered an ol.Map in this component. Will be
@@ -1558,6 +1618,9 @@ Ext.define('GeoExt.component.Map', {
         var me = this;
         var tolerance = me.getPointerRestPixelTolerance();
         var pixel = olEvt.pixel;
+        if (me.isMouseOverIgnoreEl(olEvt)) {
+            return;
+        }
         if (!me.isMouseOverMapEl) {
             me.fireEvent('pointerrestout', olEvt);
             return;
@@ -1578,6 +1641,24 @@ Ext.define('GeoExt.component.Map', {
         // a new pointerrest event, the second argument (the 'original' pointer
         // pixel) must be null, as we start from a totally new position
         me.fireEvent('pointerrest', olEvt, null);
+    },
+    /**
+     * Checks if the mouse is positioned over
+     * an ignore element.
+     * @return {Boolean} Whether the mouse is positioned over an ignore element.
+     */
+    isMouseOverIgnoreEl: function() {
+        var me = this;
+        var selectors = me.getIgnorePointerRestSelectors();
+        if (selectors === undefined || selectors.length === 0) {
+            return false;
+        }
+        var hoverEls = Ext.query(':hover');
+        return hoverEls.some(function(el) {
+            return selectors.some(function(sel) {
+                return el.matches(sel);
+            });
+        });
     },
     /**
      * Creates #bufferedPointerMove from #unbufferedPointerMove and binds it
@@ -1847,7 +1928,7 @@ Ext.define('GeoExt.component.Map', {
     }
 });
 
-/* Copyright (c) 2015-2017 The Open Source Geospatial Foundation
+/* Copyright (c) 2015-present The Open Source Geospatial Foundation
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -2556,7 +2637,7 @@ Ext.define('GeoExt.component.OverviewMap', {
     }
 });
 
-/* Copyright (c) 2015-2017 The Open Source Geospatial Foundation
+/* Copyright (c) 2015-present The Open Source Geospatial Foundation
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -2744,7 +2825,7 @@ Ext.define('GeoExt.component.Popup', {
     }
 });
 
-/* Copyright (c) 2015-2017 The Open Source Geospatial Foundation
+/* Copyright (c) 2015-present The Open Source Geospatial Foundation
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -2797,7 +2878,7 @@ Ext.define('GeoExt.data.model.print.LayoutAttribute', {
     ]
 });
 
-/* Copyright (c) 2015-2017 The Open Source Geospatial Foundation
+/* Copyright (c) 2015-present The Open Source Geospatial Foundation
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -2851,7 +2932,7 @@ Ext.define('GeoExt.data.model.print.Layout', {
     ]
 });
 
-/* Copyright (c) 2015-2017 The Open Source Geospatial Foundation
+/* Copyright (c) 2015-present The Open Source Geospatial Foundation
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -2896,7 +2977,7 @@ Ext.define('GeoExt.data.model.print.Capability', {
     ]
 });
 
-/* Copyright (c) 2015-2017 The Open Source Geospatial Foundation
+/* Copyright (c) 2015-present The Open Source Geospatial Foundation
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -2944,7 +3025,8 @@ Ext.define('GeoExt.data.MapfishPrintProvider', {
      */
     config: {
         capabilities: null,
-        url: ''
+        url: '',
+        useJsonp: true
     },
     inheritableStatics: {
         /**
@@ -3073,7 +3155,7 @@ Ext.define('GeoExt.data.MapfishPrintProvider', {
          *     layer and serialize it.
          * @param {Object} [filterScope] The scope in which the filtering
          *     function will be executed.
-         * @return {Array<Object>} An array of serialized layers.
+         * @return {Object[]} An array of serialized layers.
          * @static
          */
         getSerializedLayers: function(mapComponent, filterFn, filterScope) {
@@ -3089,7 +3171,7 @@ Ext.define('GeoExt.data.MapfishPrintProvider', {
                 var serialized = {};
                 var serializer = this.findSerializerBySource(source);
                 if (serializer) {
-                    serialized = serializer.serialize(layer, source, viewRes);
+                    serialized = serializer.serialize(layer, source, viewRes, mapComponent.map);
                     serializedLayers.push(serialized);
                 }
             }, this);
@@ -3138,7 +3220,7 @@ Ext.define('GeoExt.data.MapfishPrintProvider', {
     },
     /**
      * The capabiltyRec is an instance of 'GeoExt.data.model.print.Capability'
-     * and contans the PrintCapabilities of the Printprovider.
+     * and contains the PrintCapabilities of the Printprovider.
      *
      * @property
      * @readonly
@@ -3182,14 +3264,22 @@ Ext.define('GeoExt.data.MapfishPrintProvider', {
             store.loadRawData(capabilities);
         } else if (url) {
             // if servlet url is passed
+            var proxy = {
+                    url: url
+                };
+            if (this.getUseJsonp()) {
+                proxy.type = 'jsonp';
+                proxy.callbackKey = 'jsonp';
+            } else {
+                proxy.type = 'ajax';
+                proxy.reader = {
+                    type: 'json'
+                };
+            }
             store = Ext.create('Ext.data.Store', {
                 autoLoad: true,
                 model: 'GeoExt.data.model.print.Capability',
-                proxy: {
-                    type: 'jsonp',
-                    url: url,
-                    callbackKey: 'jsonp'
-                },
+                proxy: proxy,
                 listeners: {
                     load: fillRecordAndFireEvent,
                     scope: this
@@ -3199,7 +3289,7 @@ Ext.define('GeoExt.data.MapfishPrintProvider', {
     }
 });
 
-/* Copyright (c) 2015-2017 The Open Source Geospatial Foundation
+/* Copyright (c) 2015-present The Open Source Geospatial Foundation
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -3233,7 +3323,7 @@ Ext.define('GeoExt.data.model.OlObject', {
     ],
     inheritableStatics: {
         /**
-         * Gets a reference to an ol contructor function.
+         * Gets a reference to an ol constructor function.
          *
          * @param {String} str Description of the form `"ol.layer.Base"`.
          * @return {Function} the ol constructor.
@@ -3306,8 +3396,9 @@ Ext.define('GeoExt.data.model.OlObject', {
         }
     },
     /**
-     * Overriden to foward changes to the underlying `ol.Object`. All changes on
-     * the Ext.data.Models properties will be set on the `ol.Object` as well.
+     * Overridden to forward changes to the underlying `ol.Object`. All changes
+     * on the `Ext.data.Model` properties will be set on the `ol.Object` as
+     * well.
      *
      * @param {String|Object} key The key to set.
      * @param {Object} newValue The value to set.
@@ -3332,7 +3423,7 @@ Ext.define('GeoExt.data.model.OlObject', {
         this.__updating = false;
     },
     /**
-     * Overriden to unregister all added event listeners on the ol.Object.
+     * Overridden to unregister all added event listeners on the ol.Object.
      *
      * @inheritdoc
      */
@@ -3342,7 +3433,7 @@ Ext.define('GeoExt.data.model.OlObject', {
     }
 });
 
-/* Copyright (c) 2015-2017 The Open Source Geospatial Foundation
+/* Copyright (c) 2015-present The Open Source Geospatial Foundation
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -3374,7 +3465,7 @@ Ext.define('GeoExt.data.model.Feature', {
     }
 });
 
-/* Copyright (c) 2015-2017 The Open Source Geospatial Foundation
+/* Copyright (c) 2015-present The Open Source Geospatial Foundation
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -3467,7 +3558,7 @@ Ext.define('GeoExt.data.model.LayerTreeNode', {
         }
     },
     /**
-     * Overriden to forward changes to the underlying `ol.Object`. All changes
+     * Overridden to forward changes to the underlying `ol.Object`. All changes
      * on the {Ext.data.Model} properties will be set on the `ol.Object` as
      * well.
      *
@@ -3482,6 +3573,10 @@ Ext.define('GeoExt.data.model.LayerTreeNode', {
         me.callParent(arguments);
         // forward changes to ol object
         if (key === 'checked') {
+            if (me.get('__toggleMode') === 'ol3') {
+                me.getOlLayer().set('visible', newValue);
+                return;
+            }
             me.__updating = true;
             if (me.get('isLayerGroup') && classicMode) {
                 me.getOlLayer().set('visible', newValue);
@@ -3562,7 +3657,7 @@ Ext.define('GeoExt.data.model.LayerTreeNode', {
     Ext.data.NodeInterface.decorate(this);
 });
 
-/* Copyright (c) 2015-2017 The Open Source Geospatial Foundation
+/* Copyright (c) 2015-present The Open Source Geospatial Foundation
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -3613,13 +3708,13 @@ Ext.define('GeoExt.data.serializer.Base', {
          * @return {Object} A serialized representation of source and layer.
          */
         serialize: function() {
-            Ext.raise('This method must be overriden by subclasses.');
+            Ext.raise('This method must be overridden by subclasses.');
             return null;
         },
         // so that we can have a shared JSDoc comment.
         /**
          * Given a subclass of GeoExt.data.serializer.Base, register the class
-         * with the GeoExt.data.MapfishPrintProvider. This method is ususally
+         * with the GeoExt.data.MapfishPrintProvider. This method is usually
          * called inside the 'after-create' function of `Ext.class` definitions.
          *
          * @param {GeoExt.data.serializer.Base} subCls The class to register.
@@ -3644,7 +3739,7 @@ Ext.define('GeoExt.data.serializer.Base', {
     }
 });
 
-/* Copyright (c) 2015-2017 The Open Source Geospatial Foundation
+/* Copyright (c) 2015-present The Open Source Geospatial Foundation
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -3686,9 +3781,14 @@ Ext.define('GeoExt.data.serializer.ImageWMS', {
         serialize: function(layer, source) {
             this.validateSource(source);
             var styles = source.getParams().STYLES;
-            var stylesArray = styles ? styles.split(',') : [
+            var stylesArray;
+            if (Ext.isArray(styles)) {
+                stylesArray = styles;
+            } else {
+                stylesArray = styles ? styles.split(',') : [
                     ''
                 ];
+            }
             var serialized = {
                     baseURL: source.getUrl(),
                     customParams: source.getParams(),
@@ -3707,7 +3807,7 @@ Ext.define('GeoExt.data.serializer.ImageWMS', {
     cls.register(cls);
 });
 
-/* Copyright (c) 2015-2017 The Open Source Geospatial Foundation
+/* Copyright (c) 2015-present The Open Source Geospatial Foundation
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -3749,9 +3849,14 @@ Ext.define('GeoExt.data.serializer.TileWMS', {
         serialize: function(layer, source) {
             this.validateSource(source);
             var styles = source.getParams().STYLES;
-            var stylesArray = styles ? styles.split(',') : [
+            var stylesArray;
+            if (Ext.isArray(styles)) {
+                stylesArray = styles;
+            } else {
+                stylesArray = styles ? styles.split(',') : [
                     ''
                 ];
+            }
             var serialized = {
                     baseURL: source.getUrls()[0],
                     customParams: source.getParams(),
@@ -3770,7 +3875,7 @@ Ext.define('GeoExt.data.serializer.TileWMS', {
     cls.register(cls);
 });
 
-/* Copyright (c) 2015-2017 The Open Source Geospatial Foundation
+/* Copyright (c) 2015-present The Open Source Geospatial Foundation
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -3945,56 +4050,64 @@ Ext.define('GeoExt.data.serializer.Vector', {
         /**
          * @inheritdoc
          */
-        serialize: function(layer, source, viewRes) {
+        serialize: function(layer, source, viewRes, map) {
             var me = this;
             me.validateSource(source);
-            var features = source.getFeatures();
+            var extent;
+            if (map) {
+                extent = map.getView().calculateExtent();
+            }
             var format = me.format;
             var geoJsonFeatures = [];
             var mapfishStyleObject = {
                     version: 2
                 };
-            Ext.each(features, function(feature) {
-                var geometry = feature.getGeometry();
-                if (Ext.isEmpty(geometry)) {
-                    // no need to encode features with no geometry
-                    return;
-                }
-                var geometryType = geometry.getType();
-                var geojsonFeature = format.writeFeatureObject(feature);
-                // remove parent feature references as they break serialization
-                // later on
-                if (geojsonFeature.properties && geojsonFeature.properties.parentFeature) {
-                    geojsonFeature.properties.parentFeature = undefined;
-                }
-                var styles = null;
-                var styleFunction = feature.getStyleFunction();
-                if (Ext.isDefined(styleFunction)) {
-                    styles = styleFunction.call(feature, viewRes);
-                } else {
-                    styleFunction = layer.getStyleFunction();
+            var processFeatures = function(feature) {
+                    var geometry = feature.getGeometry();
+                    if (Ext.isEmpty(geometry)) {
+                        // no need to encode features with no geometry
+                        return;
+                    }
+                    var geometryType = geometry.getType();
+                    var geojsonFeature = format.writeFeatureObject(feature);
+                    // remove parent feature references as they break serialization
+                    // later on
+                    if (geojsonFeature.properties && geojsonFeature.properties.parentFeature) {
+                        geojsonFeature.properties.parentFeature = undefined;
+                    }
+                    var styles = null;
+                    var styleFunction = feature.getStyleFunction();
                     if (Ext.isDefined(styleFunction)) {
-                        styles = styleFunction.call(layer, feature, viewRes);
+                        styles = styleFunction.call(feature, viewRes);
+                    } else {
+                        styleFunction = layer.getStyleFunction();
+                        if (Ext.isDefined(styleFunction)) {
+                            styles = styleFunction.call(layer, feature, viewRes);
+                        }
                     }
-                }
-                if (!Ext.isArray(styles)) {
-                    styles = [
-                        styles
-                    ];
-                }
-                if (!Ext.isEmpty(styles)) {
-                    geoJsonFeatures.push(geojsonFeature);
-                    if (Ext.isEmpty(geojsonFeature.properties)) {
-                        geojsonFeature.properties = {};
+                    if (!Ext.isArray(styles)) {
+                        styles = [
+                            styles
+                        ];
                     }
-                    Ext.each(styles, function(style, j) {
-                        var styleId = me.getUid(style, geometryType);
-                        var featureStyleProp = me.FEAT_STYLE_PREFIX + j;
-                        me.encodeVectorStyle(mapfishStyleObject, geometryType, style, styleId, featureStyleProp);
-                        geojsonFeature.properties[featureStyleProp] = styleId;
-                    });
-                }
-            });
+                    if (!Ext.isEmpty(styles)) {
+                        geoJsonFeatures.push(geojsonFeature);
+                        if (Ext.isEmpty(geojsonFeature.properties)) {
+                            geojsonFeature.properties = {};
+                        }
+                        Ext.each(styles, function(style, j) {
+                            var styleId = me.getUid(style, geometryType);
+                            var featureStyleProp = me.FEAT_STYLE_PREFIX + j;
+                            me.encodeVectorStyle(mapfishStyleObject, geometryType, style, styleId, featureStyleProp);
+                            geojsonFeature.properties[featureStyleProp] = styleId;
+                        });
+                    }
+                };
+            if (extent) {
+                source.forEachFeatureInExtent(extent, processFeatures);
+            } else {
+                Ext.each(source.getFeatures(), processFeatures);
+            }
             var serialized;
             // MapFish Print fails if there are no style rules, even if there
             // are no features either. To work around this, we add a basic
@@ -4178,6 +4291,14 @@ Ext.define('GeoExt.data.serializer.Vector', {
                 var strRotationDeg = (labelRotation * 180 / Math.PI) + '';
                 symbolizer.labelRotation = strRotationDeg;
             }
+            var offsetX = textStyle.getOffsetX();
+            var offsetY = textStyle.getOffsetY();
+            if (offsetX) {
+                symbolizer.labelXOffset = offsetX;
+            }
+            if (offsetY) {
+                symbolizer.labelYOffset = -offsetY;
+            }
             var fontStyle = textStyle.getFont();
             if (Ext.isDefined(fontStyle)) {
                 var font = fontStyle.split(' ');
@@ -4348,7 +4469,7 @@ Ext.define('GeoExt.data.serializer.Vector', {
     cls.register(cls);
 });
 
-/* Copyright (c) 2015-2017 The Open Source Geospatial Foundation
+/* Copyright (c) 2015-present The Open Source Geospatial Foundation
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -4445,7 +4566,7 @@ Ext.define('GeoExt.data.serializer.WMTS', {
     cls.register(cls);
 });
 
-/* Copyright (c) 2015-2017 The Open Source Geospatial Foundation
+/* Copyright (c) 2015-present The Open Source Geospatial Foundation
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -4545,7 +4666,7 @@ Ext.define('GeoExt.data.serializer.XYZ', {
     cls.register(cls);
 });
 
-/* Copyright (c) 2015-2017 The Open Source Geospatial Foundation
+/* Copyright (c) 2015-present The Open Source Geospatial Foundation
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -4603,7 +4724,9 @@ Ext.define('GeoExt.data.store.OlObjects', {
             var i;
             store.__updating = true;
             for (i = 0; i < length; i++) {
-                coll.insertAt(index + i, records[i].olObject);
+                if (!Ext.Array.contains(store.olCollection.getArray(), records[i].olObject)) {
+                    coll.insertAt(index + i, records[i].olObject);
+                }
             }
             store.__updating = false;
         },
@@ -4651,7 +4774,7 @@ Ext.define('GeoExt.data.store.OlObjects', {
     }
 });
 
-/* Copyright (c) 2015-2017 The Open Source Geospatial Foundation
+/* Copyright (c) 2015-present The Open Source Geospatial Foundation
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -4973,7 +5096,7 @@ Ext.define('GeoExt.data.store.Features', {
     }
 });
 
-/* Copyright (c) 2015-2017 The Open Source Geospatial Foundation
+/* Copyright (c) 2015-present The Open Source Geospatial Foundation
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -5046,7 +5169,7 @@ Ext.define('GeoExt.util.Layer', {
     }
 });
 
-/* Copyright (c) 2015-2017 The Open Source Geospatial Foundation
+/* Copyright (c) 2015-present The Open Source Geospatial Foundation
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -5354,9 +5477,9 @@ Ext.define('GeoExt.data.store.LayersTree', {
      * Bound as an eventlistener for layer nodes which are a folder / group on
      * the beforecollapse event. Whenever a folder gets collapsed, ExtJS seems
      * to actually remove the children from the store, triggering the removal
-     * of the actual layers in the map. This is an undesired behviour. We handle
-     * this as follows: Before the collapsing happens, we mark the childNodes,
-     * so we effectively opt-out in #handleRemove.
+     * of the actual layers in the map. This is an undesired behaviour. We
+     * handle this as follows: Before the collapsing happens, we mark the
+     * childNodes, so we effectively opt-out in #handleRemove.
      *
      * @param {Ext.data.NodeInterface} node The collapsible folder node.
      * @private
@@ -5466,7 +5589,1766 @@ Ext.define('GeoExt.data.store.LayersTree', {
     }
 });
 
-/* Copyright (c) 2015-2018 The Open Source Geospatial Foundation
+/* Copyright (c) 2015-present The Open Source Geospatial Foundation
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+/**
+ * A utility class for converting ExtJS filters to OGC compliant filters
+ *
+ * @class GeoExt.util.OGCFilter
+ */
+Ext.define('GeoExt.util.OGCFilter', {
+    statics: {
+        /**
+         * The WFS 1.0.0 GetFeature XML body template
+         */
+        wfs100GetFeatureXmlTpl: '<wfs:GetFeature service="WFS" version="1.0.0"' + ' outputFormat="JSON"' + ' xmlns:wfs="http://www.opengis.net/wfs"' + ' xmlns="http://www.opengis.net/ogc"' + ' xmlns:gml="http://www.opengis.net/gml"' + ' xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"' + ' xsi:schemaLocation="http://www.opengis.net/wfs' + ' http://schemas.opengis.net/wfs/1.0.0/WFS-basic.xsd">' + '<wfs:Query typeName="{0}">{1}' + '</wfs:Query>' + '</wfs:GetFeature>',
+        /**
+         * The WFS 1.1.0 GetFeature XML body template
+         */
+        wfs110GetFeatureXmlTpl: '<wfs:GetFeature service="WFS" version="1.1.0"' + ' outputFormat="JSON"' + ' xmlns:wfs="http://www.opengis.net/wfs"' + ' xmlns="http://www.opengis.net/ogc"' + ' xmlns:gml="http://www.opengis.net/gml"' + ' xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"' + ' xsi:schemaLocation="http://www.opengis.net/wfs' + ' http://schemas.opengis.net/wfs/1.0.0/WFS-basic.xsd">' + '<wfs:Query typeName="{0}">{1}' + '</wfs:Query>' + '</wfs:GetFeature>',
+        /**
+         * The WFS 2.0.0 GetFeature XML body template
+         */
+        wfs200GetFeatureXmlTpl: '<wfs:GetFeature service="WFS" version="2.0.0" ' + 'xmlns:wfs="http://www.opengis.net/wfs/2.0" ' + 'xmlns:fes="http://www.opengis.net/fes/2.0" ' + 'xmlns:gml="http://www.opengis.net/gml/3.2" ' + 'xmlns:sf="http://www.openplans.org/spearfish" ' + 'xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" ' + 'xsi:schemaLocation="http://www.opengis.net/wfs/2.0 ' + 'http://schemas.opengis.net/wfs/2.0/wfs.xsd ' + 'http://www.opengis.net/gml/3.2 ' + 'http://schemas.opengis.net/gml/3.2.1/gml.xsd">' + '<wfs:Query typeName="{0}">{1}' + '</wfs:Query>' + '</wfs:GetFeature>',
+        /**
+         * The template for spatial filters used in WFS 1.x.0 queries
+         */
+        spatialFilterWfs1xXmlTpl: '<{0}>' + '<PropertyName>{1}</PropertyName>' + '{2}' + '</{0}>',
+        /**
+         * The template for spatial filters used in WFS 2.0.0 queries
+         */
+        spatialFilterWfs2xXmlTpl: '<fes:{0}>' + '<fes:ValueReference>{1}</fes:ValueReference>' + '{2}' + '</fes:{0}>',
+        /**
+         * The template for spatial bbox filters used in WFS 1.x.0 queries
+         */
+        spatialFilterBBoxTpl: '<BBOX>' + '    <PropertyName>{0}</PropertyName>' + '    <gml:Envelope' + '        xmlns:gml="http://www.opengis.net/gml" srsName="{1}">' + '        <gml:lowerCorner>{2} {3}</gml:lowerCorner>' + '        <gml:upperCorner>{4} {5}</gml:upperCorner>' + '    </gml:Envelope>' + '</BBOX>',
+        /**
+         * Template string for GML 3.2.1 polygon
+         */
+        gml32PolygonTpl: '<gml:Polygon gml:id="P1" ' + 'srsName="urn:ogc:def:crs:{0}" srsDimension="2">' + '<gml:exterior>' + '<gml:LinearRing>' + '<gml:posList>{1}</gml:posList>' + '</gml:LinearRing>' + '</gml:exterior>' + '</gml:Polygon>',
+        /**
+         * Template string for GML 3.2.1 linestring
+         */
+        gml32LineStringTpl: '<gml:LineString gml:id="L1" ' + 'srsName="urn:ogc:def:crs:{0}" srsDimension="2">' + '<gml:posList>{1}</gml:posList>' + '</gml:LineString>',
+        /**
+         * Template string for GML 3.2.1 point
+         */
+        gml32PointTpl: '<gml:Point gml:id="Pt1" ' + 'srsName="urn:ogc:def:crs:{0}" srsDimension="2">' + '<gml:pos>{1}</gml:pos>' + '</gml:Point>',
+        /**
+         * The start element for a FE filter instance in version 2.0
+         * as string value
+         */
+        filter20StartElementStr: '<fes:Filter ' + 'xsi:schemaLocation="http://www.opengis.net/fes/2.0 ' + 'http://schemas.opengis.net/filter/2.0/filterAll.xsd ' + 'http://www.opengis.net/gml/3.2 ' + 'http://schemas.opengis.net/gml/3.2.1/gml.xsd" ' + 'xmlns:fes="http://www.opengis.net/fes/2.0" ' + 'xmlns:gml="http://www.opengis.net/gml/3.2" ' + 'xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">',
+        /**
+         * The list of supported topological and spatial filter operators
+         */
+        topologicalOrSpatialFilterOperators: [
+            'intersect',
+            'within',
+            'contains',
+            'equals',
+            'disjoint',
+            'crosses',
+            'touches',
+            'overlaps',
+            'bbox'
+        ],
+        /**
+         * Given an array of ExtJS grid-filters, this method will return an OGC
+         * compliant filter which can be used for WMS requests
+         * @param {Ext.util.Filter[]} filters array containing all
+         *   `Ext.util.Filter` that should be converted
+         * @param {string} combinator The combinator used for combining multiple
+         *   filters. Can be 'and' or 'or'
+         * @return {string} The OGC Filter XML
+         */
+        getOgcWmsFilterFromExtJsFilter: function(filters, combinator) {
+            return GeoExt.util.OGCFilter.getOgcFilterFromExtJsFilter(filters, 'wms', combinator);
+        },
+        /**
+         * Given an array of ExtJS grid-filters, this method will return an OGC
+         * compliant filter which can be used for WFS requests
+         * @param {Ext.util.Filter[]} filters array containing all
+         *   `Ext.util.Filter` that should be converted
+         * @param {string} combinator The combinator used for combining multiple
+         *   filters. Can be 'and' or 'or'
+         * @param {string} wfsVersion The WFS version to use, either `1.0.0`,
+         *   `1.1.0` or `2.0.0`
+         * @return {string} The OGC Filter XML
+         */
+        getOgcWfsFilterFromExtJsFilter: function(filters, combinator, wfsVersion) {
+            return GeoExt.util.OGCFilter.getOgcFilterFromExtJsFilter(filters, 'wfs', combinator, wfsVersion);
+        },
+        /**
+         * Given an ExtJS grid-filter, this method will return an OGC compliant
+         * filter which can be used for WMS or WFS queries
+         * @param {Ext.util.Filter[]} filters array containing all
+         *   `Ext.util.Filter` that should be converted
+         * @param {string} type The OGC type we will be using, can be
+         *   `wms` or `wfs`
+         * @param {string} combinator The combinator used for combining multiple
+         *   filters. Can be 'and' or 'or'
+         * @param {string} wfsVersion The WFS version to use, either `1.0.0`,
+         *   `1.1.0` or `2.0.0`
+         * @return {string} The OGC Filter as XML String
+         */
+        getOgcFilterFromExtJsFilter: function(filters, type, combinator, wfsVersion) {
+            if (!Ext.isDefined(filters) || !Ext.isArray(filters)) {
+                Ext.Logger.error('Invalid filter argument given to ' + 'GeoExt.util.OGCFilter. You need to pass an array of ' + '"Ext.util.Filter"');
+                return;
+            }
+            if (Ext.isEmpty(filters)) {
+                return null;
+            }
+            var omitNamespaces = false;
+            // filters for WMS layers need to omit the namespaces
+            if (!Ext.isEmpty(type) && type.toLowerCase() === 'wms') {
+                omitNamespaces = true;
+            }
+            var ogcFilters = [];
+            var ogcUtil = GeoExt.util.OGCFilter;
+            var filterBody;
+            Ext.each(filters, function(filter) {
+                filterBody = ogcUtil.getOgcFilterBodyFromExtJsFilterObject(filter, wfsVersion);
+                if (filterBody) {
+                    ogcFilters.push(filterBody);
+                }
+            });
+            return ogcUtil.combineFilters(ogcFilters, combinator, omitNamespaces, wfsVersion);
+        },
+        /**
+         * Converts given ExtJS grid-filter to an OGC compliant filter
+         * body content.
+         * @param {Ext.util.Filter} filter Instance of
+         *   `Ext.util.Filter` which should be converted to OGC filter
+         * @param {string} wfsVersion The WFS version to use, either `1.0.0`,
+         *   `1.1.0` or `2.0.0`
+         * @return {string} The OGC Filter body as XML String
+         */
+        getOgcFilterBodyFromExtJsFilterObject: function(filter, wfsVersion) {
+            if (!Ext.isDefined(filter)) {
+                Ext.Logger.error('Invalid filter argument given to ' + 'GeoExt.util.OGCFilter. You need to pass an instance of ' + '"Ext.util.Filter"');
+                return;
+            }
+            var property = filter.getProperty();
+            var operator = filter.getOperator();
+            var value = filter.getValue();
+            var srsName;
+            if (filter.type === 'spatial') {
+                srsName = filter.srsName;
+            }
+            if (Ext.isEmpty(property) || Ext.isEmpty(operator) || Ext.isEmpty(value)) {
+                Ext.Logger.warn('Skipping a filter as some values ' + 'seem to be undefined');
+                return;
+            }
+            if (filter.isDateValue) {
+                if (filter.getDateFormat) {
+                    value = Ext.Date.format(filter.getValue(), filter.getDateFormat());
+                } else {
+                    value = Ext.Date.format(filter.getValue(), 'Y-m-d');
+                }
+            }
+            return GeoExt.util.OGCFilter.getOgcFilter(property, operator, value, wfsVersion, srsName);
+        },
+        /**
+         * Returns a GetFeature XML body containing the filters
+         * which can be used to directly request the features
+         * @param {Ext.util.Filter[]} filters array containing all
+         *   `Ext.util.Filter` that should be converted
+         * @param {string} combinator The combinator used for combining multiple
+         *   filters. Can be 'and' or 'or'
+         * @param {string} wfsVersion The WFS version to use, either `1.0.0`,
+         *   `1.1.0` or `2.0.0`
+         * @param {string} typeName The featuretype name to be used
+         * @return {string} the GetFeature XML body as string
+         */
+        buildWfsGetFeatureWithFilter: function(filters, combinator, wfsVersion, typeName) {
+            var filter = GeoExt.util.OGCFilter.getOgcWfsFilterFromExtJsFilter(filters, combinator, wfsVersion);
+            var tpl = GeoExt.util.OGCFilter.wfs100GetFeatureXmlTpl;
+            if (wfsVersion && wfsVersion === '1.1.0') {
+                tpl = GeoExt.util.OGCFilter.wfs110GetFeatureXmlTpl;
+            } else if (wfsVersion && wfsVersion === '2.0.0') {
+                tpl = GeoExt.util.OGCFilter.wfs200GetFeatureXmlTpl;
+            }
+            return Ext.String.format(tpl, typeName, filter);
+        },
+        /**
+         * Returns an OGC filter for the given parameters.
+         * @param {string} property The property to filter on
+         * @param {string} operator The operator to use
+         * @param {*} value The value for the filter
+         * @param {string} wfsVersion The WFS version to use, either `1.0.0`,
+         *   `1.1.0` or `2.0.0`
+         * @param {string} srsName The code for the projection
+         * @return {string} The OGC filter.
+         */
+        getOgcFilter: function(property, operator, value, wfsVersion, srsName) {
+            if (Ext.isEmpty(property) || Ext.isEmpty(operator) || Ext.isEmpty(value)) {
+                Ext.Logger.error('Invalid argument given to method ' + '`getOgcFilter`. You need to supply property, ' + 'operator and value.');
+                return;
+            }
+            var ogcFilterType;
+            var closingTag;
+            var propName = 'PropertyName';
+            var isWfs20 = !Ext.isEmpty(wfsVersion) && wfsVersion === '2.0.0';
+            if (isWfs20) {
+                propName = 'fes:ValueReference';
+            }
+            // always replace surrounding quotes
+            if (!(value instanceof ol.geom.Geometry)) {
+                value = value.toString().replace(/(^['])/g, '');
+                value = value.toString().replace(/([']$)/g, '');
+            }
+            var wfsPrefix = (isWfs20 ? 'fes:' : '');
+            switch (operator) {
+                case '==':
+                case '=':
+                case 'eq':
+                    ogcFilterType = wfsPrefix + 'PropertyIsEqualTo';
+                    break;
+                case '!==':
+                case '!=':
+                case 'ne':
+                    ogcFilterType = wfsPrefix + 'PropertyIsNotEqualTo';
+                    break;
+                case 'lt':
+                case '<':
+                    ogcFilterType = wfsPrefix + 'PropertyIsLessThan';
+                    break;
+                case 'lte':
+                case '<=':
+                    ogcFilterType = wfsPrefix + 'PropertyIsLessThanOrEqualTo';
+                    break;
+                case 'gt':
+                case '>':
+                    ogcFilterType = wfsPrefix + 'PropertyIsGreaterThan';
+                    break;
+                case 'gte':
+                case '>=':
+                    ogcFilterType = wfsPrefix + 'PropertyIsGreaterThanOrEqualTo';
+                    break;
+                case 'like':
+                    value = '*' + value + '*';
+                    var likeFilterTpl = '<{0}PropertyIsLike wildCard="*" singleChar="."' + ' escape="!" matchCase="false">' + '<' + propName + '>' + property + '</' + propName + '>' + '<{0}Literal>' + value + '</{0}Literal>' + '</{0}PropertyIsLike>';
+                    return Ext.String.format(likeFilterTpl, wfsPrefix);
+                case 'in':
+                    ogcFilterType = wfsPrefix + 'Or';
+                    var values = value;
+                    if (!Ext.isArray(value)) {
+                        // cleanup brackets and quotes
+                        value = value.replace(/([()'])/g, '');
+                        values = value.split(',');
+                    };
+                    var filters = '';
+                    Ext.each(values || value, function(val) {
+                        filters += '<' + wfsPrefix + 'PropertyIsEqualTo>' + '<' + propName + '>' + property + '</' + propName + '>' + '<' + wfsPrefix + 'Literal>' + val + '</' + wfsPrefix + 'Literal>' + '</' + wfsPrefix + 'PropertyIsEqualTo>';
+                    });
+                    ogcFilterType = '<' + ogcFilterType + '>';
+                    var inFilter;
+                    closingTag = Ext.String.insert(ogcFilterType, '/', 1);
+                    // only use an Or filter when there are multiple values
+                    if (values.length > 1) {
+                        inFilter = ogcFilterType + filters + closingTag;
+                    } else {
+                        inFilter = filters;
+                    };
+                    return inFilter;
+                case 'intersect':
+                case 'within':
+                case 'contains':
+                case 'equals':
+                case 'disjoint':
+                case 'crosses':
+                case 'touches':
+                case 'overlaps':
+                    switch (operator) {
+                        case 'equals':
+                            ogcFilterType = 'Equals';
+                            break;
+                        case 'contains':
+                            ogcFilterType = 'Contains';
+                            break;
+                        case 'within':
+                            ogcFilterType = 'Within';
+                            break;
+                        case 'disjoint':
+                            ogcFilterType = 'Disjoint';
+                            break;
+                        case 'touches':
+                            ogcFilterType = 'Touches';
+                            break;
+                        case 'crosses':
+                            ogcFilterType = 'Crosses';
+                            break;
+                        case 'overlaps':
+                            ogcFilterType = 'Overlaps';
+                            break;
+                        case 'intersect':
+                            ogcFilterType = 'Intersects';
+                            break;
+                        default:
+                            Ext.Logger.warn('Method `getOgcFilter` could not ' + 'handle the given topological operator: ' + operator);
+                            return;
+                    };
+                    var gmlElement = GeoExt.util.OGCFilter.getGmlElementForGeometry(value, srsName, wfsVersion);
+                    var spatialTpl = wfsVersion !== '2.0.0' ? GeoExt.util.OGCFilter.spatialFilterWfs1xXmlTpl : GeoExt.util.OGCFilter.spatialFilterWfs2xXmlTpl;
+                    return Ext.String.format(spatialTpl, ogcFilterType, property, gmlElement);
+                case 'bbox':
+                    var llx;
+                    var lly;
+                    var urx;
+                    var ury;
+                    value = value.getExtent();
+                    llx = value[0];
+                    lly = value[1];
+                    urx = value[2];
+                    ury = value[3];
+                    return Ext.String.format(GeoExt.util.OGCFilter.spatialFilterBBoxTpl, property, srsName, llx, lly, urx, ury);
+                default:
+                    Ext.Logger.warn('Method `getOgcFilter` could not ' + 'handle the given operator: ' + operator);
+                    return;
+            }
+            ogcFilterType = '<' + ogcFilterType + '>';
+            closingTag = Ext.String.insert(ogcFilterType, '/', 1);
+            var literalStr = isWfs20 ? '<fes:Literal>{2}</fes:Literal>' : '<Literal>{2}</Literal>';
+            var tpl = '' + '{0}' + '<' + propName + '>{1}</' + propName + '>' + literalStr + '{3}';
+            var filter = Ext.String.format(tpl, ogcFilterType, property, value, closingTag);
+            return filter;
+        },
+        /**
+         * Returns a serialized geometry in GML3 format
+         * @param {ol.geometry.Geometry} geometry The geometry to serialize
+         * @param {String} srsName The epsg code to use to serialization
+         * @param {String} wfsVersion The WFS version to use (WFS 2.0.0
+         * requires gml prefix for geometries)
+         * @return {string} The serialized geometry in GML3 format
+         */
+        getGmlElementForGeometry: function(geometry, srsName, wfsVersion) {
+            if (wfsVersion === '2.0.0') {
+                // supported geometries: Point, LineString and Polygon
+                // in case of multigeometries, the first one is used.
+                var geometryType = geometry.getType();
+                var staticMe = GeoExt.util.OGCFilter;
+                var isMulti = geometryType.indexOf('Multi') > -1;
+                switch (geometryType) {
+                    case 'Polygon':
+                    case 'MultiPolygon':
+                        var coordsPoly = geometry.getCoordinates()[0];
+                        if (isMulti) {
+                            coordsPoly = coordsPoly[0];
+                        };
+                        return Ext.String.format(staticMe.gml32PolygonTpl, srsName, staticMe.flattenCoordinates(coordsPoly));
+                    case 'LineString':
+                    case 'MultiLineString':
+                        var coordsLine = geometry.getCoordinates();
+                        if (isMulti) {
+                            coordsLine = coordsLine[0];
+                        };
+                        return Ext.String.format(staticMe.gml32LineStringTpl, srsName, staticMe.flattenCoordinates(coordsLine));
+                    case 'Point':
+                    case 'MultiPoint':
+                        var coordsPt = geometry.getCoordinates();
+                        if (isMulti) {
+                            coordsPt = coordsPt[0];
+                        };
+                        return Ext.String.format(staticMe.gml32PointTpl, srsName, staticMe.flattenCoordinates(coordsPt));
+                    default:
+                        return '';
+                }
+            } else {
+                var format = new ol.format.GML3({
+                        srsName: srsName
+                    });
+                var geometryNode = format.writeGeometryNode(geometry, {
+                        dataProjection: srsName
+                    });
+                if (!geometryNode) {
+                    Ext.Logger.warn('Could not serialize geometry');
+                    return null;
+                }
+                var childNodes = geometryNode.children || geometryNode.childNodes;
+                var serializer = new XMLSerializer();
+                var geomNode = childNodes[0];
+                var serializedValue = serializer.serializeToString(geomNode);
+                return serializedValue;
+            }
+        },
+        /**
+         * Reduce an ol.Coordinate array to a string of whitespace
+         * separated coordinate values
+         * @param {ol.Coordinate []} coordArray An array of
+         * coordinates
+         * @return {string} Concatenated array of coordinates
+         */
+        flattenCoordinates: function(coordArray) {
+            return Ext.Array.map(coordArray, function(cp) {
+                return cp.join(' ');
+            }).join(' ');
+        },
+        /**
+         * Combines the passed filter bodies with an `<And>` or `<Or>` and
+         * returns them. E.g. created with
+         * GeoExt.util.OGCFilter.getOgcFilterBodyFromExtJsFilterObject
+         *
+         * @param {Array} filterBodies The filter bodies to join.
+         * @param {string} combinator The combinator to use, should be
+         *     either `And` (the default) or `Or`.
+         * @param {string} wfsVersion The WFS version to use, either `1.0.0`,
+         *   `1.1.0` or `2.0.0`
+         * @return {string} And/Or combined OGC filter bodies.
+         */
+        combineFilterBodies: function(filterBodies, combinator, wfsVersion) {
+            if (!Ext.isDefined(filterBodies) || !Ext.isArray(filterBodies) || filterBodies.length === 0) {
+                Ext.Logger.error('Invalid "filterBodies" argument given to ' + 'GeoExt.util.OGCFilter. You need to pass an array of ' + 'OGC filter bodies as XML string');
+                return;
+            }
+            var combineWith = combinator || 'And';
+            var isWfs20 = !Ext.isEmpty(wfsVersion) && wfsVersion === '2.0.0';
+            var wfsPrefix = (isWfs20 ? 'fes:' : '');
+            var ogcFilterType = wfsPrefix + combineWith;
+            var openingTag = ogcFilterType = '<' + ogcFilterType + '>';
+            var closingTag = Ext.String.insert(openingTag, '/', 1);
+            var combinedFilterBodies = '';
+            // only use an And/Or filter when there are multiple filter bodies
+            if (filterBodies.length > 1) {
+                Ext.each(filterBodies, function(filterBody) {
+                    combinedFilterBodies += filterBody;
+                });
+                combinedFilterBodies = openingTag + combinedFilterBodies + closingTag;
+            } else {
+                combinedFilterBodies = filterBodies[0];
+            }
+            return combinedFilterBodies;
+        },
+        /**
+         * Combines the passed filters with an `<And>` or `<Or>` and
+         * returns them.
+         *
+         * @param {Array} filters The filters to join.
+         * @param {string} combinator The combinator to use, should be
+         *     either `And` (the default) or `Or`.
+         * @param {boolean} omitNamespaces Indicates if namespaces
+         *   should be omitted in filters, which is useful for WMS
+         * @param {string} wfsVersion The WFS version to use, either `1.0.0`,
+         *   `1.1.0` or `2.0.0`
+         * @return {string} An combined OGC filter with the passed filters.
+         */
+        combineFilters: function(filters, combinator, omitNamespaces, wfsVersion) {
+            var staticMe = GeoExt.util.OGCFilter;
+            var defaultCombineWith = 'And';
+            var combineWith = combinator || defaultCombineWith;
+            var numFilters = filters.length;
+            var parts = [];
+            var ns = omitNamespaces ? '' : 'ogc';
+            var omitNamespaceFromWfsVersion = !wfsVersion || wfsVersion === '1.0.0';
+            if (!Ext.isEmpty(wfsVersion) && wfsVersion === '2.0.0' && !omitNamespaces) {
+                parts.push(staticMe.filter20StartElementStr);
+            } else {
+                parts.push('<Filter' + (omitNamespaces ? '' : ' xmlns="http://www.opengis.net/' + ns + '"' + ' xmlns:gml="http://www.opengis.net/gml"') + '>');
+                omitNamespaceFromWfsVersion = true;
+            }
+            parts.push();
+            if (numFilters > 1) {
+                parts.push('<' + (omitNamespaces || omitNamespaceFromWfsVersion ? '' : 'fes:') + combineWith + '>');
+            }
+            Ext.each(filters, function(filter) {
+                parts.push(filter);
+            });
+            if (numFilters > 1) {
+                parts.push('</' + (omitNamespaces || omitNamespaceFromWfsVersion ? '' : 'fes:') + combineWith + '>');
+            }
+            parts.push('</' + (omitNamespaces || omitNamespaceFromWfsVersion ? '' : 'fes:') + 'Filter>');
+            return parts.join('');
+        },
+        /**
+         * Create an instance of {Ext.util.Filter} that contains the required
+         * information on spatial filter, e.g. operator and geometry
+         *
+         * @param {string} operator The spatial / toplogical operator
+         * @param {string} typeName The name of geometry field
+         * @param {ol.geom.Geometry} value The geometry to use for filtering
+         * @param {string} srsName The EPSG code of the geometry
+         *
+         * @return {Ext.util.Filter} A 'spatial' {Ext.util.Filter}
+         */
+        createSpatialFilter: function(operator, typeName, value, srsName) {
+            if (!Ext.Array.contains(GeoExt.util.OGCFilter.topologicalOrSpatialFilterOperators, operator)) {
+                return null;
+            }
+            // construct an instance of Filter
+            return new Ext.util.Filter({
+                type: 'spatial',
+                srsName: srsName,
+                operator: operator,
+                property: typeName,
+                value: value
+            });
+        }
+    }
+});
+
+/* Copyright (c) 2015-present The Open Source Geospatial Foundation
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+/**
+ * A data store loading features from an OGC WFS.
+ *
+ * @class GeoExt.data.store.WfsFeatures
+ */
+Ext.define('GeoExt.data.store.WfsFeatures', {
+    extend: 'GeoExt.data.store.Features',
+    mixins: [
+        'GeoExt.mixin.SymbolCheck',
+        'GeoExt.util.OGCFilter'
+    ],
+    /**
+     * If autoLoad is true, this store's loadWfs method is automatically called
+     * after creation.
+     * @cfg {Boolean}
+     */
+    autoLoad: true,
+    /**
+     * Default to using server side sorting
+     * @cfg {Boolean}
+     */
+    remoteSort: true,
+    /**
+     * Default to using server side filtering
+     * @cfg {Boolean}
+     */
+    remoteFilter: true,
+    /**
+     * Default logical comperator to combine filters sent to WFS
+     * @cfg {String}
+     */
+    logicalFilterCombinator: 'And',
+    /**
+      * Default request method to use in AJAX requests
+      * @cfg {String}
+      */
+    requestMethod: 'GET',
+    /**
+     * The 'service' param value used in the WFS request.
+     * @cfg {String}
+     */
+    service: 'WFS',
+    /**
+     * The 'version' param value used in the WFS request.
+     * This should be '2.0.0' or higher at least if the paging mechanism
+     * should be used.
+     * @cfg {String}
+     */
+    version: '2.0.0',
+    /**
+     * The 'request' param value used in the WFS request.
+     * @cfg {String}
+     */
+    request: 'GetFeature',
+    /**
+     * The 'typeName' param value used in the WFS request.
+     * @cfg {String}
+     */
+    typeName: null,
+    /**
+     * The 'srsName' param value used in the WFS request. If not set
+     * it is automatically set to the map projection when available.
+     * @cfg {String}
+     */
+    srsName: null,
+    /**
+     * The 'outputFormat' param value used in the WFS request.
+     * @cfg {String}
+     */
+    outputFormat: 'application/json',
+    /**
+     * The 'startIndex' param value used in the WFS request.
+     * @cfg {String}
+     */
+    startIndex: 0,
+    /**
+     * The 'count' param value used in the WFS request.
+     * @cfg {String}
+     */
+    count: null,
+    /**
+     * A comma-separated list of property names to retrieve
+     * from the server. If left as null all properties are returned.
+     * @cfg {String}
+     */
+    propertyName: null,
+    /**
+     * Offset to add to the #startIndex in the WFS request.
+     * @cfg {Number}
+     */
+    startIndexOffset: 0,
+    /**
+     * The OL format used to parse the WFS GetFeature response.
+     * @cfg {ol.format.Feature}
+     */
+    format: null,
+    /**
+     * The attribution added to the created vector layer source. Only has an
+     * effect if #createLayer is set to `true`
+     * @cfg {String}
+     */
+    layerAttribution: null,
+    /**
+     * Additional OpenLayers properties to apply to the created vector layer.
+     * Only has an effect if #createLayer is set to `true`
+     * @cfg {String}
+     */
+    layerOptions: null,
+    /**
+     * Cache the total number of features be queried from when the store is
+     * first loaded to use for the remaining life of the store.
+     * This uses resultType=hits to get the number of features and can improve
+     * performance rather than calculating on each request. It should be used
+     * for read-only layers, or when the server does not return the
+     * feature count on each request.
+     * @cfg {Boolean}
+     */
+    cacheFeatureCount: false,
+    /**
+    * The outputFormat sent with the resultType=hits request.
+    * Defaults to GML3 as some WFS servers do not support this
+    * request type when using application/json.
+    * Only has an effect if #cacheFeatureCount is set to `true`
+    * @cfg {Boolean}
+    */
+    featureCountOutputFormat: 'gml3',
+    /**
+    * Any currently executing request to the WFS server.
+    * A reference to this is kept so any new requests can
+    * abort the previous request to ensure only the most recently
+    * requested results are returned.
+    * @cfg {Ext.data.request.Ajax}
+    */
+    activeRequest: null,
+    /**
+     * Constructs the WFS feature store.
+     *
+     * @param {Object} config The configuration object.
+     * @private
+     */
+    constructor: function(config) {
+        var me = this;
+        config = config || {};
+        // apply count as store's pageSize
+        config.pageSize = config.count || me.count;
+        if (config.pageSize > 0) {
+            // calculate initial page
+            var startIndex = config.startIndex || me.startIndex;
+            var currentPage = Math.floor(startIndex / config.pageSize) + 1;
+            config.currentPage = currentPage;
+        }
+        // avoid creation of vector layer by parent class (raises error when
+        // applying WFS data) so we can create the WFS vector layer on our own
+        // (if needed)
+        var createLayer = config.createLayer;
+        config.createLayer = false;
+        me.callParent([
+            config
+        ]);
+        if (!me.url) {
+            Ext.raise('No URL given to WfsFeaturesStore');
+        }
+        if (createLayer) {
+            // the WFS vector layer showing the WFS features on the map
+            me.source = new ol.source.Vector({
+                features: [],
+                attributions: me.layerAttribution
+            });
+            var layerOptions = {
+                    source: me.source,
+                    style: me.style
+                };
+            if (me.layerOptions) {
+                Ext.applyIf(layerOptions, me.layerOptions);
+            }
+            me.layer = new ol.layer.Vector(layerOptions);
+            me.layerCreated = true;
+        }
+        if (me.cacheFeatureCount === true) {
+            me.cacheTotalFeatureCount(!me.autoLoad);
+        } else {
+            if (me.autoLoad) {
+                // initial load of the WFS data
+                me.loadWfs();
+            }
+        }
+        // before the store gets re-loaded (e.g. by a paging toolbar) we trigger
+        // the re-loading of the WFS, so the data keeps in sync
+        me.on('beforeload', me.loadWfs, me);
+        // add layer to connected map, if available
+        if (me.map && me.layer) {
+            me.map.addLayer(me.layer);
+        }
+    },
+    /**
+     * Detects the total amount of features (without paging) of the given
+     * WFS response. The detection is based on the response format (currently
+     * GeoJSON and GML >=v3 are supported).
+     *
+     * @private
+     * @param  {Object} wfsResponse The XMLHttpRequest object
+     * @return {Number}            Total amount of features
+     */
+    getTotalFeatureCount: function(wfsResponse) {
+        var totalCount = -1;
+        // get the response type from the header
+        var contentType = wfsResponse.getResponseHeader('Content-Type');
+        try {
+            if (contentType.indexOf('application/json') !== -1) {
+                var respJson = Ext.decode(wfsResponse.responseText);
+                totalCount = respJson.numberMatched;
+            } else {
+                // assume GML
+                var xml = wfsResponse.responseXML;
+                if (xml && xml.firstChild) {
+                    var total = xml.firstChild.getAttribute('numberMatched');
+                    totalCount = parseInt(total, 10);
+                }
+            }
+        } catch (e) {
+            Ext.Logger.warn('Error while detecting total feature count from ' + 'WFS response');
+        }
+        return totalCount;
+    },
+    /**
+     * Sends the sortBy parameter to the WFS Server
+     * If multiple sorters are specified then multiple fields are
+     * sent to the server.
+     * Ascending sorts will append ASC and descending sorts DESC
+     * E.g. sortBy=attribute1 DESC,attribute2 ASC
+     * @private
+     * @return {String} The sortBy string
+     */
+    createSortByParameter: function() {
+        var me = this;
+        var sortStrings = [];
+        var direction;
+        var property;
+        me.getSorters().each(function(sorter) {
+            // direction will be ASC or DESC
+            direction = sorter.getDirection();
+            property = sorter.getProperty();
+            sortStrings.push(Ext.String.format('{0} {1}', property, direction));
+        });
+        return sortStrings.join(',');
+    },
+    /**
+     * Create filter parameter string (according to Filter Encoding standard)
+     * based on the given instances in filters ({Ext.util.FilterCollection}) of
+     * the store.
+     *
+     * @private
+     * @return {String} The filter XML encoded as string
+     */
+    createOgcFilter: function() {
+        var me = this;
+        var filters = [];
+        me.getFilters().each(function(item) {
+            filters.push(item);
+        });
+        if (filters.length === 0) {
+            return null;
+        }
+        var wfsGetFeatureFilter = GeoExt.util.OGCFilter.getOgcWfsFilterFromExtJsFilter(filters, me.logicalFilterCombinator, me.version);
+        return wfsGetFeatureFilter;
+    },
+    /**
+     * Gets the number of features for the WFS typeName
+     * using resultType=hits and caches it so it only needs to be calculated
+     * the first time the store is used.
+     *
+     * @param  {Boolean} skipLoad Avoids loading the store if set to `true`
+     * @private
+     */
+    cacheTotalFeatureCount: function(skipLoad) {
+        var me = this;
+        var url = me.url;
+        me.cachedTotalCount = 0;
+        var params = {
+                service: me.service,
+                version: me.version,
+                request: me.request,
+                typeName: me.typeName,
+                outputFormat: me.featureCountOutputFormat,
+                resultType: 'hits'
+            };
+        Ext.Ajax.request({
+            url: url,
+            method: me.requestMethod,
+            params: params,
+            success: function(response) {
+                // set number of total features (needed for paging)
+                me.cachedTotalCount = me.getTotalFeatureCount(response);
+                if (!skipLoad) {
+                    me.loadWfs();
+                }
+            },
+            failure: function(response) {
+                Ext.Logger.warn('Error while requesting features from WFS: ' + response.responseText + ' Status: ' + response.status);
+            }
+        });
+    },
+    /**
+     * Handles the 'filterchange'-event.
+     * Reload data using updated filter config.
+     * @private
+     */
+    onFilterChange: function() {
+        var me = this;
+        if (me.getFilters() && me.getFilters().length > 0) {
+            me.loadWfs();
+        }
+    },
+    /**
+     * Loads the data from the connected WFS.
+     * @private
+     */
+    loadWfs: function() {
+        var me = this;
+        if (me.activeRequest) {
+            me.activeRequest.abort();
+        }
+        var url = me.url;
+        var params = {
+                service: me.service,
+                version: me.version,
+                request: me.request,
+                typeName: me.typeName,
+                outputFormat: me.outputFormat
+            };
+        // add a propertyName parameter if set
+        if (me.propertyName !== null) {
+            params.propertyName = me.propertyName;
+        }
+        // add a srsName parameter
+        if (me.srsName) {
+            params.srsName = me.srsName;
+        } else {
+            // if it has not been set manually retrieve from the map
+            if (me.map) {
+                params.srsName = me.map.getView().getProjection().getCode();
+            }
+        }
+        // send the sortBy parameter only when remoteSort is true
+        // as it is not supported by all WFS servers
+        if (me.remoteSort === true) {
+            var sortBy = me.createSortByParameter();
+            if (sortBy) {
+                params.sortBy = sortBy;
+            }
+        }
+        // create filter string if remoteFilter is activated
+        if (me.remoteFilter === true) {
+            var filter = me.createOgcFilter();
+            if (filter) {
+                params.filter = filter;
+            }
+        }
+        // apply paging parameters if necessary
+        if (me.pageSize) {
+            var fromRecord = ((me.currentPage - 1) * me.pageSize) + me.startIndexOffset;
+            me.startIndex = fromRecord;
+            params.startIndex = me.startIndex;
+            params.count = me.pageSize;
+        }
+        // fire event 'gx-wfsstoreload-beforeload' and skip loading if listener
+        // function returns false
+        if (me.fireEvent('gx-wfsstoreload-beforeload', me, params) === false) {
+            return;
+        }
+        // request features from WFS
+        me.activeRequest = Ext.Ajax.request({
+            url: url,
+            method: me.requestMethod,
+            params: params,
+            success: function(response) {
+                if (!me.format) {
+                    Ext.Logger.warn('No format given for WfsFeatureStore. ' + 'Skip parsing feature data.');
+                    return;
+                }
+                if (me.cacheFeatureCount === true) {
+                    // me.totalCount is reset to 0 on each load so reset it here
+                    me.totalCount = me.cachedTotalCount;
+                } else {
+                    // set number of total features (needed for paging)
+                    me.totalCount = me.getTotalFeatureCount(response);
+                }
+                // parse WFS response to OL features
+                var wfsFeats = [];
+                try {
+                    wfsFeats = me.format.readFeatures(response.responseText);
+                } catch (error) {
+                    Ext.Logger.warn('Error parsing features into the ' + 'OpenLayers format. Check the server response.');
+                }
+                // set data for store
+                me.setData(wfsFeats);
+                if (me.layer) {
+                    // add features to WFS layer
+                    me.source.clear();
+                    me.source.addFeatures(wfsFeats);
+                }
+                me.fireEvent('gx-wfsstoreload', me, wfsFeats, true);
+            },
+            failure: function(response) {
+                Ext.Logger.warn('Error while requesting features from WFS: ' + response.responseText + ' Status: ' + response.status);
+                me.fireEvent('gx-wfsstoreload', me, null, false);
+            }
+        });
+    },
+    doDestroy: function() {
+        var me = this;
+        if (me.activeRequest) {
+            me.activeRequest.destroy();
+        }
+        me.callParent(arguments);
+    }
+});
+
+/* Copyright (c) 2015-present The Open Source Geospatial Foundation
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+/**
+ * (Abstract) plugin for an Ext.tree.Column used in an layer tree in order to
+ * render a custom UI component on right-click of a LayerTreeNode, e. g. a menu
+ * (like `Ext.menu.Menu`).
+ *
+ * The UI creation can be adapted by overwriting the #createContextUi
+ * function.
+ *
+ * @class GeoExt.plugin.layertreenode.ContextMenu
+ */
+Ext.define('GeoExt.plugin.layertreenode.ContextMenu', {
+    extend: 'Ext.plugin.Abstract',
+    alias: 'plugin.gx_layertreenode_contextmenu',
+    /**
+     * The UI component to be rendered when the LayerTreeNode is right clicked.
+     *
+     * @property {Ext.Component}
+     */
+    contextUi: null,
+    /**
+     * Flag to steer whether the #contextUi should be destroyed and re-created
+     * every time the LayerTreeNode is right clicked.
+     *
+     * @cfg {Boolean}
+     */
+    recreateContextUi: true,
+    /**
+     * Initializes this plugin.
+     *
+     * @param  {Ext.tree.Column} treeColumn [description]
+     * @private
+     */
+    init: function(treeColumn) {
+        var me = this;
+        if (!(treeColumn instanceof Ext.tree.Column)) {
+            Ext.log.warn('Plugin shall only be applied to instances of' + ' Ext.tree.Column');
+            return;
+        }
+        treeColumn.on('contextmenu', me.onContextMenu, me);
+    },
+    /**
+     * Handles the 'contextmenu' event of the connected Ext.tree.Column.
+     * Creates the UI by #createContextUi and shows the UI by #showContextUi.
+     *
+     * @param  {Ext.view.Table}  treeView The tree table view
+     * @param  {HTMLElement}     td       The TD element for the cell.
+     * @param  {Number}          rowIdx   Index of the row
+     * @param  {Number}          colIdx   Index of the column
+     * @param  {Ext.event.Event} evt      The original event object
+     * @param  {GeoExt.data.model.LayerTreeNode} layerTreeNode
+     *     LayerTreeNode holding the OL layer
+     * @private
+     */
+    onContextMenu: function(treeView, td, rowIdx, colIdx, evt, layerTreeNode) {
+        var me = this;
+        evt.preventDefault();
+        if (me.contextUi && me.recreateContextUi) {
+            me.contextUi.destroy();
+            me.contextUi = null;
+        }
+        if (!me.contextUi) {
+            me.contextUi = me.createContextUi(layerTreeNode);
+        }
+        me.showContextUi(evt.getXY());
+    },
+    /**
+     * Creates and returns the context UI, which is rendered when the
+     * LayerTreeNode is right clicked.
+     * Should be overwritten by concrete implementation of this plugin.
+     *
+     * @param  {GeoExt.data.model.LayerTreeNode} layerTreeNode
+     *     LayerTreeNode holding the OL layer
+     * @return {Ext.Component} The UI component to be shown on layer right-click
+     */
+    createContextUi: function(layerTreeNode) {
+        Ext.Logger.warn('gx_layertreenode_contextmenu: createContextUi is ' + 'not overwritten. It is very likely that the plugin won\'t work');
+        return null;
+    },
+    /**
+     * Shows the context UI.
+     * Can be overwritten by concrete implementation of this plugin.
+     * Default shows the #contextUi at the position where the right-click was
+     * performed.
+     *
+     * @param  {Number[]} clickPos The pixel position of the right-click
+     */
+    showContextUi: function(clickPos) {
+        var me = this;
+        if (me.contextUi && clickPos) {
+            me.contextUi.showAt(clickPos);
+        }
+    }
+});
+
+/* Copyright (c) 2015-present The Open Source Geospatial Foundation
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+/**
+ * Creates a combo box that handles results from a geocoding service. By
+ * default it uses OSM Nominatim, but the component offers all config options
+ * to overwrite in order to other custom services.
+ * If the user enters a valid address in the search box, the combo's store will
+ * be populated with records that match the
+ * address. By default, records have the following fields:
+ *
+ *   * name   - `String` The formatted address.
+ *   * extent - `ol.Extent` The extent of the matching address
+ *   * bounds - `ol.Coordinate` The point coordinate of the matching address
+ *
+ * **CAUTION: This class is only usable in applications using the classic
+ * toolkit of ExtJS 6.**
+ *
+ * @class GeoExt.form.field.GeocoderComboBox
+ */
+Ext.define('GeoExt.form.field.GeocoderComboBox', {
+    extend: 'Ext.form.field.ComboBox',
+    alias: [
+        'widget.gx_geocoder_combo',
+        'widget.gx_geocoder_combobox',
+        'widget.gx_geocoder_field'
+    ],
+    requires: [
+        'Ext.data.JsonStore'
+    ],
+    mixins: [
+        'GeoExt.mixin.SymbolCheck'
+    ],
+    /**
+     * The OpenLayers map to work on. If not provided the selection of an
+     * address would have no effect.
+     *
+     * @cfg {ol.Map}
+     */
+    map: null,
+    /**
+     * Vector layer to visualize the selected address.
+     * Will be created if not provided.
+     *
+     * @cfg {ol.layer.Vector}
+     * @property {ol.layer.Vector}
+     */
+    locationLayer: null,
+    /**
+     * The style of the #locationLayer. Only has an effect if the layer is not
+     * passed in while creation.
+     *
+     * @cfg {ol.style.Style}
+     */
+    locationLayerStyle: null,
+    /**
+     * The store used for this combo box. Default is a
+     * store with  the url configured as #url
+     * config.
+     *
+     * @cfg {Ext.data.JsonStore}
+     * @property {Ext.data.JsonStore}
+     */
+    store: null,
+    /**
+     * The property in the JSON response of the geocoding service used in
+     * the store's proxy as root object.
+     *
+     * @cfg {String}
+     */
+    proxyRootProperty: null,
+    /**
+     * The field to display in the combobox result. Default is
+     * "name" for instant use with the default store for this component.
+     *
+     * @cfg {String}
+     */
+    displayField: 'name',
+    /**
+     * The field in the GeoCoder service repsonse to be used as mapping for the
+     * 'name' field in the #store.
+     * Ignored when a store is passed in.
+     *
+     * @cfg {String}
+     */
+    displayValueMapping: 'display_name',
+    /**
+     * Field from selected record to use when the combo's
+     * #getValue method is called. Default is "extent". This field is
+     * supposed to contain an ol.Extent.
+     * By setting this to 'coordinate' a field holding an ol.Coordinate is used.
+     *
+     * @cfg {String}
+     */
+    valueField: 'extent',
+    /**
+     * The query parameter for the user entered search text.
+     * Default is 'q' for instant use with OSM Nominatim.
+     *
+     * @cfg {String}
+     */
+    queryParam: 'q',
+    /**'Search'
+     * Text to display for an empty field.
+     *
+     * @cfg {String}
+     */
+    emptyText: 'Search for a location',
+    /**
+     * Minimum number of entered characters to trigger a search.
+     *
+     * @cfg {Number}
+     */
+    minChars: 3,
+    /**
+     * Delay before the search occurs in ms.
+     *
+     * @cfg {Number}
+     */
+    queryDelay: 100,
+    /**
+     * URL template for querying the geocoding service. If a store is
+     * configured, this will be ignored. Note that the #queryParam will be used
+     * to append the user's combo box input to the url.
+     *
+     * @cfg {String}
+     */
+    url: 'https://nominatim.openstreetmap.org/search?format=json',
+    /**
+     * The SRS used by the geocoder service.
+     *
+     * @cfg {String}
+     */
+    srs: 'EPSG:4326',
+    /**
+     * Zoom level when zooming to a location (#valueField='coordinate')
+     * Not used when zooming to extent.
+     *
+     * @cfg {Number}
+     */
+    zoom: 10,
+    /**
+     * Flag to steer if selected address feature is drawn on #map
+     * (by #locationLayer).
+     *
+     * @cfg {Boolean}
+     */
+    showLocationOnMap: true,
+    /**
+     * Flag to restrict nomination query to current map extent
+     *
+     * @cfg {Boolean}
+     */
+    restrictToMapExtent: false,
+    /**
+     * @private
+     */
+    initComponent: function() {
+        var me = this;
+        if (!me.store) {
+            me.store = Ext.create('Ext.data.JsonStore', {
+                fields: [
+                    {
+                        name: 'name',
+                        mapping: me.displayValueMapping
+                    },
+                    {
+                        name: 'extent',
+                        convert: me.convertToExtent
+                    },
+                    {
+                        name: 'coordinate',
+                        convert: me.convertToCoordinate
+                    }
+                ],
+                proxy: {
+                    type: 'ajax',
+                    url: me.url,
+                    reader: {
+                        type: 'json',
+                        rootProperty: me.proxyRootProperty
+                    }
+                }
+            });
+        }
+        if (!me.locationLayer) {
+            me.locationLayer = new ol.layer.Vector({
+                source: new ol.source.Vector(),
+                style: me.locationLayerStyle !== null ? me.locationLayerStyle : undefined
+            });
+            if (me.map) {
+                me.map.addLayer(me.locationLayer);
+            }
+        }
+        me.callParent(arguments);
+        me.on({
+            unRestrictMapExtent: me.unRestrictExtent,
+            restrictToMapExtent: me.restrictExtent,
+            select: me.onSelect,
+            focus: me.onFocus,
+            scope: me
+        });
+        if (me.restrictToMapExtent) {
+            me.restrictExtent();
+        }
+    },
+    /**
+     * Handle restriction to viewbox: register moveend event
+     * and update params of AJAX proxy
+     */
+    restrictExtent: function() {
+        var me = this;
+        me.map.on('moveend', me.updateExtraParams, me);
+        me.updateExtraParams();
+    },
+    /**
+     * Update viewbox parameter based on the current map extent
+     */
+    updateExtraParams: function() {
+        var me = this;
+        var mapSize = me.map.getSize();
+        var mv = me.map.getView();
+        var extent = mv.calculateExtent(mapSize);
+        me.addMapExtentParams(extent, mv.getProjection());
+    },
+    /**
+     * Update map extent params of AJAX proxy.
+     *
+     * By default, 'viewbox' and 'bounded' are updated since Nominatim is the
+     * default geocoder in this class. If no projection is passed the one of
+     * the map view is used.
+     *
+     * @param {ol.Extent} extent The extend to restrict the geocoder to
+     * @param {ol.proj.Projection} projection The projection of given extent
+     */
+    addMapExtentParams: function(extent, projection) {
+        var me = this;
+        if (!projection) {
+            projection = me.map.getView().getProjection();
+        }
+        var ll = ol.proj.transform([
+                extent[0],
+                extent[1]
+            ], projection, 'EPSG:4326');
+        var ur = ol.proj.transform([
+                extent[2],
+                extent[3]
+            ], projection, 'EPSG:4326');
+        ll = Ext.Array.map(ll, function(val) {
+            return Math.min(Math.max(val, -180), 180);
+        });
+        ur = Ext.Array.map(ur, function(val) {
+            return Math.min(Math.max(val, -180), 180);
+        });
+        var viewBoxStr = [
+                ll.join(','),
+                ur.join(',')
+            ].join(',');
+        if (me.store && me.store.getProxy()) {
+            me.store.getProxy().setExtraParam('viewbox', viewBoxStr);
+            me.store.getProxy().setExtraParam('bounded', '1');
+        }
+    },
+    /**
+     * Cleanup if extent restriction is omitted.
+     * -> moveend event from map
+     * -> call removeMapExtentParams to reset params set in store
+     */
+    unRestrictExtent: function() {
+        var me = this;
+        // unbinding moveend event
+        me.map.un('moveend', me.updateExtraParams, me);
+        // cleanup params in store
+        me.removeMapExtentParams();
+    },
+    /**
+     * Remove restriction to viewbox, in particular remove viewbox
+     * and bounded parameters from AJAX proxy for nominatim queries
+     */
+    removeMapExtentParams: function() {
+        var me = this;
+        if (me.store && me.store.getProxy()) {
+            me.store.getProxy().setExtraParam('viewbox', undefined);
+            me.store.getProxy().setExtraParam('bounded', undefined);
+        }
+    },
+    /**
+     * Function to convert the data delivered by the geocoder service to an
+     * ol.Extent ([minx, miny, maxx, maxy]).
+     * Default implementation converts the Nominatim response.
+     * Can be overwritten to work with other services.
+     *
+     * @param  {Mixed}          v   The data value as read by the Reader
+     * @param  {Ext.data.Model} rec The data record containing raw data
+     * @return {ol.Extent}          The created ol.Extent
+     */
+    convertToExtent: function(v, rec) {
+        var rawExtent = rec.get('boundingbox');
+        var minx = parseFloat(rawExtent[2], 10);
+        var miny = parseFloat(rawExtent[0], 10);
+        var maxx = parseFloat(rawExtent[3], 10);
+        var maxy = parseFloat(rawExtent[1], 10);
+        return [
+            minx,
+            miny,
+            maxx,
+            maxy
+        ];
+    },
+    /**
+     * Function to convert the data delivered by the geocoder service to an
+     * ol.Coordinate ([x, y]).
+     * Default implementation converts the Nominatim response.
+     * Can be overwritten to work with other services.
+     *
+     * @param  {Mixed}          v   The data value as read by the Reader
+     * @param  {Ext.data.Model} rec The data record containing raw data
+     * @return {ol.Coordinate}      The created ol.Coordinate
+     */
+    convertToCoordinate: function(v, rec) {
+        return [
+            parseFloat(rec.get('lon'), 10),
+            parseFloat(rec.get('lat'), 10)
+        ];
+    },
+    /**
+     * Draws the selected address feature on the map.
+     *
+     * @param  {ol.Coordinate | ol.Extent} coordOrExtent Location feature to be
+     *   drawn on the map
+     */
+    drawLocationFeatureOnMap: function(coordOrExtent) {
+        var me = this;
+        var geom;
+        if (coordOrExtent.length === 2) {
+            geom = new ol.geom.Point(coordOrExtent);
+        } else if (coordOrExtent.length === 4) {
+            geom = ol.geom.Polygon.fromExtent(coordOrExtent);
+        }
+        if (geom) {
+            var feat = new ol.Feature({
+                    geometry: geom
+                });
+            me.locationLayer.getSource().clear();
+            me.locationLayer.getSource().addFeature(feat);
+        }
+    },
+    /**
+     * Removes the drawn address feature from the map.
+     */
+    removeLocationFeature: function() {
+        this.locationLayer.getSource().clear();
+    },
+    /**
+     * Handles the 'focus' event of this ComboBox.
+     */
+    onFocus: function() {
+        var me = this;
+        me.clearValue();
+        me.removeLocationFeature();
+    },
+    /**
+     * Handles the 'select' event of this ComboBox.
+     * Zooms to the selected address and draws the address feature on the map
+     * (if configured in #showLocationOnMap)
+     *
+     * @param  {GeoExt.form.field.GeocoderComboBox} combo  [description]
+     * @param  {Ext.data.Model} record [description]
+     *
+     * @private
+     */
+    onSelect: function(combo, record) {
+        var me = this;
+        if (!me.map) {
+            Ext.Logger.warn('No map configured in ' + 'GeoExt.form.field.GeocoderComboBox. Skip zoom to selection.');
+            return;
+        }
+        var value = record.get(me.valueField);
+        var projValue;
+        var olMapView = me.map.getView();
+        var targetProj = olMapView.getProjection().getCode();
+        if (value.length === 2) {
+            // point based value
+            projValue = ol.proj.transform(value, me.srs, targetProj);
+            // adjust the map
+            olMapView.setCenter(projValue);
+            olMapView.setZoom(me.zoom);
+        } else if (value.length === 4) {
+            // bbox based value
+            projValue = ol.proj.transformExtent(value, me.srs, targetProj);
+            // adjust the map
+            olMapView.fit(projValue);
+        }
+        if (me.showLocationOnMap) {
+            me.drawLocationFeatureOnMap(projValue);
+        }
+    }
+});
+
+/* Copyright (c) 2015-present The Open Source Geospatial Foundation
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+/**
+  * A row selection model which enables automatic selection of features
+  * in the map when rows are selected in the grid and vice-versa.
+  *
+  * **CAUTION: This class is only usable in applications using the classic
+  * toolkit of ExtJS 6.**
+  *
+  * @class GeoExt.selection.FeatureModel
+  */
+Ext.define('GeoExt.selection.FeatureModel', {
+    extend: 'Ext.selection.RowModel',
+    alias: 'selection.featuremodel',
+    config: {
+        /**
+         * The connected vector layer.
+         * @cfg {ol.layer.Vector}
+         * @property {ol.layer.Vector}
+         */
+        layer: null,
+        /**
+         * The OpenLayers map we work with
+         * @cfg {ol.Map}
+         */
+        map: null,
+        /**
+         * Set to true to create a click handler on the map selecting a clicked
+         * object in the #layer.
+         * @cfg {Boolean}
+         */
+        mapSelection: false,
+        /**
+         * The default style for the selected features.
+         * @cfg {ol.style.Style}
+         */
+        selectStyle: new ol.style.Style({
+            image: new ol.style.Circle({
+                radius: 6,
+                fill: new ol.style.Fill({
+                    color: 'rgba(255,255,255,0.8)'
+                }),
+                stroke: new ol.style.Stroke({
+                    color: 'darkblue',
+                    width: 2
+                })
+            }),
+            fill: new ol.style.Fill({
+                color: 'rgba(255,255,255,0.8)'
+            }),
+            stroke: new ol.style.Stroke({
+                color: 'darkblue',
+                width: 2
+            })
+        })
+    },
+    /**
+     * Lookup to preserve existing feature styles. Used to restore feature style
+     * when select style is removed.
+     * @private
+     * @property {Object}
+     */
+    existingFeatStyles: {},
+    /**
+     * Indicates if a map click handler has been registered on init.
+     * @private
+     * @property {Boolean}
+     */
+    mapClickRegistered: false,
+    /**
+     * The attribute key to mark an OL feature as selected.
+     * @cfg {String}
+     * @property
+     * @readonly
+     */
+    selectedFeatureAttr: 'gx_selected',
+    /**
+     * The currently selected features (`ol.Collection` containing `ol.Feature`
+     * instances).
+     * @property {ol.Collection}
+     */
+    selectedFeatures: null,
+    /**
+     * Prepare several connected objects once the selection model is ready.
+     *
+     * @private
+     */
+    bindComponent: function() {
+        var me = this;
+        me.callParent(arguments);
+        me.selectedFeatures = new ol.Collection();
+        // detect a layer from the store if not passed in
+        if (!me.layer || !me.layer instanceof ol.layer.Vector) {
+            var store = me.getStore();
+            if (store && store.getLayer && store.getLayer() && store.getLayer() instanceof ol.layer.Vector) {
+                me.layer = store.getLayer();
+            }
+        }
+        if (!me._destroying) {
+            // bind several OL events since this is not called while destroying
+            me.bindOlEvents();
+        }
+    },
+    /**
+     * Binds several events on the OL objects used in this class.
+     *
+     * @private
+     */
+    bindOlEvents: function() {
+        var me = this;
+        // change style of selected feature
+        me.selectedFeatures.on('add', me.onSelectFeatAdd, me);
+        // reset style of no more selected feature
+        me.selectedFeatures.on('remove', me.onSelectFeatRemove, me);
+        // create a map click listener for connected vector layer
+        if (me.mapSelection && me.layer && me.map) {
+            me.map.on('singleclick', me.onFeatureClick, me);
+            me.mapClickRegistered = true;
+        }
+    },
+    /**
+     * Unbinds several events that were registered on the OL objects in this
+     * class (see #bindOlEvents).
+     *
+     * @private
+     */
+    unbindOlEvents: function() {
+        var me = this;
+        // remove 'add' / 'remove' listener from selected feature collection
+        if (me.selectedFeatures) {
+            me.selectedFeatures.un('add', me.onSelectFeatAdd, me);
+            me.selectedFeatures.un('remove', me.onSelectFeatRemove, me);
+        }
+        // remove 'singleclick' listener for connected vector layer
+        if (me.mapClickRegistered) {
+            me.map.un('singleclick', me.onFeatureClick, me);
+            me.mapClickRegistered = false;
+        }
+    },
+    /**
+     * Handles 'add' event of #selectedFeatures.
+     * Ensures that added feature gets the #selectStyle and preserves an
+     * possibly existing feature style.
+     *
+     * @private
+     * @param  {ol.Collection.Event} evt OL event object
+     */
+    onSelectFeatAdd: function(evt) {
+        var me = this;
+        var feat = evt.element;
+        if (feat) {
+            if (feat.getStyle()) {
+                // we have to preserve the existing feature style
+                var fid = feat.getId() || me.getRandomFid();
+                me.existingFeatStyles[fid] = feat.getStyle();
+                feat.setId(fid);
+            }
+            // apply select style
+            feat.setStyle(me.selectStyle);
+        }
+    },
+    /**
+     * Handles 'remove' event of #selectedFeatures.
+     * Ensures that the #selectStyle is reset on the removed feature.
+     *
+     * @private
+     * @param  {ol.Collection.Event} evt OL event object
+     */
+    onSelectFeatRemove: function(evt) {
+        var me = this;
+        var feat = evt.element;
+        if (feat) {
+            var fid = feat.getId();
+            if (fid && me.existingFeatStyles[fid]) {
+                // restore existing feature style
+                feat.setStyle(me.existingFeatStyles[fid]);
+                delete me.existingFeatStyles[fid];
+            } else {
+                // reset feature style, so layer style gets active
+                feat.setStyle();
+            }
+        }
+    },
+    /**
+     * Handles the 'singleclick' event of the #map.
+     * Detects if a feature of the connected #layer has been clicked and selects
+     * this feature by selecting its corresponding grid row.
+     *
+     * @private
+     * @param  {ol.MapBrowserEvent} evt OL event object
+     */
+    onFeatureClick: function(evt) {
+        var me = this;
+        var feat = me.map.forEachFeatureAtPixel(evt.pixel, function(feature) {
+                return feature;
+            }, {
+                layerFilter: function(layer) {
+                    return layer === me.layer;
+                }
+            });
+        if (feat) {
+            // select clicked feature in grid
+            me.selectMapFeature(feat);
+        }
+    },
+    /**
+     * Selects / deselects a feature by triggering the corresponding actions in
+     * the grid (e.g. selecting / deselecting a grid row).
+     *
+     * @private
+     * @param  {ol.Feature} feature The feature to select
+     */
+    selectMapFeature: function(feature) {
+        var me = this;
+        var row = me.store.findBy(function(record, id) {
+                return record.getFeature() == feature;
+            });
+        // deselect all if only one can be selected at a time
+        if (me.getSelectionMode() === 'SINGLE') {
+            me.deselectAll();
+        }
+        if (feature.get(me.selectedFeatureAttr)) {
+            // deselect feature by deselecting grid row
+            me.deselect(row);
+        } else {
+            // select the feature by selecting grid row
+            if (row != -1 && !me.isSelected(row)) {
+                me.select(row, !this.singleSelect);
+                // focus the row in the grid to ensure it is visible
+                me.view.focusRow(row);
+            }
+        }
+    },
+    /**
+     * Overwrites the onSelectChange function of the father class.
+     * Ensures that the selected feature is added / removed to / from
+     * #selectedFeatures lookup object.
+     *
+     * @private
+     * @param  {GeoExt.data.model.Feature} record Selected / deselected record
+     * @param  {Boolean} isSelected Record is selected or deselected
+     */
+    onSelectChange: function(record, isSelected) {
+        var me = this;
+        var selFeature = record.getFeature();
+        // toggle feature's selection state
+        selFeature.set(me.selectedFeatureAttr, isSelected);
+        if (isSelected) {
+            me.selectedFeatures.push(selFeature);
+        } else {
+            me.selectedFeatures.remove(selFeature);
+        }
+        me.callParent(arguments);
+    },
+    /**
+     * Overwrites parent's destroy method in order to unregister the OL events,
+     * that were added on init.
+     * Needed due to the lack of destroy event of the parent class.
+     *
+     * @private
+     */
+    destroy: function() {
+        var me = this;
+        // unfortunately callParent triggers the bindComponent method, so we
+        // have to know if we are in the process of destroying or not.
+        me._destroying = true;
+        me.unbindOlEvents();
+        me.callParent(arguments);
+        me._destroying = false;
+    },
+    /**
+     * Returns a random feature ID.
+     *
+     * @private
+     * @return {String} Random feature ID
+     */
+    getRandomFid: function() {
+        // current timestamp plus a random int between 0 and 10
+        return new Date().getTime() + '' + Math.floor(Math.random() * 11);
+    }
+});
+
+/* Copyright (c) 2015-present The Open Source Geospatial Foundation
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -5483,6 +7365,9 @@ Ext.define('GeoExt.data.store.LayersTree', {
  */
 /**
  * The permalink provider.
+ *
+ * **CAUTION: This class is only usable in applications using the classic
+ * toolkit of ExtJS 6.**
  *
  * Sample code displaying a new permalink each time the map is moved:
  *
@@ -5598,6 +7483,44 @@ Ext.define('GeoExt.state.PermalinkProvider', {
         me.mapState = value;
         // call 'set' of super class
         me.callParent(arguments);
+    }
+});
+
+/* Copyright (c) 2015-present The Open Source Geospatial Foundation
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+/**
+ * A paging toolbar which can be used in combination with a OGC WFS by using
+ * the `GeoExt.data.store.WfsFeatures` class.
+ *
+ * **CAUTION: This class is only usable in applications using the classic
+ * toolkit of ExtJS 6.**
+ *
+ * @class GeoExt.toolbar.WfsPaging
+ */
+Ext.define('GeoExt.toolbar.WfsPaging', {
+    extend: 'Ext.toolbar.Paging',
+    xtype: 'gx_wfspaging_toolbar',
+    /**
+     * Ensures that the 'gx-wfsstoreload' event of the WFS store is bound to the
+     * onLoad function of this toolbar once we have the store bound.
+     */
+    onBindStore: function() {
+        var me = this;
+        me.callParent(arguments);
+        me.store.on('gx-wfsstoreload', me.onLoad, me);
     }
 });
 
