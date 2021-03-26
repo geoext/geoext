@@ -92,7 +92,7 @@ describe('GeoExt.component.Map', function() {
             it('setCenter() sets the correct center', function() {
                 var center = [1183893.8882437304, 7914041.721258021];
                 mapComponent.setCenter(center);
-                expect(map.getView().getCenter()).to.be(center);
+                expect(map.getView().getCenter()).to.eql(center);
             });
 
             it('setExtent() sets the correct center', function() {
