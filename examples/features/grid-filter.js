@@ -176,7 +176,6 @@ Ext.application({
                     });
                     wfsGetFeatureFilter = GeoExt.util.OGCFilter.
                         getOgcWfsFilterFromExtJsFilter(filters, 'And', '2.0.0');
-                    wfsLayer.getSource().clear();
                     wfsLayer.getSource().refresh();
                 }
             }
