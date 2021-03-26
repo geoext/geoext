@@ -192,7 +192,7 @@ describe('GeoExt.data.serializer.Vector', function() {
             // styles for features3
             var styles3 = [style3, style4];
 
-            var styleFunction = function (feature) {
+            var styleFunction = function(feature) {
                 var v = feature.get('foo');
                 if (v === '0') {
                     return styles0;
