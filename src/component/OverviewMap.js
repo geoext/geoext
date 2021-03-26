@@ -70,7 +70,8 @@ Ext.define('GeoExt.component.OverviewMap', {
         'widget.gx_component_overviewmap'
     ],
     requires: [
-        'GeoExt.util.Version'
+        'GeoExt.util.Version',
+        'GeoExt.util.Layer'
     ],
     mixins: [
         'GeoExt.mixin.SymbolCheck'
@@ -174,10 +175,10 @@ Ext.define('GeoExt.component.OverviewMap', {
         boxStyle: null,
 
         /**
-         * An `ol.Collection` of `ol.layer.Base`. If not defined on
-         * construction, the layers of the #parentMap will be used.
+         * An `Array` of `ol.layer.Base`. It needs to have own layers
+         * specified, it cannot use layers of the parent map.
          *
-         * @cfg {ol.Collection}
+         * @cfg {Array}
          */
         layers: [],
 
@@ -329,17 +330,7 @@ Ext.define('GeoExt.component.OverviewMap', {
     initOverviewMap: function() {
         var me = this;
         var parentMap = me.getParentMap();
-        var parentLayers;
 
-        if (me.getLayers().length < 1) {
-            parentLayers = me.getParentMap().getLayers();
-            parentLayers.forEach(function(layer) {
-                if (layer instanceof ol.layer.Tile ||
-                   layer instanceof ol.layer.Image) {
-                    me.getLayers().push(layer);
-                }
-            });
-        }
         me.getLayers().push(me.extentLayer);
 
         if (!me.getMap()) {
@@ -355,6 +346,15 @@ Ext.define('GeoExt.component.OverviewMap', {
             });
             me.setMap(olMap);
         }
+
+        GeoExt.util.Layer.cascadeLayers(parentMap.getLayerGroup(),
+            function(layer) {
+                if (me.getLayers().indexOf(layer) > -1) {
+                    throw new Error('OverviewMap cannot use layers of the ' +
+                        'parent map. (Since ol v6.0.0 maps cannot share ' +
+                        'layers anymore)');
+                }
+            });
 
         Ext.each(me.getLayers(), function(layer) {
             me.getMap().addLayer(layer);

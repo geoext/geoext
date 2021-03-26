@@ -77,7 +77,7 @@ describe('GeoExt.component.OverviewMap', function() {
     });
 
     describe('layers of the overview', function() {
-        it('takes the layers of the parentMap if no dedictated layers given',
+        it('cannot take the layers of the parentMap as parameters',
             function() {
                 var layer1 = new ol.layer.Tile({title: 'moehri'});
                 var layer2 = new ol.layer.Tile({title: 'zwiebli'});
@@ -85,18 +85,14 @@ describe('GeoExt.component.OverviewMap', function() {
                 olMap.addLayer(layer1);
                 olMap.addLayer(layer2);
 
-                var overviewMap = Ext.create('GeoExt.component.OverviewMap', {
-                    parentMap: olMap
-                });
-
-                var ovLayers = overviewMap.getLayers();
-                // two layers plus extentlayer:
-                expect(ovLayers).to.have.length(3);
-                expect(ovLayers[0]).to.be(layer1);
-                expect(ovLayers[1]).to.be(layer2);
+                expect(function() {
+                    Ext.create('GeoExt.component.OverviewMap', {
+                        parentMap: olMap,
+                        layers: [layer1, layer2]
+                    });
+                }).to.throwException();
             }
         );
-
 
         it('can be configured with dedicated layers', function() {
             var layer1 = new ol.layer.Tile({title: 'moehri'});

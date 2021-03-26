@@ -11,31 +11,31 @@ var overviewMap2;
 Ext.application({
     name: 'OverviewMaps',
     launch: function() {
-        var source;
-        var source2;
-        var layer;
+        var layer1;
         var layer2;
+        var layer3;
         var olMap;
         var description;
         var ovMapPanel1;
         var ovMapPanel2;
 
-        source = new ol.source.OSM();
-        layer = new ol.layer.Tile({
-            source: source
+        layer1 = new ol.layer.Tile({
+            source: new ol.source.OSM()
         });
 
-
-        source2 = new ol.source.TileWMS({
-            url: 'https://ows.terrestris.de/osm-gray/service',
-            params: {'LAYERS': 'OSM-WMS', 'TILED': true}
-        });
         layer2 = new ol.layer.Tile({
-            source: source2
+            source: new ol.source.OSM()
+        });
+
+        layer3 = new ol.layer.Tile({
+            source: new ol.source.TileWMS({
+                url: 'https://ows.terrestris.de/osm-gray/service',
+                params: {'LAYERS': 'OSM-WMS', 'TILED': true}
+            })
         });
 
         olMap = new ol.Map({
-            layers: [layer],
+            layers: [layer1],
             interactions: ol.interaction.defaults().extend([
                 new ol.interaction.DragRotateAndZoom()
             ]),
@@ -58,13 +58,14 @@ Ext.application({
         });
 
         overviewMap1 = Ext.create('GeoExt.component.OverviewMap', {
-            parentMap: olMap
+            parentMap: olMap,
+            layers: [layer2]
         });
 
         overviewMap2 = Ext.create('GeoExt.component.OverviewMap', {
             parentMap: olMap,
             magnification: 12,
-            layers: [layer2],
+            layers: [layer3],
             anchorStyle: new ol.style.Style({
                 image: new ol.style.Circle({
                     radius: 7,
