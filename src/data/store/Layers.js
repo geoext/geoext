@@ -266,7 +266,7 @@ Ext.define('GeoExt.data.store.Layers', {
             var rec = me.getByLayer(layer);
             if (rec) {
                 me._removing = true;
-                layer.un('propertychange', me.onChangeLayer, me);
+                layer.un('propertychange', me.onChangeLayer);
                 me.remove(rec);
                 delete me._removing;
             }
@@ -290,7 +290,7 @@ Ext.define('GeoExt.data.store.Layers', {
             if (!me._addRecords) {
                 me._removing = true;
                 me.layers.forEach(function(layer) {
-                    layer.un('propertychange', me.onChangeLayer, me);
+                    layer.un('propertychange', me.onChangeLayer);
                 });
                 me.layers.getLayers().clear();
                 delete me._removing;
@@ -320,7 +320,7 @@ Ext.define('GeoExt.data.store.Layers', {
         var me = this;
         me._removing = true;
         me.layers.forEach(function(layer) {
-            layer.un('propertychange', me.onChangeLayer, me);
+            layer.un('propertychange', me.onChangeLayer);
         });
         me.layers.clear();
         delete me._removing;
@@ -381,7 +381,7 @@ Ext.define('GeoExt.data.store.Layers', {
                 record = records[i];
                 layer = record.getOlLayer();
                 found = false;
-                layer.un('propertychange', me.onChangeLayer, me);
+                layer.un('propertychange', me.onChangeLayer);
                 me.layers.forEach(compareFunc);
                 if (found) {
                     me._removing = true;

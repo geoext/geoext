@@ -125,6 +125,12 @@ Ext.define('GeoExt.data.store.LayersTree', {
      */
     constructor: function() {
         var me = this;
+        me.onLayerCollectionRemove = me.onLayerCollectionRemove.bind(me);
+        me.onLayerCollectionAdd = me.onLayerCollectionAdd.bind(me);
+        me.bindGroupLayerCollectionEvents =
+            me.bindGroupLayerCollectionEvents.bind(me);
+        me.unbindGroupLayerCollectionEvents =
+            me.unbindGroupLayerCollectionEvents.bind(me);
         me.callParent(arguments);
 
         var collection = me.layerGroup.getLayers();
@@ -341,8 +347,8 @@ Ext.define('GeoExt.data.store.LayersTree', {
 
         if (layerOrGroup instanceof ol.layer.Group) {
             // See onBeforeGroupNodeToggle for an explanation why we have this
-            layerNode.on('beforeexpand', me.onBeforeGroupNodeToggle.bind(me));
-            layerNode.on('beforecollapse', me.onBeforeGroupNodeToggle.bind(me));
+            layerNode.on('beforeexpand', me.onBeforeGroupNodeToggle, me);
+            layerNode.on('beforecollapse', me.onBeforeGroupNodeToggle, me);
 
             var childLayers = layerOrGroup.getLayers().getArray();
             Ext.each(childLayers, me.addLayerNode, me, me.inverseLayerOrder);
@@ -379,9 +385,9 @@ Ext.define('GeoExt.data.store.LayersTree', {
         var me = this;
         if (layerOrGroup instanceof ol.layer.Group) {
             var collection = layerOrGroup.getLayers();
-            collection.on('remove', me.onLayerCollectionRemove.bind(me));
-            collection.on('add', me.onLayerCollectionAdd.bind(me));
-            collection.forEach(me.bindGroupLayerCollectionEvents.bind(me));
+            collection.on('remove', me.onLayerCollectionRemove);
+            collection.on('add', me.onLayerCollectionAdd);
+            collection.forEach(me.bindGroupLayerCollectionEvents);
         }
     },
 
@@ -397,9 +403,9 @@ Ext.define('GeoExt.data.store.LayersTree', {
         var me = this;
         if (layerOrGroup instanceof ol.layer.Group) {
             var collection = layerOrGroup.getLayers();
-            collection.un('remove', me.onLayerCollectionRemove, me);
-            collection.un('add', me.onLayerCollectionAdd, me);
-            collection.forEach(me.unbindGroupLayerCollectionEvents, me);
+            collection.un('remove', me.onLayerCollectionRemove);
+            collection.un('add', me.onLayerCollectionAdd);
+            collection.forEach(me.unbindGroupLayerCollectionEvents);
         }
     },
 
