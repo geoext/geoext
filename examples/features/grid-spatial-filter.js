@@ -59,10 +59,8 @@ Ext.application({
                     'LAYERS': 'dwd:Warngebiete_Kreise',
                     'TILED': true
                 },
-                attributions: [new ol.Attribution({
-                    html: '<a href="https://www.dwd.de">' +
-                      'Copyright: © Deutscher Wetterdienst</a>'
-                })]
+                attributions: ['<a href="https://www.dwd.de">' +
+                      'Copyright: © Deutscher Wetterdienst</a>']
             })
         });
 
@@ -72,10 +70,9 @@ Ext.application({
                     source: new ol.source.TileWMS({
                         url: 'https://ows.terrestris.de/osm-gray/service',
                         params: {'LAYERS': 'OSM-WMS', 'TILED': true},
-                        attributions: [new ol.Attribution({
-                            html: '<a href="https://www.openstreetmap.org/' +
-                            'copyright">OpenStreetMap contributors</a>'
-                        })]
+                        attributions: [
+                            '<a href="https://www.openstreetmap.org/' +
+                            'copyright">OpenStreetMap contributors</a>']
                     })
                 }),
                 wmsLayer
