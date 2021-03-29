@@ -27,7 +27,10 @@ Ext.define('GeoExt.data.MapfishPrintProvider', {
     ],
     requires: [
         'GeoExt.data.model.print.Capability',
-        'Ext.data.JsonStore'
+        'Ext.data.JsonStore',
+        'Ext.data.Store',
+        'Ext.data.proxy.Ajax',
+        'Ext.data.proxy.JsonP'
     ],
     // <debug>
     symbols: [
