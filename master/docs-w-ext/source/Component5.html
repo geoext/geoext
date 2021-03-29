@@ -15,121 +15,248 @@
   </script>
 </head>
 <body onload="prettyPrint(); highlight();">
-  <pre class="prettyprint lang-js"><span id='Ext-fx-target-Component'>/**
-</span> * @class Ext.fx.target.Component
- * 
- * This class represents a animation target for a {@link Ext.Component}. In general this class will not be
- * created directly, the {@link Ext.Component} will be passed to the animation and
- * and the appropriate target will be created.
+  <pre class="prettyprint lang-js"><span id='Ext-flash-Component'>/**
+</span> * A simple Component for displaying an Adobe Flash SWF movie. The movie will be sized and can participate
+ * in layout like any other Component.
+ *
+ * This component requires the third-party SWFObject library version 2.2 or above. It is not included within
+ * the ExtJS distribution, so you will have to include it into your page manually in order to use this component.
+ * The SWFObject library can be downloaded from the [SWFObject project page](http://code.google.com/p/swfobject)
+ * and then simply import it into the head of your HTML document:
+ *
+ *     &lt;script type=&quot;text/javascript&quot; src=&quot;path/to/local/swfobject.js&quot;&gt;&lt;/script&gt;
+ *
+ * ## Configuration
+ *
+ * This component allows several options for configuring how the target Flash movie is embedded. The most
+ * important is the required {@link #url} which points to the location of the Flash movie to load. Other
+ * configurations include:
+ *
+ * - {@link #backgroundColor}
+ * - {@link #wmode}
+ * - {@link #flashVars}
+ * - {@link #flashParams}
+ * - {@link #flashAttributes}
+ *
+ * ## Example usage:
+ *
+ *     var win = Ext.widget(&#39;window&#39;, {
+ *         title: &quot;It&#39;s a tiger!&quot;,
+ *         layout: &#39;fit&#39;,
+ *         width: 300,
+ *         height: 300,
+ *         x: 20,
+ *         y: 20,
+ *         resizable: true,
+ *         items: {
+ *             xtype: &#39;flash&#39;,
+ *             url: &#39;tiger.swf&#39;
+ *         }
+ *     });
+ *     win.show();
+ *
+ * ## Express Install
+ *
+ * Adobe provides a tool called [Express Install](http://www.adobe.com/devnet/flashplayer/articles/express_install.html)
+ * that offers users an easy way to upgrade their Flash player. If you wish to make use of this, you should set
+ * the static EXPRESS\_INSTALL\_URL property to the location of your Express Install SWF file:
+ *
+ *     Ext.flash.Component.EXPRESS_INSTALL_URL = &#39;path/to/local/expressInstall.swf&#39;;
  */
-Ext.define(&#39;Ext.fx.target.Component&#39;, {
+Ext.define(&#39;Ext.flash.Component&#39;, {
+    extend: &#39;Ext.Component&#39;,
+    alternateClassName: &#39;Ext.FlashComponent&#39;,
+    alias: &#39;widget.flash&#39;,
 
-    /* Begin Definitions */
-   
-    extend: &#39;Ext.fx.target.Target&#39;,
+<span id='Ext-flash-Component-cfg-flashVersion'>    /**
+</span>     * @cfg {String} [flashVersion=&quot;9.0.115&quot;]
+     * Indicates the version the flash content was published for.
+     */
+    flashVersion : &#39;9.0.115&#39;,
+
+<span id='Ext-flash-Component-cfg-backgroundColor'>    /**
+</span>     * @cfg {String} [backgroundColor=&quot;#ffffff&quot;]
+     * The background color of the SWF movie.
+     */
+    backgroundColor: &#39;#ffffff&#39;,
+
+<span id='Ext-flash-Component-cfg-wmode'>    /**
+</span>     * @cfg {String} [wmode=&quot;opaque&quot;]
+     * The wmode of the flash object. This can be used to control layering.
+     * Set to &#39;transparent&#39; to ignore the {@link #backgroundColor} and make the background of the Flash
+     * movie transparent.
+     */
+    wmode: &#39;opaque&#39;,
+
+<span id='Ext-flash-Component-cfg-flashVars'>    /**
+</span>     * @cfg {Object} flashVars
+     * A set of key value pairs to be passed to the flash object as flash variables.
+     */
+
+<span id='Ext-flash-Component-cfg-flashParams'>    /**
+</span>     * @cfg {Object} flashParams
+     * A set of key value pairs to be passed to the flash object as parameters. Possible parameters can be found here:
+     * http://kb2.adobe.com/cps/127/tn_12701.html
+     */
+
+<span id='Ext-flash-Component-cfg-flashAttributes'>    /**
+</span>     * @cfg {Object} flashAttributes
+     * A set of key value pairs to be passed to the flash object as attributes.
+     */
+
+<span id='Ext-flash-Component-cfg-url'>    /**
+</span>     * @cfg {String} url (required)
+     * The URL of the SWF file to include.
+     */
+
+<span id='Ext-flash-Component-cfg-swfWidth'>    /**
+</span>     * @cfg {String/Number} [swfWidth=&quot;100%&quot;]
+     * The width of the embedded SWF movie inside the component.
+     *
+     * Defaults to &quot;100%&quot; so that the movie matches the width of the component.
+     */
+    swfWidth: &#39;100%&#39;,
+
+<span id='Ext-flash-Component-cfg-swfHeight'>    /**
+</span>     * @cfg {String/Number} [swfHeight=&quot;100%&quot;]
+     * The height of the embedded SWF movie inside the component.
+     *
+     * Defaults to &quot;100%&quot; so that the movie matches the height of the component.
+     */
+    swfHeight: &#39;100%&#39;,
+
+<span id='Ext-flash-Component-cfg-expressInstall'>    /**
+</span>     * @cfg {Boolean} [expressInstall=false]
+     * True to prompt the user to install flash if not installed. Note that this uses
+     * Ext.FlashComponent.EXPRESS_INSTALL_URL, which should be set to the local resource.
+     */
+    expressInstall: false,
+
+<span id='Ext-flash-Component-property-swf'>    /**
+</span>     * @property {Ext.dom.Element} swf
+     * A reference to the object or embed element into which the SWF file is loaded. Only
+     * populated after the component is rendered and the SWF has been successfully embedded.
+     */
+
+<span id='Ext-flash-Component-cfg-renderTpl'>    // Have to create a placeholder div with the swfId, which SWFObject will replace with the object/embed element.
+</span>    renderTpl: [&#39;&lt;div id=&quot;{swfId}&quot; role=&quot;application&quot;&gt;&lt;/div&gt;&#39;],
+
+<span id='Ext-flash-Component-event-success'>    /**
+</span>     * @event success
+     * Fired when the Flash movie has been successfully embedded
+     * @param {Ext.flash.Component} this
+     */
+
+<span id='Ext-flash-Component-event-failure'>    /**
+</span>     * @event failure
+     * Fired when the Flash movie embedding fails
+     * @param {Ext.flash.Component} this
+     */
+
+    initComponent: function() {
+        // &lt;debug&gt;
+        if (!(&#39;swfobject&#39; in window)) {
+            Ext.raise(&#39;The SWFObject library is not loaded. Ext.flash.Component requires SWFObject version 2.2 or later: http://code.google.com/p/swfobject/&#39;);
+        }
+        if (!this.url) {
+            Ext.raise(&#39;The &quot;url&quot; config is required for Ext.flash.Component&#39;);
+        }
+        // &lt;/debug&gt;
+
+        this.callParent();
+    },
     
-<span id='Ext-fx-target-Component-property-type'>    /* End Definitions */
-</span>
-    type: &#39;component&#39;,
-
-<span id='Ext-fx-target-Component-property-getPropMethod'>    // Methods to call to retrieve unspecified &quot;from&quot; values from a target Component
-</span>    getPropMethod: {
-        top: function() {
-            return this.getPosition(true)[1];
-        },
-        left: function() {
-            return this.getPosition(true)[0];
-        },
-        x: function() {
-            return this.getPosition()[0];
-        },
-        y: function() {
-            return this.getPosition()[1];
-        },
-        height: function() {
-            return this.getHeight();
-        },
-        width: function() {
-            return this.getWidth();
-        },
-        opacity: function() {
-            return this.el.getStyle(&#39;opacity&#39;);
-        }
+<span id='Ext-flash-Component-method-beforeRender'>    beforeRender: function(){
+</span>        this.callParent();
+        
+        Ext.applyIf(this.renderData, {
+            swfId: this.getSwfId()
+        });
     },
 
-<span id='Ext-fx-target-Component-property-setMethods'>    setMethods: {
-</span>        top:     &#39;setPosition&#39;,
-        left:    &#39;setPosition&#39;,
-        x:       &#39;setPagePosition&#39;,
-        y:       &#39;setPagePosition&#39;,
-        height:  &#39;setSize&#39;,
-        width:   &#39;setSize&#39;,
-        opacity: &#39;setOpacity&#39;
-    },
-
-<span id='Ext-fx-target-Component-method-getAttr'>    // Read the named attribute from the target Component. Use the defined getter for the attribute
-</span>    getAttr: function(attr, val) {
-        return [[this.target, val !== undefined ? val : this.getPropMethod[attr].call(this.target)]];
-    },
-
-<span id='Ext-fx-target-Component-method-setAttr'>    setAttr: function(targetData, isFirstFrame, isLastFrame) {
+<span id='Ext-flash-Component-method-afterRender'>    afterRender: function() {
 </span>        var me = this,
-            ln = targetData.length,
-            attrs, attr, o, i, j, targets, left, top, w, h,
-            methodsToCall = {},
-            methodProps;
+            flashParams = Ext.apply({}, me.flashParams), 
+            flashVars = Ext.apply({}, me.flashVars);
 
-        for (i = 0; i &lt; ln; i++) {
-            attrs = targetData[i].attrs;
-            for (attr in attrs) {
-                targets = attrs[attr].length;
-                for (j = 0; j &lt; targets; j++) {
-                    o = attrs[attr][j];
-                    methodProps = methodsToCall[me.setMethods[attr]] || (methodsToCall[me.setMethods[attr]] = {});
-                    methodProps.target = o[0];
-                    methodProps[attr] = o[1];
-                    // debugging code: Ext.log(&#39;Setting &#39; + o[0].id + &quot;&#39;s &quot; + attr + &#39; to &#39; + o[1]);
-                }
-            }
-            if (methodsToCall.setPosition) {
-                o = methodsToCall.setPosition;
-                left = (o.left === undefined) ? undefined : parseFloat(o.left);
-                top = (o.top === undefined) ? undefined : parseFloat(o.top);
-                o.target.setPosition(left, top);
-            }
-            if (methodsToCall.setPagePosition) {
-                o = methodsToCall.setPagePosition;
-                o.target.setPagePosition(o.x, o.y);
-            }
-            if (methodsToCall.setSize) {
-                o = methodsToCall.setSize;
-                // Dimensions not being animated MUST NOT be autosized. They must remain at current value.
-                w = (o.width === undefined) ? o.target.getWidth() : parseFloat(o.width);
-                h = (o.height === undefined) ? o.target.getHeight() : parseFloat(o.height);
+        me.callParent();
 
-                // Only set the size of the Component on the last frame, or if the animation was
-                // configured with dynamic: true.
-                // In other cases, we just set the target element size.
-                // This will result in either clipping if animating a reduction in size, or the revealing of
-                // the inner elements of the Component if animating an increase in size.
-                // Component&#39;s animate function initially resizes to the larger size before resizing the
-                // outer element to clip the contents.
-                o.target.el.setSize(w, h);
-                if (isLastFrame || me.dynamic) {
-                    // Defer the final sizing &amp; layout until we are outside of this frame.
-                    // In case anything in the resulting layout calls animation.
-                    // If it does, *this* frame will fire again... recursively
-                    Ext.GlobalEvents.on({
-                        idle: Ext.Function.bind(o.target.setSize, o.target, [w, h]),
-                        single: true
-                    });
-                }
-            }
-            if (methodsToCall.setOpacity) {
-                o = methodsToCall.setOpacity;
-                o.target.el.setStyle(&#39;opacity&#39;, o.opacity);
-            }
+        flashParams = Ext.apply({
+            allowScriptAccess: &#39;always&#39;,
+            bgcolor: me.backgroundColor,
+            wmode: me.wmode
+        }, flashParams);
+
+        flashVars = Ext.apply({
+            allowedDomain: document.location.hostname
+        }, flashVars);
+
+        new swfobject.embedSWF( // jshint ignore:line
+            me.url,
+            me.getSwfId(),
+            me.swfWidth,
+            me.swfHeight,
+            me.flashVersion,
+            me.expressInstall ? me.statics.EXPRESS_INSTALL_URL : undefined,
+            flashVars,
+            flashParams,
+            me.flashAttributes,
+            me.swfCallback.bind(me)
+        );
+    },
+
+<span id='Ext-flash-Component-method-swfCallback'>    /**
+</span>     * @private
+     * The callback method for handling an embedding success or failure by SWFObject
+     * @param {Object} e The event object passed by SWFObject - see http://code.google.com/p/swfobject/wiki/api
+     */
+    swfCallback: function(e) {
+        var me = this;
+        if (e.success) {
+            me.swf = Ext.get(e.ref);
+            me.onSuccess();
+            me.fireEvent(&#39;success&#39;, me);
+        } else {
+            me.onFailure();
+            me.fireEvent(&#39;failure&#39;, me);
         }
+    },
+
+<span id='Ext-flash-Component-method-getSwfId'>    /**
+</span>     * Retrieves the id of the SWF object/embed element.
+     */
+    getSwfId: function() {
+        return this.swfId || (this.swfId = &quot;extswf&quot; + this.getAutoId());
+    },
+
+<span id='Ext-flash-Component-method-onSuccess'>    onSuccess: function() {
+</span>        // swfobject forces visiblity:visible on the swf element, which prevents it 
+        // from getting hidden when an ancestor is given visibility:hidden.
+        this.swf.setStyle(&#39;visibility&#39;, &#39;inherit&#39;);
+    },
+
+<span id='Ext-flash-Component-method-onFailure'>    onFailure: Ext.emptyFn,
+</span>
+<span id='Ext-flash-Component-method-doDestroy'>    doDestroy: function() {
+</span>        var me = this,
+            swf = me.swf;
+        
+        if (swf) {
+            swfobject.removeSWF(me.getSwfId()); // jshint ignore:line
+            me.swf = Ext.destroy(swf);
+        }
+        
+        me.callParent();
+    },
+
+    statics: {
+<span id='Ext-flash-Component-static-property-EXPRESS_INSTALL_URL'>        /**
+</span>         * @property {String}
+         * The url for installing flash if it doesn&#39;t exist. This should be set to a local resource.
+         * See [http://get.adobe.com/flashplayer/](http://get.adobe.com/flashplayer/) for details.
+         * @static
+         */
+        EXPRESS_INSTALL_URL: &#39;http:/&#39; + &#39;/swfobject.googlecode.com/svn/trunk/swfobject/expressInstall.swf&#39;
     }
 });
 </pre>

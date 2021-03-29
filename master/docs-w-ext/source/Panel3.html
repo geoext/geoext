@@ -15,165 +15,451 @@
   </script>
 </head>
 <body onload="prettyPrint(); highlight();">
-  <pre class="prettyprint lang-js"><span id='Ext-dashboard-Panel'>/**
-</span> * This class is used to wrap content items in the `Dashboard`. It uses an
- * `anchor` layout by default and provides resizing on the bottom edge only.
- * @protected
+  <pre class="prettyprint lang-js"><span id='Ext-form-Panel'>/**
+</span> * FormPanel provides a standard container for forms. It is essentially a standard {@link Ext.panel.Panel} which
+ * automatically creates a {@link Ext.form.Basic BasicForm} for managing any {@link Ext.form.field.Field}
+ * objects that are added as descendants of the panel. It also includes conveniences for configuring and
+ * working with the BasicForm and the collection of Fields.
+ * 
+ * # Layout
+ * 
+ * By default, FormPanel is configured with `{@link Ext.layout.container.Anchor layout:&#39;anchor&#39;}` for
+ * the layout of its immediate child items. This can be changed to any of the supported container layouts.
+ * The layout of sub-containers is configured in {@link Ext.container.Container#layout the standard way}.
+ * 
+ * # BasicForm
+ * 
+ * FormPanel class accepts all
+ * of the config options supported by the {@link Ext.form.Basic} class, and will pass them along to
+ * the internal BasicForm when it is created.
+ * 
+ * The following events fired by the BasicForm will be re-fired by the FormPanel and can therefore be
+ * listened for on the FormPanel itself:
+ * 
+ * - {@link Ext.form.Basic#beforeaction beforeaction}
+ * - {@link Ext.form.Basic#actionfailed actionfailed}
+ * - {@link Ext.form.Basic#actioncomplete actioncomplete}
+ * - {@link Ext.form.Basic#validitychange validitychange}
+ * - {@link Ext.form.Basic#dirtychange dirtychange}
+ * 
+ * # Field Defaults
+ * 
+ * The {@link #fieldDefaults} config option conveniently allows centralized configuration of default values
+ * for all fields added as descendants of the FormPanel. Any config option recognized by implementations
+ * of {@link Ext.form.Labelable} may be included in this object. See the {@link #fieldDefaults} documentation
+ * for details of how the defaults are applied.
+ * 
+ * # Form Validation
+ * 
+ * With the default configuration, form fields are validated on-the-fly while the user edits their values.
+ * This can be controlled on a per-field basis (or via the {@link #fieldDefaults} config) with the field
+ * config properties {@link Ext.form.field.Field#validateOnChange} and {@link Ext.form.field.Base#checkChangeEvents},
+ * and the FormPanel&#39;s config properties {@link #pollForChanges} and {@link #pollInterval}.
+ * 
+ * Any component within the FormPanel can be configured with `formBind: true`. This will cause that
+ * component to be automatically disabled when the form is invalid, and enabled when it is valid. This is most
+ * commonly used for Button components to prevent submitting the form in an invalid state, but can be used on
+ * any component type.
+ * 
+ * For more information on form validation see the following:
+ * 
+ * - {@link Ext.form.field.Field#validateOnChange}
+ * - {@link #pollForChanges} and {@link #pollInterval}
+ * - {@link Ext.form.field.VTypes}
+ * - {@link Ext.form.Basic#doAction BasicForm.doAction clientValidation notes}
+ * 
+ * # Form Submission
+ * 
+ * By default, Ext Forms are submitted through Ajax, using {@link Ext.form.action.Action}. See the documentation for
+ * {@link Ext.form.Basic} for details.
+ *
+ * # Example usage
+ * 
+ *     @example
+ *     Ext.create(&#39;Ext.form.Panel&#39;, {
+ *         title: &#39;Simple Form&#39;,
+ *         bodyPadding: 5,
+ *         width: 350,
+ * 
+ *         // The form will submit an AJAX request to this URL when submitted
+ *         url: &#39;save-form.php&#39;,
+ * 
+ *         // Fields will be arranged vertically, stretched to full width
+ *         layout: &#39;anchor&#39;,
+ *         defaults: {
+ *             anchor: &#39;100%&#39;
+ *         },
+ * 
+ *         // The fields
+ *         defaultType: &#39;textfield&#39;,
+ *         items: [{
+ *             fieldLabel: &#39;First Name&#39;,
+ *             name: &#39;first&#39;,
+ *             allowBlank: false
+ *         },{
+ *             fieldLabel: &#39;Last Name&#39;,
+ *             name: &#39;last&#39;,
+ *             allowBlank: false
+ *         }],
+ * 
+ *         // Reset and Submit buttons
+ *         buttons: [{
+ *             text: &#39;Reset&#39;,
+ *             handler: function() {
+ *                 this.up(&#39;form&#39;).getForm().reset();
+ *             }
+ *         }, {
+ *             text: &#39;Submit&#39;,
+ *             formBind: true, //only enabled once the form is valid
+ *             disabled: true,
+ *             handler: function() {
+ *                 var form = this.up(&#39;form&#39;).getForm();
+ *                 if (form.isValid()) {
+ *                     form.submit({
+ *                         success: function(form, action) {
+ *                            Ext.Msg.alert(&#39;Success&#39;, action.result.msg);
+ *                         },
+ *                         failure: function(form, action) {
+ *                             Ext.Msg.alert(&#39;Failed&#39;, action.result.msg);
+ *                         }
+ *                     });
+ *                 }
+ *             }
+ *         }],
+ *         renderTo: Ext.getBody()
+ *     });
+ *
  */
-Ext.define(&#39;Ext.dashboard.Panel&#39;, {
-    extend: &#39;Ext.panel.Panel&#39;,
-
-    xtype: &#39;dashboard-panel&#39;,
-
-<span id='Ext-dashboard-Panel-cfg-cls'>    cls: Ext.baseCSSPrefix + &#39;dashboard-panel&#39;,
-</span>
-<span id='Ext-dashboard-Panel-cfg-anchor'>    anchor: &#39;100%&#39;,
-</span>
-<span id='Ext-dashboard-Panel-cfg-layout'>    layout  : &#39;fit&#39;,
-</span>
-<span id='Ext-dashboard-Panel-cfg-frame'>    frame: true,
-</span><span id='Ext-dashboard-Panel-cfg-closable'>    closable: true,
-</span><span id='Ext-dashboard-Panel-cfg-collapsible'>    collapsible: true,
-</span><span id='Ext-dashboard-Panel-cfg-animCollapse'>    animCollapse: true,
-</span><span id='Ext-dashboard-Panel-cfg-titleCollapse'>    titleCollapse  : true,
-</span>
-<span id='Ext-dashboard-Panel-cfg-stateful'>    stateful : true,
-</span>
-<span id='Ext-dashboard-Panel-cfg-draggable'>    draggable: {
-</span>        moveOnDrag: false
+Ext.define(&#39;Ext.form.Panel&#39;, {
+    extend:&#39;Ext.panel.Panel&#39;,
+    mixins: {
+        fieldAncestor: &#39;Ext.form.FieldAncestor&#39;
     },
+    alias: &#39;widget.form&#39;,
+    alternateClassName: [&#39;Ext.FormPanel&#39;, &#39;Ext.form.FormPanel&#39;],
+    requires: [&#39;Ext.form.Basic&#39;, &#39;Ext.util.TaskRunner&#39;],
 
-<span id='Ext-dashboard-Panel-property-animateClose'>    animateClose: true,
-</span>
-<span id='Ext-dashboard-Panel-property-loadMask'>    loadMask: true,
-</span><span id='Ext-dashboard-Panel-property-loadMessage'>    loadMessage: &#39;Loading...&#39;,
-</span>
-<span id='Ext-dashboard-Panel-cfg-minHeight'>    minHeight: 90,
-</span>
-<span id='Ext-dashboard-Panel-cfg-resizable'>    resizable: true,
-</span><span id='Ext-dashboard-Panel-cfg-resizeHandles'>    resizeHandles: &#39;s&#39;,
-</span>
-<span id='Ext-dashboard-Panel-method-doClose'>    // Override Panel&#39;s default doClose to provide a custom fade out effect
-</span>    // when a portlet is removed from the portal
-    doClose: function() {
-        var me = this;
+<span id='Ext-form-Panel-cfg-pollForChanges'>    /**
+</span>     * @cfg {Boolean} pollForChanges
+     * If set to `true`, sets up an interval task (using the {@link #pollInterval}) in which the
+     * panel&#39;s fields are repeatedly checked for changes in their values. This is in addition to the normal detection
+     * each field does on its own input element, and is not needed in most cases. It does, however, provide a
+     * means to absolutely guarantee detection of all changes including some edge cases in some browsers which
+     * do not fire native events. Defaults to `false`.
+     */
 
-        if (me.animateClose) {
-            if (!me.closing) {
-                me.closing = true;
-                me.el.animate({
-                    opacity: 0,
-                    callback: me.finishClose,
-                    scope: me
-                });
-            }
-        } else {
-            me.finishClose();
+<span id='Ext-form-Panel-cfg-pollInterval'>    /**
+</span>     * @cfg {Number} pollInterval
+     * Interval in milliseconds at which the form&#39;s fields are checked for value changes. Only used if
+     * the {@link #pollForChanges} option is set to `true`. Defaults to 500 milliseconds.
+     */
+
+<span id='Ext-form-Panel-cfg-layout'>    /**
+</span>     * @cfg {Ext.enums.Layout/Object} layout
+     * The {@link Ext.container.Container#layout} for the form panel&#39;s immediate child items.
+     */
+    layout: &#39;anchor&#39;,
+
+<span id='Ext-form-Panel-property-bodyAriaRole'>    bodyAriaRole: &#39;form&#39;,
+</span>    
+<span id='Ext-form-Panel-property-basicFormConfigs'>    basicFormConfigs: [
+</span><span id='Ext-form-Panel-cfg-api'>        /**
+</span>         * @cfg api
+         * @inheritdoc Ext.form.Basic#api
+         */
+        &#39;api&#39;, 
+<span id='Ext-form-Panel-cfg-baseParams'>        /**
+</span>         * @cfg baseParams
+         * @inheritdoc Ext.form.Basic#baseParams
+         */
+        &#39;baseParams&#39;, 
+<span id='Ext-form-Panel-cfg-errorReader'>        /**
+</span>         * @cfg errorReader
+         * @inheritdoc Ext.form.Basic#errorReader
+         */
+        &#39;errorReader&#39;, 
+<span id='Ext-form-Panel-cfg-jsonSubmit'>        /**
+</span>         * @cfg jsonSubmit
+         * @inheritdoc Ext.form.Basic#jsonSubmit
+         */
+        &#39;jsonSubmit&#39;,
+<span id='Ext-form-Panel-cfg-method'>        /**
+</span>         * @cfg method
+         * @inheritdoc Ext.form.Basic#method
+         */
+        &#39;method&#39;, 
+<span id='Ext-form-Panel-cfg-paramOrder'>        /**
+</span>         * @cfg paramOrder
+         * @inheritdoc Ext.form.Basic#paramOrder
+         */
+        &#39;paramOrder&#39;,
+<span id='Ext-form-Panel-cfg-paramsAsHash'>        /**
+</span>         * @cfg paramsAsHash
+         * @inheritdoc Ext.form.Basic#paramsAsHash
+         */
+        &#39;paramsAsHash&#39;,
+<span id='Ext-form-Panel-cfg-reader'>        /**
+</span>         * @cfg reader
+         * @inheritdoc Ext.form.Basic#reader
+         */
+        &#39;reader&#39;,
+<span id='Ext-form-Panel-cfg-standardSubmit'>        /**
+</span>         * @cfg standardSubmit
+         * @inheritdoc Ext.form.Basic#standardSubmit
+         */
+        &#39;standardSubmit&#39;,
+<span id='Ext-form-Panel-cfg-timeout'>        /**
+</span>         * @cfg timeout
+         * @inheritdoc Ext.form.Basic#timeout
+         */
+        &#39;timeout&#39;,
+<span id='Ext-form-Panel-cfg-trackResetOnLoad'>        /**
+</span>         * @cfg trackResetOnLoad
+         * @inheritdoc Ext.form.Basic#trackResetOnLoad
+         */
+        &#39;trackResetOnLoad&#39;,
+<span id='Ext-form-Panel-cfg-url'>        /**
+</span>         * @cfg url
+         * @inheritdoc Ext.form.Basic#url
+         */
+        &#39;url&#39;,
+<span id='Ext-form-Panel-cfg-waitMsgTarget'>        /**
+</span>         * @cfg waitMsgTarget
+         * @inheritdoc Ext.form.Basic#waitMsgTarget
+         */
+        &#39;waitMsgTarget&#39;,
+<span id='Ext-form-Panel-cfg-waitTitle'>        /**
+</span>         * @cfg waitTitle
+         * @inheritdoc Ext.form.Basic#waitTitle
+         */
+        &#39;waitTitle&#39;
+    ],
+
+<span id='Ext-form-Panel-method-initComponent'>    initComponent: function() {
+</span>        var me = this;
+
+        if (me.frame) {
+            me.border = false;
+        }
+
+        me.initFieldAncestor();
+        me.callParent();
+
+        me.relayEvents(me.form, [
+<span id='Ext-form-Panel-event-beforeaction'>            /**
+</span>             * @event beforeaction
+             * @inheritdoc Ext.form.Basic#beforeaction
+             */
+            &#39;beforeaction&#39;,
+<span id='Ext-form-Panel-event-actionfailed'>            /**
+</span>             * @event actionfailed
+             * @inheritdoc Ext.form.Basic#actionfailed
+             */
+            &#39;actionfailed&#39;,
+<span id='Ext-form-Panel-event-actioncomplete'>            /**
+</span>             * @event actioncomplete
+             * @inheritdoc Ext.form.Basic#actioncomplete
+             */
+            &#39;actioncomplete&#39;,
+<span id='Ext-form-Panel-event-validitychange'>            /**
+</span>             * @event validitychange
+             * @inheritdoc Ext.form.Basic#validitychange
+             */
+            &#39;validitychange&#39;,
+<span id='Ext-form-Panel-event-dirtychange'>            /**
+</span>             * @event dirtychange
+             * @inheritdoc Ext.form.Basic#dirtychange
+             */
+            &#39;dirtychange&#39;
+        ]);
+
+        // Start polling if configured
+        if (me.pollForChanges) {
+            me.startPolling(me.pollInterval || 500);
         }
     },
 
-<span id='Ext-dashboard-Panel-method-finishClose'>    finishClose: function () {
-</span>        var me = this,
-            closeAction = me.closeAction;
-
-        me.closing = false;
-        me.fireEvent(&#39;close&#39;, me);
-
-        // The close of the last portlet within a column results in removal of both the column and its splitter.
-        // So coalesce any layouts resulting from this operation.
-        Ext.suspendLayouts();
-        me[closeAction]();
-        Ext.resumeLayouts(true);
-
-        if (closeAction === &#39;hide&#39;) {
-            // Restore the opacity from doClose
-            me.el.setOpacity(1);
-        }
+<span id='Ext-form-Panel-method-initItems'>    initItems: function() {
+</span>        // Create the BasicForm
+        this.callParent();
+        this.initMonitor();
+        this.form = this.createForm();
     },
 
-<span id='Ext-dashboard-Panel-method-afterRender'>    afterRender: function () {
-</span>        this.callParent();
-
-        if (this.loading) {
-            this.onViewBeforeLoad();
-        }
+<span id='Ext-form-Panel-method-afterFirstLayout'>    // Initialize the BasicForm after all layouts have been completed.
+</span>    afterFirstLayout: function() {
+        this.callParent(arguments);
+        this.form.initialize();
     },
 
-<span id='Ext-dashboard-Panel-method-getLoadMask'>    getLoadMask: function () {
-</span>        var me = this,
-            loadMask = me.rendered &amp;&amp; me.loadMask,
-            config;
-
-        if (loadMask &amp;&amp; !loadMask.isComponent) {
-            config = {
-                target: me
-            };
-
-            if (loadMask === true) {
-                loadMask = config;
-            } else {
-                Ext.apply(config, loadMask);
-            }
-
-            me.loadMask = loadMask = Ext.ComponentManager.create(config, &#39;loadmask&#39;);
+<span id='Ext-form-Panel-method-createForm'>    /**
+</span>     * @private
+     */
+    createForm: function() {
+        var cfg = {},
+            props = this.basicFormConfigs,
+            len = props.length,
+            i = 0,
+            prop;
+            
+        for (; i &lt; len; ++i) {
+            prop = props[i];
+            cfg[prop] = this[prop];
         }
-
-        return loadMask || null;
+        return new Ext.form.Basic(this, cfg);
     },
 
-<span id='Ext-dashboard-Panel-method-onAdd'>    onAdd: function (view) {
-</span>        this.callParent(arguments);
+<span id='Ext-form-Panel-method-getForm'>    /**
+</span>     * Provides access to the {@link Ext.form.Basic Form} which this Panel contains.
+     * @return {Ext.form.Basic} The {@link Ext.form.Basic Form} which this Panel contains.
+     */
+    getForm: function() {
+        return this.form;
+    },
 
-        view.on({
-            beforeload: &#39;onViewBeforeLoad&#39;,
-            load: &#39;onViewLoaded&#39;,
+<span id='Ext-form-Panel-method-loadRecord'>    /**
+</span>     * Loads an {@link Ext.data.Model} into this form (internally just calls {@link Ext.form.Basic#loadRecord})
+     * See also {@link Ext.form.Basic#trackResetOnLoad trackResetOnLoad}. The fields in the model are mapped to 
+     * fields in the form by matching either the {@link Ext.form.field.Base#name} or {@link Ext.Component#itemId}.  
+     * @param {Ext.data.Model} record The record to load
+     * @return {Ext.form.Basic} The Ext.form.Basic attached to this FormPanel
+     */
+    loadRecord: function(record) {
+        return this.getForm().loadRecord(record);
+    },
+
+<span id='Ext-form-Panel-method-getRecord'>    /**
+</span>     * Returns the currently loaded Ext.data.Model instance if one was loaded via {@link #loadRecord}.
+     * @return {Ext.data.Model} The loaded instance
+     */
+    getRecord: function() {
+        return this.getForm().getRecord();
+    },
+    
+<span id='Ext-form-Panel-method-updateRecord'>    /**
+</span>     * Persists the values in this form into the passed {@link Ext.data.Model} object in a beginEdit/endEdit block.
+     * If the record is not specified, it will attempt to update (if it exists) the record provided to {@link #loadRecord}.
+     * @param {Ext.data.Model} [record] The record to edit
+     * @return {Ext.form.Basic} The Ext.form.Basic attached to this FormPanel
+     */
+    updateRecord: function(record) {
+        return this.getForm().updateRecord(record);
+    },
+
+<span id='Ext-form-Panel-method-getValues'>    /**
+</span>     * Convenience function for fetching the current value of each field in the form. This is the same as calling
+     * {@link Ext.form.Basic#getValues this.getForm().getValues()}.
+     *
+     * @inheritdoc Ext.form.Basic#getValues
+     */
+    getValues: function(asString, dirtyOnly, includeEmptyText, useDataValues) {
+        return this.getForm().getValues(asString, dirtyOnly, includeEmptyText, useDataValues);
+    },
+    
+<span id='Ext-form-Panel-method-isDirty'>    /**
+</span>     * Convenience function to check if the form has any dirty fields. This is the same as calling
+     * {@link Ext.form.Basic#isDirty this.getForm().isDirty()}.
+     *
+     * @inheritdoc Ext.form.Basic#isDirty
+     */
+    isDirty: function () {
+        return this.form.isDirty();
+    },
+    
+<span id='Ext-form-Panel-method-isValid'>    /**
+</span>     * Convenience function to check if the form has all valid fields. This is the same as calling
+     * {@link Ext.form.Basic#isValid this.getForm().isValid()}.
+     *
+     * @inheritdoc Ext.form.Basic#isValid
+     */
+    isValid: function () {
+       return this.form.isValid();
+    },
+
+<span id='Ext-form-Panel-method-reset'>    /**
+</span>     * Convenience function reset the form. This is the same as calling
+     * {@link Ext.form.Basic#reset this.getForm().reset()}.
+     *
+     * @inheritdoc Ext.form.Basic#reset
+     */
+    reset: function(resetRecord) {
+        return this.form.reset(resetRecord);
+    },
+    
+<span id='Ext-form-Panel-method-hasInvalidField'>    /**
+</span>     * Convenience function to check if the form has any invalid fields. This is the same as calling
+     * {@link Ext.form.Basic#hasInvalidField this.getForm().hasInvalidField()}.
+     *
+     * @inheritdoc Ext.form.Basic#hasInvalidField
+     */
+    hasInvalidField: function () {
+        return this.form.hasInvalidField();
+    },
+
+<span id='Ext-form-Panel-method-doDestroy'>    doDestroy: function() {
+</span>        this.stopPolling();
+        this.form.destroy();
+        
+        this.callParent();
+    },
+
+<span id='Ext-form-Panel-method-load'>    /**
+</span>     * This is a proxy for the underlying BasicForm&#39;s {@link Ext.form.Basic#load} call.
+     * @param {Object} options The options to pass to the action (see {@link Ext.form.Basic#load} and
+     * {@link Ext.form.Basic#doAction} for details)
+     */
+    load: function(options) {
+        this.form.load(options);
+    },
+
+<span id='Ext-form-Panel-method-submit'>    /**
+</span>     * This is a proxy for the underlying BasicForm&#39;s {@link Ext.form.Basic#submit} call.
+     * @param {Object} options The options to pass to the action (see {@link Ext.form.Basic#submit} and
+     * {@link Ext.form.Basic#doAction} for details)
+     */
+    submit: function(options) {
+        this.form.submit(options);
+    },
+
+<span id='Ext-form-Panel-method-startPolling'>    /**
+</span>     * Start an interval task to continuously poll all the fields in the form for changes in their
+     * values. This is normally started automatically by setting the {@link #pollForChanges} config.
+     * @param {Number} interval The interval in milliseconds at which the check should run.
+     */
+    startPolling: function(interval) {
+        this.stopPolling();
+        var task = new Ext.util.TaskRunner(interval);
+        task.start({
+            interval: 0,
+            run: this.checkChange,
             scope: this
         });
+        this.pollTask = task;
     },
 
-<span id='Ext-dashboard-Panel-method-onViewBeforeLoad'>    onViewBeforeLoad: function () {
-</span>        this.loading = true;
-
-        var loadMask = this.getLoadMask();
-        if (loadMask) {
-            loadMask.show();
+<span id='Ext-form-Panel-method-stopPolling'>    /**
+</span>     * Stop a running interval task that was started by {@link #startPolling}.
+     */
+    stopPolling: function() {
+        var task = this.pollTask;
+        if (task) {
+            task.stopAll();
+            delete this.pollTask;
         }
     },
 
-<span id='Ext-dashboard-Panel-method-onViewLoaded'>    onViewLoaded: function () {
-</span>        this.loading = false;
+<span id='Ext-form-Panel-method-checkChange'>    /**
+</span>     * Forces each field within the form panel to
+     * {@link Ext.form.field.Field#checkChange check if its value has changed}.
+     */
+    checkChange: function() {
+        var fields = this.form.getFields().items,
+            f,
+            fLen   = fields.length;
 
-        var loadMask = this.getLoadMask();
-        if (loadMask) {
-            loadMask.hide();
+        for (f = 0; f &lt; fLen; f++) {
+            fields[f].checkChange();
         }
-        var view = this.items.getAt(0);
-        if (view.getTitle) {
-            var title = view.getTitle();
-            if (title) {
-                this.setTitle(title);
-            }
-        }
-    },
-
-<span id='Ext-dashboard-Panel-method-setBox'>    /** @private */
-</span>    setBox: function (box) {
-        // The resizer calls setBox which would set our left/top coordinates but
-        // that is a BAD thing in a column layout which relies on flow!
-        this.setSize(box.width, box.height);
-    },
-
-<span id='Ext-dashboard-Panel-method-getState'>    /** @private */
-</span>    getState : function() {
-        var me = this,
-            state = me.callParent() || {};
-
-        if (!state.collapsed) {
-            me.addPropertyToState(state, &#39;height&#39;, me.rendered ? me.getHeight() : me.height || me.minHeight || 100);
-        }
-
-        return state;
-
     }
 });
 </pre>

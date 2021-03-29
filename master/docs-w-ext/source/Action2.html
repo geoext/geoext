@@ -15,344 +15,322 @@
   </script>
 </head>
 <body onload="prettyPrint(); highlight();">
-  <pre class="prettyprint lang-js"><span id='Ext-Action'>/**
-</span> * An Action encapsulates a shareable, reusable set of properties which define a &quot;clickable&quot;
- * UI component such as a {@link Ext.button.Button button} or {@link Ext.menu.Item menu item},
- * or {@link Ext.panel.Panel#tools panel header tool}, or an {@link Ext.grid.column.Action ActionColumn item}
- * 
- * Actions let you share handlers, configuration options and UI updates across any components
- * which were created using the Action.
+  <pre class="prettyprint lang-js"><span id='Ext-form-action-Action'>/**
+</span> * The subclasses of this class provide actions to perform upon {@link Ext.form.Basic Form}s.
  *
- * You do not have to create Action instances. They can be configured into Views
- * using the {@link Ext.container.Container#actions actions} config.
+ * Instances of this class are only created by a {@link Ext.form.Basic Form} when the Form needs to perform an action
+ * such as submit or load. The Configuration options listed for this class are set through the Form&#39;s action methods:
+ * {@link Ext.form.Basic#submit submit}, {@link Ext.form.Basic#load load} and {@link Ext.form.Basic#doAction doAction}
  *
- * Use a reference to an Action as the config object for any number of UI Components which share the same configuration. The
- * Action not only supplies the configuration, but allows all Components based upon it to have a common set of methods
- * called at once through a single call to the Action.
- *
- * Any Component that is to be configured with an Action may support
- * the following methods:
- *
- * - setText(String)
- * - setIconCls(String)
- * - setGlyph(String)
- * - setDisabled(Boolean)
- * - setVisible(Boolean)
- * - setHandler(String)
- *
- * This allows the Action to control its associated Components. Use a
- * {@link Ext.container.Container#getAction reference to an Action} to control
- * all components created from that action.
- *
- * Example usage:
- *
- *     @example
- *     Ext.define(&#39;ActionsExampleController&#39;, {
- *         extend: &#39;Ext.app.ViewController&#39;,
- *         alias: &#39;controller.actionsexample&#39;,
- *
- *         onOperationClick: function() {
- *             Ext.Msg.alert(&#39;Click&#39;, &#39;Perform the operation&#39;);
- *         },
- *
- *         onOperationToggle: function(btn, pressed) {
- *             // The action controls all UI components created from it.
- *             this.view.getAction(&#39;operation&#39;).setDisabled(pressed);
- *         }
- *     });
- *
- *     Ext.define(&#39;ActionsPanel&#39;, {
- *         extend: &#39;Ext.panel.Panel&#39;,
- *         controller: &#39;actionsexample&#39;,
- *
- *         title: &#39;Actions&#39;,
- *         width: 500,
- *         height: 300,
- *
- *         // Define the shared Action.  Each Component created from these will
- *         // have the same display text, icon and tooltip, and will invoke the
- *         // same controller method on click.
- *         actions: {
- *             operation: {
- *                 text: &#39;Do operation&#39;,
- *                  handler: &#39;onOperationClick&#39;,
- *                 glyph: &#39;xf005@FontAwesome&#39;,
- *                 tooltip: &#39;Perform the operation&#39;
- *             },
- *             disableOperation: {
- *                 text: &#39;Disable operation&#39;,
- *                 enableToggle: true,
- *                 toggleHandler: &#39;onOperationToggle&#39;,
- *                 tooltip: &#39;Disable the operation&#39;
- *             }
- *         },
- *
- *         // Actions are interpreted as Buttons by this view.
- *         // Other descendants such as Menus and Toolbars have
- *         // their own defaults.
- *         defaultActionType: &#39;button&#39;,
- *
- *         tools: [
- *             &#39;@operation&#39;
- *         ],
- *
- *         tbar: [
- *             // Add the Action directly to a toolbar as a menu button
- *             &#39;@operation&#39;,
- *             {
- *                 text: &#39;Action Menu&#39;,
- *                 menu: [
- *                     // Add the Action to a menu as a text item
- *                     &#39;@operation&#39;
- *                 ]
- *             }, &#39;@disableOperation&#39;
- *         ],
- *
- *         bodyPadding: 10,
- *         layout: {
- *             type: &#39;vbox&#39;,
- *             align: &#39;stretch&#39;
- *         },
- *         items: [
- *             // Add the Action to the panel body.
- *             // defaultActionType will ensure it is converted to a Button.
- *             &#39;@operation&#39;
- *         ]
- *     });
- *
- *     Ext.QuickTips.init();
- *     new ActionsPanel({
- *         renderTo: Ext.getBody()
- *     });
+ * The instance of Action which performed the action is passed to the success and failure callbacks of the Form&#39;s action
+ * methods ({@link Ext.form.Basic#submit submit}, {@link Ext.form.Basic#load load} and
+ * {@link Ext.form.Basic#doAction doAction}), and to the {@link Ext.form.Basic#actioncomplete actioncomplete} and
+ * {@link Ext.form.Basic#actionfailed actionfailed} event handlers.
  */
-Ext.define(&#39;Ext.Action&#39;, {
+Ext.define(&#39;Ext.form.action.Action&#39;, {
+    alternateClassName: &#39;Ext.form.Action&#39;,
 
-<span id='Ext-Action-cfg-text'>    /**
-</span>     * @cfg {String} [text=&#39;&#39;]
-     * The text to set for all components configured by this Action.
-     */
-<span id='Ext-Action-cfg-glyph'>    /**
-</span>     * @cfg {Number/String} glyph
-     * @inheritdoc Ext.panel.Header#glyph
-     * @since 6.2.0
-     */
-<span id='Ext-Action-cfg-iconCls'>    /**
-</span>     * @cfg {String} [iconCls=&#39;&#39;]
-     * @localdoc **Note:** The CSS class(es) specifying the background image will apply 
-     * to all components configured by this Action.
-     * @inheritdoc Ext.panel.Header#cfg-iconCls
-     */
-<span id='Ext-Action-cfg-disabled'>    /**
-</span>     * @cfg {Boolean} [disabled=false]
-     * True to disable all components configured by this Action, false to enable them.
-     */
-<span id='Ext-Action-cfg-hidden'>    /**
-</span>     * @cfg {Boolean} [hidden=false]
-     * True to hide all components configured by this Action, false to show them.
-     */
-<span id='Ext-Action-cfg-handler'>    /**
-</span>     * @cfg {String/Function} handler
-     * The function that will be invoked by each component tied to this Action
-     * when the component&#39;s primary event is triggered.
-     */
-<span id='Ext-Action-cfg-itemId'>    /**
-</span>     * @cfg {String} itemId
-     * See {@link Ext.Component}.{@link Ext.Component#itemId itemId}.
-     */
-<span id='Ext-Action-cfg-scope'>    /**
-</span>     * @cfg {Object} [scope]
-     * The scope (this reference) in which the {@link #handler} is executed
-     * if specified as a function instead of a named Controller method.
-     * Defaults to the browser window.
+<span id='Ext-form-action-Action-cfg-form'>    /**
+</span>     * @cfg {Ext.form.Basic} form
+     * The {@link Ext.form.Basic BasicForm} instance that is invoking this Action. Required.
      */
 
-<span id='Ext-Action-method-constructor'>    /**
+<span id='Ext-form-action-Action-cfg-url'>    /**
+</span>     * @cfg {String} url
+     * The URL that the Action is to invoke. Will default to the {@link Ext.form.Basic#url url} configured on the
+     * {@link #form}.
+     */
+
+<span id='Ext-form-action-Action-cfg-reset'>    /**
+</span>     * @cfg {Boolean} reset
+     * When set to **true**, causes the Form to be {@link Ext.form.Basic#reset reset} on Action success. If specified,
+     * this happens before the {@link #success} callback is called and before the Form&#39;s
+     * {@link Ext.form.Basic#actioncomplete actioncomplete} event fires.
+     */
+
+<span id='Ext-form-action-Action-cfg-method'>    /**
+</span>     * @cfg {String} method
+     * The HTTP method to use to access the requested URL.
+     * Defaults to the {@link Ext.form.Basic#method BasicForm&#39;s method}, or &#39;POST&#39; if not specified.
+     */
+
+<span id='Ext-form-action-Action-cfg-params'>    /**
+</span>     * @cfg {Object/String} params
+     * Extra parameter values to pass. These are added to the Form&#39;s {@link Ext.form.Basic#baseParams} and passed to the
+     * specified URL along with the Form&#39;s input fields.
+     *
+     * Parameters are encoded as standard HTTP parameters using {@link Ext#urlEncode Ext.Object.toQueryString}.
+     */
+
+<span id='Ext-form-action-Action-cfg-headers'>    /**
+</span>     * @cfg {Object} headers
+     * Extra headers to be sent in the AJAX request for submit and load actions.
+     * See {@link Ext.data.proxy.Ajax#headers}.
+     * 
+     * **Note:** Headers are not sent during file upload.
+     */
+
+<span id='Ext-form-action-Action-cfg-timeout'>    /**
+</span>     * @cfg {Number} timeout
+     * The number of seconds to wait for a server response before failing with the {@link #failureType} as
+     * {@link Ext.form.action.Action#CONNECT_FAILURE}. If not specified, defaults to the configured
+     * {@link Ext.form.Basic#timeout timeout} of the {@link #form}.
+     */
+
+<span id='Ext-form-action-Action-cfg-success'>    /**
+</span>     * @cfg {Function/String} success
+     * The function to call when a valid success return packet is received.
+     * @cfg {Ext.form.Basic} success.form The form that requested the action
+     * @cfg {Ext.form.action.Action} success.action The Action class. The {@link #result} property of this object may
+     * be examined to perform custom post-processing.
+     * 
+     * @controllable
+     */
+
+<span id='Ext-form-action-Action-cfg-failure'>    /**
+</span>     * @cfg {Function/String} failure
+     * The function to call when a failure packet was received, or when an error 
+     * occurred in the Ajax communication.
+     * @cfg {Ext.form.Basic} failure.form The form that requested the action
+     * @cfg {Ext.form.action.Action} failure.action The Action class. If an Ajax error 
+     * occurred, the failure type will be in {@link #failureType}. The {@link #result} 
+     * property of this object may be examined to perform custom post-processing.
+     * 
+     * @controllable
+     */
+
+<span id='Ext-form-action-Action-cfg-scope'>    /**
+</span>     * @cfg {Object} scope
+     * The scope in which to call the configured #success and #failure callback functions
+     * (the `this` reference for the callback functions).
+     */
+
+<span id='Ext-form-action-Action-cfg-waitMsg'>    /**
+</span>     * @cfg {String} waitMsg
+     * The message to be displayed by a call to {@link Ext.window.MessageBox#wait} during the time the action is being
+     * processed.
+     */
+
+<span id='Ext-form-action-Action-cfg-waitTitle'>    /**
+</span>     * @cfg {String} waitTitle
+     * The title to be displayed by a call to {@link Ext.window.MessageBox#wait} during the time the action is being
+     * processed.
+     */
+
+<span id='Ext-form-action-Action-cfg-submitEmptyText'>    /**
+</span>     * @cfg {Boolean} submitEmptyText
+     * If set to true, the emptyText value will be sent with the form when it is submitted.
+     */
+    submitEmptyText : true,
+
+<span id='Ext-form-action-Action-property-type'>    /**
+</span>     * @property {String} type
+     * The type of action this Action instance performs. Currently only &quot;submit&quot; and &quot;load&quot; are supported.
+     */
+
+<span id='Ext-form-action-Action-property-failureType'>    /**
+</span>     * @property {String} failureType
+     * The type of failure detected will be one of these:
+     * {@link #CLIENT_INVALID}, {@link #SERVER_INVALID}, {@link #CONNECT_FAILURE}, or {@link #LOAD_FAILURE}.
+     *
+     * Usage:
+     *
+     *     var fp = new Ext.form.Panel({
+     *     ...
+     *     buttons: [{
+     *         text: &#39;Save&#39;,
+     *         formBind: true,
+     *         handler: function(){
+     *             if(fp.getForm().isValid()){
+     *                 fp.getForm().submit({
+     *                     url: &#39;form-submit.php&#39;,
+     *                     waitMsg: &#39;Submitting your data...&#39;,
+     *                     success: function(form, action){
+     *                         // server responded with success = true
+     *                         var result = action.result;
+     *                     },
+     *                     failure: function(form, action){
+     *                         if (action.{@link #failureType} === Ext.form.action.Action.CONNECT_FAILURE) {
+     *                             Ext.Msg.alert(&#39;Error&#39;,
+     *                                 &#39;Status:&#39;+action.response.status+&#39;: &#39;+
+     *                                 action.response.statusText);
+     *                         }
+     *                         if (action.failureType === Ext.form.action.Action.SERVER_INVALID){
+     *                             // server responded with success = false
+     *                             Ext.Msg.alert(&#39;Invalid&#39;, action.result.errormsg);
+     *                         }
+     *                     }
+     *                 });
+     *             }
+     *         }
+     *     },{
+     *         text: &#39;Reset&#39;,
+     *         handler: function(){
+     *             fp.getForm().reset();
+     *         }
+     *     }]
+     */
+
+<span id='Ext-form-action-Action-property-response'>    /**
+</span>     * @property {Object} response
+     * The raw XMLHttpRequest object used to perform the action.
+     */
+
+<span id='Ext-form-action-Action-property-result'>    /**
+</span>     * @property {Object} result
+     * The decoded response object containing a boolean `success` property and other, action-specific properties.
+     */
+
+<span id='Ext-form-action-Action-method-constructor'>    /**
 </span>     * Creates new Action.
-     * @param {Object} config Config object.
+     * @param {Object} [config] Config object.
      */
-    constructor : function(config){
-        this.initialConfig = config;
-        this.itemId = config.itemId = (config.itemId || config.id || Ext.id());
-        this.items = [];
-    },
-
-<span id='Ext-Action-property-isAction'>    /**
-</span>     * @property {Boolean} isAction
-     * `true` in this class to identify an object as an instantiated Action, or subclass thereof.
-     */
-    isAction : true,
-
-<span id='Ext-Action-method-setText'>    /**
-</span>     * Sets the text to be displayed by all components configured by this Action.
-     * @param {String} text The text to display
-     */
-    setText : function(text){
-        this.initialConfig.text = text;
-        this.callEach(&#39;setText&#39;, [text]);
-    },
-
-<span id='Ext-Action-method-getText'>    /**
-</span>     * Gets the text currently displayed by all components configured by this Action.
-     */
-    getText : function(){
-        return this.initialConfig.text;
-    },
-
-<span id='Ext-Action-method-setIconCls'>    /**
-</span>     * Sets the {@link #iconCls icon CSS class} for all components configured by this 
-     * Action.  The class should supply a background image that will be used as the icon 
-     * image.
-     * @param {String} cls The CSS class supplying the icon image
-     */
-    setIconCls : function(cls){
-        this.initialConfig.iconCls = cls;
-        this.callEach(&#39;setIconCls&#39;, [cls]);
-    },
-
-<span id='Ext-Action-method-setGlyph'>    /**
-</span>     * Sets the {@link #Glyph glyph} for all components configured by this 
-     * Action.
-     * @param {String} glyph The CSS class supplying the icon image
-     */
-    setGlyph : function(glyph){
-        this.initialConfig.glyph = glyph;
-        this.callEach(&#39;setGlyph&#39;, [glyph]);
-    },
-
-<span id='Ext-Action-method-getIconCls'>    /**
-</span>     * Gets the icon CSS class currently used by all components configured by this Action.
-     */
-    getIconCls : function(){
-        return this.initialConfig.iconCls;
-    },
-
-<span id='Ext-Action-method-setDisabled'>    /**
-</span>     * Sets the disabled state of all components configured by this Action.  Shortcut method
-     * for {@link #enable} and {@link #disable}.
-     * @param {Boolean} disabled True to disable the component, false to enable it
-     */
-    setDisabled : function(disabled){
-        this.initialConfig.disabled = disabled;
-        this.callEach(&#39;setDisabled&#39;, [disabled]);
-    },
-
-<span id='Ext-Action-method-enable'>    /**
-</span>     * Enables all components configured by this Action.
-     */
-    enable : function(){
-        this.setDisabled(false);
-    },
-
-<span id='Ext-Action-method-disable'>    /**
-</span>     * Disables all components configured by this Action.
-     */
-    disable : function(){
-        this.setDisabled(true);
-    },
-
-<span id='Ext-Action-method-isDisabled'>    /**
-</span>     * Returns true if the components using this Action are currently disabled, else returns false.
-     */
-    isDisabled : function(){
-        return this.initialConfig.disabled;
-    },
-
-<span id='Ext-Action-method-setHidden'>    /**
-</span>     * Sets the hidden state of all components configured by this Action.  Shortcut method
-     * for `{@link #hide}` and `{@link #show}`.
-     * @param {Boolean} hidden True to hide the component, false to show it.
-     */
-    setHidden : function(hidden){
-        this.initialConfig.hidden = hidden;
-        this.callEach(&#39;setVisible&#39;, [!hidden]);
-    },
-
-<span id='Ext-Action-method-show'>    /**
-</span>     * Shows all components configured by this Action.
-     */
-    show : function(){
-        this.setHidden(false);
-    },
-
-<span id='Ext-Action-method-hide'>    /**
-</span>     * Hides all components configured by this Action.
-     */
-    hide : function(){
-        this.setHidden(true);
-    },
-
-<span id='Ext-Action-method-isHidden'>    /**
-</span>     * Returns true if the components configured by this Action are currently hidden, else returns false.
-     */
-    isHidden : function(){
-        return this.initialConfig.hidden;
-    },
-
-<span id='Ext-Action-method-setHandler'>    /**
-</span>     * Sets the function that will be called by each Component using this action when its
-     * primary event (usually a click or tap) is triggered.
-     * @param {String/Function} handler The function that will be invoked by the action&#39;s components when clicked.
-     * See the `handler` config of the target component for the arguments passed.
-     * @param {Object} [scope] The scope (this reference) in which the function is executed. Defaults to an
-     * encapsulating {@link Ext.app.Controller Controller}, or the Component.
-     */
-    setHandler : function(handler, scope){
-        this.initialConfig.handler = handler;
-        this.initialConfig.scope = scope;
-        this.callEach(&#39;setHandler&#39;, [handler, scope]);
-    },
-
-<span id='Ext-Action-method-each'>    /**
-</span>     * Executes the specified function once for each Component currently tied to this Action.  The function passed
-     * in should accept a single argument that will be an object that supports the basic Action config/method interface.
-     * @param {Function} fn The function to execute for each component
-     * @param {Object} scope The scope (this reference) in which the function is executed.
-     * Defaults to the Component.
-     */
-    each : function(fn, scope){
-        Ext.each(this.items, fn, scope);
-    },
-
-<span id='Ext-Action-method-callEach'>    /**
-</span>     * @private
-     */
-    callEach : function(fnName, args){
-        var items = this.items,
-            i = 0,
-            len = items.length,
-            item;
-
-        Ext.suspendLayouts();
-        for(; i &lt; len; i++){
-            item = items[i];
-            item[fnName].apply(item, args);
+    constructor: function(config) {
+        if (config) {
+            Ext.apply(this, config);
         }
-        Ext.resumeLayouts(true);
+
+        // Normalize the params option to an Object
+        var params = config.params;
+        if (Ext.isString(params)) {
+            this.params = Ext.Object.fromQueryString(params);
+        }
     },
 
-<span id='Ext-Action-method-addComponent'>    /**
+<span id='Ext-form-action-Action-method-run'>    /**
+</span>     * @method
+     * Invokes this action using the current configuration.
+     */
+    run: Ext.emptyFn,
+
+<span id='Ext-form-action-Action-method-onSuccess'>    /**
 </span>     * @private
+     * @method onSuccess
+     * Callback method that gets invoked when the action completes successfully. Must be implemented by subclasses.
+     * @param {Object} response
      */
-    addComponent : function(comp){
-        this.items.push(comp);
-        comp.on(&#39;destroy&#39;, this.removeComponent, this);
-    },
 
-<span id='Ext-Action-method-removeComponent'>    /**
+<span id='Ext-form-action-Action-method-handleResponse'>    /**
 </span>     * @private
+     * @method handleResponse
+     * Handles the raw response and builds a result object from it. Must be implemented by subclasses.
+     * @param {Object} response
      */
-    removeComponent : function(comp){
-        Ext.Array.remove(this.items, comp);
+
+<span id='Ext-form-action-Action-method-onFailure'>    /**
+</span>     * @private
+     * Handles a failure response.
+     * @param {Object} response
+     */
+    onFailure : function(response){
+        var form = this.form,
+            formActive = form &amp;&amp; !form.destroying &amp;&amp; !form.destroyed;
+        
+        this.response = response;
+        this.failureType = Ext.form.action.Action.CONNECT_FAILURE;
+        
+        if (formActive) {
+            form.afterAction(this, false);
+        }
     },
 
-<span id='Ext-Action-method-execute'>    /**
-</span>     * Executes this Action manually using the handler function specified in the original config object
-     * or the handler function set with {@link #setHandler}.  Any arguments passed to this
-     * function will be passed on to the handler function.
-     * @param {Object...} args Variable number of arguments passed to the handler function
+<span id='Ext-form-action-Action-method-processResponse'>    /**
+</span>     * @private
+     * Validates that a response contains either responseText or responseXML and invokes
+     * {@link #handleResponse} to build the result object.
+     * @param {Object} response The raw response object.
+     * @return {Object/Boolean} The result object as built by handleResponse, or `true` if
+     * the response had empty responseText and responseXML.
      */
-    execute : function(){
-        this.initialConfig.handler.apply(this.initialConfig.scope || Ext.global, arguments);
+    processResponse : function(response){
+        this.response = response;
+        if (!response.responseText &amp;&amp; !response.responseXML) {
+            return true;
+        }
+        return (this.result = this.handleResponse(response));
+    },
+
+<span id='Ext-form-action-Action-method-getUrl'>    /**
+</span>     * @private
+     * Build the URL for the AJAX request. Used by the standard AJAX submit and load actions.
+     * @return {String} The URL.
+     */
+    getUrl: function() {
+        return this.url || this.form.url;
+    },
+
+<span id='Ext-form-action-Action-method-getMethod'>    /**
+</span>     * @private
+     * Determine the HTTP method to be used for the request.
+     * @return {String} The HTTP method
+     */
+    getMethod: function() {
+        return (this.method || this.form.method || &#39;POST&#39;).toUpperCase();
+    },
+
+<span id='Ext-form-action-Action-method-getParams'>    /**
+</span>     * @private
+     * Get the set of parameters specified in the BasicForm&#39;s baseParams and/or the params option.
+     * Items in params override items of the same name in baseParams.
+     * @return {Object} the full set of parameters
+     */
+    getParams: function() {
+        return Ext.apply({}, this.params, this.form.baseParams);
+    },
+
+<span id='Ext-form-action-Action-method-createCallback'>    /**
+</span>     * @private
+     * Creates a callback object.
+     */
+    createCallback: function() {
+        var me = this;
+
+        return {
+            success: me.onSuccess,
+            failure: me.onFailure,
+            scope: me,
+            timeout: (me.timeout || me.form.timeout) * 1000
+        };
+    },
+
+    statics: {
+<span id='Ext-form-action-Action-static-property-CLIENT_INVALID'>        /**
+</span>         * @property
+         * Failure type returned when client side validation of the Form fails thus aborting a submit action. Client
+         * side validation is performed unless {@link Ext.form.action.Submit#clientValidation} is explicitly set to
+         * false.
+         * @static
+         */
+        CLIENT_INVALID: &#39;client&#39;,
+
+<span id='Ext-form-action-Action-static-property-SERVER_INVALID'>        /**
+</span>         * @property
+         * Failure type returned when server side processing fails and the {@link #result}&#39;s `success` property is set to
+         * false.
+         *
+         * In the case of a form submission, field-specific error messages may be returned in the {@link #result}&#39;s
+         * errors property.
+         * @static
+         */
+        SERVER_INVALID: &#39;server&#39;,
+
+<span id='Ext-form-action-Action-static-property-CONNECT_FAILURE'>        /**
+</span>         * @property
+         * Failure type returned when a communication error happens when attempting to send a request to the remote
+         * server. The {@link #response} may be examined to provide further information.
+         * @static
+         */
+        CONNECT_FAILURE: &#39;connect&#39;,
+
+<span id='Ext-form-action-Action-static-property-LOAD_FAILURE'>        /**
+</span>         * @property
+         * Failure type returned when the response&#39;s `success` property is set to false, or no field values are returned
+         * in the response&#39;s data property.
+         * @static
+         */
+        LOAD_FAILURE: &#39;load&#39;
+
+
     }
 });
 </pre>
