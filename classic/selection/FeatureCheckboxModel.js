@@ -14,19 +14,18 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 /**
- * A row selection model which enables automatic selection of features
+ * A checkbox selection model which enables automatic selection of features
  * in the map when rows are selected in the grid and vice-versa.
  *
  * **CAUTION: This class is only usable in applications using the classic
  * toolkit of ExtJS 6.**
  *
- * @class GeoExt.selection.FeatureModel
+ * @class GeoExt.selection.FeatureCheckboxModel
  */
-Ext.define('GeoExt.selection.FeatureModel', {
-    extend: 'Ext.selection.RowModel',
+Ext.define('GeoExt.selection.FeatureCheckboxModel', {
+    extend: 'Ext.selection.CheckboxModel',
     alias: [
-        'selection.featuremodel', // for backwards compatibility
-        'selection.featurerowmodel',
+        'selection.featurecheckboxmodel',
     ],
 
     mixins: [

@@ -192,7 +192,7 @@ Ext.application({
             width: 300,
             store: featStore,
             selModel: {
-                type: 'featuremodel',
+                type: 'featurerowmodel',
                 mode: 'SINGLE',
                 mapSelection: true,
                 map: olMap,
