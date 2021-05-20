@@ -286,7 +286,7 @@ Ext.define('GeoExt.selection.FeatureModelMixin', {
     },
 
     /**
-     * Is called before the onSelectChange function of the mixed in class.
+     * Is called before the onSelectChange function of the parent class.
      * Ensures that the selected feature is added / removed to / from
      * #selectedFeatures lookup object.
      *
