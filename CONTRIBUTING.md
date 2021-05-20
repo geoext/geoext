@@ -179,7 +179,7 @@ subfolder:
 
 ```
 $ cd /path/to/workspace/packages
-$ git clone https://github.com/geoext/geoext3.git GeoExt3
+$ git clone https://github.com/geoext/geoext.git GeoExt3
 $ cd GeoExt3
 ```
 
@@ -234,7 +234,7 @@ In the future we will most probably host the package on a remote resource so
 that you can do:
 
 ```
-sencha package repo add GeoExt http://geoext.github.io/geoext3/cmd/pkgs
+sencha package repo add GeoExt http://geoext.github.io/geoext/cmd/pkgs
 ```
 
 ### Update the `geoext` package on geoext.github.io

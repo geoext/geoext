@@ -2,12 +2,12 @@
 
 JavaScript Toolkit for Rich Web Mapping Applications.
 
-[![Build Status](https://travis-ci.org/geoext/geoext3.svg?branch=master)](https://travis-ci.org/geoext/geoext3)
-[![Coverage Status](https://coveralls.io/repos/geoext/geoext3/badge.svg?branch=master&service=github)](https://coveralls.io/github/geoext/geoext3?branch=master)
-[![dependencies Status](https://david-dm.org/geoext/geoext3/status.svg)](https://david-dm.org/geoext/geoext3)
-[![devDependencies Status](https://david-dm.org/geoext/geoext3/dev-status.svg)](https://david-dm.org/geoext/geoext3?type=dev)
+[![Build Status](https://travis-ci.org/geoext/geoext.svg?branch=master)](https://travis-ci.org/geoext/geoext)
+[![Coverage Status](https://coveralls.io/repos/geoext/geoext/badge.svg?branch=master&service=github)](https://coveralls.io/github/geoext/geoext?branch=master)
+[![dependencies Status](https://david-dm.org/geoext/geoext/status.svg)](https://david-dm.org/geoext/geoext)
+[![devDependencies Status](https://david-dm.org/geoext/geoext/dev-status.svg)](https://david-dm.org/geoext/geoext?type=dev)
 
-[![GeoExt logo](https://geoext.github.io/geoext3/website-resources/img/GeoExt-logo.png)](https://geoext.github.io/geoext3/)
+[![GeoExt logo](https://geoext.github.io/geoext/website-resources/img/GeoExt-logo.png)](https://geoext.github.io/geoext/)
 
 GeoExt is Open Source and enables building desktop-like GIS applications through the web. It is a JavaScript framework that combines the GIS functionality of OpenLayers with the user interface savvy of the ExtJS library provided by Sencha.
 
@@ -24,11 +24,11 @@ The current state of GeoExt is compatible with ExtJS 6.2.0 and OpenLayers 4.6.5.
 
 ## More information on GeoExt 3
 
-Have a look at the official homepage: https://geoext.github.io/geoext3/
+Have a look at the official homepage: https://geoext.github.io/geoext/
 
 You will find examples, API documentation (with and without inherited functionality from ExtJS), links to mailinglists and more over there.
 
-> What you see on https://geoext.github.io/geoext3/ are the contents of the `gh-pages`-branch. If you encounter anything that should be fixed, please issue a pull request against that branch and we will merge it as soon as possible.
+> What you see on https://geoext.github.io/geoext/ are the contents of the `gh-pages`-branch. If you encounter anything that should be fixed, please issue a pull request against that branch and we will merge it as soon as possible.
 
 ## How to use GeoExt 3 inside your Sencha app
 
@@ -71,23 +71,23 @@ To help with your first GeoExt 3 project, follow the instructions provided to bu
 
 ### Classic Toolkit
 
-https://geoext.github.io/geoext3/master/examples/component/map.html
+https://geoext.github.io/geoext/master/examples/component/map.html
 
-* [Basic map component](https://geoext.github.io/geoext3/master/examples/component/map.html)
-* [Overview component](https://geoext.github.io/geoext3/master/examples/component/overviewMap.html)
-* [Basic TreePanel](https://geoext.github.io/geoext3/master/examples/tree/panel.html)
-* [Legends in Treepanels](https://geoext.github.io/geoext3/master/examples/tree/tree-legend-simple.html)
-* [Basic print with Mapfish v3](https://geoext.github.io/geoext3/master/examples/print/basic-mapfish.html)
-* [Popup on a map component](https://geoext.github.io/geoext3/master/examples/popup/gx-popup.html)
-* [FeatureGrid component](https://geoext.github.io/geoext3/master/examples/features/grid.html)
-* [Interactively filtered heatmap](https://geoext.github.io/geoext3/master/examples/filtered-heatmap/filtered-heatmap.html)
-* [FeatureRenderer component](https://geoext.github.io/geoext3/master/examples/renderer/renderer.html)
-* [MapView form](https://geoext.github.io/geoext3/master/examples/mapviewform/mapviewform.html)
+* [Basic map component](https://geoext.github.io/geoext/master/examples/component/map.html)
+* [Overview component](https://geoext.github.io/geoext/master/examples/component/overviewMap.html)
+* [Basic TreePanel](https://geoext.github.io/geoext/master/examples/tree/panel.html)
+* [Legends in Treepanels](https://geoext.github.io/geoext/master/examples/tree/tree-legend-simple.html)
+* [Basic print with Mapfish v3](https://geoext.github.io/geoext/master/examples/print/basic-mapfish.html)
+* [Popup on a map component](https://geoext.github.io/geoext/master/examples/popup/gx-popup.html)
+* [FeatureGrid component](https://geoext.github.io/geoext/master/examples/features/grid.html)
+* [Interactively filtered heatmap](https://geoext.github.io/geoext/master/examples/filtered-heatmap/filtered-heatmap.html)
+* [FeatureRenderer component](https://geoext.github.io/geoext/master/examples/renderer/renderer.html)
+* [MapView form](https://geoext.github.io/geoext/master/examples/mapviewform/mapviewform.html)
 
 ### Modern Toolkit
 
-* [Basic map component ](https://geoext.github.io/geoext3/master/examples/modern-map/modern-map.html)
-* [LayerList component ](https://geoext.github.io/geoext3/master/examples/modern-layerlist/modern-layerlist.html)
+* [Basic map component ](https://geoext.github.io/geoext/master/examples/modern-map/modern-map.html)
+* [LayerList component ](https://geoext.github.io/geoext/master/examples/modern-layerlist/modern-layerlist.html)
 
 
 ## Want to contribute? Yes, please 😀
@@ -97,12 +97,12 @@ to your contributions!
 
 ## Initial Codesprint
 
-To kickstart the new GeoExt 3 project a code sprint has been done in Bonn from 17th to 19th of June 2015. For more informations check the following links:  [Code sprint WIKI page](https://github.com/geoext/geoext3/wiki/GeoExt-3-Codesprint), [Official blog post of code sprint day 1](http://geoext.blogspot.de/2015/06/geoext-is-getting-3.html), [Official blog post of the code sprint days 2 and 3](http://geoext.blogspot.de/2015/06/geoext-3-codesprint-day-2-and-3.html)
+To kickstart the new GeoExt 3 project a code sprint has been done in Bonn from 17th to 19th of June 2015. For more informations check the following links:  [Code sprint WIKI page](https://github.com/geoext/geoext/wiki/GeoExt-3-Codesprint), [Official blog post of code sprint day 1](http://geoext.blogspot.de/2015/06/geoext-is-getting-3.html), [Official blog post of the code sprint days 2 and 3](http://geoext.blogspot.de/2015/06/geoext-3-codesprint-day-2-and-3.html)
 
 ---------
 
 <a href="https://www.osgeo.org/projects/geoext/">
-<img src="https://geoext.github.io/geoext3/website-resources/img/OSGeo_community.png" alt="OSGeo Community Project" width="200" />
+<img src="https://geoext.github.io/geoext/website-resources/img/OSGeo_community.png" alt="OSGeo Community Project" width="200" />
 </a>
 
 GeoExt is an OSGeo Community project
