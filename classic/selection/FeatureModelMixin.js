@@ -116,7 +116,7 @@ Ext.define('GeoExt.selection.FeatureModelMixin', {
      *
      * @private
      */
-    bindFeatureModel: function() {
+    bindFeatureModel: function () {
         var me = this;
 
         me.selectedFeatures = new ol.Collection();
@@ -139,19 +139,22 @@ Ext.define('GeoExt.selection.FeatureModelMixin', {
      *
      * @private
      */
-    bindOlEvents: function() {
-        var me = this;
+    bindOlEvents: function () {
+        if (!this.bound_) {
+            var me = this;
 
-        // change style of selected feature
-        me.selectedFeatures.on('add', me.onSelectFeatAdd, me);
+            // change style of selected feature
+            me.selectedFeatures.on('add', me.onSelectFeatAdd, me);
 
-        // reset style of no more selected feature
-        me.selectedFeatures.on('remove', me.onSelectFeatRemove, me);
+            // reset style of no more selected feature
+            me.selectedFeatures.on('remove', me.onSelectFeatRemove, me);
 
-        // create a map click listener for connected vector layer
-        if (me.mapSelection && me.layer && me.map) {
-            me.map.on('singleclick', me.onFeatureClick, me);
-            me.mapClickRegistered = true;
+            // create a map click listener for connected vector layer
+            if (me.mapSelection && me.layer && me.map) {
+                me.map.on('singleclick', me.onFeatureClick, me);
+                me.mapClickRegistered = true;
+            }
+            this.bound_ = true;
         }
     },
 
@@ -161,7 +164,7 @@ Ext.define('GeoExt.selection.FeatureModelMixin', {
      *
      * @private
      */
-    unbindOlEvents: function() {
+    unbindOlEvents: function () {
         var me = this;
 
         // remove 'add' / 'remove' listener from selected feature collection
@@ -175,6 +178,8 @@ Ext.define('GeoExt.selection.FeatureModelMixin', {
             me.map.un('singleclick', me.onFeatureClick, me);
             me.mapClickRegistered = false;
         }
+
+        this.bound_ = false;
     },
 
     /**
@@ -185,7 +190,7 @@ Ext.define('GeoExt.selection.FeatureModelMixin', {
      * @private
      * @param  {ol.Collection.Event} evt OL event object
      */
-    onSelectFeatAdd: function(evt) {
+    onSelectFeatAdd: function (evt) {
         var me = this;
         var feat = evt.element;
         if (feat) {
@@ -207,7 +212,7 @@ Ext.define('GeoExt.selection.FeatureModelMixin', {
      * @private
      * @param  {ol.Collection.Event} evt OL event object
      */
-    onSelectFeatRemove: function(evt) {
+    onSelectFeatRemove: function (evt) {
         var me = this;
         var feat = evt.element;
         if (feat) {
@@ -231,13 +236,13 @@ Ext.define('GeoExt.selection.FeatureModelMixin', {
      * @private
      * @param  {ol.MapBrowserEvent} evt OL event object
      */
-    onFeatureClick: function(evt) {
+    onFeatureClick: function (evt) {
         var me = this;
         var feat = me.map.forEachFeatureAtPixel(evt.pixel,
-            function(feature) {
+            function (feature) {
                 return feature;
             }, {
-                layerFilter: function(layer) {
+                layerFilter: function (layer) {
                     return layer === me.layer;
                 }
             });
@@ -255,10 +260,10 @@ Ext.define('GeoExt.selection.FeatureModelMixin', {
      * @private
      * @param  {ol.Feature} feature The feature to select
      */
-    selectMapFeature: function(feature) {
+    selectMapFeature: function (feature) {
         debugger
         var me = this;
-        var row = me.store.findBy(function(record, id) {
+        var row = me.store.findBy(function (record, id) {
             return record.getFeature() == feature;
         });
 
@@ -289,7 +294,7 @@ Ext.define('GeoExt.selection.FeatureModelMixin', {
      * @param  {GeoExt.data.model.Feature} record Selected / deselected record
      * @param  {Boolean} isSelected Record is selected or deselected
      */
-    beforeSelectChange: function(record, isSelected) {
+    beforeSelectChange: function (record, isSelected) {
         var me = this;
         var selFeature = record.getFeature();
 
@@ -309,8 +314,8 @@ Ext.define('GeoExt.selection.FeatureModelMixin', {
      * @private
      * @return {String} Random feature ID
      */
-    getRandomFid: function() {
+    getRandomFid: function () {
         // current timestamp plus a random int between 0 and 10
-        return new Date().getTime() + '' +  Math.floor(Math.random() * 11);
+        return new Date().getTime() + '' + Math.floor(Math.random() * 11);
     }
 });

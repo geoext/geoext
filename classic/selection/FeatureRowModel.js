@@ -28,7 +28,7 @@ Ext.define('GeoExt.selection.FeatureRowModel', {
 
     alias: [
         'selection.featuremodel', // for backwards compatibility
-        'selection.featurerowmodel',
+        'selection.featurerowmodel'
     ],
 
     mixins: [

@@ -75,6 +75,22 @@ describe('GeoExt.selection.FeatureRowModel', function() {
         });
     });
 
+    describe('destruction', function() {
+       it('binds and unbinds', function() {
+           var selModel = Ext.create('GeoExt.selection.FeatureRowModel');
+
+           expect(selModel.bound_).to.be(undefined);
+
+           selModel.bindComponent();
+
+           expect(selModel.bound_).to.be(true);
+
+           selModel.destroy();
+
+           expect(selModel.bound_).to.be(false);
+       });
+    });
+
     describe('Layer detection', function() {
         var selModel;
         var featStore;
