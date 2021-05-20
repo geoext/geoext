@@ -8,7 +8,7 @@ Ext.require([
 
 // load components, which are only compatible with the classic toolkit
 Ext.Loader.loadScript({
-    url: '../../classic/selection/FeatureModel.js'
+    url: '../../classic/selection/FeatureRowModel.js'
 });
 
 var olMap;

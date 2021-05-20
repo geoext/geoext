@@ -22,8 +22,10 @@
  *
  * @class GeoExt.selection.FeatureModel
  */
-Ext.define('GeoExt.selection.FeatureModel', {
+Ext.define('GeoExt.selection.FeatureRowModel', {
+    alternateClassName: 'GeoExt.selection.FeatureModel', // for backwards compatibility
     extend: 'Ext.selection.RowModel',
+
     alias: [
         'selection.featuremodel', // for backwards compatibility
         'selection.featurerowmodel',
