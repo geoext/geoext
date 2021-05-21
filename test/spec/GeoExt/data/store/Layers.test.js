@@ -365,11 +365,12 @@ describe('GeoExt.data.store.Layers', function() {
 
         });
 
-        describe('synchronizePropertiesToMap', function() {
+        describe('synchronizedProperties', function() {
             var map;
             var layer;
             beforeEach(function() {
                 layer = new ol.layer.Vector({
+                    title: 'Initial title',
                     source: new ol.source.Vector({
                         features: [
                             new ol.Feature()
@@ -381,22 +382,38 @@ describe('GeoExt.data.store.Layers', function() {
                 });
             });
 
+            it('reads properties on load', function() {
+                var store = Ext.create('GeoExt.data.store.Layers', {map: map});
+
+                var record = store.getAt(0);
+
+                expect(record.get('title')).to.eql('Initial title');
+                expect(record.get('other-prop')).to.equal(undefined);
+            });
+
             it('by default it only synchronizes `title`', function() {
                 var store = Ext.create('GeoExt.data.store.Layers', {map: map});
 
                 var layerRec = store.getAt(0);
-                layerRec.set('title', 'Kalle Berga');
-                layerRec.set('other-prop', 'Some Value');
-
                 var olLayer = layerRec.getOlLayer();
-                expect(olLayer.get('title')).to.equal('Kalle Berga');
+
+                layerRec.set('title', 'Kalle Berga');
+                layerRec.set('other-prop', 'Some value');
+
+                expect(olLayer.get('title')).to.eql('Kalle Berga');
                 expect(olLayer.get('other-prop')).to.equal(undefined);
+
+                olLayer.set('title', 'Some title');
+                olLayer.set('other-prop', 'Other value');
+
+                expect(layerRec.get('title')).to.eql('Some title');
+                expect(layerRec.get('other-prop')).to.eql('Some value');
             });
 
             it('synchronizes custom properties', function() {
                 Ext.define('CustomLayerModel', {
                     extend: 'GeoExt.data.model.Layer',
-                    synchronizePropertiesToMap: ['other-prop']
+                    synchronizedProperties: ['other-prop']
                 });
 
                 var store = Ext.create('GeoExt.data.store.Layers', {
@@ -405,12 +422,19 @@ describe('GeoExt.data.store.Layers', function() {
                 });
 
                 var layerRec = store.getAt(0);
-                layerRec.set('title', 'Kalle Berga');
-                layerRec.set('other-prop', 'Some Value');
-
                 var olLayer = layerRec.getOlLayer();
-                expect(olLayer.get('title')).to.equal(undefined);
-                expect(olLayer.get('other-prop')).to.equal('Some Value');
+
+                layerRec.set('title', 'Kalle Berga');
+                layerRec.set('other-prop', 'Some value');
+
+                expect(olLayer.get('title')).to.eql('Initial title');
+                expect(olLayer.get('other-prop')).to.eql('Some value');
+
+                olLayer.set('title', 'Other title');
+                olLayer.set('other-prop', 'Other value');
+
+                expect(layerRec.get('title')).to.eql('Kalle Berga');
+                expect(layerRec.get('other-prop')).to.eql('Other value');
             });
 
         });
