@@ -73,3 +73,12 @@ jobs:
         github_token: ${{ secrets.GITHUB_TOKEN }}
         publish_dir: ./${GITHUB_REF##*/}
         destination_dir: ./${GITHUB_REF##*/}
+
+
+    - name: Deploy gh-pages to geoext3 path
+      uses: peaceiris/actions-gh-pages@v3
+      with:
+        deploy_key: ${{ secrets.GEOEXT_GITHUB_IO_DEPLOY_KEY }}
+        external_repository: geoext/geoext.github.io
+        publish_dir: ./${GITHUB_REF##*/}
+        destination_dir: ./geoext3/${GITHUB_REF##*/}
