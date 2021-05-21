@@ -15,15 +15,15 @@
     "OpenLayers",
     "ExtJS"
   ],
-  "homepage": "https://geoext.github.io/geoext3/",
+  "homepage": "https://geoext.github.io/geoext/",
   "license": "GPL-3.0",
   "version": "3.3.2",
   "repository": {
     "type": "git",
-    "url": "https://github.com/geoext/geoext3.git"
+    "url": "https://github.com/geoext/geoext.git"
   },
   "bugs": {
-    "url": "https://github.com/geoext/geoext3/issues"
+    "url": "https://github.com/geoext/geoext/issues"
   },
   "files": [
     "classic/",
@@ -54,7 +54,7 @@
     "generate:docs-w-ext:master": "jsduck --config=jsduck-w-ext.json --output=master/docs-w-ext --title=\"GeoExt $npm_package_version-dev Documentation (incl. ExtJS classes)\"",
     "generate:docs:tag": "jsduck --config=jsduck.json --output=$npm_package_version/docs --title=\"GeoExt $npm_package_version Documentation\"",
     "generate:docs-w-ext:tag": "jsduck --config=jsduck-w-ext.json --output=$npm_package_version/docs-w-ext --title=\"GeoExt $npm_package_version Documentation (incl. ExtJS classes)\"",
-    "release": "npm run build && np --no-yarn --contents dist && git push https://github.com/geoext/geoext3.git master --tags"
+    "release": "npm run build && np --no-yarn --contents dist && git push https://github.com/geoext/geoext.git master --tags"
   },
   "devDependencies": {
     "browser-sync": "2.26.14",

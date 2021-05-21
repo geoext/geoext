@@ -58,7 +58,7 @@ If the application is running properly, you can stop the web server with `CONTRO
 
 ### Add GeoExt 3 to your app
 
-Since [GeoExt v3.0.0](https://github.com/geoext/geoext3/releases/tag/v3.0.0) it is strongly recommended that app devs use GeoExt 3 via git clone, especially if the latest (and greatest) version should be used.
+Since [GeoExt v3.0.0](https://github.com/geoext/geoext/releases/tag/v3.0.0) it is strongly recommended that app devs use GeoExt 3 via git clone, especially if the latest (and greatest) version should be used.
 
 Alternatively the released versions are published as [ExtJS package](http://docs.sencha.com/cmd/6.x/cmd_packages/cmd_packages.html). They can be used as any other ExtJS package, taking advantage of Sencha cmd.
 
@@ -68,7 +68,7 @@ Clone the latest GeoExt 3 code from the official github repository:
 ```
 mkdir lib
 cd lib
-git clone https://github.com/geoext/geoext3.git
+git clone https://github.com/geoext/geoext.git
 cd ..
 ```
 
@@ -86,7 +86,7 @@ Adjust the `classpath` property in your ``app.json`` like below.
 The released version of GeoExt 3 are available as a ExtJS package. We need to tell Sencha cmd where it can find the `GeoExt3` package.
 
 ```
-sencha package repo add GeoExt http://geoext.github.io/geoext3/cmd/pkgs
+sencha package repo add GeoExt http://geoext.github.io/geoext/cmd/pkgs
 ```
 
 Sencha cmd can be used to check that GeoExt repository is known. Later Sencha cmd will fetch the GeoExt 3 package from the repository to build our application.
@@ -102,8 +102,8 @@ Sencha Cmd v6.2.1.29
 [INF] Remote repository connections (3):
 [INF]
 [INF]     sencha - http://cdn.sencha.com/cmd/packages/
-[INF]     GeoExt - http://geoext.github.io/geoext3/cmd/pkgs/
-[INF]     font-awesome - http://geoext.github.io/geoext3/cmd/pkgs/
+[INF]     GeoExt - http://geoext.github.io/geoext/cmd/pkgs/
+[INF]     font-awesome - http://geoext.github.io/geoext/cmd/pkgs/
 ```
 Add the following GeoExt 3 path `"packages/remote/GeoExt/src"` to the `classpath`:
 
