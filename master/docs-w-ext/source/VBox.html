@@ -15,138 +15,14 @@
   </script>
 </head>
 <body onload="prettyPrint(); highlight();">
-  <pre class="prettyprint lang-js"><span id='Ext-layout-container-VBox'>/**
-</span> * A layout that arranges items vertically down a 
- * {@link Ext.container.Container Container}. This layout optionally divides available 
- * vertical space between child {@link Ext.container.Container#cfg-items items} 
- * containing a numeric {@link Ext.Component#cfg-flex flex} configuration.
- *
- * This layout may also be used to set the widths of child items by configuring it with 
- * the {@link #align} option.  The vertical position of the child items may be set using 
- * the {@link #pack} config.
- *
- *     @example
- *     Ext.create(&#39;Ext.Panel&#39;, {
- *         width: 500,
- *         height: 400,
- *         title: &quot;VBoxLayout Panel&quot;,
- *         layout: {
- *             type: &#39;vbox&#39;,
- *         },
- *         renderTo: document.body,
- *         items: [{
- *             xtype: &#39;panel&#39;,
- *             title: &#39;Inner Panel One&#39;,
- *             width: 250,
- *             flex: 2
- *         },
- *         {
- *             xtype: &#39;panel&#39;,
- *             title: &#39;Inner Panel Two&#39;,
- *             width: 250,
- *             flex: 4
- *         },
- *         {
- *             xtype: &#39;panel&#39;,
- *             title: &#39;Inner Panel Three&#39;,
- *             width: &#39;50%&#39;,
- *             flex: 4
- *         }]
- *     });
- * 
- * The following example may be used to view the outcomes when combining the `align` and 
- * `pack` configs:
- * 
- *     @example
- *     Ext.create({
- *         xtype: &#39;panel&#39;,
- *         renderTo: Ext.getBody(),
- *         height: 400,
- *         width: 520,
- *         defaultListenerScope: true,
- *         layout: &#39;vbox&#39;,
- *         defaultType: &#39;button&#39;,
- *         items: [{
- *             text: &#39;One&#39;
- *         }, {
- *             text: &#39;Two&#39;
- *         }, {
- *             text: &#39;Three&#39;
- *         }],
- *         
- *         dockedItems: [{
- *             xtype: &#39;toolbar&#39;,
- *             dock: &#39;top&#39;,
- *             items: [{
- *                 xtype: &#39;buttongroup&#39;,
- *                 title: &#39;align&#39;,
- *                 layout: &#39;fit&#39;,
- *                 items: [{
- *                     xtype: &#39;segmentedbutton&#39;,
- *                     margin: 10,
- *                     allowDepress: true,
- *                     defaults: {
- *                         configType: &#39;align&#39;  // custom config used in this example
- *                     },
- *                     items: [{
- *                         text: &#39;begin&#39;
- *                     }, {
- *                         text: &#39;middle&#39;
- *                     }, {
- *                         text: &#39;end&#39;
- *                     }, {
- *                         text: &#39;stretch&#39;
- *                     }, {
- *                         text: &#39;stretchmax&#39;
- *                     }],
- *                     listeners: {
- *                         toggle: &#39;onToggle&#39;
- *                     }
- *                 }]
- *             }, &#39;-&gt;&#39;, {
- *                 xtype: &#39;buttongroup&#39;,
- *                 title: &#39;pack&#39;,
- *                 layout: &#39;fit&#39;,
- *                 items: [{
- *                     xtype: &#39;segmentedbutton&#39;,
- *                     margin: 10,
- *                     allowDepress: true,
- *                     defaults: {
- *                         configType: &#39;pack&#39;  // custom config used in this example
- *                     },
- *                     items: [{
- *                         text: &#39;start&#39;
- *                     }, {
- *                         text: &#39;center&#39;
- *                     }, {
- *                         text: &#39;end&#39;
- *                     }],
- *                     listeners: {
- *                         toggle: &#39;onToggle&#39;
- *                     }
- *                 }]
- *             }]
- *         }],
- *         
- *         onToggle: function (group, button, isPressed) {
- *             var cfg = {};
- *             
- *             cfg[button.configType] = isPressed ? button.getText() : null;
- *             this.setLayout(cfg);
- *         }
- *     });
- */
-Ext.define(&#39;Ext.layout.container.VBox&#39;, {
-    extend: &#39;Ext.layout.container.Box&#39;,
+  <pre class="prettyprint lang-js">Ext.define(&#39;Ext.rtl.layout.container.VBox&#39;, {
+    override: &#39;Ext.layout.container.VBox&#39;,
 
-    alias: &#39;layout.vbox&#39;,
-
-    alternateClassName: &#39;Ext.layout.VBoxLayout&#39;,
-
-<span id='Ext-layout-container-VBox-property-type'>    type: &#39;vbox&#39;,
-</span>
-<span id='Ext-layout-container-VBox-cfg-vertical'>    vertical: true
-</span>});
-</pre>
+    rtlNames: {
+        beforeY: &#39;right&#39;,
+        afterY: &#39;left&#39;,
+        scrollTo: &#39;rtlScrollTo&#39;
+    }
+});</pre>
 </body>
 </html>
