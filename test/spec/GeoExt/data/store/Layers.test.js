@@ -365,6 +365,56 @@ describe('GeoExt.data.store.Layers', function() {
 
         });
 
+        describe('synchronizePropertiesToMap', function() {
+            var map;
+            var layer;
+            beforeEach(function() {
+                layer = new ol.layer.Vector({
+                    source: new ol.source.Vector({
+                        features: [
+                            new ol.Feature()
+                        ]
+                    })
+                });
+                map = new ol.Map({
+                    layers: [layer]
+                });
+            });
+
+            it('by default it only synchronizes `title`', function() {
+                var store = Ext.create('GeoExt.data.store.Layers', {map: map});
+
+                var layerRec = store.getAt(0);
+                layerRec.set('title', 'Kalle Berga');
+                layerRec.set('other-prop', 'Some Value');
+
+                var olLayer = layerRec.getOlLayer();
+                expect(olLayer.get('title')).to.equal('Kalle Berga');
+                expect(olLayer.get('other-prop')).to.equal(undefined);
+            });
+
+            it('synchronizes custom properties', function() {
+                Ext.define('CustomLayerModel', {
+                    extend: 'GeoExt.data.model.Layer',
+                    synchronizePropertiesToMap: ['other-prop']
+                });
+
+                var store = Ext.create('GeoExt.data.store.Layers', {
+                    map: map,
+                    model: 'CustomLayerModel'
+                });
+
+                var layerRec = store.getAt(0);
+                layerRec.set('title', 'Kalle Berga');
+                layerRec.set('other-prop', 'Some Value');
+
+                var olLayer = layerRec.getOlLayer();
+                expect(olLayer.get('title')).to.equal(undefined);
+                expect(olLayer.get('other-prop')).to.equal('Some Value');
+            });
+
+        });
+
     });
 
 });

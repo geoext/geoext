@@ -381,16 +381,24 @@ Ext.define('GeoExt.data.store.Layers', {
      * @param {Ext.data.Model} record The model instance that was updated.
      * @param {String} operation The operation, either Ext.data.Model.EDIT,
      *     Ext.data.Model.REJECT or Ext.data.Model.COMMIT.
+     * @param {string[]|null} modifiedFieldNames The fieldnames that were
+     *     modified in this operation.
      * @private
      */
-    onStoreUpdate: function(store, record, operation) {
+    onStoreUpdate: function(store, record, operation, modifiedFieldNames) {
         if (operation === Ext.data.Record.EDIT) {
-            if (record.modified && record.modified.title) {
+            if (modifiedFieldNames) {
                 var layer = record.getOlLayer();
-                var title = record.get('title');
-                if (title !== layer.get('title')) {
-                    layer.set('title', title);
-                }
+                modifiedFieldNames.filter(function(field) {
+                    // use only fields that are configured to synchronize
+                    return record.synchronizePropertiesToMap
+                        .indexOf(field) > -1;
+                }).forEach(function(field) {
+                    var value = record.get(field);
+                    if (value !== layer.get(field)) {
+                        layer.set(field, value);
+                    }
+                });
             }
         }
     },
