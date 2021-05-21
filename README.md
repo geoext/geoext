@@ -45,11 +45,11 @@ Else it will be the folder where you cloned the repository into.
     "classpath": [
         "app",
         "${toolkit.name}/src",
-        "./lib/geoext3/src"
+        "./lib/geoext/src"
     ]
 ```
 
-In the snippet above, `lib/geoext3` is a `git clone` of the GeoExt repo.
+In the snippet above, `lib/geoext` is a `git clone` of the GeoExt repo.
 
 GeoExt also offers components, which are only compatible with the classic
 toolkit of ExtJS (e.g. `StateProvider` or `GeocoderCombo`).
@@ -60,8 +60,8 @@ In case you want to use them you also have to add the `classic` folder to the
     "classpath": [
         "app",
         "${toolkit.name}/src",
-        "./lib/geoext3/src",
-        "./lib/geoext3/classic"
+        "./lib/geoext/src",
+        "./lib/geoext/classic"
     ]
 ```
 

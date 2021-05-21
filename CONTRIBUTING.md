@@ -45,8 +45,8 @@ directories are detected (end via `CTRL+C`).
 to the source code are detected, the browser page is reloaded (end via
   `CTRL+C`).
 * `coveralls` is used by the continues integration platform
-[Travis CI](https://travis-ci.org/geoext/geoext3) to upload coverage info to
-[Coveralls.io](https://coveralls.io/github/geoext/geoext3)
+[Travis CI](https://travis-ci.org/geoext/geoext) to upload coverage info to
+[Coveralls.io](https://coveralls.io/github/geoext/geoext)
 * `generate:example`generates a sample application in the examples folder. Use
 this to start a new feature example for GeoExt3.
 * `generate:docs` generates an API documentation that you can access in the
@@ -174,13 +174,13 @@ To generate a package you usually first create a Sencha `workspace` by issuing
 $ sencha -sdk /path/to/ext-n.n.n generate workspace /path/to/workspace
 ```
 
-Inside of the workspace clone the `geoext3` repository into the `packages`
+Inside of the workspace clone the `geoext` repository into the `packages`
 subfolder:
 
 ```
 $ cd /path/to/workspace/packages
-$ git clone https://github.com/geoext/geoext.git GeoExt3
-$ cd GeoExt3
+$ git clone https://github.com/geoext/geoext.git geoext
+$ cd geoext
 ```
 
 Then you can issue
