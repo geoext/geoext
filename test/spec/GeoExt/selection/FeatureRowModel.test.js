@@ -76,19 +76,19 @@ describe('GeoExt.selection.FeatureRowModel', function() {
     });
 
     describe('destruction', function() {
-       it('binds and unbinds', function() {
-           var selModel = Ext.create('GeoExt.selection.FeatureRowModel');
+        it('binds and unbinds', function() {
+            var selModel = Ext.create('GeoExt.selection.FeatureRowModel');
 
-           expect(selModel.bound_).to.be(undefined);
+            expect(selModel.bound_).to.be(undefined);
 
-           selModel.bindComponent();
+            selModel.bindComponent();
 
-           expect(selModel.bound_).to.be(true);
+            expect(selModel.bound_).to.be(true);
 
-           selModel.destroy();
+            selModel.destroy();
 
-           expect(selModel.bound_).to.be(false);
-       });
+            expect(selModel.bound_).to.be(false);
+        });
     });
 
     describe('Layer detection', function() {
@@ -145,7 +145,8 @@ describe('GeoExt.selection.FeatureRowModel', function() {
                 Ext.create('GeoExt.data.store.Features', {features: coll});
 
             selModel = Ext.create('GeoExt.selection.FeatureRowModel', {
-                mode: 'SINGLE'});
+                mode: 'SINGLE'
+            });
             // feature grid with a feature selection model
             grid = Ext.create('Ext.grid.Panel', {
                 store: featStore,
@@ -185,9 +186,8 @@ describe('GeoExt.selection.FeatureRowModel', function() {
             grid.getView().setSelection(selRec);
 
             selFeatStyle = selFeat.getStyle();
-            expect(
-                selFeatStyle.getImage().getFill().getColor()).to.
-                be('rgba(255,255,255,0.8)');
+            expect(selFeatStyle.getImage().getFill().getColor())
+                .to.be('rgba(255,255,255,0.8)');
         });
 
         it('deselection removes feature from "selectedFeatures"', function() {

@@ -25,7 +25,7 @@
 Ext.define('GeoExt.selection.FeatureCheckboxModel', {
     extend: 'Ext.selection.CheckboxModel',
     alias: [
-        'selection.featurecheckboxmodel',
+        'selection.featurecheckboxmodel'
     ],
 
     mixins: [
