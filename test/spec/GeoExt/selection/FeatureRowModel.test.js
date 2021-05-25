@@ -1,18 +1,18 @@
-Ext.Loader.syncRequire(['GeoExt.selection.FeatureModel']);
+Ext.Loader.syncRequire(['GeoExt.selection.FeatureRowModel']);
 
-describe('GeoExt.selection.FeatureModel', function() {
+describe('GeoExt.selection.FeatureRowModel', function() {
 
     describe('basics', function() {
         it('is defined', function() {
-            expect(GeoExt.selection.FeatureModel).not.to.be(undefined);
+            expect(GeoExt.selection.FeatureRowModel).not.to.be(undefined);
         });
     });
 
     describe('constructor (no arguments)', function() {
-        var selModel = Ext.create('GeoExt.selection.FeatureModel', {});
-        it('constructs an instance of GeoExt.selection.FeatureModel',
+        var selModel = Ext.create('GeoExt.selection.FeatureRowModel', {});
+        it('constructs an instance of GeoExt.selection.FeatureRowModel',
             function() {
-                expect(selModel).to.be.an(GeoExt.selection.FeatureModel);
+                expect(selModel).to.be.an(GeoExt.selection.FeatureRowModel);
             }
         );
     });
@@ -20,7 +20,7 @@ describe('GeoExt.selection.FeatureModel', function() {
     describe('configs and properties', function() {
         var selModel;
         beforeEach(function() {
-            selModel = Ext.create('GeoExt.selection.FeatureModel');
+            selModel = Ext.create('GeoExt.selection.FeatureRowModel');
         });
         afterEach(function() {
             selModel.destroy();
@@ -38,7 +38,7 @@ describe('GeoExt.selection.FeatureModel', function() {
 
         var selModel;
         beforeEach(function() {
-            selModel = Ext.create('GeoExt.selection.FeatureModel');
+            selModel = Ext.create('GeoExt.selection.FeatureRowModel');
         });
         afterEach(function() {
             selModel.destroy();
@@ -75,6 +75,22 @@ describe('GeoExt.selection.FeatureModel', function() {
         });
     });
 
+    describe('destruction', function() {
+       it('binds and unbinds', function() {
+           var selModel = Ext.create('GeoExt.selection.FeatureRowModel');
+
+           expect(selModel.bound_).to.be(undefined);
+
+           selModel.bindComponent();
+
+           expect(selModel.bound_).to.be(true);
+
+           selModel.destroy();
+
+           expect(selModel.bound_).to.be(false);
+       });
+    });
+
     describe('Layer detection', function() {
         var selModel;
         var featStore;
@@ -84,7 +100,7 @@ describe('GeoExt.selection.FeatureModel', function() {
             featStore =
                 Ext.create('GeoExt.data.store.Features', {});
 
-            selModel = Ext.create('GeoExt.selection.FeatureModel', {});
+            selModel = Ext.create('GeoExt.selection.FeatureRowModel', {});
             // feature grid with a feature selection model
             Ext.create('Ext.grid.Panel', {
                 title: 'Feature Grid w. SelectionModel',
@@ -106,7 +122,7 @@ describe('GeoExt.selection.FeatureModel', function() {
 
         it('is skipped if passed in',
             function() {
-                selModel = Ext.create('GeoExt.selection.FeatureModel', {
+                selModel = Ext.create('GeoExt.selection.FeatureRowModel', {
                     layer: layer
                 });
                 expect(selModel.layer).not.to.be(featStore.layer);
@@ -128,7 +144,7 @@ describe('GeoExt.selection.FeatureModel', function() {
             featStore =
                 Ext.create('GeoExt.data.store.Features', {features: coll});
 
-            selModel = Ext.create('GeoExt.selection.FeatureModel', {
+            selModel = Ext.create('GeoExt.selection.FeatureRowModel', {
                 mode: 'SINGLE'});
             // feature grid with a feature selection model
             grid = Ext.create('Ext.grid.Panel', {
@@ -234,7 +250,7 @@ describe('GeoExt.selection.FeatureModel', function() {
             featStore =
                 Ext.create('GeoExt.data.store.Features', {features: coll});
 
-            selModel = Ext.create('GeoExt.selection.FeatureModel', {
+            selModel = Ext.create('GeoExt.selection.FeatureRowModel', {
                 mode: 'SIMPLE' // allows selection multiple records at a time
             });
             // feature grid with a feature selection model
