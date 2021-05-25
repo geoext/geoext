@@ -30,41 +30,50 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see &lt;http://www.gnu.org/licenses/&gt;.
  */
-<span id='GeoExt-selection-FeatureModel'>/**
-</span>  * A row selection model which enables automatic selection of features
-  * in the map when rows are selected in the grid and vice-versa.
-  *
-  * **CAUTION: This class is only usable in applications using the classic
-  * toolkit of ExtJS 6.**
-  *
-  * @class GeoExt.selection.FeatureModel
-  */
-Ext.define(&#39;GeoExt.selection.FeatureModel&#39;, {
-    extend: &#39;Ext.selection.RowModel&#39;,
-    alias: &#39;selection.featuremodel&#39;,
+<span id='GeoExt-selection-FeatureModelMixin'>/**
+</span> * A mixin for selection model which enables automatic selection of features
+ * in the map when rows are selected in the grid and vice-versa.
+ *
+ * **CAUTION: This class is only usable in applications using the classic
+ * toolkit of ExtJS 6.**
+ *
+ * @class GeoExt.selection.FeatureModelMixin
+ */
+Ext.define(&#39;GeoExt.selection.FeatureModelMixin&#39;, {
+    extend: &#39;Ext.Mixin&#39;,
+
+<span id='GeoExt-selection-FeatureModelMixin-property-mixinConfig'>    mixinConfig: {
+</span>        after: {
+            destroy: &#39;unbindOlEvents&#39;,
+            bindComponent: &#39;bindFeatureModel&#39;
+        },
+        before: {
+            onSelectChange: &#39;beforeSelectChange&#39;
+        }
+    },
 
     config: {
-<span id='GeoExt-selection-FeatureModel-cfg-layer'>        /**
+<span id='GeoExt-selection-FeatureModelMixin-cfg-layer'>        /**
 </span>         * The connected vector layer.
          * @cfg {ol.layer.Vector}
          * @property {ol.layer.Vector}
          */
         layer: null,
 
-<span id='GeoExt-selection-FeatureModel-cfg-map'>        /**
+<span id='GeoExt-selection-FeatureModelMixin-cfg-map'>        /**
 </span>         * The OpenLayers map we work with
          * @cfg {ol.Map}
          */
         map: null,
 
-<span id='GeoExt-selection-FeatureModel-cfg-mapSelection'>        /**
+<span id='GeoExt-selection-FeatureModelMixin-cfg-mapSelection'>        /**
 </span>         * Set to true to create a click handler on the map selecting a clicked
          * object in the #layer.
          * @cfg {Boolean}
          */
         mapSelection: false,
 
-<span id='GeoExt-selection-FeatureModel-cfg-selectStyle'>        /**
+<span id='GeoExt-selection-FeatureModelMixin-cfg-selectStyle'>        /**
 </span>         * The default style for the selected features.
          * @cfg {ol.style.Style}
          */
@@ -89,7 +98,7 @@ Ext.define(&#39;GeoExt.selection.FeatureModel&#39;, {
         })
     },
 
-<span id='GeoExt-selection-FeatureModel-property-existingFeatStyles'>    /**
+<span id='GeoExt-selection-FeatureModelMixin-property-existingFeatStyles'>    /**
 </span>     * Lookup to preserve existing feature styles. Used to restore feature style
      * when select style is removed.
      * @private
@@ -97,14 +106,14 @@ Ext.define(&#39;GeoExt.selection.FeatureModel&#39;, {
      */
     existingFeatStyles: {},
 
-<span id='GeoExt-selection-FeatureModel-property-mapClickRegistered'>    /**
+<span id='GeoExt-selection-FeatureModelMixin-property-mapClickRegistered'>    /**
 </span>     * Indicates if a map click handler has been registered on init.
      * @private
      * @property {Boolean}
      */
     mapClickRegistered: false,
 
-<span id='GeoExt-selection-FeatureModel-cfg-selectedFeatureAttr'>    /**
+<span id='GeoExt-selection-FeatureModelMixin-cfg-selectedFeatureAttr'>    /**
 </span>     * The attribute key to mark an OL feature as selected.
      * @cfg {String}
      * @property
@@ -112,22 +121,20 @@ Ext.define(&#39;GeoExt.selection.FeatureModel&#39;, {
      */
     selectedFeatureAttr: &#39;gx_selected&#39;,
 
-<span id='GeoExt-selection-FeatureModel-property-selectedFeatures'>    /**
+<span id='GeoExt-selection-FeatureModelMixin-property-selectedFeatures'>    /**
 </span>     * The currently selected features (`ol.Collection` containing `ol.Feature`
      * instances).
      * @property {ol.Collection}
      */
     selectedFeatures: null,
 
-<span id='GeoExt-selection-FeatureModel-method-bindComponent'>    /**
+<span id='GeoExt-selection-FeatureModelMixin-method-bindFeatureModel'>    /**
 </span>     * Prepare several connected objects once the selection model is ready.
      *
      * @private
      */
-    bindComponent: function() {
+    bindFeatureModel: function() {
         var me = this;
-
-        me.callParent(arguments);
 
         me.selectedFeatures = new ol.Collection();
 
@@ -140,34 +147,35 @@ Ext.define(&#39;GeoExt.selection.FeatureModel&#39;, {
             }
         }
 
-        if (!me._destroying) {
-            // bind several OL events since this is not called while destroying
-            me.bindOlEvents();
-        }
+        // bind several OL events since this is not called while destroying
+        me.bindOlEvents();
     },
 
-<span id='GeoExt-selection-FeatureModel-method-bindOlEvents'>    /**
+<span id='GeoExt-selection-FeatureModelMixin-method-bindOlEvents'>    /**
 </span>     * Binds several events on the OL objects used in this class.
      *
      * @private
      */
     bindOlEvents: function() {
-        var me = this;
+        if (!this.bound_) {
+            var me = this;
 
-        // change style of selected feature
-        me.selectedFeatures.on(&#39;add&#39;, me.onSelectFeatAdd, me);
+            // change style of selected feature
+            me.selectedFeatures.on(&#39;add&#39;, me.onSelectFeatAdd, me);
 
-        // reset style of no more selected feature
-        me.selectedFeatures.on(&#39;remove&#39;, me.onSelectFeatRemove, me);
+            // reset style of no more selected feature
+            me.selectedFeatures.on(&#39;remove&#39;, me.onSelectFeatRemove, me);
 
-        // create a map click listener for connected vector layer
-        if (me.mapSelection &amp;&amp; me.layer &amp;&amp; me.map) {
-            me.map.on(&#39;singleclick&#39;, me.onFeatureClick, me);
-            me.mapClickRegistered = true;
+            // create a map click listener for connected vector layer
+            if (me.mapSelection &amp;&amp; me.layer &amp;&amp; me.map) {
+                me.map.on(&#39;singleclick&#39;, me.onFeatureClick, me);
+                me.mapClickRegistered = true;
+            }
+            this.bound_ = true;
         }
     },
 
-<span id='GeoExt-selection-FeatureModel-method-unbindOlEvents'>    /**
+<span id='GeoExt-selection-FeatureModelMixin-method-unbindOlEvents'>    /**
 </span>     * Unbinds several events that were registered on the OL objects in this
      * class (see #bindOlEvents).
      *
@@ -187,9 +195,11 @@ Ext.define(&#39;GeoExt.selection.FeatureModel&#39;, {
             me.map.un(&#39;singleclick&#39;, me.onFeatureClick, me);
             me.mapClickRegistered = false;
         }
+
+        this.bound_ = false;
     },
 
-<span id='GeoExt-selection-FeatureModel-method-onSelectFeatAdd'>    /**
+<span id='GeoExt-selection-FeatureModelMixin-method-onSelectFeatAdd'>    /**
 </span>     * Handles &#39;add&#39; event of #selectedFeatures.
      * Ensures that added feature gets the #selectStyle and preserves an
      * possibly existing feature style.
@@ -212,7 +222,7 @@ Ext.define(&#39;GeoExt.selection.FeatureModel&#39;, {
         }
     },
 
-<span id='GeoExt-selection-FeatureModel-method-onSelectFeatRemove'>    /**
+<span id='GeoExt-selection-FeatureModelMixin-method-onSelectFeatRemove'>    /**
 </span>     * Handles &#39;remove&#39; event of #selectedFeatures.
      * Ensures that the #selectStyle is reset on the removed feature.
      *
@@ -235,7 +245,7 @@ Ext.define(&#39;GeoExt.selection.FeatureModel&#39;, {
         }
     },
 
-<span id='GeoExt-selection-FeatureModel-method-onFeatureClick'>    /**
+<span id='GeoExt-selection-FeatureModelMixin-method-onFeatureClick'>    /**
 </span>     * Handles the &#39;singleclick&#39; event of the #map.
      * Detects if a feature of the connected #layer has been clicked and selects
      * this feature by selecting its corresponding grid row.
@@ -260,7 +270,7 @@ Ext.define(&#39;GeoExt.selection.FeatureModel&#39;, {
         }
     },
 
-<span id='GeoExt-selection-FeatureModel-method-selectMapFeature'>    /**
+<span id='GeoExt-selection-FeatureModelMixin-method-selectMapFeature'>    /**
 </span>     * Selects / deselects a feature by triggering the corresponding actions in
      * the grid (e.g. selecting / deselecting a grid row).
      *
@@ -291,8 +301,8 @@ Ext.define(&#39;GeoExt.selection.FeatureModel&#39;, {
         }
     },
 
-<span id='GeoExt-selection-FeatureModel-method-onSelectChange'>    /**
-</span>     * Overwrites the onSelectChange function of the father class.
+<span id='GeoExt-selection-FeatureModelMixin-method-beforeSelectChange'>    /**
+</span>     * Is called before the onSelectChange function of the parent class.
      * Ensures that the selected feature is added / removed to / from
      * #selectedFeatures lookup object.
      *
@@ -300,7 +310,7 @@ Ext.define(&#39;GeoExt.selection.FeatureModel&#39;, {
      * @param  {GeoExt.data.model.Feature} record Selected / deselected record
      * @param  {Boolean} isSelected Record is selected or deselected
      */
-    onSelectChange: function(record, isSelected) {
+    beforeSelectChange: function(record, isSelected) {
         var me = this;
         var selFeature = record.getFeature();
 
@@ -312,31 +322,9 @@ Ext.define(&#39;GeoExt.selection.FeatureModel&#39;, {
         } else {
             me.selectedFeatures.remove(selFeature);
         }
-
-        me.callParent(arguments);
     },
 
-<span id='GeoExt-selection-FeatureModel-method-destroy'>    /**
-</span>     * Overwrites parent&#39;s destroy method in order to unregister the OL events,
-     * that were added on init.
-     * Needed due to the lack of destroy event of the parent class.
-     *
-     * @private
-     */
-    destroy: function() {
-        var me = this;
-
-        // unfortunately callParent triggers the bindComponent method, so we
-        // have to know if we are in the process of destroying or not.
-        me._destroying = true;
-
-        me.unbindOlEvents();
-        me.callParent(arguments);
-
-        me._destroying = false;
-    },
-
-<span id='GeoExt-selection-FeatureModel-method-getRandomFid'>    /**
+<span id='GeoExt-selection-FeatureModelMixin-method-getRandomFid'>    /**
 </span>     * Returns a random feature ID.
      *
      * @private
@@ -344,7 +332,7 @@ Ext.define(&#39;GeoExt.selection.FeatureModel&#39;, {
      */
     getRandomFid: function() {
         // current timestamp plus a random int between 0 and 10
-        return new Date().getTime() + &#39;&#39; +  Math.floor(Math.random() * 11);
+        return new Date().getTime() + &#39;&#39; + Math.floor(Math.random() * 11);
     }
 });
 </pre>

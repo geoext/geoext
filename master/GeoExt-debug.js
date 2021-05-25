@@ -818,6 +818,17 @@ Ext.define('GeoExt.data.model.Layer', {
      * @cfg {String}
      */
     unnamedGroupLayerText: 'Unnamed Group Layer',
+    /**
+     * This property specifies which properties are synchronized between
+     * the store record and the ol layer object.
+     *
+     * By default this only the property `'title'`.
+     *
+     * @cfg {string[]}
+     */
+    synchronizedProperties: [
+        'title'
+    ],
     fields: [
         {
             name: 'isLayerGroup',
@@ -1027,7 +1038,7 @@ Ext.define('GeoExt.data.store.Layers', {
             me.loadRawData(layer, true);
         });
         mapLayers.forEach(function(layer) {
-            layer.on('propertychange', me.onChangeLayer, me);
+            me.bindLayer(layer);
         });
         mapLayers.on('add', me.onAddLayer, me);
         mapLayers.on('remove', me.onRemoveLayer, me);
@@ -1062,6 +1073,44 @@ Ext.define('GeoExt.data.store.Layers', {
         }
     },
     /**
+     * Bind the layer to the record and initialize synchronized values.
+     *
+     * @param {ol.layer.Base} layer The layer.
+     * @param {Ext.data.Model} [record] The record, if not set it will be
+     *      searched for.
+     */
+    bindLayer: function(layer, record) {
+        var me = this;
+        layer.on('propertychange', me.onChangeLayer, me);
+        if (record === undefined) {
+            record = this.getRecordForLayer(layer);
+        }
+        Ext.Array.forEach(record.synchronizedProperties, function(prop) {
+            me.synchronize(record, layer, prop);
+        });
+    },
+    /**
+     * Gets the associated record for the layer. Uses `changeLayerFilterFn` if
+     * set.
+     * @param {ol.layer.Base} layer The layer.
+     * @return {Ext.data.Model|undefined} The record or undefined if it doesn't
+     *      exist.
+     */
+    getRecordForLayer: function(layer) {
+        var me = this;
+        var recordIndex;
+        if (Ext.isFunction(me.changeLayerFilterFn)) {
+            recordIndex = this.findBy(me.changeLayerFilterFn);
+        } else {
+            recordIndex = this.findBy(function(rec) {
+                return rec.getOlLayer() === layer;
+            });
+        }
+        if (recordIndex > -1) {
+            return this.getAt(recordIndex);
+        }
+    },
+    /**
      * Unbind this store from the layer collection it is currently bound.
      */
     unbindLayers: function() {
@@ -1093,22 +1142,16 @@ Ext.define('GeoExt.data.store.Layers', {
      * @private
      */
     onChangeLayer: function(evt) {
-        var me = this;
         var layer = evt.target;
-        var recordIndex = -1;
-        if (Ext.isFunction(me.changeLayerFilterFn)) {
-            recordIndex = this.findBy(me.changeLayerFilterFn.bind(layer));
-        } else {
-            recordIndex = this.findBy(function(rec) {
-                return rec.getOlLayer() === layer;
-            });
-        }
-        if (recordIndex > -1) {
-            var record = this.getAt(recordIndex);
-            if (evt.key === 'title') {
-                record.set('title', layer.get('title'));
-            } else if (evt.key === 'description') {
+        var record = this.getRecordForLayer(layer);
+        if (record !== undefined) {
+            if (evt.key === 'description') {
                 record.set('qtip', layer.get('description'));
+                if (record.synchronizedProperties.indexOf('description') > -1) {
+                    this.synchronize(record, layer, 'description');
+                }
+            } else if (record.synchronizedProperties.indexOf(evt.key) > -1) {
+                this.synchronize(record, layer, evt.key);
             } else {
                 this.fireEvent('update', this, record, Ext.data.Record.EDIT, null, {});
             }
@@ -1124,13 +1167,13 @@ Ext.define('GeoExt.data.store.Layers', {
         var layer = evt.element;
         var index = this.layers.getArray().indexOf(layer);
         var me = this;
-        layer.on('propertychange', me.onChangeLayer, me);
         if (!me._adding) {
             me._adding = true;
             var result = me.proxy.reader.read(layer);
             me.insert(index, result.records);
             delete me._adding;
         }
+        me.bindLayer(layer);
     },
     /**
      * Handler for layer collection's `remove` event.
@@ -1179,8 +1222,9 @@ Ext.define('GeoExt.data.store.Layers', {
             if (len > 0) {
                 var layers = new Array(len);
                 for (var i = 0; i < len; i++) {
-                    layers[i] = records[i].getOlLayer();
-                    layers[i].on('propertychange', me.onChangeLayer, me);
+                    var record = records[i];
+                    layers[i] = record.getOlLayer();
+                    me.bindLayer(layers[i], record);
                 }
                 me._adding = true;
                 me.layers.extend(layers);
@@ -1221,7 +1265,7 @@ Ext.define('GeoExt.data.store.Layers', {
             for (var i = 0,
                 ii = records.length; i < ii; ++i) {
                 layer = records[i].getOlLayer();
-                layer.on('propertychange', me.onChangeLayer, me);
+                me.bindLayer(layer, records[i]);
                 if (index === 0) {
                     me.layers.push(layer);
                 } else {
@@ -1271,19 +1315,23 @@ Ext.define('GeoExt.data.store.Layers', {
      * Handler for a store's `update` event.
      *
      * @param {Ext.data.Store} store The store which was updated.
-     * @param {Ext.data.Model} record The model instance that was updated.
+     * @param {Ext.data.Model} record The updated model instance.
      * @param {String} operation The operation, either Ext.data.Model.EDIT,
      *     Ext.data.Model.REJECT or Ext.data.Model.COMMIT.
+     * @param {string[]|null} modifiedFieldNames The fieldnames that were
+     *     modified in this operation.
      * @private
      */
-    onStoreUpdate: function(store, record, operation) {
+    onStoreUpdate: function(store, record, operation, modifiedFieldNames) {
+        var me = this;
         if (operation === Ext.data.Record.EDIT) {
-            if (record.modified && record.modified.title) {
+            if (modifiedFieldNames) {
                 var layer = record.getOlLayer();
-                var title = record.get('title');
-                if (title !== layer.get('title')) {
-                    layer.set('title', title);
-                }
+                Ext.Array.forEach(modifiedFieldNames, function(prop) {
+                    if (record.synchronizedProperties.indexOf(prop) > -1) {
+                        me.synchronize(layer, record, prop);
+                    }
+                });
             }
         }
     },
@@ -1366,6 +1414,18 @@ Ext.define('GeoExt.data.store.Layers', {
             me.totalCount = result.total;
             me.loadRecords(records, append ? me.addRecordsOptions : undefined);
             me.fireEvent('load', me, records, true);
+        }
+    },
+    /**
+     * This function synchronizes a value, but only sets it if it is different.
+     * @param {Ext.data.Model|ol.layer.Base} destination The destination.
+     * @param {Ext.data.Model|ol.layer.Base} source The source.
+     * @param {string} prop The property that should get synchronized.
+     */
+    synchronize: function(destination, source, prop) {
+        var value = source.get(prop);
+        if (value !== destination.get(prop)) {
+            destination.set(prop, value);
         }
     }
 });
@@ -7074,17 +7134,25 @@ Ext.define('GeoExt.form.field.GeocoderComboBox', {
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 /**
-  * A row selection model which enables automatic selection of features
-  * in the map when rows are selected in the grid and vice-versa.
-  *
-  * **CAUTION: This class is only usable in applications using the classic
-  * toolkit of ExtJS 6.**
-  *
-  * @class GeoExt.selection.FeatureModel
-  */
-Ext.define('GeoExt.selection.FeatureModel', {
-    extend: 'Ext.selection.RowModel',
-    alias: 'selection.featuremodel',
+ * A mixin for selection model which enables automatic selection of features
+ * in the map when rows are selected in the grid and vice-versa.
+ *
+ * **CAUTION: This class is only usable in applications using the classic
+ * toolkit of ExtJS 6.**
+ *
+ * @class GeoExt.selection.FeatureModelMixin
+ */
+Ext.define('GeoExt.selection.FeatureModelMixin', {
+    extend: 'Ext.Mixin',
+    mixinConfig: {
+        after: {
+            destroy: 'unbindOlEvents',
+            bindComponent: 'bindFeatureModel'
+        },
+        before: {
+            onSelectChange: 'beforeSelectChange'
+        }
+    },
     config: {
         /**
          * The connected vector layer.
@@ -7158,9 +7226,8 @@ Ext.define('GeoExt.selection.FeatureModel', {
      *
      * @private
      */
-    bindComponent: function() {
+    bindFeatureModel: function() {
         var me = this;
-        me.callParent(arguments);
         me.selectedFeatures = new ol.Collection();
         // detect a layer from the store if not passed in
         if (!me.layer || !me.layer instanceof ol.layer.Vector) {
@@ -7169,10 +7236,8 @@ Ext.define('GeoExt.selection.FeatureModel', {
                 me.layer = store.getLayer();
             }
         }
-        if (!me._destroying) {
-            // bind several OL events since this is not called while destroying
-            me.bindOlEvents();
-        }
+        // bind several OL events since this is not called while destroying
+        me.bindOlEvents();
     },
     /**
      * Binds several events on the OL objects used in this class.
@@ -7180,15 +7245,18 @@ Ext.define('GeoExt.selection.FeatureModel', {
      * @private
      */
     bindOlEvents: function() {
-        var me = this;
-        // change style of selected feature
-        me.selectedFeatures.on('add', me.onSelectFeatAdd, me);
-        // reset style of no more selected feature
-        me.selectedFeatures.on('remove', me.onSelectFeatRemove, me);
-        // create a map click listener for connected vector layer
-        if (me.mapSelection && me.layer && me.map) {
-            me.map.on('singleclick', me.onFeatureClick, me);
-            me.mapClickRegistered = true;
+        if (!this.bound_) {
+            var me = this;
+            // change style of selected feature
+            me.selectedFeatures.on('add', me.onSelectFeatAdd, me);
+            // reset style of no more selected feature
+            me.selectedFeatures.on('remove', me.onSelectFeatRemove, me);
+            // create a map click listener for connected vector layer
+            if (me.mapSelection && me.layer && me.map) {
+                me.map.on('singleclick', me.onFeatureClick, me);
+                me.mapClickRegistered = true;
+            }
+            this.bound_ = true;
         }
     },
     /**
@@ -7209,6 +7277,7 @@ Ext.define('GeoExt.selection.FeatureModel', {
             me.map.un('singleclick', me.onFeatureClick, me);
             me.mapClickRegistered = false;
         }
+        this.bound_ = false;
     },
     /**
      * Handles 'add' event of #selectedFeatures.
@@ -7305,7 +7374,7 @@ Ext.define('GeoExt.selection.FeatureModel', {
         }
     },
     /**
-     * Overwrites the onSelectChange function of the father class.
+     * Is called before the onSelectChange function of the parent class.
      * Ensures that the selected feature is added / removed to / from
      * #selectedFeatures lookup object.
      *
@@ -7313,7 +7382,7 @@ Ext.define('GeoExt.selection.FeatureModel', {
      * @param  {GeoExt.data.model.Feature} record Selected / deselected record
      * @param  {Boolean} isSelected Record is selected or deselected
      */
-    onSelectChange: function(record, isSelected) {
+    beforeSelectChange: function(record, isSelected) {
         var me = this;
         var selFeature = record.getFeature();
         // toggle feature's selection state
@@ -7323,23 +7392,6 @@ Ext.define('GeoExt.selection.FeatureModel', {
         } else {
             me.selectedFeatures.remove(selFeature);
         }
-        me.callParent(arguments);
-    },
-    /**
-     * Overwrites parent's destroy method in order to unregister the OL events,
-     * that were added on init.
-     * Needed due to the lack of destroy event of the parent class.
-     *
-     * @private
-     */
-    destroy: function() {
-        var me = this;
-        // unfortunately callParent triggers the bindComponent method, so we
-        // have to know if we are in the process of destroying or not.
-        me._destroying = true;
-        me.unbindOlEvents();
-        me.callParent(arguments);
-        me._destroying = false;
     },
     /**
      * Returns a random feature ID.
@@ -7351,6 +7403,78 @@ Ext.define('GeoExt.selection.FeatureModel', {
         // current timestamp plus a random int between 0 and 10
         return new Date().getTime() + '' + Math.floor(Math.random() * 11);
     }
+});
+
+/* Copyright (c) 2015-present The Open Source Geospatial Foundation
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+/**
+ * A checkbox selection model which enables automatic selection of features
+ * in the map when rows are selected in the grid and vice-versa.
+ *
+ * **CAUTION: This class is only usable in applications using the classic
+ * toolkit of ExtJS 6.**
+ *
+ * @class GeoExt.selection.FeatureCheckboxModel
+ */
+Ext.define('GeoExt.selection.FeatureCheckboxModel', {
+    extend: 'Ext.selection.CheckboxModel',
+    alias: [
+        'selection.featurecheckboxmodel'
+    ],
+    mixins: [
+        'GeoExt.selection.FeatureModelMixin'
+    ]
+});
+
+/* Copyright (c) 2015-present The Open Source Geospatial Foundation
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+/**
+ * A row selection model which enables automatic selection of features
+ * in the map when rows are selected in the grid and vice-versa.
+ *
+ * **CAUTION: This class is only usable in applications using the classic
+ * toolkit of ExtJS 6.**
+ *
+ * @class GeoExt.selection.FeatureModel
+ */
+Ext.define('GeoExt.selection.FeatureRowModel', {
+    // for backwards compatibility
+    alternateClassName: 'GeoExt.selection.FeatureModel',
+    extend: 'Ext.selection.RowModel',
+    alias: [
+        'selection.featuremodel',
+        // for backwards compatibility
+        'selection.featurerowmodel'
+    ],
+    mixins: [
+        'GeoExt.selection.FeatureModelMixin'
+    ]
 });
 
 /* Copyright (c) 2015-present The Open Source Geospatial Foundation

@@ -14,17 +14,26 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 /**
-  * A row selection model which enables automatic selection of features
-  * in the map when rows are selected in the grid and vice-versa.
-  *
-  * **CAUTION: This class is only usable in applications using the classic
-  * toolkit of ExtJS 6.**
-  *
-  * @class GeoExt.selection.FeatureModel
-  */
-Ext.define('GeoExt.selection.FeatureModel', {
-    extend: 'Ext.selection.RowModel',
-    alias: 'selection.featuremodel',
+ * A mixin for selection model which enables automatic selection of features
+ * in the map when rows are selected in the grid and vice-versa.
+ *
+ * **CAUTION: This class is only usable in applications using the classic
+ * toolkit of ExtJS 6.**
+ *
+ * @class GeoExt.selection.FeatureModelMixin
+ */
+Ext.define('GeoExt.selection.FeatureModelMixin', {
+    extend: 'Ext.Mixin',
+
+    mixinConfig: {
+        after: {
+            destroy: 'unbindOlEvents',
+            bindComponent: 'bindFeatureModel'
+        },
+        before: {
+            onSelectChange: 'beforeSelectChange'
+        }
+    },
 
     config: {
         /**
@@ -107,10 +116,8 @@ Ext.define('GeoExt.selection.FeatureModel', {
      *
      * @private
      */
-    bindComponent: function() {
+    bindFeatureModel: function() {
         var me = this;
-
-        me.callParent(arguments);
 
         me.selectedFeatures = new ol.Collection();
 
@@ -123,10 +130,8 @@ Ext.define('GeoExt.selection.FeatureModel', {
             }
         }
 
-        if (!me._destroying) {
-            // bind several OL events since this is not called while destroying
-            me.bindOlEvents();
-        }
+        // bind several OL events since this is not called while destroying
+        me.bindOlEvents();
     },
 
     /**
@@ -135,18 +140,21 @@ Ext.define('GeoExt.selection.FeatureModel', {
      * @private
      */
     bindOlEvents: function() {
-        var me = this;
+        if (!this.bound_) {
+            var me = this;
 
-        // change style of selected feature
-        me.selectedFeatures.on('add', me.onSelectFeatAdd, me);
+            // change style of selected feature
+            me.selectedFeatures.on('add', me.onSelectFeatAdd, me);
 
-        // reset style of no more selected feature
-        me.selectedFeatures.on('remove', me.onSelectFeatRemove, me);
+            // reset style of no more selected feature
+            me.selectedFeatures.on('remove', me.onSelectFeatRemove, me);
 
-        // create a map click listener for connected vector layer
-        if (me.mapSelection && me.layer && me.map) {
-            me.map.on('singleclick', me.onFeatureClick, me);
-            me.mapClickRegistered = true;
+            // create a map click listener for connected vector layer
+            if (me.mapSelection && me.layer && me.map) {
+                me.map.on('singleclick', me.onFeatureClick, me);
+                me.mapClickRegistered = true;
+            }
+            this.bound_ = true;
         }
     },
 
@@ -170,6 +178,8 @@ Ext.define('GeoExt.selection.FeatureModel', {
             me.map.un('singleclick', me.onFeatureClick, me);
             me.mapClickRegistered = false;
         }
+
+        this.bound_ = false;
     },
 
     /**
@@ -275,7 +285,7 @@ Ext.define('GeoExt.selection.FeatureModel', {
     },
 
     /**
-     * Overwrites the onSelectChange function of the father class.
+     * Is called before the onSelectChange function of the parent class.
      * Ensures that the selected feature is added / removed to / from
      * #selectedFeatures lookup object.
      *
@@ -283,7 +293,7 @@ Ext.define('GeoExt.selection.FeatureModel', {
      * @param  {GeoExt.data.model.Feature} record Selected / deselected record
      * @param  {Boolean} isSelected Record is selected or deselected
      */
-    onSelectChange: function(record, isSelected) {
+    beforeSelectChange: function(record, isSelected) {
         var me = this;
         var selFeature = record.getFeature();
 
@@ -295,28 +305,6 @@ Ext.define('GeoExt.selection.FeatureModel', {
         } else {
             me.selectedFeatures.remove(selFeature);
         }
-
-        me.callParent(arguments);
-    },
-
-    /**
-     * Overwrites parent's destroy method in order to unregister the OL events,
-     * that were added on init.
-     * Needed due to the lack of destroy event of the parent class.
-     *
-     * @private
-     */
-    destroy: function() {
-        var me = this;
-
-        // unfortunately callParent triggers the bindComponent method, so we
-        // have to know if we are in the process of destroying or not.
-        me._destroying = true;
-
-        me.unbindOlEvents();
-        me.callParent(arguments);
-
-        me._destroying = false;
     },
 
     /**
@@ -327,6 +315,6 @@ Ext.define('GeoExt.selection.FeatureModel', {
      */
     getRandomFid: function() {
         // current timestamp plus a random int between 0 and 10
-        return new Date().getTime() + '' +  Math.floor(Math.random() * 11);
+        return new Date().getTime() + '' + Math.floor(Math.random() * 11);
     }
 });

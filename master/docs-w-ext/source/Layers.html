@@ -133,7 +133,7 @@ Ext.define(&#39;GeoExt.data.store.Layers&#39;, {
         });
 
         mapLayers.forEach(function(layer) {
-            layer.on(&#39;propertychange&#39;, me.onChangeLayer, me);
+            me.bindLayer(layer);
         });
         mapLayers.on(&#39;add&#39;, me.onAddLayer, me);
         mapLayers.on(&#39;remove&#39;, me.onRemoveLayer, me);
@@ -170,6 +170,47 @@ Ext.define(&#39;GeoExt.data.store.Layers&#39;, {
         if (map instanceof ol.Map) {
             var mapLayers = map.getLayers();
             me.bindLayers(mapLayers, map);
+        }
+    },
+
+<span id='GeoExt-data-store-Layers-method-bindLayer'>    /**
+</span>     * Bind the layer to the record and initialize synchronized values.
+     *
+     * @param {ol.layer.Base} layer The layer.
+     * @param {Ext.data.Model} [record] The record, if not set it will be
+     *      searched for.
+     */
+    bindLayer: function(layer, record) {
+        var me = this;
+        layer.on(&#39;propertychange&#39;, me.onChangeLayer, me);
+        if (record === undefined) {
+            record = this.getRecordForLayer(layer);
+        }
+        Ext.Array.forEach(record.synchronizedProperties,
+            function(prop) {
+                me.synchronize(record, layer, prop);
+            });
+    },
+
+<span id='GeoExt-data-store-Layers-method-getRecordForLayer'>    /**
+</span>     * Gets the associated record for the layer. Uses `changeLayerFilterFn` if
+     * set.
+     * @param {ol.layer.Base} layer The layer.
+     * @return {Ext.data.Model|undefined} The record or undefined if it doesn&#39;t
+     *      exist.
+     */
+    getRecordForLayer: function(layer) {
+        var me = this;
+        var recordIndex;
+        if (Ext.isFunction(me.changeLayerFilterFn)) {
+            recordIndex = this.findBy(me.changeLayerFilterFn);
+        } else {
+            recordIndex = this.findBy(function(rec) {
+                return rec.getOlLayer() === layer;
+            });
+        }
+        if (recordIndex &gt; -1) {
+            return this.getAt(recordIndex);
         }
     },
 
@@ -211,22 +252,17 @@ Ext.define(&#39;GeoExt.data.store.Layers&#39;, {
      * @private
      */
     onChangeLayer: function(evt) {
-        var me = this;
         var layer = evt.target;
-        var recordIndex = -1;
-        if (Ext.isFunction(me.changeLayerFilterFn)) {
-            recordIndex = this.findBy(me.changeLayerFilterFn.bind(layer));
-        } else {
-            recordIndex = this.findBy(function(rec) {
-                return rec.getOlLayer() === layer;
-            });
-        }
-        if (recordIndex &gt; -1) {
-            var record = this.getAt(recordIndex);
-            if (evt.key === &#39;title&#39;) {
-                record.set(&#39;title&#39;, layer.get(&#39;title&#39;));
-            } else if (evt.key === &#39;description&#39;) {
+        var record = this.getRecordForLayer(layer);
+
+        if (record !== undefined) {
+            if (evt.key === &#39;description&#39;) {
                 record.set(&#39;qtip&#39;, layer.get(&#39;description&#39;));
+                if (record.synchronizedProperties.indexOf(&#39;description&#39;) &gt; -1) {
+                    this.synchronize(record, layer, &#39;description&#39;);
+                }
+            } else if (record.synchronizedProperties.indexOf(evt.key) &gt; -1) {
+                this.synchronize(record, layer, evt.key);
             } else {
                 this.fireEvent(&#39;update&#39;, this, record, Ext.data.Record.EDIT,
                     null, {});
@@ -244,13 +280,13 @@ Ext.define(&#39;GeoExt.data.store.Layers&#39;, {
         var layer = evt.element;
         var index = this.layers.getArray().indexOf(layer);
         var me = this;
-        layer.on(&#39;propertychange&#39;, me.onChangeLayer, me);
         if (!me._adding) {
             me._adding = true;
             var result = me.proxy.reader.read(layer);
             me.insert(index, result.records);
             delete me._adding;
         }
+        me.bindLayer(layer);
     },
 
 <span id='GeoExt-data-store-Layers-method-onRemoveLayer'>    /**
@@ -299,8 +335,9 @@ Ext.define(&#39;GeoExt.data.store.Layers&#39;, {
             if (len &gt; 0) {
                 var layers = new Array(len);
                 for (var i = 0; i &lt; len; i++) {
-                    layers[i] = records[i].getOlLayer();
-                    layers[i].on(&#39;propertychange&#39;, me.onChangeLayer, me);
+                    var record = records[i];
+                    layers[i] = record.getOlLayer();
+                    me.bindLayer(layers[i], record);
                 }
                 me._adding = true;
                 me.layers.extend(layers);
@@ -342,7 +379,7 @@ Ext.define(&#39;GeoExt.data.store.Layers&#39;, {
             var layer;
             for (var i = 0, ii = records.length; i &lt; ii; ++i) {
                 layer = records[i].getOlLayer();
-                layer.on(&#39;propertychange&#39;, me.onChangeLayer, me);
+                me.bindLayer(layer, records[i]);
                 if (index === 0) {
                     me.layers.push(layer);
                 } else {
@@ -395,19 +432,23 @@ Ext.define(&#39;GeoExt.data.store.Layers&#39;, {
 </span>     * Handler for a store&#39;s `update` event.
      *
      * @param {Ext.data.Store} store The store which was updated.
-     * @param {Ext.data.Model} record The model instance that was updated.
+     * @param {Ext.data.Model} record The updated model instance.
      * @param {String} operation The operation, either Ext.data.Model.EDIT,
      *     Ext.data.Model.REJECT or Ext.data.Model.COMMIT.
+     * @param {string[]|null} modifiedFieldNames The fieldnames that were
+     *     modified in this operation.
      * @private
      */
-    onStoreUpdate: function(store, record, operation) {
+    onStoreUpdate: function(store, record, operation, modifiedFieldNames) {
+        var me = this;
         if (operation === Ext.data.Record.EDIT) {
-            if (record.modified &amp;&amp; record.modified.title) {
+            if (modifiedFieldNames) {
                 var layer = record.getOlLayer();
-                var title = record.get(&#39;title&#39;);
-                if (title !== layer.get(&#39;title&#39;)) {
-                    layer.set(&#39;title&#39;, title);
-                }
+                Ext.Array.forEach(modifiedFieldNames, function(prop) {
+                    if (record.synchronizedProperties.indexOf(prop) &gt; -1) {
+                        me.synchronize(layer, record, prop);
+                    }
+                });
             }
         }
     },
@@ -498,8 +539,20 @@ Ext.define(&#39;GeoExt.data.store.Layers&#39;, {
             me.loadRecords(records, append ? me.addRecordsOptions : undefined);
             me.fireEvent(&#39;load&#39;, me, records, true);
         }
-    }
+    },
 
+<span id='GeoExt-data-store-Layers-method-synchronize'>    /**
+</span>     * This function synchronizes a value, but only sets it if it is different.
+     * @param {Ext.data.Model|ol.layer.Base} destination The destination.
+     * @param {Ext.data.Model|ol.layer.Base} source The source.
+     * @param {string} prop The property that should get synchronized.
+     */
+    synchronize: function(destination, source, prop) {
+        var value = source.get(prop);
+        if (value !== destination.get(prop)) {
+            destination.set(prop, value);
+        }
+    }
 });
 </pre>
 </body>
