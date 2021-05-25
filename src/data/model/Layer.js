@@ -62,6 +62,16 @@ Ext.define('GeoExt.data.model.Layer', {
      */
     unnamedGroupLayerText: 'Unnamed Group Layer',
 
+    /**
+     * This property specifies which properties are synchronized between
+     * the store record and the ol layer object.
+     *
+     * By default this only the property `'title'`.
+     *
+     * @cfg {string[]}
+     */
+    synchronizedProperties: ['title'],
+
     fields: [
         {
             name: 'isLayerGroup',
