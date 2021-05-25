@@ -415,7 +415,7 @@ Ext.define('GeoExt.data.store.Layers', {
      * Handler for a store's `update` event.
      *
      * @param {Ext.data.Store} store The store which was updated.
-     * @param {Ext.data.Model} record The model instance that was updated.
+     * @param {Ext.data.Model} record The updated model instance.
      * @param {String} operation The operation, either Ext.data.Model.EDIT,
      *     Ext.data.Model.REJECT or Ext.data.Model.COMMIT.
      * @param {string[]|null} modifiedFieldNames The fieldnames that were
@@ -525,7 +525,7 @@ Ext.define('GeoExt.data.store.Layers', {
     },
 
     /**
-     * This function synchronizes a value, but only sets it is different.
+     * This function synchronizes a value, but only sets it if it is different.
      * @param {Ext.data.Model|ol.layer.Base} destination The destination.
      * @param {Ext.data.Model|ol.layer.Base} source The source.
      * @param {string} prop The property that should get synchronized.
