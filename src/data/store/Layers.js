@@ -211,8 +211,9 @@ Ext.define('GeoExt.data.store.Layers', {
      */
     onChangeLayer: function(evt) {
         var layer = evt.target;
-        var record = this.getByLayer(layer,
-            this.changeLayerFilterFn.bind(layer));
+        var filter = this.changeLayerFilterFn ?
+            this.changeLayerFilterFn.bind(layer) : undefined;
+        var record = this.getByLayer(layer, filter);
 
         if (record !== undefined) {
             if (evt.key === 'description') {
