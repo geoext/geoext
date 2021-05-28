@@ -142,6 +142,12 @@ Ext.define(&#39;GeoExt.data.store.LayersTree&#39;, {
      */
     constructor: function() {
         var me = this;
+        me.onLayerCollectionRemove = me.onLayerCollectionRemove.bind(me);
+        me.onLayerCollectionAdd = me.onLayerCollectionAdd.bind(me);
+        me.bindGroupLayerCollectionEvents =
+            me.bindGroupLayerCollectionEvents.bind(me);
+        me.unbindGroupLayerCollectionEvents =
+            me.unbindGroupLayerCollectionEvents.bind(me);
         me.callParent(arguments);
 
         var collection = me.layerGroup.getLayers();
@@ -396,9 +402,9 @@ Ext.define(&#39;GeoExt.data.store.LayersTree&#39;, {
         var me = this;
         if (layerOrGroup instanceof ol.layer.Group) {
             var collection = layerOrGroup.getLayers();
-            collection.on(&#39;remove&#39;, me.onLayerCollectionRemove, me);
-            collection.on(&#39;add&#39;, me.onLayerCollectionAdd, me);
-            collection.forEach(me.bindGroupLayerCollectionEvents, me);
+            collection.on(&#39;remove&#39;, me.onLayerCollectionRemove);
+            collection.on(&#39;add&#39;, me.onLayerCollectionAdd);
+            collection.forEach(me.bindGroupLayerCollectionEvents);
         }
     },
 
@@ -414,9 +420,9 @@ Ext.define(&#39;GeoExt.data.store.LayersTree&#39;, {
         var me = this;
         if (layerOrGroup instanceof ol.layer.Group) {
             var collection = layerOrGroup.getLayers();
-            collection.un(&#39;remove&#39;, me.onLayerCollectionRemove, me);
-            collection.un(&#39;add&#39;, me.onLayerCollectionAdd, me);
-            collection.forEach(me.unbindGroupLayerCollectionEvents, me);
+            collection.un(&#39;remove&#39;, me.onLayerCollectionRemove);
+            collection.un(&#39;add&#39;, me.onLayerCollectionAdd);
+            collection.forEach(me.unbindGroupLayerCollectionEvents);
         }
     },
 

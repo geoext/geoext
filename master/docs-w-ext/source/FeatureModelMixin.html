@@ -48,6 +48,7 @@ Ext.define(&#39;GeoExt.selection.FeatureModelMixin&#39;, {
             bindComponent: &#39;bindFeatureModel&#39;
         },
         before: {
+            constructor: &#39;onConstruct&#39;,
             onSelectChange: &#39;beforeSelectChange&#39;
         }
     },
@@ -128,6 +129,14 @@ Ext.define(&#39;GeoExt.selection.FeatureModelMixin&#39;, {
      */
     selectedFeatures: null,
 
+<span id='GeoExt-selection-FeatureModelMixin-method-onConstruct'>    onConstruct: function() {
+</span>        var me = this;
+
+        me.onSelectFeatAdd = me.onSelectFeatAdd.bind(me);
+        me.onSelectFeatRemove = me.onSelectFeatRemove.bind(me);
+        me.onFeatureClick = me.onFeatureClick.bind(me);
+    },
+
 <span id='GeoExt-selection-FeatureModelMixin-method-bindFeatureModel'>    /**
 </span>     * Prepare several connected objects once the selection model is ready.
      *
@@ -139,7 +148,7 @@ Ext.define(&#39;GeoExt.selection.FeatureModelMixin&#39;, {
         me.selectedFeatures = new ol.Collection();
 
         // detect a layer from the store if not passed in
-        if (!me.layer || !me.layer instanceof ol.layer.Vector) {
+        if (!me.layer || !(me.layer instanceof ol.layer.Vector)) {
             var store = me.getStore();
             if (store &amp;&amp; store.getLayer &amp;&amp; store.getLayer() &amp;&amp;
                 store.getLayer() instanceof ol.layer.Vector) {
@@ -161,14 +170,14 @@ Ext.define(&#39;GeoExt.selection.FeatureModelMixin&#39;, {
             var me = this;
 
             // change style of selected feature
-            me.selectedFeatures.on(&#39;add&#39;, me.onSelectFeatAdd, me);
+            me.selectedFeatures.on(&#39;add&#39;, me.onSelectFeatAdd);
 
             // reset style of no more selected feature
-            me.selectedFeatures.on(&#39;remove&#39;, me.onSelectFeatRemove, me);
+            me.selectedFeatures.on(&#39;remove&#39;, me.onSelectFeatRemove);
 
             // create a map click listener for connected vector layer
             if (me.mapSelection &amp;&amp; me.layer &amp;&amp; me.map) {
-                me.map.on(&#39;singleclick&#39;, me.onFeatureClick, me);
+                me.map.on(&#39;singleclick&#39;, me.onFeatureClick);
                 me.mapClickRegistered = true;
             }
             this.bound_ = true;
@@ -186,13 +195,13 @@ Ext.define(&#39;GeoExt.selection.FeatureModelMixin&#39;, {
 
         // remove &#39;add&#39; / &#39;remove&#39; listener from selected feature collection
         if (me.selectedFeatures) {
-            me.selectedFeatures.un(&#39;add&#39;, me.onSelectFeatAdd, me);
-            me.selectedFeatures.un(&#39;remove&#39;, me.onSelectFeatRemove, me);
+            me.selectedFeatures.un(&#39;add&#39;, me.onSelectFeatAdd);
+            me.selectedFeatures.un(&#39;remove&#39;, me.onSelectFeatRemove);
         }
 
         // remove &#39;singleclick&#39; listener for connected vector layer
         if (me.mapClickRegistered) {
-            me.map.un(&#39;singleclick&#39;, me.onFeatureClick, me);
+            me.map.un(&#39;singleclick&#39;, me.onFeatureClick);
             me.mapClickRegistered = false;
         }
 

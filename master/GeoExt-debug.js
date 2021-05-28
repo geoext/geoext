@@ -1009,6 +1009,9 @@ Ext.define('GeoExt.data.store.Layers', {
      */
     constructor: function(config) {
         var me = this;
+        me.onAddLayer = me.onAddLayer.bind(me);
+        me.onRemoveLayer = me.onRemoveLayer.bind(me);
+        me.onChangeLayer = me.onChangeLayer.bind(me);
         me.callParent([
             config
         ]);
@@ -1040,8 +1043,8 @@ Ext.define('GeoExt.data.store.Layers', {
         mapLayers.forEach(function(layer) {
             me.bindLayer(layer, me.getByLayer(layer));
         });
-        mapLayers.on('add', me.onAddLayer, me);
-        mapLayers.on('remove', me.onRemoveLayer, me);
+        mapLayers.on('add', me.onAddLayer);
+        mapLayers.on('remove', me.onRemoveLayer);
         me.on({
             'load': me.onLoad,
             'clear': me.onClear,
@@ -1081,7 +1084,7 @@ Ext.define('GeoExt.data.store.Layers', {
      */
     bindLayer: function(layer, record) {
         var me = this;
-        layer.on('propertychange', me.onChangeLayer, me);
+        layer.on('propertychange', me.onChangeLayer);
         Ext.Array.forEach(record.synchronizedProperties, function(prop) {
             me.synchronize(record, layer, prop);
         });
@@ -1092,8 +1095,8 @@ Ext.define('GeoExt.data.store.Layers', {
     unbindLayers: function() {
         var me = this;
         if (me.layers) {
-            me.layers.un('add', me.onAddLayer, me);
-            me.layers.un('remove', me.onRemoveLayer, me);
+            me.layers.un('add', me.onAddLayer);
+            me.layers.un('remove', me.onRemoveLayer);
         }
         me.un('load', me.onLoad, me);
         me.un('clear', me.onClear, me);
@@ -1165,7 +1168,7 @@ Ext.define('GeoExt.data.store.Layers', {
             var rec = me.getByLayer(layer);
             if (rec) {
                 me._removing = true;
-                layer.un('propertychange', me.onChangeLayer, me);
+                layer.un('propertychange', me.onChangeLayer);
                 me.remove(rec);
                 delete me._removing;
             }
@@ -1190,7 +1193,7 @@ Ext.define('GeoExt.data.store.Layers', {
             if (!me._addRecords) {
                 me._removing = true;
                 me.layers.forEach(function(layer) {
-                    layer.un('propertychange', me.onChangeLayer, me);
+                    layer.un('propertychange', me.onChangeLayer);
                 });
                 me.layers.getLayers().clear();
                 delete me._removing;
@@ -1219,7 +1222,7 @@ Ext.define('GeoExt.data.store.Layers', {
         var me = this;
         me._removing = true;
         me.layers.forEach(function(layer) {
-            layer.un('propertychange', me.onChangeLayer, me);
+            layer.un('propertychange', me.onChangeLayer);
         });
         me.layers.clear();
         delete me._removing;
@@ -1278,7 +1281,7 @@ Ext.define('GeoExt.data.store.Layers', {
                 record = records[i];
                 layer = record.getOlLayer();
                 found = false;
-                layer.un('propertychange', me.onChangeLayer, me);
+                layer.un('propertychange', me.onChangeLayer);
                 me.layers.forEach(compareFunc);
                 if (found) {
                     me._removing = true;
@@ -1988,6 +1991,104 @@ Ext.define('GeoExt.component.Map', {
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 /**
+ * A utility class for working with OpenLayers layers.
+ *
+ * @class GeoExt.util.Layer
+ */
+Ext.define('GeoExt.util.Layer', {
+    inheritableStatics: {
+        /**
+         * Cascades down a given LayerGroup, calling the given function for
+         * each LayerGroup / Layer.
+         *
+         * @param  {ol.layer.Group} lyrGroup The layer group to cascade down
+         * @param  {Function} fn A function to call on every LayerGroup / Layer
+         * @return {void}
+         */
+        cascadeLayers: function(lyrGroup, fn) {
+            if (!(lyrGroup instanceof ol.layer.Group)) {
+                // skip on wrong input type
+                Ext.Logger.warn('No ol.layer.Group given to ' + 'BasiGX.util.Layer.cascadeLayers. It is unlikely that ' + 'this will work properly. Skipping!');
+                return;
+            }
+            if (!Ext.isFunction(fn)) {
+                Ext.Logger.warn('No function passed ' + 'this will not work. Skipping!');
+                return;
+            }
+            lyrGroup.getLayers().forEach(function(layerOrGroup) {
+                fn(layerOrGroup);
+                if (layerOrGroup instanceof ol.layer.Group) {
+                    GeoExt.util.Layer.cascadeLayers(layerOrGroup, fn);
+                }
+            });
+        },
+        /**
+         * A utility method to find the `ol.layer.Group` which is the direct
+         * parent of the passed layer. Searching starts at the passed
+         * startGroup. If `undefined` is returned, the layer is not a child of
+         * the `startGroup`.
+         *
+         * @param {ol.layer.Base} childLayer The layer whose group we want.
+         * @param {ol.layer.Group} startGroup The group layer that we will start
+         *     searching in.
+         * @return {ol.layer.Group} The direct parent group or undefined if the
+         *     group cannot be determined.
+         */
+        findParentGroup: function(childLayer, startGroup) {
+            var parentGroup;
+            var findParentGroup = GeoExt.util.Layer.findParentGroup;
+            var getLayerIndex = GeoExt.util.Layer.getLayerIndex;
+            if (getLayerIndex(childLayer, startGroup) !== -1) {
+                parentGroup = startGroup;
+            } else {
+                startGroup.getLayers().forEach(function(layer) {
+                    if (!parentGroup && layer instanceof ol.layer.Group) {
+                        parentGroup = findParentGroup(childLayer, layer);
+                    }
+                });
+            }
+            // sadly we cannot abort the forEach-iteration here
+            return parentGroup;
+        },
+        /**
+         * A utility method to determine the zero based index of a layer in a
+         * layer group. Will return `-1` if the layer isn't a direct child of
+         * the group.
+         *
+         * @param {ol.layer.Base} layer The layer whose index we want.
+         * @param {ol.layer.Group} group The group to search in.
+         * @return {Number} The index or `-1` if the layer isn't a direct child
+         *     of the group.
+         */
+        getLayerIndex: function(layer, group) {
+            var index = -1;
+            group.getLayers().forEach(function(candidate, idx) {
+                if (index === -1 && candidate === layer) {
+                    index = idx;
+                }
+            });
+            // sadly we cannot abort the forEach-iteration here
+            return index;
+        }
+    }
+});
+
+/* Copyright (c) 2015-present The Open Source Geospatial Foundation
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+/**
  * An GeoExt.component.OverviewMap displays an overview map of a parent map.
  * You can use this component as any other Ext.Component, e.g give it as an item
  * to a panel.
@@ -2043,7 +2144,8 @@ Ext.define('GeoExt.component.OverviewMap', {
         'widget.gx_component_overviewmap'
     ],
     requires: [
-        'GeoExt.util.Version'
+        'GeoExt.util.Version',
+        'GeoExt.util.Layer'
     ],
     mixins: [
         'GeoExt.mixin.SymbolCheck'
@@ -2162,10 +2264,10 @@ Ext.define('GeoExt.component.OverviewMap', {
          */
         boxStyle: null,
         /**
-         * An `ol.Collection` of `ol.layer.Base`. If not defined on
-         * construction, the layers of the #parentMap will be used.
+         * An `Array` of `ol.layer.Base`. It needs to have own layers
+         * specified, it cannot use layers of the parent map.
          *
-         * @cfg {ol.Collection}
+         * @cfg {Array}
          */
         layers: [],
         /**
@@ -2299,15 +2401,6 @@ Ext.define('GeoExt.component.OverviewMap', {
     initOverviewMap: function() {
         var me = this;
         var parentMap = me.getParentMap();
-        var parentLayers;
-        if (me.getLayers().length < 1) {
-            parentLayers = me.getParentMap().getLayers();
-            parentLayers.forEach(function(layer) {
-                if (layer instanceof ol.layer.Tile || layer instanceof ol.layer.Image) {
-                    me.getLayers().push(layer);
-                }
-            });
-        }
         me.getLayers().push(me.extentLayer);
         if (!me.getMap()) {
             var parentView = parentMap.getView();
@@ -2322,12 +2415,17 @@ Ext.define('GeoExt.component.OverviewMap', {
                 });
             me.setMap(olMap);
         }
+        GeoExt.util.Layer.cascadeLayers(parentMap.getLayerGroup(), function(layer) {
+            if (me.getLayers().indexOf(layer) > -1) {
+                throw new Error('OverviewMap cannot use layers of the ' + 'parent map. (Since ol v6.0.0 maps cannot share ' + 'layers anymore)');
+            }
+        });
         Ext.each(me.getLayers(), function(layer) {
             me.getMap().addLayer(layer);
         });
         // Set the OverviewMaps center or resolution, on property changed
         // in parentMap.
-        parentMap.getView().on('propertychange', me.onParentViewPropChange, me);
+        parentMap.getView().on('propertychange', me.onParentViewPropChange.bind(me));
         // Update the box after rendering a new frame of the parentMap.
         me.enableBoxUpdate();
         // Initially set the center and resolution of the overviewMap.
@@ -2354,10 +2452,10 @@ Ext.define('GeoExt.component.OverviewMap', {
         dragInteraction.setActive(true);
         // disable the box update during the translation
         // because it interferes when dragging the feature
-        dragInteraction.on('translatestart', me.disableBoxUpdate, me);
-        dragInteraction.on('translating', me.repositionAnchorFeature, me);
-        dragInteraction.on('translateend', me.recenterParentFromBox, me);
-        dragInteraction.on('translateend', me.enableBoxUpdate, me);
+        dragInteraction.on('translatestart', me.disableBoxUpdate.bind(me));
+        dragInteraction.on('translating', me.repositionAnchorFeature.bind(me));
+        dragInteraction.on('translateend', me.recenterParentFromBox.bind(me));
+        dragInteraction.on('translateend', me.enableBoxUpdate.bind(me));
         me.dragInteraction = dragInteraction;
     },
     /**
@@ -2379,7 +2477,7 @@ Ext.define('GeoExt.component.OverviewMap', {
         var me = this;
         var parentMap = me.getParentMap();
         if (parentMap) {
-            parentMap.on('postrender', me.updateBox, me);
+            parentMap.on('postrender', me.updateBox.bind(me));
         }
     },
     /**
@@ -2541,16 +2639,7 @@ Ext.define('GeoExt.component.OverviewMap', {
                 var parentExtentProjected = ol.proj.transformExtent(parentExtent, parentProjection, overviewProjection);
                 // call fit to assure that resolutions are available on
                 // overviewView
-                // Check for backwards compatibility
-                if (GeoExt.util.Version.isOl3()) {
-                    overviewView.fit(parentExtentProjected, me.getMap().getSize(), {
-                        constrainResolution: false
-                    });
-                } else {
-                    overviewView.fit(parentExtentProjected, {
-                        constrainResolution: false
-                    });
-                }
+                overviewView.fit(parentExtentProjected);
                 overviewView.set('resolution', me.getMagnification() * overviewView.getResolution());
             }
         }
@@ -2582,9 +2671,9 @@ Ext.define('GeoExt.component.OverviewMap', {
             return shallRecenter;
         }
         if (shallRecenter) {
-            map.on('click', me.overviewMapClicked, me);
+            map.on('click', me.overviewMapClicked.bind(me));
         } else {
-            map.un('click', me.overviewMapClicked, me);
+            map.un('click', me.overviewMapClicked.bind(me));
         }
         return shallRecenter;
     },
@@ -2814,6 +2903,7 @@ Ext.define('GeoExt.component.Popup', {
      */
     initComponent: function() {
         var me = this;
+        me.updateLayout = me.updateLayout.bind(me);
         me.on({
             afterrender: me.setOverlayElement,
             beforedestroy: me.onBeforeDestroy,
@@ -2835,7 +2925,7 @@ Ext.define('GeoExt.component.Popup', {
             });
         me.getMap().addOverlay(overlay);
         // fix layout of popup when its position changes
-        overlay.on('change:position', me.updateLayout, me);
+        overlay.on('change:position', me.updateLayout);
         // make accessible as member
         me.setOverlay(overlay);
     },
@@ -2865,7 +2955,7 @@ Ext.define('GeoExt.component.Popup', {
             var parent = me.overlayElement.parentNode;
             parent.removeChild(me.overlayElement);
         }
-        me.getOverlay().un('change:position', me.doLayout, me);
+        me.getOverlay().un('change:position', me.doLayout);
     }
 });
 
@@ -3426,7 +3516,8 @@ Ext.define('GeoExt.data.model.OlObject', {
         me.callParent([
             this.olObject.getProperties()
         ]);
-        me.olObject.on('propertychange', me.onPropertychange, me);
+        me.onPropertychange = me.onPropertychange.bind(me);
+        me.olObject.on('propertychange', me.onPropertychange);
     },
     /**
      * Listener to propertychange events of the underlying `ol.Object`. All
@@ -3475,7 +3566,7 @@ Ext.define('GeoExt.data.model.OlObject', {
      * @inheritdoc
      */
     destroy: function() {
-        this.olObject.un('propertychange', this.onPropertychange, this);
+        this.olObject.un('propertychange', this.onPropertychange);
         this.callParent(arguments);
     }
 });
@@ -3590,7 +3681,7 @@ Ext.define('GeoExt.data.model.LayerTreeNode', {
         layer = this.getOlLayer();
         if (layer instanceof ol.layer.Base) {
             this.set('checked', layer.get('visible'));
-            layer.on('change:visible', this.onLayerVisibleChange, this);
+            layer.on('change:visible', this.onLayerVisibleChange.bind(this));
         }
     },
     /**
@@ -4125,11 +4216,11 @@ Ext.define('GeoExt.data.serializer.Vector', {
                     var styles = null;
                     var styleFunction = feature.getStyleFunction();
                     if (Ext.isDefined(styleFunction)) {
-                        styles = styleFunction.call(feature, viewRes);
+                        styles = styleFunction(feature, viewRes);
                     } else {
                         styleFunction = layer.getStyleFunction();
                         if (Ext.isDefined(styleFunction)) {
-                            styles = styleFunction.call(layer, feature, viewRes);
+                            styles = styleFunction(feature, viewRes);
                         }
                     }
                     if (!Ext.isArray(styles)) {
@@ -4925,6 +5016,10 @@ Ext.define('GeoExt.data.store.Features', {
      */
     constructor: function(config) {
         var me = this;
+        me.onOlCollectionAdd = me.onOlCollectionAdd.bind(me);
+        me.onOlCollectionRemove = me.onOlCollectionRemove.bind(me);
+        me.onFeaturesAdded = me.onFeaturesAdded.bind(me);
+        me.onFeaturesRemoved = me.onFeaturesRemoved.bind(me);
         var cfg = config || {};
         if (me.style === null) {
             me.style = new ol.style.Style({
@@ -4958,8 +5053,8 @@ Ext.define('GeoExt.data.store.Features', {
             me.drawFeaturesOnMap();
         }
         if (cfg.features instanceof ol.Collection) {
-            this.olCollection.on('add', this.onOlCollectionAdd, this);
-            this.olCollection.on('remove', this.onOlCollectionRemove, this);
+            this.olCollection.on('add', this.onOlCollectionAdd);
+            this.olCollection.on('remove', this.onOlCollectionRemove);
         }
         me.bindLayerEvents();
         if (me.passThroughFilter === true) {
@@ -5032,8 +5127,8 @@ Ext.define('GeoExt.data.store.Features', {
      */
     destroy: function() {
         if (this.olCollection) {
-            this.olCollection.un('add', this.onCollectionAdd, this);
-            this.olCollection.un('remove', this.onCollectionRemove, this);
+            this.olCollection.un('add', this.onCollectionAdd);
+            this.olCollection.un('remove', this.onCollectionRemove);
         }
         var me = this;
         me.unbindLayerEvents();
@@ -5073,8 +5168,8 @@ Ext.define('GeoExt.data.store.Features', {
         var me = this;
         if (me.layer && me.layer.getSource() instanceof ol.source.Vector) {
             // bind feature add / remove events of the layer
-            me.layer.getSource().on('addfeature', me.onFeaturesAdded, me);
-            me.layer.getSource().on('removefeature', me.onFeaturesRemoved, me);
+            me.layer.getSource().on('addfeature', me.onFeaturesAdded);
+            me.layer.getSource().on('removefeature', me.onFeaturesRemoved);
         }
     },
     /**
@@ -5086,8 +5181,8 @@ Ext.define('GeoExt.data.store.Features', {
         var me = this;
         if (me.layer && me.layer.getSource() instanceof ol.source.Vector) {
             // unbind feature add / remove events of the layer
-            me.layer.getSource().un('addfeature', me.onFeaturesAdded, me);
-            me.layer.getSource().un('removefeature', me.onFeaturesRemoved, me);
+            me.layer.getSource().un('addfeature', me.onFeaturesAdded);
+            me.layer.getSource().un('removefeature', me.onFeaturesRemoved);
         }
     },
     /**
@@ -5139,79 +5234,6 @@ Ext.define('GeoExt.data.store.Features', {
                 me.bindLayerEvents();
                 delete me._filtering;
             }
-        }
-    }
-});
-
-/* Copyright (c) 2015-present The Open Source Geospatial Foundation
- *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>.
- */
-/**
- * A utility class for working with OpenLayers layers.
- *
- * @class GeoExt.util.Layer
- */
-Ext.define('GeoExt.util.Layer', {
-    inheritableStatics: {
-        /**
-         * A utility method to find the `ol.layer.Group` which is the direct
-         * parent of the passed layer. Searching starts at the passed
-         * startGroup. If `undefined` is returned, the layer is not a child of
-         * the `startGroup`.
-         *
-         * @param {ol.layer.Base} childLayer The layer whose group we want.
-         * @param {ol.layer.Group} startGroup The group layer that we will start
-         *     searching in.
-         * @return {ol.layer.Group} The direct parent group or undefined if the
-         *     group cannot be determined.
-         */
-        findParentGroup: function(childLayer, startGroup) {
-            var parentGroup;
-            var findParentGroup = GeoExt.util.Layer.findParentGroup;
-            var getLayerIndex = GeoExt.util.Layer.getLayerIndex;
-            if (getLayerIndex(childLayer, startGroup) !== -1) {
-                parentGroup = startGroup;
-            } else {
-                startGroup.getLayers().forEach(function(layer) {
-                    if (!parentGroup && layer instanceof ol.layer.Group) {
-                        parentGroup = findParentGroup(childLayer, layer);
-                    }
-                });
-            }
-            // sadly we cannot abort the forEach-iteration here
-            return parentGroup;
-        },
-        /**
-         * A utility method to determine the zero based index of a layer in a
-         * layer group. Will return `-1` if the layer isn't a direct child of
-         * the group.
-         *
-         * @param {ol.layer.Base} layer The layer whose index we want.
-         * @param {ol.layer.Group} group The group to search in.
-         * @return {Number} The index or `-1` if the layer isn't a direct child
-         *     of the group.
-         */
-        getLayerIndex: function(layer, group) {
-            var index = -1;
-            group.getLayers().forEach(function(candidate, idx) {
-                if (index === -1 && candidate === layer) {
-                    index = idx;
-                }
-            });
-            // sadly we cannot abort the forEach-iteration here
-            return index;
         }
     }
 });
@@ -5329,6 +5351,10 @@ Ext.define('GeoExt.data.store.LayersTree', {
      */
     constructor: function() {
         var me = this;
+        me.onLayerCollectionRemove = me.onLayerCollectionRemove.bind(me);
+        me.onLayerCollectionAdd = me.onLayerCollectionAdd.bind(me);
+        me.bindGroupLayerCollectionEvents = me.bindGroupLayerCollectionEvents.bind(me);
+        me.unbindGroupLayerCollectionEvents = me.unbindGroupLayerCollectionEvents.bind(me);
         me.callParent(arguments);
         var collection = me.layerGroup.getLayers();
         Ext.each(collection.getArray(), function(layer) {
@@ -5549,9 +5575,9 @@ Ext.define('GeoExt.data.store.LayersTree', {
         var me = this;
         if (layerOrGroup instanceof ol.layer.Group) {
             var collection = layerOrGroup.getLayers();
-            collection.on('remove', me.onLayerCollectionRemove, me);
-            collection.on('add', me.onLayerCollectionAdd, me);
-            collection.forEach(me.bindGroupLayerCollectionEvents, me);
+            collection.on('remove', me.onLayerCollectionRemove);
+            collection.on('add', me.onLayerCollectionAdd);
+            collection.forEach(me.bindGroupLayerCollectionEvents);
         }
     },
     /**
@@ -5566,9 +5592,9 @@ Ext.define('GeoExt.data.store.LayersTree', {
         var me = this;
         if (layerOrGroup instanceof ol.layer.Group) {
             var collection = layerOrGroup.getLayers();
-            collection.un('remove', me.onLayerCollectionRemove, me);
-            collection.un('add', me.onLayerCollectionAdd, me);
-            collection.forEach(me.unbindGroupLayerCollectionEvents, me);
+            collection.un('remove', me.onLayerCollectionRemove);
+            collection.un('add', me.onLayerCollectionAdd);
+            collection.forEach(me.unbindGroupLayerCollectionEvents);
         }
     },
     /**
@@ -6862,6 +6888,7 @@ Ext.define('GeoExt.form.field.GeocoderComboBox', {
      */
     initComponent: function() {
         var me = this;
+        me.updateExtraParams = me.updateExtraParams.bind(me);
         if (!me.store) {
             me.store = Ext.create('Ext.data.JsonStore', {
                 fields: [
@@ -6915,7 +6942,7 @@ Ext.define('GeoExt.form.field.GeocoderComboBox', {
      */
     restrictExtent: function() {
         var me = this;
-        me.map.on('moveend', me.updateExtraParams, me);
+        me.map.on('moveend', me.updateExtraParams);
         me.updateExtraParams();
     },
     /**
@@ -6974,7 +7001,7 @@ Ext.define('GeoExt.form.field.GeocoderComboBox', {
     unRestrictExtent: function() {
         var me = this;
         // unbinding moveend event
-        me.map.un('moveend', me.updateExtraParams, me);
+        me.map.un('moveend', me.updateExtraParams);
         // cleanup params in store
         me.removeMapExtentParams();
     },
@@ -7134,6 +7161,7 @@ Ext.define('GeoExt.selection.FeatureModelMixin', {
             bindComponent: 'bindFeatureModel'
         },
         before: {
+            constructor: 'onConstruct',
             onSelectChange: 'beforeSelectChange'
         }
     },
@@ -7205,6 +7233,12 @@ Ext.define('GeoExt.selection.FeatureModelMixin', {
      * @property {ol.Collection}
      */
     selectedFeatures: null,
+    onConstruct: function() {
+        var me = this;
+        me.onSelectFeatAdd = me.onSelectFeatAdd.bind(me);
+        me.onSelectFeatRemove = me.onSelectFeatRemove.bind(me);
+        me.onFeatureClick = me.onFeatureClick.bind(me);
+    },
     /**
      * Prepare several connected objects once the selection model is ready.
      *
@@ -7214,7 +7248,7 @@ Ext.define('GeoExt.selection.FeatureModelMixin', {
         var me = this;
         me.selectedFeatures = new ol.Collection();
         // detect a layer from the store if not passed in
-        if (!me.layer || !me.layer instanceof ol.layer.Vector) {
+        if (!me.layer || !(me.layer instanceof ol.layer.Vector)) {
             var store = me.getStore();
             if (store && store.getLayer && store.getLayer() && store.getLayer() instanceof ol.layer.Vector) {
                 me.layer = store.getLayer();
@@ -7232,12 +7266,12 @@ Ext.define('GeoExt.selection.FeatureModelMixin', {
         if (!this.bound_) {
             var me = this;
             // change style of selected feature
-            me.selectedFeatures.on('add', me.onSelectFeatAdd, me);
+            me.selectedFeatures.on('add', me.onSelectFeatAdd);
             // reset style of no more selected feature
-            me.selectedFeatures.on('remove', me.onSelectFeatRemove, me);
+            me.selectedFeatures.on('remove', me.onSelectFeatRemove);
             // create a map click listener for connected vector layer
             if (me.mapSelection && me.layer && me.map) {
-                me.map.on('singleclick', me.onFeatureClick, me);
+                me.map.on('singleclick', me.onFeatureClick);
                 me.mapClickRegistered = true;
             }
             this.bound_ = true;
@@ -7253,12 +7287,12 @@ Ext.define('GeoExt.selection.FeatureModelMixin', {
         var me = this;
         // remove 'add' / 'remove' listener from selected feature collection
         if (me.selectedFeatures) {
-            me.selectedFeatures.un('add', me.onSelectFeatAdd, me);
-            me.selectedFeatures.un('remove', me.onSelectFeatRemove, me);
+            me.selectedFeatures.un('add', me.onSelectFeatAdd);
+            me.selectedFeatures.un('remove', me.onSelectFeatRemove);
         }
         // remove 'singleclick' listener for connected vector layer
         if (me.mapClickRegistered) {
-            me.map.un('singleclick', me.onFeatureClick, me);
+            me.map.un('singleclick', me.onFeatureClick);
             me.mapClickRegistered = false;
         }
         this.bound_ = false;

@@ -116,6 +116,12 @@ Ext.define('GeoExt.data.store.Features', {
      */
     constructor: function(config) {
         var me = this;
+
+        me.onOlCollectionAdd = me.onOlCollectionAdd.bind(me);
+        me.onOlCollectionRemove = me.onOlCollectionRemove.bind(me);
+        me.onFeaturesAdded = me.onFeaturesAdded.bind(me);
+        me.onFeaturesRemoved = me.onFeaturesRemoved.bind(me);
+
         var cfg = config || {};
 
         if (me.style === null) {
@@ -153,8 +159,8 @@ Ext.define('GeoExt.data.store.Features', {
         }
 
         if (cfg.features instanceof ol.Collection) {
-            this.olCollection.on('add', this.onOlCollectionAdd, this);
-            this.olCollection.on('remove', this.onOlCollectionRemove, this);
+            this.olCollection.on('add', this.onOlCollectionAdd);
+            this.olCollection.on('remove', this.onOlCollectionRemove);
         }
         me.bindLayerEvents();
 
@@ -238,8 +244,8 @@ Ext.define('GeoExt.data.store.Features', {
      */
     destroy: function() {
         if (this.olCollection) {
-            this.olCollection.un('add', this.onCollectionAdd, this);
-            this.olCollection.un('remove', this.onCollectionRemove, this);
+            this.olCollection.un('add', this.onCollectionAdd);
+            this.olCollection.un('remove', this.onCollectionRemove);
         }
 
         var me = this;
@@ -287,8 +293,8 @@ Ext.define('GeoExt.data.store.Features', {
         var me = this;
         if (me.layer && me.layer.getSource() instanceof ol.source.Vector) {
             // bind feature add / remove events of the layer
-            me.layer.getSource().on('addfeature', me.onFeaturesAdded, me);
-            me.layer.getSource().on('removefeature', me.onFeaturesRemoved, me);
+            me.layer.getSource().on('addfeature', me.onFeaturesAdded);
+            me.layer.getSource().on('removefeature', me.onFeaturesRemoved);
         }
     },
 
@@ -301,8 +307,8 @@ Ext.define('GeoExt.data.store.Features', {
         var me = this;
         if (me.layer && me.layer.getSource() instanceof ol.source.Vector) {
             // unbind feature add / remove events of the layer
-            me.layer.getSource().un('addfeature', me.onFeaturesAdded, me);
-            me.layer.getSource().un('removefeature', me.onFeaturesRemoved, me);
+            me.layer.getSource().un('addfeature', me.onFeaturesAdded);
+            me.layer.getSource().un('removefeature', me.onFeaturesRemoved);
         }
     },
 

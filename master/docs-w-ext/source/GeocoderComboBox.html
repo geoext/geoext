@@ -205,6 +205,8 @@ Ext.define(&#39;GeoExt.form.field.GeocoderComboBox&#39;, {
     initComponent: function() {
         var me = this;
 
+        me.updateExtraParams = me.updateExtraParams.bind(me);
+
         if (!me.store) {
             me.store = Ext.create(&#39;Ext.data.JsonStore&#39;, {
                 fields: [
@@ -256,7 +258,7 @@ Ext.define(&#39;GeoExt.form.field.GeocoderComboBox&#39;, {
      */
     restrictExtent: function() {
         var me = this;
-        me.map.on(&#39;moveend&#39;, me.updateExtraParams, me);
+        me.map.on(&#39;moveend&#39;, me.updateExtraParams);
         me.updateExtraParams();
     },
 
@@ -313,7 +315,7 @@ Ext.define(&#39;GeoExt.form.field.GeocoderComboBox&#39;, {
     unRestrictExtent: function() {
         var me = this;
         // unbinding moveend event
-        me.map.un(&#39;moveend&#39;, me.updateExtraParams, me);
+        me.map.un(&#39;moveend&#39;, me.updateExtraParams);
         // cleanup params in store
         me.removeMapExtentParams();
     },

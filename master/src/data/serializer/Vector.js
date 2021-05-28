@@ -214,11 +214,11 @@ Ext.define('GeoExt.data.serializer.Vector', {
                 var styles = null;
                 var styleFunction = feature.getStyleFunction();
                 if (Ext.isDefined(styleFunction)) {
-                    styles = styleFunction.call(feature, viewRes);
+                    styles = styleFunction(feature, viewRes);
                 } else {
                     styleFunction = layer.getStyleFunction();
                     if (Ext.isDefined(styleFunction)) {
-                        styles = styleFunction.call(layer, feature, viewRes);
+                        styles = styleFunction(feature, viewRes);
                     }
                 }
 

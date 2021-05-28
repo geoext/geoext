@@ -21,6 +21,38 @@
 Ext.define('GeoExt.util.Layer', {
     inheritableStatics: {
         /**
+         * Cascades down a given LayerGroup, calling the given function for
+         * each LayerGroup / Layer.
+         *
+         * @param  {ol.layer.Group} lyrGroup The layer group to cascade down
+         * @param  {Function} fn A function to call on every LayerGroup / Layer
+         * @return {void}
+         */
+        cascadeLayers: function(lyrGroup, fn) {
+            if (!(lyrGroup instanceof ol.layer.Group)) {
+                // skip on wrong input type
+                Ext.Logger.warn(
+                    'No ol.layer.Group given to ' +
+                    'BasiGX.util.Layer.cascadeLayers. It is unlikely that ' +
+                    'this will work properly. Skipping!');
+                return;
+            }
+            if (!Ext.isFunction(fn)) {
+                Ext.Logger.warn(
+                    'No function passed ' +
+                    'this will not work. Skipping!');
+                return;
+            }
+
+            lyrGroup.getLayers().forEach(function(layerOrGroup) {
+                fn(layerOrGroup);
+                if (layerOrGroup instanceof ol.layer.Group) {
+                    GeoExt.util.Layer.cascadeLayers(layerOrGroup, fn);
+                }
+            });
+        },
+
+        /**
          * A utility method to find the `ol.layer.Group` which is the direct
          * parent of the passed layer. Searching starts at the passed
          * startGroup. If `undefined` is returned, the layer is not a child of

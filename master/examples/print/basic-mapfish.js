@@ -22,14 +22,13 @@ Ext.application({
             source: new ol.source.Vector({
                 url: '../data/SanFranciscoPublicSchools-Points.kml',
                 format: new ol.format.KML(),
-                attributions: [new ol.Attribution({
-                    html: '<a href="https://data.sfgov.org/Geographic' +
-                        '-Locations-and-Boundaries/San-Francisco-Public' +
-                        '-Schools-Points/dpub-rukj">' +
-                        '© 2015 City and County of San Francisco' +
-                        '</a>' +
-                        ', (via data.sfgov.org)'
-                })]
+                attributions: [
+                    '<a href="https://data.sfgov.org/Geographic' +
+                    '-Locations-and-Boundaries/San-Francisco-Public' +
+                    '-Schools-Points/dpub-rukj">' +
+                    '© 2015 City and County of San Francisco' +
+                    '</a>' +
+                    ', (via data.sfgov.org)']
             })
         });
 
