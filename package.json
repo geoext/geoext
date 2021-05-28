@@ -54,6 +54,7 @@
     "generate:docs-w-ext:master": "jsduck --config=jsduck-w-ext.json --output=master/docs-w-ext --title=\"GeoExt $npm_package_version-dev Documentation (incl. ExtJS classes)\"",
     "generate:docs:tag": "jsduck --config=jsduck.json --output=$npm_package_version/docs --title=\"GeoExt $npm_package_version Documentation\"",
     "generate:docs-w-ext:tag": "jsduck --config=jsduck-w-ext.json --output=$npm_package_version/docs-w-ext --title=\"GeoExt $npm_package_version Documentation (incl. ExtJS classes)\"",
+    "postversion": "cp package.json dist/",
     "release": "npm run build && np --no-yarn --contents dist && git push https://github.com/geoext/geoext.git master --tags"
   },
   "devDependencies": {
