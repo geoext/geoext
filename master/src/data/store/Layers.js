@@ -277,7 +277,8 @@ Ext.define('GeoExt.data.store.Layers', {
      * Handler for a store's `load` event.
      *
      * @param {Ext.data.Store} store The store that loaded.
-     * @param {Ext.data.Model[]} records An array of loades model instances.
+     * @param {Ext.data.Model|Ext.data.Model[]} records An array of loaded model
+     *      instances.
      * @param {Boolean} successful Whether loading was successful or not.
      * @private
      */

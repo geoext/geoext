@@ -63,14 +63,16 @@ Ext.define(&#39;GeoExt.data.store.Features&#39;, {
 
     config: {
 
-<span id='GeoExt-data-store-Features-cfg-layer'>        /**
+<span id='GeoExt-data-store-Features-property-layer'>        /**
 </span>         * Initial layer holding features which will be added to the store.
          *
-         * @cfg {ol.Layer} layer
-         */
-<span id='GeoExt-data-store-Features-property-layer'>        /**
-</span>         * The layer object which is in sync with this store.
-         * @property {ol.Layer}
+         * The layer object which is in sync with this store.
+         *
+         * The layer needs to be constructed with an ol.source.Vector that
+         * has an ol.Collection (constructor option `features` was set to
+         * an ol.Collection).
+         *
+         * @property {ol.layer.Vector}
          * @readonly
          */
         layer: null
@@ -136,8 +138,6 @@ Ext.define(&#39;GeoExt.data.store.Features&#39;, {
 
         me.onOlCollectionAdd = me.onOlCollectionAdd.bind(me);
         me.onOlCollectionRemove = me.onOlCollectionRemove.bind(me);
-        me.onFeaturesAdded = me.onFeaturesAdded.bind(me);
-        me.onFeaturesRemoved = me.onFeaturesRemoved.bind(me);
 
         var cfg = config || {};
 
@@ -156,16 +156,40 @@ Ext.define(&#39;GeoExt.data.store.Features&#39;, {
             });
         }
 
-        if (cfg.features) {
-            cfg.data = cfg.features;
-        } else if (cfg.layer &amp;&amp; cfg.layer instanceof ol.layer.Vector) {
-            if (cfg.layer.getSource()) {
-                cfg.data = cfg.layer.getSource().getFeatures();
-            }
+        if (cfg.features !== undefined &amp;&amp; cfg.layer !== undefined) {
+            throw new Error(&#39;GeoExt.data.store.Features should only be&#39; +
+                &#39; configured with one or less of `features` and `layer`.&#39;);
         }
 
-        if (!cfg.data) {
+        var configErrorMessage = &#39;GeoExt.data.store.Features needs to be&#39; +
+            &#39; configured with a feature collection or with a layer with a&#39; +
+            &#39; source with a feature collection.&#39;;
+
+        if (cfg.features === undefined &amp;&amp; cfg.layer === undefined) {
             cfg.data = new ol.Collection();
+        } else if (cfg.features !== undefined) {
+            if (!(cfg.features instanceof ol.Collection)) {
+                throw new Error(&#39;Features are not a collection. &#39;
+                    + configErrorMessage);
+            }
+
+            cfg.data = cfg.features;
+        } else {
+            if (!(cfg.layer instanceof ol.layer.Vector)) {
+                throw new Error(&#39;Layer is no vector layer. &#39;
+                    + configErrorMessage);
+            }
+            if (!cfg.layer.getSource()) {
+                throw new Error(&#39;Layer has no source. &#39; + configErrorMessage);
+            }
+
+            var features = cfg.layer.getSource().getFeaturesCollection();
+            if (!features) {
+                throw new Error(&#39;Source has no collection. &#39;
+                    + configErrorMessage);
+            }
+
+            cfg.data = features;
         }
 
         me.callParent([cfg]);
@@ -175,11 +199,8 @@ Ext.define(&#39;GeoExt.data.store.Features&#39;, {
             me.drawFeaturesOnMap();
         }
 
-        if (cfg.features instanceof ol.Collection) {
-            this.olCollection.on(&#39;add&#39;, this.onOlCollectionAdd);
-            this.olCollection.on(&#39;remove&#39;, this.onOlCollectionRemove);
-        }
-        me.bindLayerEvents();
+        this.olCollection.on(&#39;add&#39;, this.onOlCollectionAdd);
+        this.olCollection.on(&#39;remove&#39;, this.onOlCollectionRemove);
 
         if (me.passThroughFilter === true) {
             me.on(&#39;filterchange&#39;, me.onFilterChange);
@@ -260,14 +281,10 @@ Ext.define(&#39;GeoExt.data.store.Features&#39;, {
      * @protected
      */
     destroy: function() {
-        if (this.olCollection) {
-            this.olCollection.un(&#39;add&#39;, this.onCollectionAdd);
-            this.olCollection.un(&#39;remove&#39;, this.onCollectionRemove);
-        }
+        this.olCollection.un(&#39;add&#39;, this.onCollectionAdd);
+        this.olCollection.un(&#39;remove&#39;, this.onCollectionRemove);
 
         var me = this;
-
-        me.unbindLayerEvents();
 
         if (me.map &amp;&amp; me.layerCreated === true) {
             me.map.removeLayer(me.layer);
@@ -300,63 +317,6 @@ Ext.define(&#39;GeoExt.data.store.Features&#39;, {
         me.layerCreated = true;
     },
 
-<span id='GeoExt-data-store-Features-method-bindLayerEvents'>    /**
-</span>     * Bind the &#39;addfeature&#39; and &#39;removefeature&#39; events to sync the features
-     * in #layer with this store.
-     *
-     * @private
-     */
-    bindLayerEvents: function() {
-        var me = this;
-        if (me.layer &amp;&amp; me.layer.getSource() instanceof ol.source.Vector) {
-            // bind feature add / remove events of the layer
-            me.layer.getSource().on(&#39;addfeature&#39;, me.onFeaturesAdded);
-            me.layer.getSource().on(&#39;removefeature&#39;, me.onFeaturesRemoved);
-        }
-    },
-
-<span id='GeoExt-data-store-Features-method-unbindLayerEvents'>    /**
-</span>     * Unbind the &#39;addfeature&#39; and &#39;removefeature&#39; events of the #layer.
-     *
-     * @private
-     */
-    unbindLayerEvents: function() {
-        var me = this;
-        if (me.layer &amp;&amp; me.layer.getSource() instanceof ol.source.Vector) {
-            // unbind feature add / remove events of the layer
-            me.layer.getSource().un(&#39;addfeature&#39;, me.onFeaturesAdded);
-            me.layer.getSource().un(&#39;removefeature&#39;, me.onFeaturesRemoved);
-        }
-    },
-
-<span id='GeoExt-data-store-Features-method-onFeaturesAdded'>    /**
-</span>     * Handler for #layer &#39;addfeature&#39; event.
-     *
-     * @param {Object} evt The event object of OpenLayers.
-     * @private
-     */
-    onFeaturesAdded: function(evt) {
-        this.add(evt.feature);
-    },
-
-<span id='GeoExt-data-store-Features-method-onFeaturesRemoved'>    /**
-</span>     * Handler for #layer &#39;removefeature&#39; event.
-     *
-     * @param {Object} evt The event object of OpenLayers.
-     * @private
-     */
-    onFeaturesRemoved: function(evt) {
-        var me = this;
-        if (!me._removing) {
-            var record = me.getByFeature(evt.feature);
-            if (record) {
-                me._removing = true;
-                me.remove(record);
-                delete me._removing;
-            }
-        }
-    },
-
 <span id='GeoExt-data-store-Features-method-onFilterChange'>    /**
 </span>     * Handles the &#39;filterchange&#39;-event.
      * Applies the filter of this store to the underlying layer.
@@ -365,26 +325,18 @@ Ext.define(&#39;GeoExt.data.store.Features&#39;, {
     onFilterChange: function() {
         var me = this;
         if (me.layer &amp;&amp; me.layer.getSource() instanceof ol.source.Vector) {
-            if (!me._filtering) {
+            if (!me.__updating) {
 
-                me._filtering = true;
+                me.__updating = true;
 
-                me.unbindLayerEvents();
+                me.olCollection.clear();
 
-                // collect the filtered features in the store
-                var filteredFeatures = [];
+                // add the filtered features to the collection
                 me.each(function(rec) {
-                    filteredFeatures.push(rec.getFeature());
+                    me.olCollection.push(rec.getFeature());
                 });
 
-                // apply the filtered to the underlying layer / collection
-                me.layer.getSource().clear();
-                me.layer.getSource().addFeatures(filteredFeatures);
-                me.olCollection = new ol.Collection(filteredFeatures);
-
-                me.bindLayerEvents();
-
-                delete me._filtering;
+                delete me.__updating;
             }
         }
     }

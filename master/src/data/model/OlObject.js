@@ -149,7 +149,9 @@ Ext.define('GeoExt.data.model.OlObject', {
 
         // iterate over object setting changes to ol.Object
         Ext.Object.each(o, function(k, v) {
-            this.olObject.set(k, v);
+            if (this.olObject.get(k) !== v) {
+                this.olObject.set(k, v);
+            }
         }, this);
 
         this.__updating = false;
