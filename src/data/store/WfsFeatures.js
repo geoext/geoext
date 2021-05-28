@@ -204,7 +204,7 @@ Ext.define('GeoExt.data.store.WfsFeatures', {
         if (createLayer) {
             // the WFS vector layer showing the WFS features on the map
             me.source = new ol.source.Vector({
-                features: [],
+                features: new ol.Collection(),
                 attributions: me.layerAttribution
             });
 

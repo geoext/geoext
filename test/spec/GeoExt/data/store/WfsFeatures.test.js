@@ -262,4 +262,80 @@ describe('GeoExt.data.store.WfsFeatures', function() {
             expect(store.createSortByParameter()).to.be('foo ASC,bar DESC');
         });
     });
+
+    describe('collection binding', function() {
+        var dataPath = (typeof __karma__ === 'undefined' ? '' : 'base/test/');
+        var url = dataPath + 'data/wfs_mock.geojson';
+
+        it('removes from the layer', function() {
+            Ext.create('GeoExt.data.store.WfsFeatures', {
+                url: url,
+                listeners: {
+                    'gx-wfsstoreload': function(store) {
+                        var layer = store.getLayer();
+                        expect(layer.getSource().getFeatures())
+                            .to.have.lengthOf(3);
+
+                        store.remove(store.getAt(0));
+
+                        expect(layer.getSource().getFeatures())
+                            .to.have.lengthOf(2);
+                    }
+                }
+            });
+        });
+
+        it('removes from the store', function() {
+            Ext.create('GeoExt.data.store.WfsFeatures', {
+                url: url,
+                listeners: {
+                    'gx-wfsstoreload': function(store) {
+                        expect(store.getCount()).to.be(3);
+
+                        var source = store.getLayer().getSource();
+                        var feature = source.getFeatures()[0];
+                        source.removeFeature(feature);
+
+                        expect(store.getCount()).to.be(2);
+                    }
+                }
+            });
+        });
+
+        it('adds to the layer', function() {
+            Ext.create('GeoExt.data.store.WfsFeatures', {
+                url: url,
+                listeners: {
+                    'gx-wfsstoreload': function(store) {
+                        var layer = store.getLayer();
+                        expect(layer.getSource().getFeatures())
+                            .to.have.lengthOf(3);
+
+                        var model = Ext.create('GeoExt.data.model.Feature',
+                            new ol.Feature());
+                        store.add(model);
+
+                        expect(layer.getSource().getFeatures())
+                            .to.have.lengthOf(4);
+                    }
+                }
+            });
+        });
+
+        it('adds to the store', function() {
+            Ext.create('GeoExt.data.store.WfsFeatures', {
+                url: url,
+                listeners: {
+                    'gx-wfsstoreload': function(store) {
+                        expect(store.getCount()).to.be(3);
+
+                        var source = store.getLayer().getSource();
+                        source.addFeature(new ol.Feature());
+
+                        expect(store.getCount()).to.be(4);
+                    }
+                }
+            });
+        });
+    });
 });

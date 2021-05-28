@@ -145,7 +145,9 @@ describe('GeoExt.data.store.Features', function() {
             });
             layer = new ol.layer.Vector({
                 source: new ol.source.Vector({
-                    features: [new ol.Feature()]
+                    features: new ol.Collection([
+                        new ol.Feature()
+                    ])
                 })
             });
             map.addLayer(layer);
@@ -292,6 +294,54 @@ describe('GeoExt.data.store.Features', function() {
         );
     });
 
+    describe('adding and removing items from the store', function() {
+        var feature;
+        var layer;
+        var store;
+
+        beforeEach(function() {
+            feature = new ol.Feature();
+            layer = new ol.layer.Vector({
+                source: new ol.source.Vector({
+                    features: new ol.Collection([
+                        feature
+                    ])
+                })
+            });
+            store = Ext.create('GeoExt.data.store.Features', {
+                layer: layer
+            });
+        });
+
+        it('should add features to the layer', function() {
+            var feature = new ol.Feature();
+            var model = Ext.create('GeoExt.data.model.Feature', feature);
+
+            store.add(model);
+
+            expect(layer.getSource().getFeatures()).to.contain(feature);
+            expect(layer.getSource().getFeatures().length).to.equal(2);
+        });
+
+        it('should remove features from the layer', function() {
+            var model = store.getAt(0);
+
+            store.remove(model);
+
+            expect(layer.getSource().getFeatures().length).to.equal(0);
+        });
+
+        afterEach(function() {
+            if (store.destroy) {
+                store.destroy();
+            }
+            store = null;
+            layer = null;
+            feature = null;
+        });
+
+    });
+
     describe('config option "createLayer" without a map', function() {
         var coll;
         var store;
@@ -412,7 +462,7 @@ describe('GeoExt.data.store.Features', function() {
             feature = new ol.Feature({id: 'foo'});
             layer = new ol.layer.Vector({
                 source: new ol.source.Vector({
-                    features: [feature]
+                    features: new ol.Collection([feature])
                 })
             });
             store = Ext.create('GeoExt.data.store.Features', {
@@ -444,51 +494,6 @@ describe('GeoExt.data.store.Features', function() {
         });
     });
 
-    describe('Unbinding events on vector layer', function() {
-        var layer;
-        var store;
-
-        beforeEach(function() {
-            layer = new ol.layer.Vector({
-                source: new ol.source.Vector({
-                    features: [new ol.Feature()]
-                })
-            });
-            store = Ext.create('GeoExt.data.store.Features', {
-                layer: layer
-            });
-        });
-
-        afterEach(function() {
-            if (store.destroy) {
-                store.destroy();
-            }
-            store = null;
-            layer = null;
-        });
-
-        it('is done correctly by function "unbindLayerEvents"', function() {
-            store.unbindLayerEvents();
-            layer.getSource().addFeatures([new ol.Feature()]);
-            expect(store.getCount()).to.be(1);
-            layer.getSource().removeFeature(layer.getSource().getFeatures()[0]);
-            expect(store.getCount()).to.be(1);
-        });
-
-        it('function "unbindLayerEvents" is called before store is destroyed',
-            function() {
-                var i = 0;
-                // overwrite to see if the function is called on store
-                // destruction
-                store.unbindLayerEvents = function() {
-                    i++;
-                };
-                store.destroy();
-                expect(i).to.be.equal(1);
-            }
-        );
-    });
-
     describe('Passing filter to underlying layer', function() {
         var layer;
         var store;
@@ -500,7 +505,7 @@ describe('GeoExt.data.store.Features', function() {
             feature2 = new ol.Feature({id: 2});
             layer = new ol.layer.Vector({
                 source: new ol.source.Vector({
-                    features: [feature1, feature2]
+                    features: new ol.Collection([feature1, feature2])
                 })
             });
         });
