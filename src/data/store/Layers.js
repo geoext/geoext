@@ -116,7 +116,7 @@ Ext.define('GeoExt.data.store.Layers', {
         });
 
         mapLayers.forEach(function(layer) {
-            me.bindLayer(layer);
+            me.bindLayer(layer, me.getByLayer(layer));
         });
         mapLayers.on('add', me.onAddLayer, me);
         mapLayers.on('remove', me.onRemoveLayer, me);
@@ -160,41 +160,16 @@ Ext.define('GeoExt.data.store.Layers', {
      * Bind the layer to the record and initialize synchronized values.
      *
      * @param {ol.layer.Base} layer The layer.
-     * @param {Ext.data.Model} [record] The record, if not set it will be
+     * @param {Ext.data.Model} record The record, if not set it will be
      *      searched for.
      */
     bindLayer: function(layer, record) {
         var me = this;
         layer.on('propertychange', me.onChangeLayer, me);
-        if (record === undefined) {
-            record = this.getRecordForLayer(layer);
-        }
         Ext.Array.forEach(record.synchronizedProperties,
             function(prop) {
                 me.synchronize(record, layer, prop);
             });
-    },
-
-    /**
-     * Gets the associated record for the layer. Uses `changeLayerFilterFn` if
-     * set.
-     * @param {ol.layer.Base} layer The layer.
-     * @return {Ext.data.Model|undefined} The record or undefined if it doesn't
-     *      exist.
-     */
-    getRecordForLayer: function(layer) {
-        var me = this;
-        var recordIndex;
-        if (Ext.isFunction(me.changeLayerFilterFn)) {
-            recordIndex = this.findBy(me.changeLayerFilterFn);
-        } else {
-            recordIndex = this.findBy(function(rec) {
-                return rec.getOlLayer() === layer;
-            });
-        }
-        if (recordIndex > -1) {
-            return this.getAt(recordIndex);
-        }
     },
 
     /**
@@ -236,7 +211,9 @@ Ext.define('GeoExt.data.store.Layers', {
      */
     onChangeLayer: function(evt) {
         var layer = evt.target;
-        var record = this.getRecordForLayer(layer);
+        var filter = this.changeLayerFilterFn ?
+            this.changeLayerFilterFn.bind(layer) : undefined;
+        var record = this.getByLayer(layer, filter);
 
         if (record !== undefined) {
             if (evt.key === 'description') {
@@ -269,7 +246,7 @@ Ext.define('GeoExt.data.store.Layers', {
             me.insert(index, result.records);
             delete me._adding;
         }
-        me.bindLayer(layer);
+        me.bindLayer(layer, me.getByLayer(layer));
     },
 
     /**
@@ -462,15 +439,22 @@ Ext.define('GeoExt.data.store.Layers', {
      * Get the record for the specified layer.
      *
      * @param {ol.layer.Base} layer The layer to get a model instance for.
+     * @param {function(Ext.data.Model): boolean} [filterFn] A filter function
      * @return {Ext.data.Model} The corresponding model instance or undefined if
      *     not found.
      */
-    getByLayer: function(layer) {
-        var index = this.findBy(function(r) {
-            return r.getOlLayer() === layer;
-        });
+    getByLayer: function(layer, filterFn) {
+        var me = this;
+        var index;
+        if (Ext.isFunction(filterFn)) {
+            index = me.findBy(filterFn);
+        } else {
+            index = me.findBy(function(rec) {
+                return rec.getOlLayer() === layer;
+            });
+        }
         if (index > -1) {
-            return this.getAt(index);
+            return me.getAt(index);
         }
     },
 
