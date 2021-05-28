@@ -610,19 +610,9 @@ Ext.define('GeoExt.component.OverviewMap', {
                 // call fit to assure that resolutions are available on
                 // overviewView
 
-                // Check for backwards compatibility
-                if (GeoExt.util.Version.isOl3()) {
-                    overviewView.fit(
-                        parentExtentProjected,
-                        me.getMap().getSize(),
-                        {constrainResolution: false}
-                    );
-                } else {
-                    overviewView.fit(
-                        parentExtentProjected,
-                        {constrainResolution: false}
-                    );
-                }
+                overviewView.fit(
+                    parentExtentProjected
+                );
                 overviewView.set(
                     'resolution',
                     me.getMagnification() * overviewView.getResolution()

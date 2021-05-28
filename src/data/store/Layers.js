@@ -83,6 +83,10 @@ Ext.define('GeoExt.data.store.Layers', {
     constructor: function(config) {
         var me = this;
 
+        me.onAddLayer = me.onAddLayer.bind(me);
+        me.onRemoveLayer = me.onRemoveLayer.bind(me);
+        me.onChangeLayer = me.onChangeLayer.bind(me);
+
         me.callParent([config]);
 
         if (config.map) {
@@ -90,10 +94,6 @@ Ext.define('GeoExt.data.store.Layers', {
         } else if (config.layers) {
             this.bindLayers(config.layers);
         }
-
-        me.onAddLayer = me.onAddLayer.bind(me);
-        me.onRemoveLayer = me.onRemoveLayer.bind(me);
-        me.onChangeLayer = me.onChangeLayer.bind(me);
     },
 
     /**

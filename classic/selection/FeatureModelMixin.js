@@ -31,6 +31,7 @@ Ext.define('GeoExt.selection.FeatureModelMixin', {
             bindComponent: 'bindFeatureModel'
         },
         before: {
+            constructor: 'onConstruct',
             onSelectChange: 'beforeSelectChange'
         }
     },
@@ -111,8 +112,8 @@ Ext.define('GeoExt.selection.FeatureModelMixin', {
      */
     selectedFeatures: null,
 
-    constructor: function() {
-        me.callParent(arguments);
+    onConstruct: function() {
+        var me = this;
 
         me.onSelectFeatAdd = me.onSelectFeatAdd.bind(me);
         me.onSelectFeatRemove = me.onSelectFeatRemove.bind(me);
@@ -130,7 +131,7 @@ Ext.define('GeoExt.selection.FeatureModelMixin', {
         me.selectedFeatures = new ol.Collection();
 
         // detect a layer from the store if not passed in
-        if (!me.layer || !me.layer instanceof ol.layer.Vector) {
+        if (!me.layer || !(me.layer instanceof ol.layer.Vector)) {
             var store = me.getStore();
             if (store && store.getLayer && store.getLayer() &&
                 store.getLayer() instanceof ol.layer.Vector) {
