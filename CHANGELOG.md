@@ -1,6 +1,10 @@
 Next Version
 ------------
 
+
+v4.0.0
+------
+
 BREAKING CHANGES:
 - If a features store is configured with a layer this layer needs to be an `ol.layer.Vector` with an `ol.source.Vector` 
 with a `ol.Collection`. That means, if you used it like this before, it will now throw an Error:
