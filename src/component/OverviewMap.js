@@ -70,7 +70,8 @@ Ext.define('GeoExt.component.OverviewMap', {
         'widget.gx_component_overviewmap'
     ],
     requires: [
-        'GeoExt.util.Version'
+        'GeoExt.util.Version',
+        'GeoExt.util.Layer'
     ],
     mixins: [
         'GeoExt.mixin.SymbolCheck'
@@ -174,10 +175,10 @@ Ext.define('GeoExt.component.OverviewMap', {
         boxStyle: null,
 
         /**
-         * An `ol.Collection` of `ol.layer.Base`. If not defined on
-         * construction, the layers of the #parentMap will be used.
+         * An `Array` of `ol.layer.Base`. It needs to have own layers
+         * specified, it cannot use layers of the parent map.
          *
-         * @cfg {ol.Collection}
+         * @cfg {Array}
          */
         layers: [],
 
@@ -329,17 +330,7 @@ Ext.define('GeoExt.component.OverviewMap', {
     initOverviewMap: function() {
         var me = this;
         var parentMap = me.getParentMap();
-        var parentLayers;
 
-        if (me.getLayers().length < 1) {
-            parentLayers = me.getParentMap().getLayers();
-            parentLayers.forEach(function(layer) {
-                if (layer instanceof ol.layer.Tile ||
-                   layer instanceof ol.layer.Image) {
-                    me.getLayers().push(layer);
-                }
-            });
-        }
         me.getLayers().push(me.extentLayer);
 
         if (!me.getMap()) {
@@ -356,13 +347,23 @@ Ext.define('GeoExt.component.OverviewMap', {
             me.setMap(olMap);
         }
 
+        GeoExt.util.Layer.cascadeLayers(parentMap.getLayerGroup(),
+            function(layer) {
+                if (me.getLayers().indexOf(layer) > -1) {
+                    throw new Error('OverviewMap cannot use layers of the ' +
+                        'parent map. (Since ol v6.0.0 maps cannot share ' +
+                        'layers anymore)');
+                }
+            });
+
         Ext.each(me.getLayers(), function(layer) {
             me.getMap().addLayer(layer);
         });
 
         // Set the OverviewMaps center or resolution, on property changed
         // in parentMap.
-        parentMap.getView().on('propertychange', me.onParentViewPropChange, me);
+        parentMap.getView().on('propertychange',
+            me.onParentViewPropChange.bind(me));
 
         // Update the box after rendering a new frame of the parentMap.
         me.enableBoxUpdate();
@@ -391,10 +392,10 @@ Ext.define('GeoExt.component.OverviewMap', {
         dragInteraction.setActive(true);
         // disable the box update during the translation
         // because it interferes when dragging the feature
-        dragInteraction.on('translatestart', me.disableBoxUpdate, me);
-        dragInteraction.on('translating', me.repositionAnchorFeature, me);
-        dragInteraction.on('translateend', me.recenterParentFromBox, me);
-        dragInteraction.on('translateend', me.enableBoxUpdate, me);
+        dragInteraction.on('translatestart', me.disableBoxUpdate.bind(me));
+        dragInteraction.on('translating', me.repositionAnchorFeature.bind(me));
+        dragInteraction.on('translateend', me.recenterParentFromBox.bind(me));
+        dragInteraction.on('translateend', me.enableBoxUpdate.bind(me));
         me.dragInteraction = dragInteraction;
     },
 
@@ -418,7 +419,7 @@ Ext.define('GeoExt.component.OverviewMap', {
         var me = this;
         var parentMap = me.getParentMap();
         if (parentMap) {
-            parentMap.on('postrender', me.updateBox, me);
+            parentMap.on('postrender', me.updateBox.bind(me));
         }
     },
 
@@ -609,19 +610,9 @@ Ext.define('GeoExt.component.OverviewMap', {
                 // call fit to assure that resolutions are available on
                 // overviewView
 
-                // Check for backwards compatibility
-                if (GeoExt.util.Version.isOl3()) {
-                    overviewView.fit(
-                        parentExtentProjected,
-                        me.getMap().getSize(),
-                        {constrainResolution: false}
-                    );
-                } else {
-                    overviewView.fit(
-                        parentExtentProjected,
-                        {constrainResolution: false}
-                    );
-                }
+                overviewView.fit(
+                    parentExtentProjected
+                );
                 overviewView.set(
                     'resolution',
                     me.getMagnification() * overviewView.getResolution()
@@ -656,9 +647,9 @@ Ext.define('GeoExt.component.OverviewMap', {
             return shallRecenter;
         }
         if (shallRecenter) {
-            map.on('click', me.overviewMapClicked, me);
+            map.on('click', me.overviewMapClicked.bind(me));
         } else {
-            map.un('click', me.overviewMapClicked, me);
+            map.un('click', me.overviewMapClicked.bind(me));
         }
         return shallRecenter;
     },
