@@ -121,8 +121,6 @@ Ext.define('GeoExt.data.store.Features', {
 
         me.onOlCollectionAdd = me.onOlCollectionAdd.bind(me);
         me.onOlCollectionRemove = me.onOlCollectionRemove.bind(me);
-        me.onFeaturesAdded = me.onFeaturesAdded.bind(me);
-        me.onFeaturesRemoved = me.onFeaturesRemoved.bind(me);
 
         var cfg = config || {};
 
