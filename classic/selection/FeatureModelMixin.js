@@ -58,6 +58,11 @@ Ext.define('GeoExt.selection.FeatureModelMixin', {
         mapSelection: false,
 
         /**
+         * Set a pixel tolerance for the map selection. Defaults to 12.
+         */
+        selectionTolerance: 12,
+
+        /**
          * The default style for the selected features.
          * @cfg {ol.style.Style}
          */
@@ -253,7 +258,8 @@ Ext.define('GeoExt.selection.FeatureModelMixin', {
             }, {
                 layerFilter: function(layer) {
                     return layer === me.layer;
-                }
+                },
+                hitTolerance: me.selectionTolerance
             });
 
         if (feat) {
