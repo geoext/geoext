@@ -27,10 +27,10 @@ Ext.define('GeoExt.selection.FeatureModelMixin', {
 
     mixinConfig: {
         after: {
-            destroy: 'unbindOlEvents',
             bindComponent: 'bindFeatureModel'
         },
         before: {
+            destroy: 'unbindOlEvents',
             constructor: 'onConstruct',
             onSelectChange: 'beforeSelectChange'
         }
