@@ -76,18 +76,52 @@ describe('GeoExt.selection.FeatureRowModel', function() {
     });
 
     describe('destruction', function() {
+        var testObjs;
+        var map;
+
+        beforeEach(function() {
+            testObjs = TestUtil.setupTestObjects({
+                mapOpts: {
+                    view: new ol.View({
+                        center: [0, 0],
+                        zoom: 2
+                    })
+                }
+            });
+
+            map = testObjs.map;
+        });
+
+        afterEach(function() {
+            TestUtil.teardownTestObjects(testObjs);
+        });
+
         it('binds and unbinds', function() {
-            var selModel = Ext.create('GeoExt.selection.FeatureRowModel');
+            var spy = sinon.spy(GeoExt.selection.FeatureRowModel.prototype,
+                'onFeatureClick');
 
-            expect(selModel.bound_).to.be(undefined);
+            var selModel = Ext.create('GeoExt.selection.FeatureRowModel', {
+                mapSelection: true,
+                map: map,
+                layer: new ol.layer.Vector({
+                    source: new ol.source.Vector()
+                })
+            });
 
-            selModel.bindComponent();
+            var panel = Ext.create('Ext.grid.Panel', {
+                title: 'Feature Grid w. SelectionModel',
+                selModel: selModel
+            });
 
-            expect(selModel.bound_).to.be(true);
+            map.dispatchEvent('singleclick');
 
-            selModel.destroy();
+            expect(spy.calledOnce).to.be(true);
 
-            expect(selModel.bound_).to.be(false);
+            panel.destroy();
+
+            map.dispatchEvent('singleclick');
+
+            expect(spy.calledOnce).to.be(true);
         });
     });
 

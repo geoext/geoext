@@ -27,10 +27,10 @@ Ext.define('GeoExt.selection.FeatureModelMixin', {
 
     mixinConfig: {
         after: {
-            destroy: 'unbindOlEvents',
             bindComponent: 'bindFeatureModel'
         },
         before: {
+            destroy: 'unbindOlEvents',
             constructor: 'onConstruct',
             onSelectChange: 'beforeSelectChange'
         }
@@ -56,6 +56,11 @@ Ext.define('GeoExt.selection.FeatureModelMixin', {
          * @cfg {Boolean}
          */
         mapSelection: false,
+
+        /**
+         * Set a pixel tolerance for the map selection. Defaults to 12.
+         */
+        selectionTolerance: 12,
 
         /**
          * The default style for the selected features.
@@ -187,8 +192,6 @@ Ext.define('GeoExt.selection.FeatureModelMixin', {
             me.map.un('singleclick', me.onFeatureClick);
             me.mapClickRegistered = false;
         }
-
-        this.bound_ = false;
     },
 
     /**
@@ -253,7 +256,8 @@ Ext.define('GeoExt.selection.FeatureModelMixin', {
             }, {
                 layerFilter: function(layer) {
                     return layer === me.layer;
-                }
+                },
+                hitTolerance: me.selectionTolerance
             });
 
         if (feat) {
