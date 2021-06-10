@@ -192,8 +192,6 @@ Ext.define('GeoExt.selection.FeatureModelMixin', {
             me.map.un('singleclick', me.onFeatureClick);
             me.mapClickRegistered = false;
         }
-
-        this.bound_ = false;
     },
 
     /**
