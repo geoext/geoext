@@ -6259,21 +6259,19 @@ Ext.define('GeoExt.data.store.WfsFeatures', {
      */
     cacheFeatureCount: false,
     /**
-    * The outputFormat sent with the resultType=hits request.
-    * Defaults to GML3 as some WFS servers do not support this
-    * request type when using application/json.
-    * Only has an effect if #cacheFeatureCount is set to `true`
-    * @cfg {Boolean}
-    */
+     * The outputFormat sent with the resultType=hits request.
+     * Defaults to GML3 as some WFS servers do not support this
+     * request type when using application/json.
+     * Only has an effect if #cacheFeatureCount is set to `true`
+     * @cfg {Boolean}
+     */
     featureCountOutputFormat: 'gml3',
     /**
-    * Any currently executing request to the WFS server.
-    * A reference to this is kept so any new requests can
-    * abort the previous request to ensure only the most recently
-    * requested results are returned.
-    * @cfg {Ext.data.request.Ajax}
-    */
-    activeRequest: null,
+     * Time any request will be debounced. This will prevent too
+     * many successive request.
+     * @cfg {number}
+     */
+    debounce: 300,
     /**
      * Constructs the WFS feature store.
      *
@@ -6288,8 +6286,7 @@ Ext.define('GeoExt.data.store.WfsFeatures', {
         if (config.pageSize > 0) {
             // calculate initial page
             var startIndex = config.startIndex || me.startIndex;
-            var currentPage = Math.floor(startIndex / config.pageSize) + 1;
-            config.currentPage = currentPage;
+            config.currentPage = Math.floor(startIndex / config.pageSize) + 1;
         }
         // avoid creation of vector layer by parent class (raises error when
         // applying WFS data) so we can create the WFS vector layer on our own
@@ -6299,6 +6296,7 @@ Ext.define('GeoExt.data.store.WfsFeatures', {
         me.callParent([
             config
         ]);
+        me.loadWfsTask_ = new Ext.util.DelayedTask();
         if (!me.url) {
             Ext.raise('No URL given to WfsFeaturesStore');
         }
@@ -6403,8 +6401,7 @@ Ext.define('GeoExt.data.store.WfsFeatures', {
         if (filters.length === 0) {
             return null;
         }
-        var wfsGetFeatureFilter = GeoExt.util.OGCFilter.getOgcWfsFilterFromExtJsFilter(filters, me.logicalFilterCombinator, me.version);
-        return wfsGetFeatureFilter;
+        return GeoExt.util.OGCFilter.getOgcWfsFilterFromExtJsFilter(filters, me.logicalFilterCombinator, me.version);
     },
     /**
      * Gets the number of features for the WFS typeName
@@ -6459,9 +6456,17 @@ Ext.define('GeoExt.data.store.WfsFeatures', {
      */
     loadWfs: function() {
         var me = this;
-        if (me.activeRequest) {
-            me.activeRequest.abort();
+        if (me.loadWfsTask_.id === null) {
+            me.loadWfsTask_.delay(me.debounce, function() {});
+            me.loadWfsInternal();
+        } else {
+            me.loadWfsTask_.delay(me.debounce, function() {
+                me.loadWfsInternal();
+            });
         }
+    },
+    loadWfsInternal: function() {
+        var me = this;
         var url = me.url;
         var params = {
                 service: me.service,
@@ -6500,8 +6505,7 @@ Ext.define('GeoExt.data.store.WfsFeatures', {
         }
         // apply paging parameters if necessary
         if (me.pageSize) {
-            var fromRecord = ((me.currentPage - 1) * me.pageSize) + me.startIndexOffset;
-            me.startIndex = fromRecord;
+            me.startIndex = ((me.currentPage - 1) * me.pageSize) + me.startIndexOffset;
             params.startIndex = me.startIndex;
             params.count = me.pageSize;
         }
@@ -6511,7 +6515,7 @@ Ext.define('GeoExt.data.store.WfsFeatures', {
             return;
         }
         // request features from WFS
-        me.activeRequest = Ext.Ajax.request({
+        Ext.Ajax.request({
             url: url,
             method: me.requestMethod,
             params: params,
@@ -6553,8 +6557,8 @@ Ext.define('GeoExt.data.store.WfsFeatures', {
     },
     doDestroy: function() {
         var me = this;
-        if (me.activeRequest) {
-            me.activeRequest.destroy();
+        if (me.loadWfsTask_.id !== null) {
+            me.loadWfsTask_.cancel();
         }
         me.callParent(arguments);
     }
@@ -7109,10 +7113,10 @@ Ext.define('GeoExt.selection.FeatureModelMixin', {
     extend: 'Ext.Mixin',
     mixinConfig: {
         after: {
-            destroy: 'unbindOlEvents',
             bindComponent: 'bindFeatureModel'
         },
         before: {
+            destroy: 'unbindOlEvents',
             constructor: 'onConstruct',
             onSelectChange: 'beforeSelectChange'
         }
@@ -7135,6 +7139,10 @@ Ext.define('GeoExt.selection.FeatureModelMixin', {
          * @cfg {Boolean}
          */
         mapSelection: false,
+        /**
+         * Set a pixel tolerance for the map selection. Defaults to 12.
+         */
+        selectionTolerance: 12,
         /**
          * The default style for the selected features.
          * @cfg {ol.style.Style}
@@ -7247,7 +7255,6 @@ Ext.define('GeoExt.selection.FeatureModelMixin', {
             me.map.un('singleclick', me.onFeatureClick);
             me.mapClickRegistered = false;
         }
-        this.bound_ = false;
     },
     /**
      * Handles 'add' event of #selectedFeatures.
@@ -7308,7 +7315,8 @@ Ext.define('GeoExt.selection.FeatureModelMixin', {
             }, {
                 layerFilter: function(layer) {
                     return layer === me.layer;
-                }
+                },
+                hitTolerance: me.selectionTolerance
             });
         if (feat) {
             // select clicked feature in grid
