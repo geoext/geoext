@@ -151,22 +151,20 @@ Ext.define('GeoExt.data.store.WfsFeatures', {
     cacheFeatureCount: false,
 
     /**
-    * The outputFormat sent with the resultType=hits request.
-    * Defaults to GML3 as some WFS servers do not support this
-    * request type when using application/json.
-    * Only has an effect if #cacheFeatureCount is set to `true`
-    * @cfg {Boolean}
-    */
+     * The outputFormat sent with the resultType=hits request.
+     * Defaults to GML3 as some WFS servers do not support this
+     * request type when using application/json.
+     * Only has an effect if #cacheFeatureCount is set to `true`
+     * @cfg {Boolean}
+     */
     featureCountOutputFormat: 'gml3',
 
     /**
-    * Any currently executing request to the WFS server.
-    * A reference to this is kept so any new requests can
-    * abort the previous request to ensure only the most recently
-    * requested results are returned.
-    * @cfg {Ext.data.request.Ajax}
-    */
-    activeRequest: null,
+     * Time any request will be debounced. This will prevent too
+     * many successive request.
+     * @cfg {number}
+     */
+    debounce: 300,
 
     /**
      * Constructs the WFS feature store.
@@ -185,8 +183,7 @@ Ext.define('GeoExt.data.store.WfsFeatures', {
         if (config.pageSize > 0) {
             // calculate initial page
             var startIndex = config.startIndex || me.startIndex;
-            var currentPage = Math.floor(startIndex / config.pageSize) + 1;
-            config.currentPage = currentPage;
+            config.currentPage = Math.floor(startIndex / config.pageSize) + 1;
         }
 
         // avoid creation of vector layer by parent class (raises error when
@@ -196,6 +193,8 @@ Ext.define('GeoExt.data.store.WfsFeatures', {
         config.createLayer = false;
 
         me.callParent([config]);
+
+        me.loadWfsTask_ = new Ext.util.DelayedTask();
 
         if (!me.url) {
             Ext.raise('No URL given to WfsFeaturesStore');
@@ -317,13 +316,11 @@ Ext.define('GeoExt.data.store.WfsFeatures', {
         if (filters.length === 0) {
             return null;
         }
-        var wfsGetFeatureFilter = GeoExt.util.OGCFilter.
-            getOgcWfsFilterFromExtJsFilter(
-                filters,
-                me.logicalFilterCombinator,
-                me.version
-            );
-        return wfsGetFeatureFilter;
+        return GeoExt.util.OGCFilter.getOgcWfsFilterFromExtJsFilter(
+            filters,
+            me.logicalFilterCombinator,
+            me.version
+        );
     },
 
     /**
@@ -385,9 +382,18 @@ Ext.define('GeoExt.data.store.WfsFeatures', {
     loadWfs: function() {
         var me = this;
 
-        if (me.activeRequest) {
-            me.activeRequest.abort();
+        if (me.loadWfsTask_.id === null) {
+            me.loadWfsTask_.delay(me.debounce, function() {});
+            me.loadWfsInternal();
+        } else {
+            me.loadWfsTask_.delay(me.debounce, function() {
+                me.loadWfsInternal();
+            });
         }
+    },
+
+    loadWfsInternal: function() {
+        var me = this;
 
         var url = me.url;
         var params = {
@@ -432,9 +438,8 @@ Ext.define('GeoExt.data.store.WfsFeatures', {
 
         // apply paging parameters if necessary
         if (me.pageSize) {
-            var fromRecord =
-                ((me.currentPage - 1) * me.pageSize) + me.startIndexOffset;
-            me.startIndex = fromRecord;
+            me.startIndex = ((me.currentPage - 1) * me.pageSize) +
+                me.startIndexOffset;
             params.startIndex = me.startIndex;
             params.count = me.pageSize;
         }
@@ -446,7 +451,7 @@ Ext.define('GeoExt.data.store.WfsFeatures', {
         }
 
         // request features from WFS
-        me.activeRequest = Ext.Ajax.request({
+        Ext.Ajax.request({
             url: url,
             method: me.requestMethod,
             params: params,
@@ -502,8 +507,8 @@ Ext.define('GeoExt.data.store.WfsFeatures', {
     doDestroy: function() {
         var me = this;
 
-        if (me.activeRequest) {
-            me.activeRequest.destroy();
+        if (me.loadWfsTask_.id !== null) {
+            me.loadWfsTask_.cancel();
         }
 
         me.callParent(arguments);
