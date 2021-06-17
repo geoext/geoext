@@ -150,8 +150,6 @@ Ext.define(&#39;GeoExt.selection.FeatureModelMixin&#39;, {
     bindFeatureModel: function() {
         var me = this;
 
-        me.selectedFeatures = new ol.Collection();
-
         // detect a layer from the store if not passed in
         if (!me.layer || !(me.layer instanceof ol.layer.Vector)) {
             var store = me.getStore();
@@ -173,6 +171,8 @@ Ext.define(&#39;GeoExt.selection.FeatureModelMixin&#39;, {
     bindOlEvents: function() {
         if (!this.bound_) {
             var me = this;
+
+            me.selectedFeatures = new ol.Collection();
 
             // change style of selected feature
             me.selectedFeatures.on(&#39;add&#39;, me.onSelectFeatAdd);

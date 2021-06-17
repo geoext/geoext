@@ -30,98 +30,172 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see &lt;http://www.gnu.org/licenses/&gt;.
  */
-<span id='GeoExt-util-Layer'>/**
-</span> * A utility class for working with OpenLayers layers.
+<span id='GeoExt-data-model-Layer'>/**
+</span> * The layer model class used by the stores.
  *
- * @class GeoExt.util.Layer
+ * @class GeoExt.data.model.Layer
  */
-Ext.define(&#39;GeoExt.util.Layer&#39;, {
-    inheritableStatics: {
-<span id='GeoExt-util-Layer-static-method-cascadeLayers'>        /**
-</span>         * Cascades down a given LayerGroup, calling the given function for
-         * each LayerGroup / Layer.
-         *
-         * @param  {ol.layer.Group} lyrGroup The layer group to cascade down
-         * @param  {Function} fn A function to call on every LayerGroup / Layer
-         * @return {void}
-         */
-        cascadeLayers: function(lyrGroup, fn) {
-            if (!(lyrGroup instanceof ol.layer.Group)) {
-                // skip on wrong input type
-                Ext.Logger.warn(
-                    &#39;No ol.layer.Group given to &#39; +
-                    &#39;BasiGX.util.Layer.cascadeLayers. It is unlikely that &#39; +
-                    &#39;this will work properly. Skipping!&#39;);
-                return;
-            }
-            if (!Ext.isFunction(fn)) {
-                Ext.Logger.warn(
-                    &#39;No function passed &#39; +
-                    &#39;this will not work. Skipping!&#39;);
-                return;
-            }
+Ext.define(&#39;GeoExt.data.model.Layer&#39;, {
+    extend: &#39;GeoExt.data.model.Base&#39;,
+    mixins: [
+        &#39;GeoExt.mixin.SymbolCheck&#39;
+    ],
 
-            lyrGroup.getLayers().forEach(function(layerOrGroup) {
-                fn(layerOrGroup);
-                if (layerOrGroup instanceof ol.layer.Group) {
-                    GeoExt.util.Layer.cascadeLayers(layerOrGroup, fn);
+<span id='GeoExt-data-model-Layer-property-symbols'>    // &lt;debug&gt;
+</span>    symbols: [
+        &#39;ol.layer.Group&#39;,
+        &#39;ol.layer.Base&#39;,
+        &#39;ol.layer.Base#get&#39;
+    ],
+    // &lt;/debug&gt;
+
+<span id='GeoExt-data-model-Layer-cfg-textProperty'>    /**
+</span>     * The layer property that will be used to label the model in views.
+     *
+     * @cfg {String}
+     */
+    textProperty: &#39;name&#39;,
+
+<span id='GeoExt-data-model-Layer-cfg-descriptionProperty'>    /**
+</span>     * The layer property that will be used to describe the model in views.
+     *
+     * @cfg {String}
+     */
+    descriptionProperty: &#39;description&#39;,
+
+<span id='GeoExt-data-model-Layer-cfg-unnamedLayerText'>    /**
+</span>     * The text label that will be shown in model views representing unnamed
+     * layers.
+     *
+     * @cfg {String}
+     */
+    unnamedLayerText: &#39;Unnamed Layer&#39;,
+
+<span id='GeoExt-data-model-Layer-cfg-unnamedGroupLayerText'>    /**
+</span>     * The text label that will be shown in model views representing unnamed
+     * group layers.
+     *
+     * @cfg {String}
+     */
+    unnamedGroupLayerText: &#39;Unnamed Group Layer&#39;,
+
+<span id='GeoExt-data-model-Layer-cfg-synchronizedProperties'>    /**
+</span>     * This property specifies which properties are synchronized between
+     * the store record and the ol layer object.
+     *
+     * By default this only the property `&#39;title&#39;`.
+     *
+     * @cfg {string[]}
+     */
+    synchronizedProperties: [&#39;title&#39;],
+
+<span id='GeoExt-data-model-Layer-property-fields'>    fields: [
+</span>        {
+            name: &#39;isLayerGroup&#39;,
+            type: &#39;boolean&#39;,
+            persist: false,
+            convert: function(v, record) {
+                var layer = record.getOlLayer();
+                if (layer) {
+                    return (layer instanceof ol.layer.Group);
+                } else {
+                    return undefined;
                 }
-            });
-        },
-
-<span id='GeoExt-util-Layer-static-method-findParentGroup'>        /**
-</span>         * A utility method to find the `ol.layer.Group` which is the direct
-         * parent of the passed layer. Searching starts at the passed
-         * startGroup. If `undefined` is returned, the layer is not a child of
-         * the `startGroup`.
-         *
-         * @param {ol.layer.Base} childLayer The layer whose group we want.
-         * @param {ol.layer.Group} startGroup The group layer that we will start
-         *     searching in.
-         * @return {ol.layer.Group} The direct parent group or undefined if the
-         *     group cannot be determined.
-         */
-        findParentGroup: function(childLayer, startGroup) {
-            var parentGroup;
-            var findParentGroup = GeoExt.util.Layer.findParentGroup;
-            var getLayerIndex = GeoExt.util.Layer.getLayerIndex;
-
-            if (getLayerIndex(childLayer, startGroup) !== -1) {
-                parentGroup = startGroup;
-            } else {
-                startGroup.getLayers().forEach(function(layer) {
-                    if (!parentGroup &amp;&amp; layer instanceof ol.layer.Group) {
-                        parentGroup = findParentGroup(childLayer, layer);
-                        // sadly we cannot abort the forEach-iteration here
-                    }
-                });
             }
-
-            return parentGroup;
         },
+        {
+            name: &#39;text&#39;,
+            type: &#39;string&#39;,
+            persist: false,
+            convert: function(v, record) {
+                var name = v;
+                var defaultName;
+                var textProp;
 
-<span id='GeoExt-util-Layer-static-method-getLayerIndex'>        /**
-</span>         * A utility method to determine the zero based index of a layer in a
-         * layer group. Will return `-1` if the layer isn&#39;t a direct child of
-         * the group.
-         *
-         * @param {ol.layer.Base} layer The layer whose index we want.
-         * @param {ol.layer.Group} group The group to search in.
-         * @return {Number} The index or `-1` if the layer isn&#39;t a direct child
-         *     of the group.
-         */
-        getLayerIndex: function(layer, group) {
-            var index = -1;
-
-            group.getLayers().forEach(function(candidate, idx) {
-                if (index === -1 &amp;&amp; candidate === layer) {
-                    index = idx;
-                    // sadly we cannot abort the forEach-iteration here
+                if (!name) {
+                    textProp = record.textProperty;
+                    defaultName = (record.get(&#39;isLayerGroup&#39;)
+                        ? record.unnamedGroupLayerText
+                        : record.unnamedLayerText);
+                    name = record.getOlLayerProp(textProp, defaultName);
                 }
-            });
 
-            return index;
+                return name;
+            }
+        },
+        {
+            name: &#39;opacity&#39;,
+            type: &#39;number&#39;,
+            persist: false,
+            convert: function(v, record) {
+                return record.getOlLayerProp(&#39;opacity&#39;);
+            }
+        },
+        {
+            name: &#39;minResolution&#39;,
+            type: &#39;number&#39;,
+            persist: false,
+            convert: function(v, record) {
+                return record.getOlLayerProp(&#39;minResolution&#39;);
+            }
+        },
+        {
+            name: &#39;maxResolution&#39;,
+            type: &#39;number&#39;,
+            persist: false,
+            convert: function(v, record) {
+                return record.getOlLayerProp(&#39;maxResolution&#39;);
+            }
+        },
+        {
+            name: &#39;qtip&#39;,
+            type: &#39;string&#39;,
+            persist: false,
+            convert: function(v, record) {
+                return record.getOlLayerProp(record.descriptionProperty, &#39;&#39;);
+            }
+        },
+        {
+            name: &#39;qtitle&#39;,
+            type: &#39;string&#39;,
+            persist: false,
+            convert: function(v, record) {
+                return record.get(&#39;text&#39;);
+            }
         }
+    ],
+
+<span id='GeoExt-data-model-Layer-property-proxy'>    proxy: {
+</span>        type: &#39;memory&#39;,
+        reader: {
+            type: &#39;json&#39;
+        }
+    },
+
+<span id='GeoExt-data-model-Layer-method-getOlLayer'>    /**
+</span>     * Returns the `ol.layer.Base` object used in this model instance.
+     *
+     * @return {ol.layer.Base} The `ol.layer.Base` object.
+     */
+    getOlLayer: function() {
+        if (this.data instanceof ol.layer.Base) {
+            return this.data;
+        }
+    },
+
+<span id='GeoExt-data-model-Layer-method-getOlLayerProp'>    /**
+</span>     * Returns a property value of the `ol.layer.Base` object used in this model
+     * instance. If the property is null, the optional default value will  be
+     * returned.
+     *
+     * @param  {string} prop         The property key.
+     * @param  {Object} defaultValue The optional default value.
+     * @return {Object}              The returned property.
+     */
+    getOlLayerProp: function(prop, defaultValue) {
+        var layer = this.getOlLayer();
+        var value = (layer ? layer.get(prop) : undefined);
+        return (value !== undefined ? value : defaultValue);
     }
 });
 </pre>

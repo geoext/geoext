@@ -15,170 +15,77 @@
   </script>
 </head>
 <body onload="prettyPrint(); highlight();">
-  <pre class="prettyprint lang-js"><span id='Ext-dom-Fly'>/**
-</span> * A flyweight Ext.dom.Element that can be dynamically attached to a DOM node.
- * In general this class should not be instantiated directly.  Use {@link Ext#fly}
- * to create and retrieve Fly instances.
+  <pre class="prettyprint lang-js"><span id='Ext-util-Fly'>/**
+</span> * This class is a base for classes that want to provide a `fly` static method.
+ *
+ * For example:
+ *
+ *      Ext.define(&#39;Foo.util.Thing&#39;, {
+ *          extend: &#39;Ext.util.Fly&#39;,
+ *
+ *          // useful stuff
+ *      });
+ *
+ *      var thing = Ext.util.Thing.fly(42);  // passes 42 to the reset method
+ *
+ *      // use &quot;thing&quot;
+ *
+ *      thing.release();   // return to the pool for future reuse
+ *
+ * @private
  */
-Ext.define(&#39;Ext.dom.Fly&#39;, {
-    extend: &#39;Ext.dom.Element&#39;,
-    alternateClassName: &#39;Ext.dom.Element.Fly&#39;,
+Ext.define(&#39;Ext.util.Fly&#39;, {
+    inheritableStatics: {
+<span id='Ext-util-Fly-static-property-flyPoolSize'>        flyPoolSize: 2,
+</span>
+<span id='Ext-util-Fly-static-method-fly'>        /**
+</span>         * @method
+         * Returns a flyweight instance. These instances should be returned when no
+         * longer needed by calling `release`.
+         *
+         * Additional arguments passed to this method will be passed on to the `reset`
+         * method.
+         *
+         * @return {Ext.util.Fly} the flyweight instance
+         */
+        fly: function () {
+            var T = this,
+                flyweights = T.flyweights || (T.flyweights = []),
+                instance = flyweights.length ? flyweights.pop() : new T();
 
-<span id='Ext-dom-Fly-property-validNodeTypes'>    // This adds the ability to wrap DOCUMENT_FRAGMENT_NODE
-</span>    // Document Fragments cannot have event listeners and therefore do not
-    // need  the caching mechanism provided by Ext.get.
-    // However the many Element APIs are useful such as Traversal, child appending/removing.
-    validNodeTypes: {
-        1: 1, // ELEMENT_NODE
-        9: 1, // DOCUMENT_NODE
-        11: 1 // DOCUMENT_FRAGMENT_NODE
-    },
-
-<span id='Ext-dom-Fly-property-isFly'>    /**
-</span>     * @property {Boolean} isFly
-     * This is `true` to identify Element flyweights
-     */
-    isFly: true,
-
-<span id='Ext-dom-Fly-method-constructor'>    constructor: function(dom) {
-</span>        this.dom = dom;
-
-        // set an &quot;el&quot; property that references &quot;this&quot;.  This allows
-        // Ext.util.Positionable methods to operate on this.el.dom since it
-        // gets mixed into both Element and Component
-        this.el = this;
-    },
-
-<span id='Ext-dom-Fly-method-attach'>    attach: function (dom) {
-</span>        var me = this;
-
-        if (!dom) {
-            return me.detach();
+            instance.reset.apply(instance, arguments);
+            return instance;
         }
-        me.dom = dom;
-
-        // If the element is not being managed by an Ext.Element instance,
-        // we have to assume that the classList/classMap in the data object are out of sync with reality.
-        if (!Ext.cache[dom.id]) {
-            me.getData().isSynchronized = false;
-        }
-
-        return me;
     },
 
-<span id='Ext-dom-Fly-method-detach'>    detach: function() {
-</span>        this.dom = null;
-    },
-
-<span id='Ext-dom-Fly-property-addListener'>    addListener:
-</span>        //&lt;debug&gt;
-        function() {
-            Ext.raise(
-                &quot;Cannot use addListener() on Ext.dom.Fly instances. &quot; +
-                &quot;Please use Ext.get() to retrieve an Ext.dom.Element instance instead.&quot;
-            );
-        } ||
-        //&lt;/debug&gt;
-        null,
-
-<span id='Ext-dom-Fly-property-removeListener'>    removeListener: 
-</span>        //&lt;debug&gt;
-        function() {
-            Ext.raise(
-                &quot;Cannot use removeListener() on Ext.dom.Fly instances. &quot; +
-                &quot;Please use Ext.get() to retrieve an Ext.dom.Element instance instead.&quot;
-            );
-        } ||
-        //&lt;/debug&gt;
-        null
-}, function(Fly) {
-    var flyweights = {},
-        detachedBodyEl;
-
-<span id='Ext-property-cache'>    /**
-</span>     * @member Ext
-     * @property {Object} cache
-     * Stores `Fly` instances keyed by their assigned or generated name.
-     * @readonly
-     * @private
-     * @since 5.0.0
+<span id='Ext-util-Fly-method-release'>    /**
+</span>     * This method should be called when a flyweight instance is no longer needed and
+     * should be returned to the flyweight pool.
      */
-    Fly.cache = flyweights;
+    release: function () {
+        var me = this,
+            T = me.self,
+            flyweights = T.flyweights || (T.flyweights = []);
 
-<span id='Ext-method-fly'>    /**
-</span>     * @member Ext
-     * @method fly
-     * Gets the globally shared flyweight Element, with the passed node as the active
-     * element. Do not store a reference to this element - the dom node can be overwritten
-     * by other code. {@link Ext#fly} is alias for {@link Ext.dom.Element#fly}.
+        me.reset();
+
+        if (flyweights.length &lt; T.flyPoolSize) {
+            flyweights.push(me);
+        }
+    },
+
+<span id='Ext-util-Fly-method-reset'>    /**
+</span>     * Resets this instance to prepare for use. Derived classes may accept additional
+     * arguments.
      *
-     * Use this to make one-time references to DOM elements which are not going to be
-     * accessed again either by application code, or by Ext&#39;s classes. If accessing an
-     * element which will be processed regularly, then {@link Ext#get Ext.get} will be
-     * more appropriate to take advantage of the caching provided by the
-     * {@link Ext.dom.Element} class.
-     * 
-     * If this method is called with and id or element that has already been cached by
-     * a previous call to Ext.get() it will return the cached Element instead of the
-     * flyweight instance.
+     * When called with no arguments, the class should relinquish any resources it can
+     * and prepare to wait for potential reuse.
      *
-     * @param {String/HTMLElement} dom The DOM node or `id`.
-     * @param {String} [named] Allows for creation of named reusable flyweights to prevent 
-     * conflicts (e.g. internally Ext uses &quot;_global&quot;).
-     * @return {Ext.dom.Element} The shared Element object (or `null` if no matching
-     * element was found).
+     * @method reset
+     * @chainable
+     * @return {Ext.util.Fly} this
      */
-    Ext.fly = function(dom, named) {
-        var fly = null,
-            fn = Ext.fly,
-            nodeType, data;
-
-        // name the flyweight after the calling method name if possible.
-        named = named || (fn.caller &amp;&amp; fn.caller.$name) || &#39;_global&#39;;
-
-        dom = Ext.getDom(dom);
-
-        if (dom) {
-            nodeType = dom.nodeType;
-            // check if we have a valid node type or if the el is a window object before
-            // proceeding. This allows elements, document fragments, and document/window
-            // objects (even those inside iframes) to be wrapped.
-            // Note: a window object can be detected by comparing it&#39;s window property to
-            // itself, but we must use == for the comparison because === will return false
-            // in IE8 even though the 2 window objects are the same
-            if (Fly.prototype.validNodeTypes[nodeType] || (!nodeType &amp;&amp; (dom.window == dom))) {
-                fly = Ext.cache[dom.id];
-
-                // If there&#39;s no Element cached, or the element cached is for another DOM node, return a Fly
-                if (!fly || fly.dom !== dom) {
-                    fly = flyweights[named] || (flyweights[named] = new Fly());
-                    fly.dom = dom;
-                    data = fly.getData(true);
-                    if (data) {
-                        data.isSynchronized = false;
-                    }
-                }
-            }
-        }
-        return fly;
-    };
-
-<span id='Ext-method-getDetachedBody'>    /**
-</span>     * Returns an HTML div element into which {@link Ext.container.Container#method-remove removed} components
-     * are placed so that their DOM elements are not garbage collected as detached Dom trees.
-     * @return {Ext.dom.Element}
-     * @method getDetachedBody
-     * @member Ext
-     * @private
-     */
-    Ext.getDetachedBody = function () {
-        if (!detachedBodyEl) {
-            Ext.detachedBodyEl = detachedBodyEl = new Fly(document.createElement(&#39;div&#39;));
-            detachedBodyEl.isDetachedBody = true;
-        }
-
-        return detachedBodyEl;
-    };
+    reset: Ext.emptyFn
 });
 </pre>
 </body>

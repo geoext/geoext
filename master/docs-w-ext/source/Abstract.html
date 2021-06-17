@@ -15,74 +15,44 @@
   </script>
 </head>
 <body onload="prettyPrint(); highlight();">
-  <pre class="prettyprint lang-js"><span id='Ext-util-paintmonitor-Abstract'>/**
+  <pre class="prettyprint lang-js"><span id='Ext-fx-easing-Abstract'>/**
 </span> * @private
  */
-Ext.define(&#39;Ext.util.paintmonitor.Abstract&#39;, {
+Ext.define(&#39;Ext.fx.easing.Abstract&#39;, {
 
     config: {
-<span id='Ext-util-paintmonitor-Abstract-cfg-element'>        element: null,
-</span>
-<span id='Ext-util-paintmonitor-Abstract-cfg-callback'>        callback: Ext.emptyFn,
-</span>
-<span id='Ext-util-paintmonitor-Abstract-cfg-scope'>        scope: null,
-</span>
-<span id='Ext-util-paintmonitor-Abstract-cfg-args'>        args: []
+<span id='Ext-fx-easing-Abstract-cfg-startTime'>        startTime: 0,
+</span><span id='Ext-fx-easing-Abstract-cfg-startValue'>        startValue: 0
 </span>    },
 
-<span id='Ext-util-paintmonitor-Abstract-property-eventName'>    eventName: &#39;&#39;,
+<span id='Ext-fx-easing-Abstract-property-isEasing'>    isEasing: true,
 </span>
-<span id='Ext-util-paintmonitor-Abstract-property-monitorClass'>    monitorClass: &#39;&#39;,
+<span id='Ext-fx-easing-Abstract-property-isEnded'>    isEnded: false,
 </span>
-<span id='Ext-util-paintmonitor-Abstract-method-constructor'>    constructor: function(config) {
-</span>        this.onElementPainted = Ext.Function.bind(this.onElementPainted, this);
+<span id='Ext-fx-easing-Abstract-method-constructor'>    constructor: function(config) {
+</span>        this.initConfig(config);
 
-        this.initConfig(config);
+        return this;
     },
 
-<span id='Ext-util-paintmonitor-Abstract-method-bindListeners'>    bindListeners: function(bind) {
-</span>        this.monitorElement[bind ? &#39;addEventListener&#39; : &#39;removeEventListener&#39;](this.eventName, this.onElementPainted, true);
-    },
-
-<span id='Ext-util-paintmonitor-Abstract-method-applyElement'>    applyElement: function(element) {
-</span>        if (element) {
-            return Ext.get(element);
-        }
-    },
-
-<span id='Ext-util-paintmonitor-Abstract-method-updateElement'>    updateElement: function(element) {
-</span>        this.monitorElement = Ext.Element.create({
-            classList: [Ext.baseCSSPrefix + &#39;paint-monitor&#39;, this.monitorClass]
-        }, true);
-
-        element.appendChild(this.monitorElement);
-        element.addCls(Ext.baseCSSPrefix + &#39;paint-monitored&#39;);
-        this.bindListeners(true);
-    },
-
-<span id='Ext-util-paintmonitor-Abstract-method-onElementPainted'>    onElementPainted: function() {},
-</span>
-<span id='Ext-util-paintmonitor-Abstract-method-destroy'>    destroy: function() {
-</span>        var me = this,
-            monitorElement = me.monitorElement,
-            parentNode = monitorElement.parentNode,
-            element = me.getElement();
-
-        me.bindListeners(false);
-        delete me.monitorElement;
-
-        if (element &amp;&amp; !element.destroyed) {
-            element.removeCls(Ext.baseCSSPrefix + &#39;paint-monitored&#39;);
-            delete me._element;
+<span id='Ext-fx-easing-Abstract-method-applyStartTime'>    applyStartTime: function(startTime) {
+</span>        if (!startTime) {
+            startTime = Ext.Date.now();
         }
 
-        if (parentNode) {
-            parentNode.removeChild(monitorElement);
-        }
+        return startTime;
+    },
 
-        me.callParent();
-    }
-});
+<span id='Ext-fx-easing-Abstract-method-updateStartTime'>    updateStartTime: function(startTime) {
+</span>        this.reset();
+    },
+
+<span id='Ext-fx-easing-Abstract-method-reset'>    reset: function() {
+</span>        this.isEnded = false;
+    },
+
+<span id='Ext-fx-easing-Abstract-method-getValue'>    getValue: Ext.emptyFn
+</span>});
 </pre>
 </body>
 </html>

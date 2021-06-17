@@ -15,36 +15,38 @@
   </script>
 </head>
 <body onload="prettyPrint(); highlight();">
-  <pre class="prettyprint lang-js">Ext.define(&#39;Ext.rtl.layout.container.Column&#39;, {
-    override: &#39;Ext.layout.container.Column&#39;,
+  <pre class="prettyprint lang-js">Ext.define(&#39;Ext.rtl.grid.column.Column&#39;, {
+    override: &#39;Ext.grid.column.Column&#39;,
 
-    // Override to put the RTL class onto the innerCt so that columns can have a rule which switches float direction
-    getRenderData: function () {
-        var renderData = this.callParent();
+    isAtStartEdge: function(e, margin) {
+        var me = this,
+            offset;
 
-        if (this.owner.getInherited().rtl) {
+        if (!me.getInherited().rtl !== !Ext.rootInheritedState.rtl) { // jshint ignore:line
+            offset = me.getX() + me.getWidth() - e.getXY()[0];
+            
+            // To the right of the first column, not over
+            if (offset &lt; 0 &amp;&amp; this.getIndex() === 0) {
+                return false;
+            }
 
-            // If the owning Component is RTL direction, then ensure that the clearSide property
-            // clears the correct edge.
-            // Tall items would block it as below.
-            // &quot;Item 4&quot; requires clear:right to begin at column zero (on the RIGHT side).
-            // +------------------------------- +
-            // |+--------+ +--------+ +--------+|
-            // ||        | |        | |        ||
-            // || Item 3 | | Item 2 | | Item 1 ||
-            // |+--------+ +--------+ |        ||
-            // |           +--------+ |        ||
-            // |           |        | +--------+|
-            // |           | Item 4 |           |
-            // |           |        |           |
-            // |           +--------+           |
-            // +--------------------------------+
-            this.clearSide = &#39;right&#39;;
-            renderData.innerCtCls =
-                (renderData.innerCtCls || &#39;&#39;) + &#39; &#39; + Ext.baseCSSPrefix + &#39;rtl&#39;;
+            return (offset &lt;= me.getHandleWidth(e));
+        } else {
+            return me.callParent([e, margin]);
         }
-        
-        return renderData;
+    },
+
+    isAtEndEdge: function(e, margin) {
+        var me = this;
+        return (!me.getInherited().rtl !== !Ext.rootInheritedState.rtl) ? // jshint ignore:line
+            (e.getXY()[0] - me.getX() &lt;= me.getHandleWidth(e)) : me.callParent([e, margin]);
+    },
+
+    privates: {
+        _alignMap: {
+            start: &#39;right&#39;,
+            end: &#39;left&#39;
+        }
     }
 });
 </pre>

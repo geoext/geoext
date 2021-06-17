@@ -15,36 +15,61 @@
   </script>
 </head>
 <body onload="prettyPrint(); highlight();">
-  <pre class="prettyprint lang-js"><span id='Ext-fx-layout-card-Pop'>/**
+  <pre class="prettyprint lang-js"><span id='Ext-fx-animation-Pop'>/**
 </span> * @private
  */
-Ext.define(&#39;Ext.fx.layout.card.Pop&#39;, {
-    extend: &#39;Ext.fx.layout.card.Style&#39;,
+Ext.define(&#39;Ext.fx.animation.Pop&#39;, {
+    extend: &#39;Ext.fx.animation.Abstract&#39;,
 
-    alias: &#39;fx.layout.card.pop&#39;,
+    alias: [&#39;animation.pop&#39;, &#39;animation.popIn&#39;],
+
+    alternateClassName: &#39;Ext.fx.animation.PopIn&#39;,
 
     config: {
-<span id='Ext-fx-layout-card-Pop-cfg-duration'>        duration: 500,
-</span>
-<span id='Ext-fx-layout-card-Pop-cfg-inAnimation'>        inAnimation: {
-</span>            type: &#39;pop&#39;,
-            easing: &#39;ease-out&#39;
+<span id='Ext-fx-animation-Pop-cfg-out'>        /**
+</span>         * @cfg {Boolean} out True if you want to make this animation pop out, instead of pop in.
+         * @accessor
+         */
+        out: false,
+
+<span id='Ext-fx-animation-Pop-cfg-before'>        before: {
+</span>            display: null,
+            opacity: 0
         },
-<span id='Ext-fx-layout-card-Pop-cfg-outAnimation'>        outAnimation: {
-</span>            type: &#39;pop&#39;,
-            easing: &#39;ease-in&#39;,
-            out: true
+<span id='Ext-fx-animation-Pop-cfg-after'>        after: {
+</span>            opacity: null
         }
     },
 
-<span id='Ext-fx-layout-card-Pop-method-updateDuration'>    updateDuration: function(duration) {
-</span>        var halfDuration = duration / 2,
-            inAnimation = this.getInAnimation(),
-            outAnimation = this.getOutAnimation();
+<span id='Ext-fx-animation-Pop-method-getData'>    getData: function() {
+</span>        var to = this.getTo(),
+            from = this.getFrom(),
+            out = this.getOut();
 
-        inAnimation.setDelay(halfDuration);
-        inAnimation.setDuration(halfDuration);
-        outAnimation.setDuration(halfDuration);
+        if (out) {
+            from.set(&#39;opacity&#39;, 1);
+            from.setTransform({
+                scale: 1
+            });
+
+            to.set(&#39;opacity&#39;, 0);
+            to.setTransform({
+                scale: 0
+            });
+        }
+        else {
+            from.set(&#39;opacity&#39;, 0);
+            from.setTransform({
+                scale: 0
+            });
+
+            to.set(&#39;opacity&#39;, 1);
+            to.setTransform({
+                scale: 1
+            });
+        }
+
+        return this.callParent(arguments);
     }
 });
 </pre>

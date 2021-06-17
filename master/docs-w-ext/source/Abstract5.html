@@ -15,67 +15,151 @@
   </script>
 </head>
 <body onload="prettyPrint(); highlight();">
-  <pre class="prettyprint lang-js"><span id='Ext-fx-layout-card-Abstract'>/**
+  <pre class="prettyprint lang-js"><span id='Ext-util-sizemonitor-Abstract'>/**
 </span> * @private
  */
-Ext.define(&#39;Ext.fx.layout.card.Abstract&#39;, {
-    extend: &#39;Ext.Evented&#39;,
-<span id='Ext-fx-layout-card-Abstract-property-isAnimation'>    isAnimation: true,
-</span>
+Ext.define(&#39;Ext.util.sizemonitor.Abstract&#39;, {
+
+    mixins: [&#39;Ext.mixin.Templatable&#39;],
+
+    requires: [
+        &#39;Ext.TaskQueue&#39;
+    ],
+
     config: {
-<span id='Ext-fx-layout-card-Abstract-cfg-direction'>        direction: &#39;left&#39;,
+<span id='Ext-util-sizemonitor-Abstract-cfg-element'>        element: null,
 </span>
-<span id='Ext-fx-layout-card-Abstract-cfg-duration'>        duration: null,
+<span id='Ext-util-sizemonitor-Abstract-cfg-callback'>        callback: Ext.emptyFn,
 </span>
-<span id='Ext-fx-layout-card-Abstract-cfg-reverse'>        reverse: null,
+<span id='Ext-util-sizemonitor-Abstract-cfg-scope'>        scope: null,
 </span>
-<span id='Ext-fx-layout-card-Abstract-cfg-layout'>        layout: null
+<span id='Ext-util-sizemonitor-Abstract-cfg-args'>        args: []
 </span>    },
 
-<span id='Ext-fx-layout-card-Abstract-method-updateLayout'>    updateLayout: function(layout) {
-</span>        if (layout) {
-            this.enable();
-        }
-    },
-
-<span id='Ext-fx-layout-card-Abstract-method-enable'>    enable: function() {
-</span>        var layout = this.getLayout();
-
-        if (layout) {
-            layout.on(&#39;beforeactiveitemchange&#39;, &#39;onActiveItemChange&#39;, this);
-        }
-    },
-
-<span id='Ext-fx-layout-card-Abstract-method-disable'>    disable: function() {
-</span>        var layout = this.getLayout();
-
-        if (this.isAnimating) {
-            this.stopAnimation();
-        }
-
-        if (layout) {
-            layout.un(&#39;beforeactiveitemchange&#39;, &#39;onActiveItemChange&#39;, this);
-        }
-    },
-
-<span id='Ext-fx-layout-card-Abstract-method-onActiveItemChange'>    onActiveItemChange: Ext.emptyFn,
+<span id='Ext-util-sizemonitor-Abstract-property-width'>    width: null,
 </span>
-<span id='Ext-fx-layout-card-Abstract-method-destroy'>    destroy: function() {
+<span id='Ext-util-sizemonitor-Abstract-property-height'>    height: null,
+</span>
+<span id='Ext-util-sizemonitor-Abstract-property-contentWidth'>    contentWidth: null,
+</span>
+<span id='Ext-util-sizemonitor-Abstract-property-contentHeight'>    contentHeight: null,
+</span>
+<span id='Ext-util-sizemonitor-Abstract-method-constructor'>    constructor: function(config) {
+</span>        this.refresh = Ext.Function.bind(this.refresh, this);
+
+        this.info = {
+            width: 0,
+            height: 0,
+            contentWidth: 0,
+            contentHeight: 0,
+            flag: 0
+        };
+
+        this.initElement();
+
+        this.initConfig(config);
+
+        this.bindListeners(true);
+    },
+
+<span id='Ext-util-sizemonitor-Abstract-method-bindListeners'>    bindListeners: Ext.emptyFn,
+</span>
+<span id='Ext-util-sizemonitor-Abstract-method-applyElement'>    applyElement: function(element) {
+</span>        if (element) {
+            return Ext.get(element);
+        }
+    },
+
+<span id='Ext-util-sizemonitor-Abstract-method-updateElement'>    updateElement: function(element) {
+</span>        element.append(this.detectorsContainer);
+        element.addCls(Ext.baseCSSPrefix + &#39;size-monitored&#39;);
+    },
+
+<span id='Ext-util-sizemonitor-Abstract-method-applyArgs'>    applyArgs: function(args) {
+</span>        return args.concat([this.info]);
+    },
+
+<span id='Ext-util-sizemonitor-Abstract-method-refreshMonitors'>    refreshMonitors: Ext.emptyFn,
+</span>
+<span id='Ext-util-sizemonitor-Abstract-method-forceRefresh'>    forceRefresh: function() {
+</span>        Ext.TaskQueue.requestRead(&#39;refresh&#39;, this);
+    },
+
+<span id='Ext-util-sizemonitor-Abstract-method-getContentBounds'>    getContentBounds: function() {
+</span>        return this.detectorsContainer.getBoundingClientRect();
+    },
+
+<span id='Ext-util-sizemonitor-Abstract-method-getContentWidth'>    getContentWidth: function() {
+</span>        return this.detectorsContainer.clientWidth;
+    },
+
+<span id='Ext-util-sizemonitor-Abstract-method-getContentHeight'>    getContentHeight: function() {
+</span>        return this.detectorsContainer.clientHeight;
+    },
+
+<span id='Ext-util-sizemonitor-Abstract-method-refreshSize'>    refreshSize: function() {
+</span>        var element = this.getElement();
+
+        if (!element || element.destroyed) {
+            return false;
+        }
+
+        var width = element.getWidth(),
+            height = element.getHeight(),
+            contentWidth = this.getContentWidth(),
+            contentHeight = this.getContentHeight(),
+            currentContentWidth = this.contentWidth,
+            currentContentHeight = this.contentHeight,
+            info = this.info,
+            resized = false,
+            flag = 0;
+
+        this.width = width;
+        this.height = height;
+        this.contentWidth = contentWidth;
+        this.contentHeight = contentHeight;
+
+        flag = ((currentContentWidth !== contentWidth ? 1 : 0) + (currentContentHeight !== contentHeight ? 2 : 0));
+
+        if (flag &gt; 0) {
+            info.width = width;
+            info.height = height;
+            info.contentWidth = contentWidth;
+            info.contentHeight = contentHeight;
+            info.flag = flag;
+
+            resized = true;
+            this.getCallback().apply(this.getScope(), this.getArgs());
+        }
+
+        return resized;
+    },
+
+<span id='Ext-util-sizemonitor-Abstract-method-refresh'>    refresh: function(force) {
+</span>        if (this.destroying || this.destroyed) {
+            return;
+        }
+        
+        if (this.refreshSize() || force) {
+            Ext.TaskQueue.requestWrite(&#39;refreshMonitors&#39;, this);
+        }
+    },
+
+<span id='Ext-util-sizemonitor-Abstract-method-destroy'>    destroy: function() {
 </span>        var me = this,
-            layout = me.getLayout();
+            element = me.getElement();
 
-        if (me.isAnimating) {
-            me.stopAnimation();
+        me.bindListeners(false);
+
+        if (element &amp;&amp; !element.destroyed) {
+            element.removeCls(Ext.baseCSSPrefix + &#39;size-monitored&#39;);
         }
 
-        if (layout) {
-            layout.un(&#39;beforeactiveitemchange&#39;, &#39;onActiveItemChange&#39;, this);
-        }
-        me.setLayout(null);
+        delete me._element;
+        
+        // This is a closure so Base destructor won&#39;t null it
+        me.refresh = null;
 
-        if (me.observableId) {
-            me.fireEvent(&#39;destroy&#39;, this);
-        }
         me.callParent();
     }
 });
