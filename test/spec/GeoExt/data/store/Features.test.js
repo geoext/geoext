@@ -493,7 +493,7 @@ describe('GeoExt.data.store.Features', function() {
             );
         });
 
-        it('is done correctly for "clear"', function () {
+        it('is done correctly for "clear"', function() {
             layer.getSource().clear();
             expect(store.getCount()).to.be(
                 layer.getSource().getFeatures().length
