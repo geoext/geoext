@@ -327,4 +327,72 @@ describe('GeoExt.selection.FeatureRowModel', function() {
             }
         );
     });
+
+    describe('selection and clearing of features with filters', function() {
+        var selModel;
+        var grid;
+        var featStore;
+        var selRec;
+        var selFeat;
+        var layer;
+
+        beforeEach(function() {
+            var feat = new ol.Feature({fid: 1});
+            var coll = new ol.Collection();
+            coll.push(feat);
+
+            layer = new ol.layer.Vector({
+                source: new ol.source.Vector({
+                    features: coll
+                })
+            });
+
+            featStore =
+                Ext.create('GeoExt.data.store.Features', {
+                    layer: layer
+                });
+
+            featStore.filterBy(function(rec) {
+                return rec.get('fid') !== -1;
+            });
+
+            selModel = Ext.create('GeoExt.selection.FeatureRowModel', {
+                mode: 'SINGLE'
+            });
+            // feature grid with a feature selection model
+            grid = Ext.create('Ext.grid.Panel', {
+                store: featStore,
+                selModel: selModel
+            });
+            selRec = featStore.getAt(0);
+            selFeat = selRec.getFeature();
+        });
+
+        afterEach(function() {
+            selModel.destroy();
+            featStore.destroy();
+            grid.destroy();
+            selModel = null;
+            featStore = null;
+            grid = null;
+            selRec = null;
+            selFeat = null;
+        });
+
+        it('selection is cleared when layer is cleared', function() {
+            grid.getView().setSelection(selRec);
+            layer.getSource().clear();
+            expect(selModel.selectedFeatures.getLength()).to.be(0);
+            expect(featStore.getData().getCount()).to.be(0);
+            expect(layer.getSource().getFeatures().length).to.be(0);
+        });
+
+        it('selection is cleared when feature is removed', function() {
+            grid.getView().setSelection(selRec);
+            layer.getSource().removeFeature(selFeat);
+            expect(selModel.selectedFeatures.getLength()).to.be(0);
+            expect(featStore.getData().getCount()).to.be(0);
+            expect(layer.getSource().getFeatures().length).to.be(0);
+        });
+    });
 });
