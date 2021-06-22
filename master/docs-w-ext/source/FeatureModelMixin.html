@@ -328,7 +328,8 @@ Ext.define(&#39;GeoExt.selection.FeatureModelMixin&#39;, {
         var selFeature = record.getFeature();
 
         // toggle feature&#39;s selection state
-        selFeature.set(me.selectedFeatureAttr, isSelected);
+        var silent = true;
+        selFeature.set(me.selectedFeatureAttr, isSelected, silent);
 
         if (isSelected) {
             me.selectedFeatures.push(selFeature);
