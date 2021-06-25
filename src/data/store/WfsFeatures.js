@@ -27,10 +27,11 @@ Ext.define('GeoExt.data.store.WfsFeatures', {
 
     /**
      * If autoLoad is true, this store's loadWfs method is automatically called
-     * after creation.
+     * after creation. Note however if remoteFilter is set to true the store
+     * will be automatically loaded regardless of this setting
      * @cfg {Boolean}
      */
-    autoLoad: true,
+    autoLoad: false,
 
     /**
      * Default to using server side sorting
@@ -381,7 +382,6 @@ Ext.define('GeoExt.data.store.WfsFeatures', {
      */
     loadWfs: function() {
         var me = this;
-
         if (me.loadWfsTask_.id === null) {
             me.loadWfsTask_.delay(me.debounce, function() {});
             me.loadWfsInternal();
