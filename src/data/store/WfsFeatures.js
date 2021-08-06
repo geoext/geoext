@@ -377,8 +377,9 @@ Ext.define('GeoExt.data.store.WfsFeatures', {
 
     /**
      * Create a parameters object used to make a WFS feature request
-     * */
-    createParameters: function () {
+     * @return {Object} A object of WFS parameter keys and values
+     */
+    createParameters: function() {
 
         var me = this;
 
