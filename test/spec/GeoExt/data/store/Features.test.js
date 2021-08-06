@@ -492,6 +492,13 @@ describe('GeoExt.data.store.Features', function() {
                 layer.getSource().getFeatures().length
             );
         });
+
+        it('is done correctly for "clear"', function() {
+            layer.getSource().clear();
+            expect(store.getCount()).to.be(
+                layer.getSource().getFeatures().length
+            );
+        });
     });
 
     describe('Passing filter to underlying layer', function() {
