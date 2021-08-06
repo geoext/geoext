@@ -22,6 +22,7 @@ describe('GeoExt.toolbar.WfsPaging', function() {
         var url = dataPath + 'data/wfs_mock.geojson';
         var wfsStore = Ext.create('GeoExt.data.store.WfsFeatures', {
             url: url,
+            autoLoad: true,
             format: new ol.format.GeoJSON({
                 featureProjection: 'EPSG:3857'
             })
