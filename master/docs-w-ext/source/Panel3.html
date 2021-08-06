@@ -15,451 +15,1039 @@
   </script>
 </head>
 <body onload="prettyPrint(); highlight();">
-  <pre class="prettyprint lang-js"><span id='Ext-form-Panel'>/**
-</span> * FormPanel provides a standard container for forms. It is essentially a standard {@link Ext.panel.Panel} which
- * automatically creates a {@link Ext.form.Basic BasicForm} for managing any {@link Ext.form.field.Field}
- * objects that are added as descendants of the panel. It also includes conveniences for configuring and
- * working with the BasicForm and the collection of Fields.
- * 
- * # Layout
- * 
- * By default, FormPanel is configured with `{@link Ext.layout.container.Anchor layout:&#39;anchor&#39;}` for
- * the layout of its immediate child items. This can be changed to any of the supported container layouts.
- * The layout of sub-containers is configured in {@link Ext.container.Container#layout the standard way}.
- * 
- * # BasicForm
- * 
- * FormPanel class accepts all
- * of the config options supported by the {@link Ext.form.Basic} class, and will pass them along to
- * the internal BasicForm when it is created.
- * 
- * The following events fired by the BasicForm will be re-fired by the FormPanel and can therefore be
- * listened for on the FormPanel itself:
- * 
- * - {@link Ext.form.Basic#beforeaction beforeaction}
- * - {@link Ext.form.Basic#actionfailed actionfailed}
- * - {@link Ext.form.Basic#actioncomplete actioncomplete}
- * - {@link Ext.form.Basic#validitychange validitychange}
- * - {@link Ext.form.Basic#dirtychange dirtychange}
- * 
- * # Field Defaults
- * 
- * The {@link #fieldDefaults} config option conveniently allows centralized configuration of default values
- * for all fields added as descendants of the FormPanel. Any config option recognized by implementations
- * of {@link Ext.form.Labelable} may be included in this object. See the {@link #fieldDefaults} documentation
- * for details of how the defaults are applied.
- * 
- * # Form Validation
- * 
- * With the default configuration, form fields are validated on-the-fly while the user edits their values.
- * This can be controlled on a per-field basis (or via the {@link #fieldDefaults} config) with the field
- * config properties {@link Ext.form.field.Field#validateOnChange} and {@link Ext.form.field.Base#checkChangeEvents},
- * and the FormPanel&#39;s config properties {@link #pollForChanges} and {@link #pollInterval}.
- * 
- * Any component within the FormPanel can be configured with `formBind: true`. This will cause that
- * component to be automatically disabled when the form is invalid, and enabled when it is valid. This is most
- * commonly used for Button components to prevent submitting the form in an invalid state, but can be used on
- * any component type.
- * 
- * For more information on form validation see the following:
- * 
- * - {@link Ext.form.field.Field#validateOnChange}
- * - {@link #pollForChanges} and {@link #pollInterval}
- * - {@link Ext.form.field.VTypes}
- * - {@link Ext.form.Basic#doAction BasicForm.doAction clientValidation notes}
- * 
- * # Form Submission
- * 
- * By default, Ext Forms are submitted through Ajax, using {@link Ext.form.action.Action}. See the documentation for
- * {@link Ext.form.Basic} for details.
+  <pre class="prettyprint lang-js"><span id='Ext-tree-Panel'>/**
+</span> * The TreePanel provides tree-structured UI representation of tree-structured data.
+ * A TreePanel must be bound to a {@link Ext.data.TreeStore}.
  *
- * # Example usage
- * 
+ * TreePanels support multiple columns through the {@link #columns} configuration.
+ *
+ * By default a TreePanel contains a single column which uses the `text` Field of
+ * the store&#39;s nodes.
+ *
+ * Simple TreePanel using inline data:
+ *
  *     @example
- *     Ext.create(&#39;Ext.form.Panel&#39;, {
- *         title: &#39;Simple Form&#39;,
- *         bodyPadding: 5,
- *         width: 350,
- * 
- *         // The form will submit an AJAX request to this URL when submitted
- *         url: &#39;save-form.php&#39;,
- * 
- *         // Fields will be arranged vertically, stretched to full width
- *         layout: &#39;anchor&#39;,
- *         defaults: {
- *             anchor: &#39;100%&#39;
- *         },
- * 
- *         // The fields
- *         defaultType: &#39;textfield&#39;,
- *         items: [{
- *             fieldLabel: &#39;First Name&#39;,
- *             name: &#39;first&#39;,
- *             allowBlank: false
- *         },{
- *             fieldLabel: &#39;Last Name&#39;,
- *             name: &#39;last&#39;,
- *             allowBlank: false
- *         }],
- * 
- *         // Reset and Submit buttons
- *         buttons: [{
- *             text: &#39;Reset&#39;,
- *             handler: function() {
- *                 this.up(&#39;form&#39;).getForm().reset();
- *             }
- *         }, {
- *             text: &#39;Submit&#39;,
- *             formBind: true, //only enabled once the form is valid
- *             disabled: true,
- *             handler: function() {
- *                 var form = this.up(&#39;form&#39;).getForm();
- *                 if (form.isValid()) {
- *                     form.submit({
- *                         success: function(form, action) {
- *                            Ext.Msg.alert(&#39;Success&#39;, action.result.msg);
- *                         },
- *                         failure: function(form, action) {
- *                             Ext.Msg.alert(&#39;Failed&#39;, action.result.msg);
- *                         }
- *                     });
- *                 }
- *             }
- *         }],
+ *     var store = Ext.create(&#39;Ext.data.TreeStore&#39;, {
+ *         root: {
+ *             expanded: true,
+ *             children: [
+ *                 { text: &#39;detention&#39;, leaf: true },
+ *                 { text: &#39;homework&#39;, expanded: true, children: [
+ *                     { text: &#39;book report&#39;, leaf: true },
+ *                     { text: &#39;algebra&#39;, leaf: true}
+ *                 ] },
+ *                 { text: &#39;buy lottery tickets&#39;, leaf: true }
+ *             ]
+ *         }
+ *     });
+ *
+ *     Ext.create(&#39;Ext.tree.Panel&#39;, {
+ *         title: &#39;Simple Tree&#39;,
+ *         width: 200,
+ *         height: 200,
+ *         store: store,
+ *         rootVisible: false,
  *         renderTo: Ext.getBody()
  *     });
  *
+ * For the tree node config options (like `text`, `leaf`, `expanded`), see the documentation of
+ * {@link Ext.data.NodeInterface NodeInterface} config options.
+ *
+ * Unless the TreeStore is configured with a {@link Ext.data.Model model} of your choosing, nodes in the {@link Ext.data.TreeStore} are by default, instances of {@link Ext.data.TreeModel}.
+ *
+ * # Heterogeneous node types.
+ *
+ * If the tree needs to use different data model classes at different levels there is much flexibility in how to specify this.
+ *
+ * ### Configuring the Reader.
+ * If you configure the proxy&#39;s reader with a {@link Ext.data.reader.Reader#typeProperty typeProperty}, then the server is in control of which data model
+ * types are created. A discriminator field is used in the raw data to decide which class to instantiate.
+ * **If this is configured, then the data from the server is prioritized over other ways of determining node class**.
+ *
+ *     @example
+ *     Ext.define(&#39;myApp.Territory&#39;, {
+ *         extend: &#39;Ext.data.TreeModel&#39;,
+ *         fields: [{
+ *             name: &#39;text&#39;,
+ *             mapping: &#39;name&#39;
+ *         }]
+ *     });
+ *     Ext.define(&#39;myApp.Country&#39;, {
+ *         extend: &#39;Ext.data.TreeModel&#39;,
+ *         fields: [{
+ *             name: &#39;text&#39;,
+ *             mapping: &#39;name&#39;
+ *         }]
+ *     });
+ *     Ext.define(&#39;myApp.City&#39;, {
+ *         extend: &#39;Ext.data.TreeModel&#39;,
+ *         fields: [{
+ *             name: &#39;text&#39;,
+ *             mapping: &#39;name&#39;
+ *         }]
+ *     });
+ *     Ext.create(&#39;Ext.tree.Panel&#39;, {
+ *         renderTo: document.body,
+ *         height: 200,
+ *         width: 400,
+ *         title: &#39;Sales Areas - using typeProperty&#39;,
+ *         rootVisible: false,
+ *         store: {
+ *             // Child types use namespace of store&#39;s model by default
+ *             model: &#39;myApp.Territory&#39;,
+ *             proxy: {
+ *                 type: &#39;memory&#39;,
+ *                 reader: {
+ *                     typeProperty: &#39;mtype&#39;
+ *                 }
+ *             },
+ *             root: {
+ *                 children: [{
+ *                     name: &#39;Europe, ME, Africa&#39;,
+ *                     mtype: &#39;Territory&#39;,
+ *                     children: [{
+ *                         name: &#39;UK of GB &amp; NI&#39;,
+ *                         mtype: &#39;Country&#39;,
+ *                         children: [{
+ *                             name: &#39;London&#39;,
+ *                             mtype: &#39;City&#39;,
+ *                             leaf: true
+ *                         }]
+ *                     }]
+ *                 }, {
+ *                     name: &#39;North America&#39;,
+ *                     mtype: &#39;Territory&#39;,
+ *                     children: [{
+ *                         name: &#39;USA&#39;,
+ *                         mtype: &#39;Country&#39;,
+ *                         children: [{
+ *                             name: &#39;Redwood City&#39;,
+ *                             mtype: &#39;City&#39;,
+ *                             leaf: true
+ *                         }]
+ *                     }]
+ *                 }]
+ *             }
+ *         }
+ *     });
+ *
+ * ### Node being loaded decides.
+ * You can declare your TreeModel subclasses with a {@link Ext.data.TreeModel#childType childType} which means that the node being loaded decides the
+ * class to instantiate for all of its child nodes.
+ *
+ * It is important to note that if the root node is {@link Ext.tree.Panel#rootVisible hidden}, its type will default to the store&#39;s model type, and if left
+ * as the default (`{@link Ext.data.TreeModel}`) this will have no knowledge of creation of special child node types. So be sure to specify a store model in this case:
+ *
+ *     @example
+ *     Ext.define(&#39;myApp.TerritoryRoot&#39;, {
+ *         extend: &#39;Ext.data.TreeModel&#39;,
+ *         childType: &#39;myApp.Territory&#39;,
+ *         fields: [{
+ *             name: &#39;text&#39;,
+ *             mapping: &#39;name&#39;
+ *         }]
+ *     });
+ *     Ext.define(&#39;myApp.Territory&#39;, {
+ *         extend: &#39;Ext.data.TreeModel&#39;,
+ *         childType: &#39;myApp.Country&#39;,
+ *         fields: [{
+ *             name: &#39;text&#39;,
+ *             mapping: &#39;name&#39;
+ *         }]
+ *     });
+ *     Ext.define(&#39;myApp.Country&#39;, {
+ *         extend: &#39;Ext.data.TreeModel&#39;,
+ *         childType: &#39;myApp.City&#39;,
+ *         fields: [{
+ *             name: &#39;text&#39;,
+ *             mapping: &#39;name&#39;
+ *         }]
+ *     });
+ *     Ext.define(&#39;myApp.City&#39;, {
+ *         extend: &#39;Ext.data.TreeModel&#39;,
+ *         fields: [{
+ *             name: &#39;text&#39;,
+ *             mapping: &#39;name&#39;
+ *         }]
+ *     });
+ *     Ext.create(&#39;Ext.tree.Panel&#39;, {
+ *         renderTo: document.body,
+ *         height: 200,
+ *         width: 400,
+ *         title: &#39;Sales Areas&#39;,
+ *         rootVisible: false,
+ *         store: {
+ *             model: &#39;myApp.TerritoryRoot&#39;, // Needs to be this so it knows to create &#39;Country&#39; child nodes
+ *             root: {
+ *                 children: [{
+ *                     name: &#39;Europe, ME, Africa&#39;,
+ *                     children: [{
+ *                         name: &#39;UK of GB &amp; NI&#39;,
+ *                         children: [{
+ *                             name: &#39;London&#39;,
+ *                             leaf: true
+ *                         }]
+ *                     }]
+ *                 }, {
+ *                     name: &#39;North America&#39;,
+ *                     children: [{
+ *                         name: &#39;USA&#39;,
+ *                         children: [{
+ *                             name: &#39;Redwood City&#39;,
+ *                             leaf: true
+ *                         }]
+ *                     }]
+ *                 }]
+ *             }
+ *         }
+ *     });
+ *
+ * # Data structure
+ *
+ * The {@link Ext.data.TreeStore TreeStore} maintains a {@link Ext.data.TreeStore#getRoot root node} and a hierarchical structure of {@link Ext.data.TreeModel node}s.
+ *
+ * The {@link Ext.tree.View UI} of the tree is driven by a {Ext.data.NodeStore NodeStore} which is a flattened view of *visible* nodes.
+ * The NodeStore is dynamically updated to reflect the visibility state of nodes as nodes are added, removed or expanded. The UI
+ * responds to mutation events fire by the NodeStore.
+ * 
+ * Note that nodes have several more {@link Ext.data.Model#cfg-fields fields} in order to describe their state within the hierarchy.
+ *
+ * If you add store listeners to the {@link Ext.data.Store#event-update update} event, then you will receive notification when any of this state changes.
+ * You should check the array of modified field names passed to the listener to decide whether the listener should take action or ignore the event.
+ * 
+ * # Tree Grid
+ * Trees may be configured using the {@link #cfg-columns} config including a 
+ * {@link Ext.tree.Column treecolumn} to give the tree panel a hybrid tree / 
+ * {@link Ext.grid.Panel grid} structure.
+ * 
+ *     @example
+ *     Ext.create({
+ *         xtype: &#39;treepanel&#39;,
+ *         renderTo: Ext.getBody(),
+ *         height: 200,
+ *         width: 300,
+ *         rootVisible: false,
+ *         store: Ext.create(&#39;Ext.data.TreeStore&#39;, {
+ *             fields: [&#39;text&#39;, &#39;duration&#39;, &#39;isLayover&#39;],
+ *             root: {
+ *                 expanded: true,
+ *                 children: [{
+ *                     text: &#39;SFO  &amp;nbsp;✈&amp;nbsp; DFW&#39;,
+ *                     duration: &#39;6h 55m&#39;,
+ *                     expanded: true,
+ *                     children: [{
+ *                         text: &#39;SFO &amp;nbsp;✈&amp;nbsp; PHX&#39;,
+ *                         duration: &#39;2h 04m&#39;,
+ *                         leaf: true
+ *                     }, {
+ *                         text: &#39;PHX layover&#39;,
+ *                         duration: &#39;2h 36m&#39;,
+ *                         isLayover: true,
+ *                         leaf: true
+ *                     }, {
+ *                         text: &#39;PHX &amp;nbsp;✈&amp;nbsp; DFW&#39;,
+ *                         duration: &#39;2h 15m&#39;,
+ *                         leaf: true
+ *                     }]
+ *                 }]
+ *             }
+ *         }),
+ *         columns: [{
+ *             xtype: &#39;treecolumn&#39;,
+ *             text: &#39;Flight Endpoints&#39;,
+ *             dataIndex: &#39;text&#39;,
+ *             flex: 1,
+ *             renderer: function (val, meta, rec) {
+ *                 if (rec.get(&#39;isLayover&#39;)) {
+ *                     meta.tdStyle = &#39;color: gray; font-style: italic;&#39;;
+ *                 }
+ *                 return val;
+ *             }
+ *         }, {
+ *             text: &#39;Duration&#39;,
+ *             dataIndex: &#39;duration&#39;,
+ *             width: 100
+ *         }]
+ *     });
  */
-Ext.define(&#39;Ext.form.Panel&#39;, {
-    extend:&#39;Ext.panel.Panel&#39;,
-    mixins: {
-        fieldAncestor: &#39;Ext.form.FieldAncestor&#39;
-    },
-    alias: &#39;widget.form&#39;,
-    alternateClassName: [&#39;Ext.FormPanel&#39;, &#39;Ext.form.FormPanel&#39;],
-    requires: [&#39;Ext.form.Basic&#39;, &#39;Ext.util.TaskRunner&#39;],
-
-<span id='Ext-form-Panel-cfg-pollForChanges'>    /**
-</span>     * @cfg {Boolean} pollForChanges
-     * If set to `true`, sets up an interval task (using the {@link #pollInterval}) in which the
-     * panel&#39;s fields are repeatedly checked for changes in their values. This is in addition to the normal detection
-     * each field does on its own input element, and is not needed in most cases. It does, however, provide a
-     * means to absolutely guarantee detection of all changes including some edge cases in some browsers which
-     * do not fire native events. Defaults to `false`.
-     */
-
-<span id='Ext-form-Panel-cfg-pollInterval'>    /**
-</span>     * @cfg {Number} pollInterval
-     * Interval in milliseconds at which the form&#39;s fields are checked for value changes. Only used if
-     * the {@link #pollForChanges} option is set to `true`. Defaults to 500 milliseconds.
-     */
-
-<span id='Ext-form-Panel-cfg-layout'>    /**
-</span>     * @cfg {Ext.enums.Layout/Object} layout
-     * The {@link Ext.container.Container#layout} for the form panel&#39;s immediate child items.
-     */
-    layout: &#39;anchor&#39;,
-
-<span id='Ext-form-Panel-property-bodyAriaRole'>    bodyAriaRole: &#39;form&#39;,
-</span>    
-<span id='Ext-form-Panel-property-basicFormConfigs'>    basicFormConfigs: [
-</span><span id='Ext-form-Panel-cfg-api'>        /**
-</span>         * @cfg api
-         * @inheritdoc Ext.form.Basic#api
-         */
-        &#39;api&#39;, 
-<span id='Ext-form-Panel-cfg-baseParams'>        /**
-</span>         * @cfg baseParams
-         * @inheritdoc Ext.form.Basic#baseParams
-         */
-        &#39;baseParams&#39;, 
-<span id='Ext-form-Panel-cfg-errorReader'>        /**
-</span>         * @cfg errorReader
-         * @inheritdoc Ext.form.Basic#errorReader
-         */
-        &#39;errorReader&#39;, 
-<span id='Ext-form-Panel-cfg-jsonSubmit'>        /**
-</span>         * @cfg jsonSubmit
-         * @inheritdoc Ext.form.Basic#jsonSubmit
-         */
-        &#39;jsonSubmit&#39;,
-<span id='Ext-form-Panel-cfg-method'>        /**
-</span>         * @cfg method
-         * @inheritdoc Ext.form.Basic#method
-         */
-        &#39;method&#39;, 
-<span id='Ext-form-Panel-cfg-paramOrder'>        /**
-</span>         * @cfg paramOrder
-         * @inheritdoc Ext.form.Basic#paramOrder
-         */
-        &#39;paramOrder&#39;,
-<span id='Ext-form-Panel-cfg-paramsAsHash'>        /**
-</span>         * @cfg paramsAsHash
-         * @inheritdoc Ext.form.Basic#paramsAsHash
-         */
-        &#39;paramsAsHash&#39;,
-<span id='Ext-form-Panel-cfg-reader'>        /**
-</span>         * @cfg reader
-         * @inheritdoc Ext.form.Basic#reader
-         */
-        &#39;reader&#39;,
-<span id='Ext-form-Panel-cfg-standardSubmit'>        /**
-</span>         * @cfg standardSubmit
-         * @inheritdoc Ext.form.Basic#standardSubmit
-         */
-        &#39;standardSubmit&#39;,
-<span id='Ext-form-Panel-cfg-timeout'>        /**
-</span>         * @cfg timeout
-         * @inheritdoc Ext.form.Basic#timeout
-         */
-        &#39;timeout&#39;,
-<span id='Ext-form-Panel-cfg-trackResetOnLoad'>        /**
-</span>         * @cfg trackResetOnLoad
-         * @inheritdoc Ext.form.Basic#trackResetOnLoad
-         */
-        &#39;trackResetOnLoad&#39;,
-<span id='Ext-form-Panel-cfg-url'>        /**
-</span>         * @cfg url
-         * @inheritdoc Ext.form.Basic#url
-         */
-        &#39;url&#39;,
-<span id='Ext-form-Panel-cfg-waitMsgTarget'>        /**
-</span>         * @cfg waitMsgTarget
-         * @inheritdoc Ext.form.Basic#waitMsgTarget
-         */
-        &#39;waitMsgTarget&#39;,
-<span id='Ext-form-Panel-cfg-waitTitle'>        /**
-</span>         * @cfg waitTitle
-         * @inheritdoc Ext.form.Basic#waitTitle
-         */
-        &#39;waitTitle&#39;
+Ext.define(&#39;Ext.tree.Panel&#39;, {
+    extend: &#39;Ext.panel.Table&#39;,
+    alias: &#39;widget.treepanel&#39;,
+    alternateClassName: [&#39;Ext.tree.TreePanel&#39;, &#39;Ext.TreePanel&#39;],
+    requires: [
+        &#39;Ext.tree.View&#39;,
+        &#39;Ext.selection.TreeModel&#39;,
+        &#39;Ext.tree.Column&#39;,
+        &#39;Ext.data.TreeStore&#39;,
+        &#39;Ext.tree.NavigationModel&#39;
     ],
+<span id='Ext-tree-Panel-cfg-viewType'>    viewType: &#39;treeview&#39;,
+</span>
+<span id='Ext-tree-Panel-property-treeCls'>    treeCls: Ext.baseCSSPrefix + &#39;tree-panel&#39;,
+</span>
+<span id='Ext-tree-Panel-cfg-rowLines'>    /**
+</span>     * @cfg {Boolean} [rowLines=false]
+     * Configure as true to separate rows with visible horizontal lines (depends on theme).
+     */
+    rowLines: false,
 
-<span id='Ext-form-Panel-method-initComponent'>    initComponent: function() {
-</span>        var me = this;
+<span id='Ext-tree-Panel-cfg-lines'>    /**
+</span>     * @cfg {Boolean} [lines=true]
+     * False to disable tree lines.
+     */
+    lines: true,
 
-        if (me.frame) {
-            me.border = false;
+<span id='Ext-tree-Panel-cfg-useArrows'>    /**
+</span>     * @cfg {Boolean} [useArrows=false]
+     * True to use Vista-style arrows in the tree.
+     */
+    useArrows: false,
+
+<span id='Ext-tree-Panel-cfg-singleExpand'>    /**
+</span>     * @cfg {Boolean} [singleExpand=false]
+     * True if only 1 node per branch may be expanded.
+     */
+    singleExpand: false,
+
+<span id='Ext-tree-Panel-property-ddConfig'>    ddConfig: {
+</span>        enableDrag: true,
+        enableDrop: true
+    },
+
+<span id='Ext-tree-Panel-cfg-animate'>    /**
+</span>     * @cfg {Boolean} animate
+     * True to enable animated expand/collapse. Defaults to the value of {@link Ext#enableFx}.
+     */
+
+<span id='Ext-tree-Panel-cfg-rootVisible'>    /**
+</span>     * @cfg {Boolean} [rootVisible=true]
+     * False to hide the root node.
+     *
+     * Note that trees *always* have a root node. If you do not specify a {@link #cfg-root} node, one will be created.
+     *
+     * If the root node is not visible, then in order for a tree to appear to the end user, the root node is autoloaded with its child nodes.
+     */
+    rootVisible: true,
+
+<span id='Ext-tree-Panel-cfg-displayField'>    /**
+</span>     * @cfg {String} [displayField=text]
+     * The field inside the model that will be used as the node&#39;s text.
+     */
+    displayField: &#39;text&#39;,
+
+<span id='Ext-tree-Panel-cfg-root'>    /**
+</span>     * @cfg {Ext.data.Model/Ext.data.TreeModel/Object} root
+     * Allows you to not specify a store on this TreePanel. This is useful for creating a simple tree with preloaded
+     * data without having to specify a TreeStore and Model. A store and model will be created and root will be passed
+     * to that store. For example:
+     *
+     *     Ext.create(&#39;Ext.tree.Panel&#39;, {
+     *         title: &#39;Simple Tree&#39;,
+     *         root: {
+     *             text: &quot;Root node&quot;,
+     *             expanded: true,
+     *             children: [
+     *                 { text: &quot;Child 1&quot;, leaf: true },
+     *                 { text: &quot;Child 2&quot;, leaf: true }
+     *             ]
+     *         },
+     *         renderTo: Ext.getBody()
+     *     });
+     */
+    root: null,
+
+<span id='Ext-tree-Panel-cfg-checkPropagation'>    /**
+</span>     * @cfg {String} [checkPropagation=none]
+     * This configuration controls whether, and how checkbox click gestures are propagated to
+     * child nodes, or to a parent node.
+     *
+     * Valid values are
+     *
+     *      - `&#39;none&#39;` Checking a check node does not affect any other nodes.
+     *      - `&#39;up&#39;` Checking a check node synchronizes the value of its parent node with the state of its children.
+     *      - `&#39;down&#39;` Checking a check node propagates the value to its child nodes.
+     *      - `&#39;both&#39;` Checking a check node updates its child nodes, and syncs its parent node.
+     */
+    checkPropagation: &#39;none&#39;,
+
+<span id='Ext-tree-Panel-property-normalCfgCopy'>    // Required for the Lockable Mixin. These are the configurations which will be copied to the
+</span>    // normal and locked sub tablepanels
+    normalCfgCopy: [&#39;displayField&#39;, &#39;root&#39;, &#39;singleExpand&#39;, &#39;useArrows&#39;, &#39;lines&#39;, &#39;rootVisible&#39;, &#39;scroll&#39;],
+<span id='Ext-tree-Panel-property-lockedCfgCopy'>    lockedCfgCopy: [&#39;displayField&#39;, &#39;root&#39;, &#39;singleExpand&#39;, &#39;useArrows&#39;, &#39;lines&#39;, &#39;rootVisible&#39;],
+</span>    
+<span id='Ext-tree-Panel-property-isTree'>    isTree: true,
+</span>
+<span id='Ext-tree-Panel-cfg-folderSort'>    /**
+</span>     * @cfg {Boolean} folderSort
+     * True to automatically prepend a leaf sorter to the store.
+     */
+     
+<span id='Ext-tree-Panel-cfg-store'>    /**
+</span>     * @cfg {Ext.data.TreeStore} store (required)
+     * The {@link Ext.data.TreeStore Store} the tree should use as its data source.
+     */
+    
+    arrowCls: Ext.baseCSSPrefix + &#39;tree-arrows&#39;,
+<span id='Ext-tree-Panel-property-linesCls'>    linesCls: Ext.baseCSSPrefix + &#39;tree-lines&#39;,
+</span><span id='Ext-tree-Panel-property-noLinesCls'>    noLinesCls: Ext.baseCSSPrefix + &#39;tree-no-lines&#39;,
+</span><span id='Ext-tree-Panel-property-autoWidthCls'>    autoWidthCls: Ext.baseCSSPrefix + &#39;autowidth-table&#39;,
+</span>
+<span id='Ext-tree-Panel-method-constructor'>    constructor: function(config) {
+</span>        config = config || {};
+        if (config.animate === undefined) {
+            config.animate = Ext.isBoolean(this.animate) ? this.animate : Ext.enableFx;
+        }
+        this.enableAnimations = config.animate;
+        delete config.animate;
+
+        this.callParent([config]);
+    },
+
+<span id='Ext-tree-Panel-method-initComponent'>    initComponent: function() {
+</span>        var me = this,
+            cls = [me.treeCls],
+            store, autoTree, view;
+
+        if (me.useArrows) {
+            cls.push(me.arrowCls);
+            me.lines = false;
         }
 
-        me.initFieldAncestor();
+        if (me.lines) {
+            cls.push(me.linesCls);
+        } else if (!me.useArrows) {
+            cls.push(me.noLinesCls);
+        }
+
+        store = me.applyStore(me.store);
+
+        // If there is no root node defined, then create one.
+        if (!store.getRoot()) {
+            store.setRoot({});
+        }
+
+        // Store must have the same idea about root visibility as us BEFORE callParent binds it.
+        store.setRootVisible(me.rootVisible);
+
+        // If the user specifies the headers collection manually then don&#39;t inject
+        // our own
+        if (!me.columns) {
+            me.isAutoTree = autoTree = true;
+        }
+
+        me.viewConfig = Ext.apply({
+            rootVisible: me.rootVisible,
+            animate: me.enableAnimations,
+            singleExpand: me.singleExpand,
+            node: store.getRoot(),
+            navigationModel: &#39;tree&#39;,
+            isAutoTree: autoTree
+        }, me.viewConfig);
+
+        if (autoTree) {
+            me.addCls(me.autoWidthCls);
+            me.columns = [{
+                xtype    : &#39;treecolumn&#39;,
+                text     : me.hideHeaders === true ? &#39;Name&#39; : null,
+                flex     : 1,
+                dataIndex: me.displayField         
+            }];
+        }
+
+        if (me.cls) {
+            cls.push(me.cls);
+        }
+        me.cls = cls.join(&#39; &#39;);
+
         me.callParent();
 
-        me.relayEvents(me.form, [
-<span id='Ext-form-Panel-event-beforeaction'>            /**
-</span>             * @event beforeaction
-             * @inheritdoc Ext.form.Basic#beforeaction
+        view = me.getView();
+
+        // Relay events from the TreeView.
+        // An injected LockingView relays events from its locked side&#39;s View
+        me.relayEvents(view, [
+<span id='Ext-tree-Panel-event-beforecheckchange'>            /**
+</span>            * @event beforecheckchange
+            * Fires when a node with a checkbox&#39;s checked property changes.
+            * @param {Ext.data.TreeModel} node The node who&#39;s checked property is to be changed.
+            * @param {Boolean} checked The node&#39;s current checked state.
+            * @param {Ext.event.Event} e The click event.
+            */
+            &#39;beforecheckchange&#39;,
+<span id='Ext-tree-Panel-event-checkchange'>            /**
+</span>            * @event checkchange
+            * Fires when a node with a checkbox&#39;s checked property changes.
+            * @param {Ext.data.TreeModel} node The node who&#39;s checked property was changed.
+            * @param {Boolean} checked The node&#39;s new checked state.
+            * @param {Ext.event.Event} e The click event.
+            */
+            &#39;checkchange&#39;,
+<span id='Ext-tree-Panel-event-afteritemexpand'>            /**
+</span>            * @event afteritemexpand
+            * @inheritdoc Ext.tree.View#afteritemexpand
+            */
+            &#39;afteritemexpand&#39;,
+<span id='Ext-tree-Panel-event-afteritemcollapse'>            /**
+</span>            * @event afteritemcollapse
+            * @inheritdoc Ext.tree.View#afteritemcollapse
+            */
+            &#39;afteritemcollapse&#39;
+        ]);
+    },
+
+<span id='Ext-tree-Panel-method-applyStore'>    applyStore: function(store) {
+</span>        // private
+        // Note that this is not a config system applier. store is not yet a config.
+        // It just does the job of an applier and converts a config object to the true value
+        // for the setter to use.
+        var me = this;
+
+        if (Ext.isString(store)) {
+            store = me.store = Ext.StoreMgr.lookup(store);
+        } else if (!store || !store.isStore) {
+            store = Ext.apply({
+                type: &#39;tree&#39;,
+                proxy: &#39;memory&#39;
+            }, store);
+            if (me.root) {
+                store.root = me.root;
+            }
+            if (me.fields) {
+                store.fields = me.fields;
+            } else if (me.model) {
+                store.model = me.model;
+            }
+            if (me.folderSort) {
+                store.folderSort = me.folderSort;
+            }
+            store = me.store = Ext.StoreMgr.lookup(store);
+        } else if (me.root) {
+            store = me.store = Ext.data.StoreManager.lookup(store);
+            store.setRoot(me.root);
+            if (me.folderSort !== undefined) {
+                store.folderSort = me.folderSort;
+                store.sort();
+            }
+        }
+        
+        return store;
+    },
+
+<span id='Ext-tree-Panel-method-setRoot'>    setRoot: function (root) {
+</span>        this.store.setRoot(root);
+    },
+
+<span id='Ext-tree-Panel-method-setStore'>    setStore: function(store) {
+</span>        var me = this;
+
+        store = me.applyStore(store);
+
+        // If there is no rootnode defined, then create one.
+        if (!store.getRoot()) {
+            store.setRoot({});
+        }
+
+        // Store must have the same idea about root visibility as us BEFORE callParent binds it.
+        store.setRootVisible(me.rootVisible);
+
+        if (me.enableLocking) {
+            me.reconfigure(store);
+        } else {
+            if (me.view) {
+                me.view.setRootNode(store.getRootNode());
+            }
+            me.bindStore(store);
+        }
+    },
+
+<span id='Ext-tree-Panel-method-bindStore'>    /**
+</span>     * @private
+     * Hook into the TreeStore.
+     */
+    bindStore: function(store, initial) {
+        var me = this,
+            root = store.getRoot();
+
+        // Bind to store, and autocreate the BufferedRenderer.
+        me.callParent(arguments);
+
+        // The TreeStore needs to know about this TreePanel&#39;s singleExpand constraint so that
+        // it can ensure the compliance of NodeInterface.expandAll.
+        store.singleExpand = me.singleExpand;
+
+        // Monitor the TreeStore for the root node being changed. Return a Destroyable object
+        me.storeListeners = me.mon(store, {
+            destroyable: true,
+            rootchange: me.onRootChange,
+            scope: me
+        });
+
+        // Relay store events. relayEvents always returns a Destroyable object.
+        me.storeRelayers = me.relayEvents(store, [
+<span id='Ext-tree-Panel-event-beforeload'>            /**
+</span>             * @event beforeload
+             * @inheritdoc Ext.data.TreeStore#beforeload
              */
-            &#39;beforeaction&#39;,
-<span id='Ext-form-Panel-event-actionfailed'>            /**
-</span>             * @event actionfailed
-             * @inheritdoc Ext.form.Basic#actionfailed
+            &#39;beforeload&#39;,
+
+<span id='Ext-tree-Panel-event-load'>            /**
+</span>             * @event load
+             * @inheritdoc Ext.data.TreeStore#load
              */
-            &#39;actionfailed&#39;,
-<span id='Ext-form-Panel-event-actioncomplete'>            /**
-</span>             * @event actioncomplete
-             * @inheritdoc Ext.form.Basic#actioncomplete
-             */
-            &#39;actioncomplete&#39;,
-<span id='Ext-form-Panel-event-validitychange'>            /**
-</span>             * @event validitychange
-             * @inheritdoc Ext.form.Basic#validitychange
-             */
-            &#39;validitychange&#39;,
-<span id='Ext-form-Panel-event-dirtychange'>            /**
-</span>             * @event dirtychange
-             * @inheritdoc Ext.form.Basic#dirtychange
-             */
-            &#39;dirtychange&#39;
+            &#39;load&#39;
         ]);
 
-        // Start polling if configured
-        if (me.pollForChanges) {
-            me.startPolling(me.pollInterval || 500);
+        // If rootVisible is false, we *might* need to expand the node.
+        // If store is autoLoad, that will already have been kicked off.
+        // If its already expanded, or in the process of loading, the TreeStore
+        // has started that at the end of updateRoot 
+        if (!me.rootVisible &amp;&amp; !store.autoLoad &amp;&amp; !(root.isExpanded() || root.isLoading())) {
+            // A hidden root must be expanded, unless it&#39;s overridden with autoLoad: false.
+            // If it&#39;s loaded, set its expanded field (silently), and skip ahead to the onNodeExpand callback.
+            if (root.isLoaded()) {
+                root.data.expanded = true;
+                store.onNodeExpand(root, root.childNodes);
+            }
+            // Root is not loaded; go through the expand mechanism to force a load
+            // unless we were told explicitly not to load the store by setting
+            // autoLoad: false. This is useful with Direct proxy in cases when
+            // Direct API is loaded dynamically and may not be available at the time
+            // when TreePanel is created.
+            else if (store.autoLoad !== false &amp;&amp; !store.hasPendingLoad()) {
+                root.data.expanded = false;
+                root.expand();
+            }
+        }
+
+        // TreeStore must have an upward link to the TreePanel so that nodes can find their owning tree in NodeInterface.getOwnerTree
+        // TODO: NodeInterface.getOwnerTree is deprecated. Data class must not be coupled to UI. Remove this link
+        // when that method is removed.
+        store.ownerTree = me;
+
+        if (!initial) {
+            me.view.setRootNode(root);
         }
     },
 
-<span id='Ext-form-Panel-method-initItems'>    initItems: function() {
-</span>        // Create the BasicForm
-        this.callParent();
-        this.initMonitor();
-        this.form = this.createForm();
-    },
-
-<span id='Ext-form-Panel-method-afterFirstLayout'>    // Initialize the BasicForm after all layouts have been completed.
-</span>    afterFirstLayout: function() {
-        this.callParent(arguments);
-        this.form.initialize();
-    },
-
-<span id='Ext-form-Panel-method-createForm'>    /**
+<span id='Ext-tree-Panel-method-addRelayers'>    /**
 </span>     * @private
      */
-    createForm: function() {
-        var cfg = {},
-            props = this.basicFormConfigs,
-            len = props.length,
-            i = 0,
-            prop;
-            
-        for (; i &lt; len; ++i) {
-            prop = props[i];
-            cfg[prop] = this[prop];
+    addRelayers: function(newRoot) {
+        var me = this;
+
+        if (me.rootRelayers) {
+            me.rootRelayers.destroy();
+            me.rootRelayers = null;
         }
-        return new Ext.form.Basic(this, cfg);
-    },
-
-<span id='Ext-form-Panel-method-getForm'>    /**
-</span>     * Provides access to the {@link Ext.form.Basic Form} which this Panel contains.
-     * @return {Ext.form.Basic} The {@link Ext.form.Basic Form} which this Panel contains.
-     */
-    getForm: function() {
-        return this.form;
-    },
-
-<span id='Ext-form-Panel-method-loadRecord'>    /**
-</span>     * Loads an {@link Ext.data.Model} into this form (internally just calls {@link Ext.form.Basic#loadRecord})
-     * See also {@link Ext.form.Basic#trackResetOnLoad trackResetOnLoad}. The fields in the model are mapped to 
-     * fields in the form by matching either the {@link Ext.form.field.Base#name} or {@link Ext.Component#itemId}.  
-     * @param {Ext.data.Model} record The record to load
-     * @return {Ext.form.Basic} The Ext.form.Basic attached to this FormPanel
-     */
-    loadRecord: function(record) {
-        return this.getForm().loadRecord(record);
-    },
-
-<span id='Ext-form-Panel-method-getRecord'>    /**
-</span>     * Returns the currently loaded Ext.data.Model instance if one was loaded via {@link #loadRecord}.
-     * @return {Ext.data.Model} The loaded instance
-     */
-    getRecord: function() {
-        return this.getForm().getRecord();
-    },
-    
-<span id='Ext-form-Panel-method-updateRecord'>    /**
-</span>     * Persists the values in this form into the passed {@link Ext.data.Model} object in a beginEdit/endEdit block.
-     * If the record is not specified, it will attempt to update (if it exists) the record provided to {@link #loadRecord}.
-     * @param {Ext.data.Model} [record] The record to edit
-     * @return {Ext.form.Basic} The Ext.form.Basic attached to this FormPanel
-     */
-    updateRecord: function(record) {
-        return this.getForm().updateRecord(record);
-    },
-
-<span id='Ext-form-Panel-method-getValues'>    /**
-</span>     * Convenience function for fetching the current value of each field in the form. This is the same as calling
-     * {@link Ext.form.Basic#getValues this.getForm().getValues()}.
-     *
-     * @inheritdoc Ext.form.Basic#getValues
-     */
-    getValues: function(asString, dirtyOnly, includeEmptyText, useDataValues) {
-        return this.getForm().getValues(asString, dirtyOnly, includeEmptyText, useDataValues);
-    },
-    
-<span id='Ext-form-Panel-method-isDirty'>    /**
-</span>     * Convenience function to check if the form has any dirty fields. This is the same as calling
-     * {@link Ext.form.Basic#isDirty this.getForm().isDirty()}.
-     *
-     * @inheritdoc Ext.form.Basic#isDirty
-     */
-    isDirty: function () {
-        return this.form.isDirty();
-    },
-    
-<span id='Ext-form-Panel-method-isValid'>    /**
-</span>     * Convenience function to check if the form has all valid fields. This is the same as calling
-     * {@link Ext.form.Basic#isValid this.getForm().isValid()}.
-     *
-     * @inheritdoc Ext.form.Basic#isValid
-     */
-    isValid: function () {
-       return this.form.isValid();
-    },
-
-<span id='Ext-form-Panel-method-reset'>    /**
-</span>     * Convenience function reset the form. This is the same as calling
-     * {@link Ext.form.Basic#reset this.getForm().reset()}.
-     *
-     * @inheritdoc Ext.form.Basic#reset
-     */
-    reset: function(resetRecord) {
-        return this.form.reset(resetRecord);
-    },
-    
-<span id='Ext-form-Panel-method-hasInvalidField'>    /**
-</span>     * Convenience function to check if the form has any invalid fields. This is the same as calling
-     * {@link Ext.form.Basic#hasInvalidField this.getForm().hasInvalidField()}.
-     *
-     * @inheritdoc Ext.form.Basic#hasInvalidField
-     */
-    hasInvalidField: function () {
-        return this.form.hasInvalidField();
-    },
-
-<span id='Ext-form-Panel-method-doDestroy'>    doDestroy: function() {
-</span>        this.stopPolling();
-        this.form.destroy();
         
-        this.callParent();
-    },
+        // Relay store events with prefix. Return a Destroyable object
+        me.rootRelayers = me.mon(newRoot, {
+            destroyable: true,
 
-<span id='Ext-form-Panel-method-load'>    /**
-</span>     * This is a proxy for the underlying BasicForm&#39;s {@link Ext.form.Basic#load} call.
-     * @param {Object} options The options to pass to the action (see {@link Ext.form.Basic#load} and
-     * {@link Ext.form.Basic#doAction} for details)
-     */
-    load: function(options) {
-        this.form.load(options);
-    },
+<span id='Ext-tree-Panel-event-itemappend'>            /**
+</span>             * @event itemappend
+             * @inheritdoc Ext.data.TreeStore#nodeappend
+             */
+            append: me.createRelayer(&#39;itemappend&#39;),
 
-<span id='Ext-form-Panel-method-submit'>    /**
-</span>     * This is a proxy for the underlying BasicForm&#39;s {@link Ext.form.Basic#submit} call.
-     * @param {Object} options The options to pass to the action (see {@link Ext.form.Basic#submit} and
-     * {@link Ext.form.Basic#doAction} for details)
-     */
-    submit: function(options) {
-        this.form.submit(options);
-    },
+<span id='Ext-tree-Panel-event-itemremove'>            /**
+</span>             * @event itemremove
+             * @inheritdoc Ext.data.TreeStore#noderemove
+             */
+            remove: me.createRelayer(&#39;itemremove&#39;),
 
-<span id='Ext-form-Panel-method-startPolling'>    /**
-</span>     * Start an interval task to continuously poll all the fields in the form for changes in their
-     * values. This is normally started automatically by setting the {@link #pollForChanges} config.
-     * @param {Number} interval The interval in milliseconds at which the check should run.
-     */
-    startPolling: function(interval) {
-        this.stopPolling();
-        var task = new Ext.util.TaskRunner(interval);
-        task.start({
-            interval: 0,
-            run: this.checkChange,
-            scope: this
+<span id='Ext-tree-Panel-event-itemmove'>            /**
+</span>             * @event itemmove
+             * @inheritdoc Ext.data.TreeStore#nodemove
+             */
+            move: me.createRelayer(&#39;itemmove&#39;, [0, 4]),
+
+<span id='Ext-tree-Panel-event-iteminsert'>            /**
+</span>             * @event iteminsert
+             * @inheritdoc Ext.data.TreeStore#nodeinsert
+             */
+            insert: me.createRelayer(&#39;iteminsert&#39;),
+
+<span id='Ext-tree-Panel-event-beforeitemappend'>            /**
+</span>             * @event beforeitemappend
+             * @inheritdoc Ext.data.TreeStore#nodebeforeappend
+             */
+            beforeappend: me.createRelayer(&#39;beforeitemappend&#39;),
+
+<span id='Ext-tree-Panel-event-beforeitemremove'>            /**
+</span>             * @event beforeitemremove
+             * @inheritdoc Ext.data.TreeStore#nodebeforeremove
+             */
+            beforeremove: me.createRelayer(&#39;beforeitemremove&#39;),
+
+<span id='Ext-tree-Panel-event-beforeitemmove'>            /**
+</span>             * @event beforeitemmove
+             * @inheritdoc Ext.data.TreeStore#nodebeforemove
+             */
+            beforemove: me.createRelayer(&#39;beforeitemmove&#39;),
+
+<span id='Ext-tree-Panel-event-beforeiteminsert'>            /**
+</span>             * @event beforeiteminsert
+             * @inheritdoc Ext.data.TreeStore#nodebeforeinsert
+             */
+            beforeinsert: me.createRelayer(&#39;beforeiteminsert&#39;),
+
+<span id='Ext-tree-Panel-event-itemexpand'>            /**
+</span>             * @event itemexpand
+             * @inheritdoc Ext.data.TreeStore#nodeexpand
+             */
+            expand: me.createRelayer(&#39;itemexpand&#39;, [0, 1]),
+
+<span id='Ext-tree-Panel-event-itemcollapse'>            /**
+</span>             * @event itemcollapse
+             * @inheritdoc Ext.data.TreeStore#nodecollapse
+             */
+            collapse: me.createRelayer(&#39;itemcollapse&#39;, [0, 1]),
+
+<span id='Ext-tree-Panel-event-beforeitemexpand'>            /**
+</span>             * @event beforeitemexpand
+             * @inheritdoc Ext.data.TreeStore#nodebeforeexpand
+             */
+            beforeexpand: me.createRelayer(&#39;beforeitemexpand&#39;, [0, 1]),
+
+<span id='Ext-tree-Panel-event-beforeitemcollapse'>            /**
+</span>             * @event beforeitemcollapse
+             * @inheritdoc Ext.data.TreeStore#nodebeforecollapse
+             */
+            beforecollapse: me.createRelayer(&#39;beforeitemcollapse&#39;, [0, 1]),
+            scope: me
         });
-        this.pollTask = task;
     },
 
-<span id='Ext-form-Panel-method-stopPolling'>    /**
-</span>     * Stop a running interval task that was started by {@link #startPolling}.
+<span id='Ext-tree-Panel-method-unbindStore'>    /**
+</span>     * @private
      */
-    stopPolling: function() {
-        var task = this.pollTask;
-        if (task) {
-            task.stopAll();
-            delete this.pollTask;
+    unbindStore: function() {
+        var me = this,
+            store = me.store;
+
+        if (store) {
+            me.callParent();
+            Ext.destroy(me.storeListeners, me.storeRelayers, me.rootRelayers);
+            delete store.ownerTree;
+            store.singleExpand = null;
         }
     },
 
-<span id='Ext-form-Panel-method-checkChange'>    /**
-</span>     * Forces each field within the form panel to
-     * {@link Ext.form.field.Field#checkChange check if its value has changed}.
+<span id='Ext-tree-Panel-method-setRootNode'>    /**
+</span>     * Sets root node of this tree. All trees *always* have a root node. It may be {@link #rootVisible hidden}.
+     *
+     * If the passed node has not already been loaded with child nodes, and has its expanded field set, this triggers the {@link #cfg-store} to load the child nodes of the root.
+     * @param {Ext.data.TreeModel/Object} root
+     * @return {Ext.data.TreeModel} The new root
      */
-    checkChange: function() {
-        var fields = this.form.getFields().items,
-            f,
-            fLen   = fields.length;
+    setRootNode: function() {
+        return this.store.setRoot.apply(this.store, arguments);
+    },
 
-        for (f = 0; f &lt; fLen; f++) {
-            fields[f].checkChange();
+<span id='Ext-tree-Panel-method-getRootNode'>    /**
+</span>     * Returns the root node for this tree.
+     * @return {Ext.data.TreeModel}
+     */
+    getRootNode: function() {
+        return this.store.getRoot();
+    },
+
+<span id='Ext-tree-Panel-method-onRootChange'>    onRootChange: function(root) {
+</span>        this.view.setRootNode(root);
+    },
+
+<span id='Ext-tree-Panel-method-getChecked'>    /**
+</span>     * Retrieve an array of checked records.
+     * @return {Ext.data.TreeModel[]} An array containing the checked records
+     */
+    getChecked: function() {
+        return this.getView().getChecked();
+    },
+
+<span id='Ext-tree-Panel-method-isItemChecked'>    isItemChecked: function(rec) {
+</span>        return rec.get(&#39;checked&#39;);
+    },
+    
+<span id='Ext-tree-Panel-method-expandNode'>    /**
+</span>     * Expands a record that is loaded in the tree.
+     * @param {Ext.data.Model} record The record to expand
+     * @param {Boolean} [deep] True to expand nodes all the way down the tree hierarchy.
+     * @param {Function} [callback] The function to run after the expand is completed
+     * @param {Object} [scope] The scope of the callback function.
+     */
+    expandNode: function(record, deep, callback, scope) {
+        return this.getView().expand(record, deep, callback, scope || this);
+    },
+
+<span id='Ext-tree-Panel-method-collapseNode'>    /**
+</span>     * Collapses a record that is loaded in the tree.
+     * @param {Ext.data.Model} record The record to collapse
+     * @param {Boolean} [deep] True to collapse nodes all the way up the tree hierarchy.
+     * @param {Function} [callback] The function to run after the collapse is completed
+     * @param {Object} [scope] The scope of the callback function.
+     */
+    collapseNode: function(record, deep, callback, scope) {
+        return this.getView().collapse(record, deep, callback, scope || this);
+    },
+
+<span id='Ext-tree-Panel-method-expandAll'>    /**
+</span>     * Expand all nodes
+     * @param {Function} [callback] A function to execute when the expand finishes.
+     * @param {Object} [scope] The scope of the callback function
+     */
+    expandAll: function(callback, scope) {
+        var me = this,
+            root = me.getRootNode();
+
+        if (root) {
+            Ext.suspendLayouts();
+            root.expand(true, callback, scope || me);
+            Ext.resumeLayouts(true);
         }
+    },
+
+<span id='Ext-tree-Panel-method-collapseAll'>    /**
+</span>     * Collapse all nodes
+     * @param {Function} [callback] A function to execute when the collapse finishes.
+     * @param {Object} [scope] The scope of the callback function
+     */
+    collapseAll: function(callback, scope) {
+        var me = this,
+            root = me.getRootNode(),
+            view = me.getView();
+
+        if (root) {
+            Ext.suspendLayouts();
+            scope = scope || me;
+            if (view.rootVisible) {
+                root.collapse(true, callback, scope);
+            } else {
+                root.collapseChildren(true, callback, scope);
+            }
+            Ext.resumeLayouts(true);
+        }
+    },
+
+<span id='Ext-tree-Panel-method-expandPath'>    /**
+</span>     * Expand the tree to the path of a particular node. This is the way to expand a known path
+     * when the intervening nodes are not yet loaded.
+     *
+     * The path may be an absolute path (beginning with a `&#39;/&#39;` character) from the root, eg:
+     *
+     *     &#39;/rootId/nodeA/nodeB/nodeC&#39;
+     *
+     * Or, the path may be relative, starting from an **existing** node in the tree:
+     *
+     *     &#39;nodeC/nodeD&#39;
+     *
+     * @param {String}          path The path to expand. The path may be absolute, including a leading separator and starting
+     *                          from the root node id, or relative with no leading separator, starting from an *existing*
+     *                          node in the tree.
+     * @param {Object}          [options] An object containing options to modify the operation.
+     * @param {String}          [options.field] The field to get the data from. Defaults to the model idProperty.
+     * @param {String}          [options.separator=&#39;/&#39;] A separator to use.
+     * @param {Boolean}         [options.select] Pass as `true` to select the specified row.
+     * @param {Boolean}         [options.focus] Pass as `true` to focus the specified row.
+     * @param {Function}        [options.callback] A function to execute when the expand finishes.
+     * @param {Boolean}         options.callback.success `true` if the node expansion was successful.
+     * @param {Ext.data.Model}  options.callback.record If successful, the target record.
+     * @param {HTMLElement}     options.callback.node If successful, the record&#39;s view node. If unsuccessful, the
+     *                          last view node encountered while expanding the path.
+     * @param {Object}          [options.scope] The scope (`this` reference) in which the callback function is executed.
+     */
+    expandPath: function(path, options) {
+        var args = arguments,
+            me = this,
+            view = me.view,
+            field = (options &amp;&amp; options.field) || me.store.model.idProperty,
+            select,
+            doFocus,
+            separator = (options &amp;&amp; options.separator) || &#39;/&#39;,
+            callback,
+            scope,
+            current,
+            index,
+            keys,
+            rooted,
+            expander;
+
+        // New option object API
+        if (options &amp;&amp; typeof options === &#39;object&#39;) {
+            field = options.field || me.store.model.idProperty;
+            separator = options.separator || &#39;/&#39;;
+            callback = options.callback;
+            scope = options.scope;
+            select = options.select;
+            doFocus = options.focus;
+        }
+        // Old multi argument API
+        else {
+            field = args[1] || me.store.model.idProperty;
+            separator = args[2] || &#39;/&#39;;
+            callback = args[3];
+            scope = args[4];
+        }
+
+        if (Ext.isEmpty(path)) {
+            return Ext.callback(callback, scope || me, [false, null]);
+        }
+
+        keys = path.split(separator);
+
+        // If they began the path with &#39;/&#39;, this indicates starting from the root ID.
+        // otherwise, then can start at any *existing* node id.
+        rooted = !keys[0];
+        if (rooted) {
+            current = me.getRootNode();
+            index = 1;
+        }
+        // Not rooted, gather the first node in the path which MUST already exist.
+        else {
+            current = me.store.findNode(field, keys[0]);
+            index = 0;
+        }
+
+        // Invalid root. Relative start could not be found, absolute start was not the rootNode.
+        // The ids paths may be numeric, so cast the value to a string for comparison.
+        if (!current || (rooted &amp;&amp; (current.get(field) + &#39;&#39;) !== keys[1])) {
+            return Ext.callback(callback, scope || me, [false, current]);
+        }
+
+        // The expand success callback passed to every expand call down the path.
+        // Called in the scope of the node being expanded.
+        expander = function(newChildren) {
+            var node = this,
+                len, i, value;
+
+            // We&#39;ve arrived at the end of the path.
+            if (++index === keys.length) {
+                if (select) {
+                    view.getSelectionModel().select(node);
+                }
+                if (doFocus) {
+                    view.getNavigationModel().setPosition(node, 0);
+                }
+                return Ext.callback(callback, scope || me, [true, node, view.getNode(node)]);
+            }
+
+            // Find the next child in the path if it&#39;s there and expand it.
+            for (i = 0, len = newChildren ? newChildren.length : 0; i &lt; len; i++) {
+                // The ids paths may be numeric, so cast the value to a string for comparison
+                node = newChildren[i];
+                value = node.get(field);
+                if (value || value === 0) {
+                    value = value.toString();
+                }
+                if (value === keys[index]) {
+                    return node.expand(false, expander);
+                }
+            }
+
+            // If we get here, there&#39;s been a miss along the path, and the operation is a fail.
+            node = this;
+            Ext.callback(callback, scope || me, [false, node, view.getNode(node)]);
+        };
+        current.expand(false, expander);
+    },
+
+<span id='Ext-tree-Panel-method-ensureVisible'>    /**
+</span>     * Expand the tree to the path of a particular node, then scroll it into view.
+     * @param {String}          path The path to bring into view. The path may be absolute, including a leading separator and starting
+     *                          from the root node id, or relative with no leading separator, starting from an *existing* node in the tree.
+     * @param {Object}          [options] An object containing options to modify the operation.
+     * @param {String}          [options.field] The field to get the data from. Defaults to the model idProperty.
+     * @param {String}          [options.separator=&#39;/&#39;] A separator to use.
+     * @param {Boolean}         [options.animate] Pass `true` to animate the row into view.
+     * @param {Boolean}         [options.highlight] Pass `true` to highlight the row with a glow animation when it is in view.
+     * @param {Boolean}         [options.select] Pass as `true` to select the specified row.
+     * @param {Boolean}         [options.focus] Pass as `true` to focus the specified row.
+     * @param {Function}        [options.callback] A function to execute when the expand finishes.
+     * @param {Boolean}         options.callback.success `true` if the node expansion was successful.
+     * @param {Ext.data.Model}  options.callback.record If successful, the target record.
+     * @param {HTMLElement}     options.callback.node If successful, the record&#39;s view node. If unsuccessful, the
+     *                          last view node encountered while expanding the path.
+     * @param {Object}          [options.scope] The scope (`this` reference) in which the callback function is executed.
+     */
+    ensureVisible: function(path, options) {
+        // They passed a record instance or row index. Use the TablePanel&#39;s method.
+        if (path.isEntity || typeof path === &#39;number&#39;) {
+            return this.callParent([path, options]);
+        }
+
+        var me = this,
+            field = (options &amp;&amp; options.field) || me.store.model.idProperty,
+            separator = (options &amp;&amp; options.separator) || &#39;/&#39;,
+            callback,
+            scope,
+            keys,
+            rooted,
+            last,
+            node,
+            parentNode,
+            onLastExpanded = function(success, lastExpanded, lastExpandedHtmlNode, targetNode) {
+                if (!targetNode &amp;&amp; success &amp;&amp; lastExpanded) {
+                    targetNode = lastExpanded.findChild(field, last);
+                }
+                // Once we have the node, we can use the TablePanel&#39;s ensureVisible method
+                if (targetNode) {
+                    me.doEnsureVisible(targetNode, options);
+                } else {
+                    Ext.callback(callback, scope || me, [false, lastExpanded]);
+                }
+            };
+
+        if (options) {
+            callback = options.callback;
+            scope = options.scope;
+        }
+
+        keys = path.split(separator);
+        rooted = !keys[0];
+        last = keys.pop();
+
+        // If the path was &quot;foo/bar&quot; or &quot;/foo/Bar&quot;
+        if (keys.length &amp;&amp; !(rooted &amp;&amp; keys.length === 1)) {
+            me.expandPath(keys.join(separator), field, separator, onLastExpanded);
+        }
+        // If the path was &quot;foo&quot; or &quot;/foo&quot;
+        else {
+            node = me.store.findNode(field, last);
+            if (node) {
+                parentNode = node.parentNode;
+                if (parentNode &amp;&amp; !parentNode.isExpanded()) {
+                    parentNode.expand();
+                }
+                // Pass the target node as the 4th parameter so the callback doesn&#39;t have to look it up
+                onLastExpanded(true, null, null, node);
+            } else {
+                Ext.callback(callback, scope || me, [false, null]);
+            }
+        }
+    },
+
+<span id='Ext-tree-Panel-method-selectPath'>    /**
+</span>     * Expand the tree to the path of a particular node, then select it.
+     * @param {String}                  path The path to expand. The path may be absolute, including a leading separator and
+     *                                  starting from the root node id, or relative with no leading separator, starting from
+     *                                  an *existing* node in the tree.
+     * @param {String}                  [field] The field to get the data from. Defaults to the model idProperty.
+     * @param {String}                  [separator=&#39;/&#39;] A separator to use.
+     * @param {Function}                [callback] A function to execute when the select finishes.
+     * @param {Boolean}                 callback.success `true` if the node expansion was successful.
+     * @param {Ext.data.NodeInterface}  callback.lastNode If successful, the target node. If unsuccessful, the
+     *                                  last tree node encountered while expanding the path.
+     * @param {HTMLElement}             callback.node If successful, the record&#39;s view node.
+     * @param {Object}                  [scope] The scope of the callback function
+     */
+    selectPath: function(path, field, separator, callback, scope) {
+        this.ensureVisible(path, {
+            field: field,
+            separator: separator,
+            select: true,
+            callback: callback,
+            scope: scope
+        });
     }
 });
 </pre>

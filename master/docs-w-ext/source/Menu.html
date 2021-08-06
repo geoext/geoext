@@ -15,921 +15,482 @@
   </script>
 </head>
 <body onload="prettyPrint(); highlight();">
-  <pre class="prettyprint lang-js"><span id='Ext-menu-Menu'>/**
-</span> * A menu object. This is the container to which you may add {@link Ext.menu.Item menu items}.
- *
- * Menus may contain either {@link Ext.menu.Item menu items}, or general {@link Ext.Component Components}.
- * Menus may also contain {@link Ext.panel.Panel#dockedItems docked items} because it extends {@link Ext.panel.Panel}.
- *
- * By default, non {@link Ext.menu.Item menu items} are indented so that they line up with the text of menu items. clearing
- * the icon column. To make a contained general {@link Ext.Component Component} left aligned configure the child
- * Component with `indent: false.
- *
- * By default, Menus are absolutely positioned, floating Components. By configuring a 
- * Menu with `{@link #cfg-floating}: false`, a Menu may be used as a child of a 
- * {@link Ext.container.Container Container}.
- *
- *     @example
- *     Ext.create(&#39;Ext.menu.Menu&#39;, {
- *         width: 100,
- *         margin: &#39;0 0 10 0&#39;,
- *         floating: false,  // usually you want this set to True (default)
- *         renderTo: Ext.getBody(),  // usually rendered by it&#39;s containing component
- *         items: [{
- *             text: &#39;regular item 1&#39;
- *         },{
- *             text: &#39;regular item 2&#39;
- *         },{
- *             text: &#39;regular item 3&#39;
- *         }]
- *     });
- *
- *     Ext.create(&#39;Ext.menu.Menu&#39;, {
- *         width: 100,
- *         plain: true,
- *         floating: false,  // usually you want this set to True (default)
- *         renderTo: Ext.getBody(),  // usually rendered by it&#39;s containing component
- *         items: [{
- *             text: &#39;plain item 1&#39;
- *         },{
- *             text: &#39;plain item 2&#39;
- *         },{
- *             text: &#39;plain item 3&#39;
- *         }]
- *     });
+  <pre class="prettyprint lang-js"><span id='Ext-layout-container-boxOverflow-Menu'>/**
+</span> * @private
  */
-Ext.define(&#39;Ext.menu.Menu&#39;, {
-    extend: &#39;Ext.panel.Panel&#39;,
-    alias: &#39;widget.menu&#39;,
-    requires: [
-        &#39;Ext.layout.container.VBox&#39;,
-        &#39;Ext.menu.CheckItem&#39;,
-        &#39;Ext.menu.Item&#39;,
-        &#39;Ext.menu.Manager&#39;,
-        &#39;Ext.menu.Separator&#39;
+Ext.define(&#39;Ext.layout.container.boxOverflow.Menu&#39;, {
+
+    /* Begin Definitions */
+
+    extend: &#39;Ext.layout.container.boxOverflow.None&#39;,
+    requires: [&#39;Ext.toolbar.Separator&#39;, &#39;Ext.button.Button&#39;],
+    alternateClassName: &#39;Ext.layout.boxOverflow.Menu&#39;,
+    alias: [
+        &#39;box.overflow.menu&#39;,
+        &#39;box.overflow.Menu&#39; // capitalized for 4.x compat
     ],
 
-    mixins: [
-        &#39;Ext.util.FocusableContainer&#39;
-    ],
+    /* End Definitions */
 
-<span id='Ext-menu-Menu-cfg-defaultType'>    defaultType: &#39;menuitem&#39;,
+<span id='Ext-layout-container-boxOverflow-Menu-property-noItemsMenuText'>    /**
+</span>     * @property {String} noItemsMenuText
+     * HTML fragment to render into the toolbar overflow menu if there are no items to display
+     */
+    noItemsMenuText : &#39;&lt;div class=&quot;&#39; + Ext.baseCSSPrefix + &#39;toolbar-no-items&quot; role=&quot;menuitem&quot;&gt;(None)&lt;/div&gt;&#39;,
+
+<span id='Ext-layout-container-boxOverflow-Menu-property-menuCls'>    menuCls: Ext.baseCSSPrefix + &#39;box-menu&#39;,
 </span>
-<span id='Ext-menu-Menu-property-parentMenu'>    /**
-</span>     * @property {Ext.menu.Menu} parentMenu
-     * The parent Menu of this Menu.
-     */
-    
-<span id='Ext-menu-Menu-cfg-enableKeyNav'>    /**
-</span>     * @cfg {Boolean} [enableKeyNav=true]
-     * @deprecated 5.1.0 Intra-menu key navigation is always enabled.
-     */
-    enableKeyNav: true,
+<span id='Ext-layout-container-boxOverflow-Menu-method-constructor'>    constructor: function(config) {
+</span>        var me = this;
 
-<span id='Ext-menu-Menu-cfg-allowOtherMenus'>    /**
-</span>     * @cfg {Boolean} [allowOtherMenus=false]
-     * True to allow multiple menus to be displayed at the same time.
-     */
-    allowOtherMenus: false,
+        me.callParent([config]);
 
-<span id='Ext-menu-Menu-cfg-ariaRole'>    /**
-</span>     * @cfg {String} ariaRole
-     * @private
-     */
-    ariaRole: &#39;menu&#39;,
-
-<span id='Ext-menu-Menu-cfg-autoRender'>    /**
-</span>     * @cfg {Boolean} autoRender
-     * Floating is true, so autoRender always happens.
-     * @private
-     */
-
-<span id='Ext-menu-Menu-cfg-floating'>    /**
-</span>     * @cfg {Boolean} [floating=true]
-     * A Menu configured as `floating: true` (the default) will be rendered as an 
-     * absolutely positioned,
-     * {@link Ext.Component#cfg-floating floating} {@link Ext.Component Component}. If 
-     * configured as `floating: false`, the Menu may be used as a child item of another 
-     * {@link Ext.container.Container Container}.
-     */
-    floating: true,
-
-<span id='Ext-menu-Menu-cfg-constrain'>    /**
-</span>     * @cfg {Boolean} constrain
-     * Menus are constrained to the document body by default.
-     * @private
-     */
-    constrain: true,
-
-<span id='Ext-menu-Menu-cfg-hidden'>    /**
-</span>     * @cfg {Boolean} [hidden]
-     * True to initially render the Menu as hidden, requiring to be shown manually.
-     *
-     * Defaults to `true` when `floating: true`, and defaults to `false` when `floating: false`.
-     */
-    hidden: true,
-
-<span id='Ext-menu-Menu-cfg-hideMode'>    hideMode: &#39;visibility&#39;,
-</span>
-<span id='Ext-menu-Menu-cfg-ignoreParentClicks'>    /**
-</span>     * @cfg {Boolean} [ignoreParentClicks=false]
-     * True to ignore clicks on any item in this menu that is a parent item (displays a submenu)
-     * so that the submenu is not dismissed when clicking the parent item.
-     */
-    ignoreParentClicks: false,
-
-<span id='Ext-menu-Menu-cfg-mouseLeaveDelay'>    /**
-</span>     * @cfg {Number} [mouseLeaveDelay]
-     * The delay in ms as to how long the framework should wait before firing a mouseleave event.
-     * This allows submenus not to be collapsed while hovering other menu items.
-     *
-     * Defaults to 100
-     */
-     mouseLeaveDelay: 100,
-
-<span id='Ext-menu-Menu-property-isMenu'>    /**
-</span>     * @property {Boolean} isMenu
-     * `true` in this class to identify an object as an instantiated Menu, or subclass thereof.
-     */
-    isMenu: true,
-
-<span id='Ext-menu-Menu-cfg-layout'>    /**
-</span>     * @cfg {Ext.enums.Layout/Object} layout
-     * @private
-     */
-
-<span id='Ext-menu-Menu-cfg-showSeparator'>    /**
-</span>     * @cfg {Boolean} [showSeparator=true]
-     * True to show the icon separator.
-     */
-    showSeparator : true,
-
-<span id='Ext-menu-Menu-cfg-minWidth'>    /**
-</span>     * @cfg {Number} [minWidth=120]
-     * The minimum width of the Menu. The default minWidth only applies when the 
-     * {@link #cfg-floating} config is true.
-     */
-    minWidth: undefined,
-
-<span id='Ext-menu-Menu-property-defaultMinWidth'>    defaultMinWidth: 120,
-</span>
-<span id='Ext-menu-Menu-cfg-defaultAlign'>    /**
-</span>     * @cfg {String} [defaultAlign=&quot;tl-bl?&quot;]
-     * The default {@link Ext.util.Positionable#getAlignToXY Ext.dom.Element#getAlignToXY} anchor position value for this menu
-     * relative to its owner. Used in conjunction with {@link #showBy}.
-     */
-    defaultAlign: &#39;tl-bl?&#39;,
-
-<span id='Ext-menu-Menu-cfg-plain'>    /**
-</span>     * @cfg {Boolean} [plain=false]
-     * True to remove the incised line down the left side of the menu and to not indent general Component items.
-     * 
-     * {@link Ext.menu.Item MenuItem}s will *always* have space at their start for an icon. With the `plain` setting,
-     * non {@link Ext.menu.Item MenuItem} child components will not be indented to line up.
-     * 
-     * Basically, `plain:true` makes a Menu behave more like a regular {@link Ext.layout.container.HBox HBox layout}
-     * {@link Ext.panel.Panel Panel} which just has the same background as a Menu.
-     * 
-     * See also the {@link #showSeparator} config.
-     */
-    
-<span id='Ext-menu-Menu-property-focusOnToFront'>    /**
-</span>     * @inheritdoc
-     */
-    focusOnToFront: false,
-    
-<span id='Ext-menu-Menu-property-bringParentToFront'>    bringParentToFront: false,
-</span><span id='Ext-menu-Menu-cfg-alignOnScroll'>    alignOnScroll: false,
-</span>    
-<span id='Ext-menu-Menu-property-focusable'>    // Menus are focusable
-</span>    focusable: true,
-<span id='Ext-menu-Menu-cfg-tabIndex'>    tabIndex: -1,
-</span>
-<span id='Ext-menu-Menu-cfg-defaultFocus'>    // When a Menu is used as a carrier to float some focusable Component such as a DatePicker or ColorPicker
-</span>    // This will be used to delegate focus to its focusable child.
-    // In normal usage, a Menu is a FocusableContainer, and this will not be consulted.
-    defaultFocus: &#39;:focusable&#39;,
-    
-<span id='Ext-menu-Menu-cfg-allowFocusingDisabledChildren'>    // We need to focus disabled menu items when arrowing as per WAI-ARIA:
-</span>    // http://www.w3.org/TR/wai-aria-practices/#menu
-    allowFocusingDisabledChildren: true,
-
-<span id='Ext-menu-Menu-property-menuClickBuffer'>    /**
-</span>     * @private
-     */
-    menuClickBuffer: 0,
-<span id='Ext-menu-Menu-cfg-baseCls'>    baseCls: Ext.baseCSSPrefix + &#39;menu&#39;,
-</span><span id='Ext-menu-Menu-property-_iconSeparatorCls'>    _iconSeparatorCls: Ext.baseCSSPrefix + &#39;menu-icon-separator&#39;,
-</span><span id='Ext-menu-Menu-property-_itemCmpCls'>    _itemCmpCls: Ext.baseCSSPrefix + &#39;menu-item-cmp&#39;,
-</span>
-<span id='Ext-menu-Menu-event-click'>    /**
-</span>     * @event click
-     * Fires when this menu is clicked
-     * @param {Ext.menu.Menu} menu The menu which has been clicked
-     * @param {Ext.Component} item The menu item that was clicked. `undefined` if not applicable.
-     * @param {Ext.event.Event} e The underlying {@link Ext.event.Event}.
-     */
-
-<span id='Ext-menu-Menu-event-mouseenter'>    /**
-</span>     * @event mouseenter
-     * Fires when the mouse enters this menu
-     * @param {Ext.menu.Menu} menu The menu
-     * @param {Ext.event.Event} e The underlying {@link Ext.event.Event}
-     */
-
-<span id='Ext-menu-Menu-event-mouseleave'>    /**
-</span>     * @event mouseleave
-     * Fires when the mouse leaves this menu
-     * @param {Ext.menu.Menu} menu The menu
-     * @param {Ext.event.Event} e The underlying {@link Ext.event.Event}
-     */
-
-<span id='Ext-menu-Menu-event-mouseover'>    /**
-</span>     * @event mouseover
-     * Fires when the mouse is hovering over this menu
-     * @param {Ext.menu.Menu} menu The menu
-     * @param {Ext.Component} item The menu item that the mouse is over. `undefined` if not applicable.
-     * @param {Ext.event.Event} e The underlying {@link Ext.event.Event}
-     */
-    
-    layout: {
-        type: &#39;vbox&#39;,
-        align: &#39;stretchmax&#39;,
-        overflowHandler: &#39;Scroller&#39;
+<span id='Ext-layout-container-boxOverflow-Menu-property-menuItems'>        /**
+</span>         * @property {Array} menuItems
+         * Array of all items that are currently hidden and should go into the dropdown menu
+         */
+        me.menuItems = [];
     },
 
-<span id='Ext-menu-Menu-method-initComponent'>    initComponent: function() {
-</span>        var me = this,
-            cls = [Ext.baseCSSPrefix + &#39;menu&#39;],
-            bodyCls = me.bodyCls ? [me.bodyCls] : [],
-            isFloating = me.floating !== false,
-            listeners = {
-                element: &#39;el&#39;,
-                click: me.onClick,
-                mouseover: me.onMouseOver,
-                scope: me
-            };
+<span id='Ext-layout-container-boxOverflow-Menu-method-beginLayout'>    beginLayout: function (ownerContext) {
+</span>        this.callParent([ownerContext]);
 
-        if (Ext.supports.Touch) {
-            listeners.pointerdown = me.onMouseOver;
+        // Before layout, we need to re-show all items which we may have hidden due to a
+        // previous overflow...
+        this.clearOverflow(ownerContext);
+    },
+
+<span id='Ext-layout-container-boxOverflow-Menu-method-beginLayoutCycle'>    beginLayoutCycle: function (ownerContext, firstCycle) {
+</span>        this.callParent([ownerContext, firstCycle]);
+
+        if (!firstCycle) {
+            // if we are being re-run, we need to clear any overflow from the last run and
+            // recache the childItems collection
+            this.clearOverflow(ownerContext);
+
+            this.layout.cacheChildItems(ownerContext);
         }
-        me.on(listeners);
-        me.on({
-            beforeshow: me.onBeforeShow,
-            scope: me
+    },
+
+<span id='Ext-layout-container-boxOverflow-Menu-method-onRemove'>    onRemove: function(comp) {
+</span>        Ext.Array.remove(this.menuItems, comp);
+    },
+
+<span id='Ext-layout-container-boxOverflow-Menu-method-clearItem'>    clearItem: function(comp) {
+</span>        var menu = comp.menu;
+
+        if (comp.isButton &amp;&amp; menu) {
+            // If the button had a menu, forcibly set it
+            // again so that the ownerCmp is reset correctly
+            // and is no longer pointing at the overflow
+            comp.setMenu(menu, false);
+        }
+    },
+
+<span id='Ext-layout-container-boxOverflow-Menu-method-getSuffixConfig'>    // We don&#39;t define a prefix in menu overflow.
+</span>    getSuffixConfig: function() {
+        var me = this,
+            layout = me.layout,
+            owner = layout.owner,
+            oid = owner.id;
+
+<span id='Ext-layout-container-boxOverflow-Menu-property-menu'>        /**
+</span>         * @private
+         * @property {Ext.menu.Menu} menu
+         * The expand menu - holds items for every item that cannot be shown
+         * because the container is currently not large enough.
+         */
+        me.menu = new Ext.menu.Menu({
+            listeners: {
+                scope: me,
+                beforeshow: me.beforeMenuShow
+            }
         });
 
-        // Menu classes
-        if (me.plain) {
-            cls.push(Ext.baseCSSPrefix + &#39;menu-plain&#39;);
-        }
-        me.cls = cls.join(&#39; &#39;);
-
-        // Menu body classes
-        bodyCls.push(Ext.baseCSSPrefix + &#39;menu-body&#39;, Ext.dom.Element.unselectableCls);
-        me.bodyCls = bodyCls.join(&#39; &#39;);
-
-        if (isFloating)  {
-            // only apply the minWidth when we&#39;re floating &amp; one hasn&#39;t already been set
-            if (me.minWidth === undefined) {
-                me.minWidth = me.defaultMinWidth;
-            }
-        } else {
-            // hidden defaults to false if floating is configured as false
-            me.hidden = !!me.initialConfig.hidden;
-            me.constrain = false;
-        }
-
-        me.callParent(arguments);
-
-        // Configure items prior to render with special classes to align
-        // non MenuItem child components with their MenuItem siblings.
-        Ext.override(me.getLayout(), {
-            configureItem: me.configureItem
+<span id='Ext-layout-container-boxOverflow-Menu-property-menuTrigger'>        /**
+</span>         * @private
+         * @property {Ext.button.Button} menuTrigger
+         * The expand button which triggers the overflow menu to be shown
+         */
+        me.menuTrigger = new Ext.button.Button({
+            id: oid + &#39;-menu-trigger&#39;,
+            cls: me.menuCls + &#39;-after &#39; + Ext.baseCSSPrefix + &#39;toolbar-item&#39;,
+            plain: owner.usePlainButtons,
+            ownerCt: owner, // To enable the Menu to ascertain a valid zIndexManager owner in the same tree
+            ownerLayout: layout,
+            iconCls: Ext.baseCSSPrefix + me.getOwnerType(owner) + &#39;-more-icon&#39;,
+            ui: owner.defaultButtonUI || &#39;default&#39;,
+            menu: me.menu,
+            // Menu will be empty when we&#39;re showing it because we populate items after
+            showEmptyMenu: true,
+            getSplitCls: function() { return &#39;&#39;;}
         });
 
-        me.itemOverTask = new Ext.util.DelayedTask(me.handleItemOver, me);
+        return me.menuTrigger.getRenderTree();
+    },
+    
+<span id='Ext-layout-container-boxOverflow-Menu-method-getOverflowCls'>    getOverflowCls: function(direction) {
+</span>        return this.menuCls + &#39;-body-&#39; + direction;
     },
 
-    // Private implementation for Menus. They are a special case, in that in the vast majority
-    // (nearly all?) of use cases they shouldn&#39;t be constrained to anything other than the viewport.
-    // See EXTJS-13596.
-<span id='Ext-menu-Menu-method-initFloatConstrain'>    /**
-</span>     * @method
+<span id='Ext-layout-container-boxOverflow-Menu-method-handleOverflow'>    handleOverflow: function(ownerContext) {
+</span>        var me = this,
+            layout = me.layout;
+
+        me.showTrigger(ownerContext);
+
+        // Center the menuTrigger button only if we are not vertical.
+        if (layout.direction !== &#39;vertical&#39;) {
+            me.menuTrigger.setLocalY(
+                (ownerContext.state.boxPlan.maxSize - me.menuTrigger[layout.names.getHeight]()) / 2
+            );
+        }
+
+        return {
+            reservedSpace: me.triggerTotalWidth
+        };
+    },
+
+<span id='Ext-layout-container-boxOverflow-Menu-method-captureChildElements'>    /**
+</span>     * Finishes the render operation of the trigger Button.
      * @private
      */
-    initFloatConstrain: Ext.emptyFn,
-
-<span id='Ext-menu-Menu-method-getInherited'>    getInherited: function() {
-</span>        // As floating menus are never contained, a floating Menu&#39;s visibility only ever depends upon its own hidden state.
-        // Ignore hiddenness from the ancestor hierarchy, override it with local hidden state.
-        var result = this.callParent();
-        if (this.floating) {
-            result.hidden = this.hidden;
-        }
-        return result;
-    },
-
-<span id='Ext-menu-Menu-method-beforeRender'>    beforeRender: function() {
-</span>        var me = this;
-        
-        me.callParent(arguments);
-
-        // Menus are usually floating: true, which means they shrink wrap their items.
-        // However, when they are contained, and not auto sized, we must stretch the items.
-        if (!me.getSizeModel().width.shrinkWrap) {
-            me.layout.align = &#39;stretch&#39;;
-        }
-        
-        if (me.floating) {
-            me.ariaRenderAttributes = me.ariaRenderAttributes || {};
-            me.ariaRenderAttributes[&#39;aria-expanded&#39;] = !!me.autoShow;
-        }
-    },
-
-<span id='Ext-menu-Menu-method-onBoxReady'>    onBoxReady: function() {
-</span>        var me = this,
-            iconSeparatorCls = me._iconSeparatorCls,
-            keyNav = me.focusableKeyNav;
-        
-        // Keyboard handling can be disabled, e.g. by the DatePicker menu
-        // or the Date filter menu constructed by the Grid
-        if (keyNav) {
-            keyNav.map.processEventScope = me;
-            keyNav.map.processEvent = function(e) {
-                // ESC may be from input fields, and FocusableContainers ignore keys from 
-                // input fields. We do not want to ignore ESC. ESC hide menus.
-                if (e.keyCode === e.ESC) {
-                    e.target = this.el.dom;
-                }
-                
-                return e;
-            };
-            
-           // Handle ESC key
-            keyNav.map.addBinding([{
-                key: Ext.event.Event.ESC,
-                handler: me.onEscapeKey,
-                scope: me
-            }, 
-             // Handle character shortcuts
-            {
-                key: /[\w]/,
-                handler: me.onShortcutKey,
-                scope: me,
-                shift: false,
-                ctrl: false,
-                alt: false
-            }]);
-        }
-        else {
-            // Even when FocusableContainer key event processing is disabled,
-            // we still need to handle the Escape key!
-            me.escapeKeyNav = new Ext.util.KeyNav(me.el, {
-                eventName: &#39;keydown&#39;,
-                scope: me,
-                esc: me.onEscapeKey
-            });
-        }
-
-        me.callParent(arguments);
-
-        // TODO: Move this to a subTemplate When we support them in the future
-        if (me.showSeparator) {
-            me.iconSepEl = me.body.insertFirst({
-                role: &#39;presentation&#39;,
-                cls: iconSeparatorCls + &#39; &#39; + iconSeparatorCls + &#39;-&#39; + me.ui,
-                html: &#39;&amp;#160;&#39;
-            });
-        }
-
-        // Modern IE browsers have click events translated to PointerEvents, and b/c of this the
-        // event isn&#39;t being canceled like it needs to be. So, we need to add an extra listener.
-        // For devices that have touch support, the default click event may be a gesture that
-        // runs asynchronously, so by the time we try and prevent it, it&#39;s already happened
-        if (Ext.supports.Touch || Ext.supports.MSPointerEvents || Ext.supports.PointerEvents) {
-            me.el.on({
-                scope: me,
-                click: me.preventClick,
-                translate: false
-            });
-        }
-
-        me.mouseMonitor = me.el.monitorMouseLeave(me.mouseLeaveDelay, me.onMouseLeave, me);
-    },
-
-<span id='Ext-menu-Menu-method-onFocusEnter'>    onFocusEnter: function(e) {
-</span>        var me = this,
-            hierarchyState;
-
-        me.callParent([e]);
-        me.mixins.focusablecontainer.onFocusEnter.call(me, e);
-        if (me.floating) {
-            hierarchyState = me.getInherited();
-
-            // The topmost focusEnter event upon entry into a floating menu stack
-            // is recorded in the hierarchy state.
-            //
-            // Focusing upwards from descendant menus in a stack will NOT trigger onFocusEnter
-            // on the parent menu because focus is already in its component tree.
-            // For focusing downwards we check for presence of the topmostFocusEvent
-            // already being present in the hierarchy.
-            //
-            // If we need to explicitly access a focus reversion point, we can use that.
-            // This is only ever needed if tabbing forwards from the menu. We explicitly
-            // push focus to the topmost focusEnter component, and then allow natural
-            // tabbing to proceed from there.
-            //
-            // In all other focus reversion scenarios we use the immediate focusEnter event
-            if (!hierarchyState.topmostFocusEvent) {
-                hierarchyState.topmostFocusEvent = e;
-            }
-        }
-    },
-
-<span id='Ext-menu-Menu-method-onFocusLeave'>    onFocusLeave: function(e) {
-</span>        var me = this;
-
-        me.callParent([e]);
-        
-        // We need to make sure that menus do not &quot;remember&quot; the last focused item
-        // so that the first menu item is always activated when the menu is shown.
-        // This is the expected behavior according to WAI-ARIA spec.
-        me.lastFocusedChild = null;
-        
-        me.mixins.focusablecontainer.onFocusLeave.call(me, e);
-        
-        if (me.floating) {
-            me.hide();
-        }
-    },
-
-<span id='Ext-menu-Menu-method-handleItemOver'>    handleItemOver: function(e, item) {
-</span>        // Only focus non-menuitem on real mouseover events.
-        if (!item.containsFocus &amp;&amp; (e.pointerType === &#39;mouse&#39; || item.isMenuItem)) {
-            item.focus();
-        }
-        if (item.expandMenu) {
-            item.expandMenu(e);
-        }
-    },
-
-<span id='Ext-menu-Menu-method-canActivateItem'>    /**
-</span>     * @param {Ext.Component} item The child item to test for focusability.
-     * Returns whether a menu item can be activated or not.
-     * @return {Boolean} `true` if the passed item is focusable.
-     */
-    canActivateItem: function(item) {
-        return item &amp;&amp; item.isFocusable();
-    },
-
-<span id='Ext-menu-Menu-method-deactivateActiveItem'>    /**
-</span>     * Deactivates the current active item on the menu, if one exists.
-     */
-    deactivateActiveItem: function() {
+    captureChildElements: function() {
         var me = this,
-            activeItem = me.lastFocusedChild;
+            menuTrigger = me.menuTrigger,
+            names = me.layout.names;
 
-        if (activeItem) {
-            activeItem.blur();
+        // The rendering flag is set when getRenderTree is called which we do when returning markup string for the owning layout&#39;s &quot;suffix&quot;
+        if (menuTrigger.rendering) {
+            menuTrigger.finishRender();
+            me.triggerTotalWidth = menuTrigger[names.getWidth]() + menuTrigger.el.getMargin(names.parallelMargins);
         }
     },
 
-<span id='Ext-menu-Menu-method-getItemFromEvent'>    /**
+<span id='Ext-layout-container-boxOverflow-Menu-method-clearOverflow'>    /**
 </span>     * @private
+     * Called by the layout, when it determines that there is no overflow.
+     * Also called as an interceptor to the layout&#39;s onLayout method to reshow
+     * previously hidden overflowing items.
      */
-    getItemFromEvent: function(e) {
+    clearOverflow: function(ownerContext) {
         var me = this,
-            renderTarget = me.layout.getRenderTarget().dom,
-            toEl = e.getTarget();
+            items = me.menuItems,
+            length = items.length,
+            owner = me.layout.owner,
+            asLayoutRoot = owner._asLayoutRoot,
+            item, i;
 
-        // See which top level element the event is in and find its owning Component.
-        while (toEl.parentNode !== renderTarget) {
-            toEl = toEl.parentNode;
-            if (!toEl) {
-                return;
-            }
-        }
-        return Ext.getCmp(toEl.id);
-    },
+        owner.suspendLayouts();
+        me.captureChildElements();
+        me.hideTrigger();
+        owner.resumeLayouts();
 
-<span id='Ext-menu-Menu-method-lookupComponent'>    lookupComponent: function(cmp) {
-</span>        var me = this;
-
-        if (typeof cmp === &#39;string&#39;) {
-            if (cmp[0] === &#39;@&#39;) {
-                cmp = this.callParent([cmp]);
-            } else {
-                cmp = me.lookupItemFromString(cmp);
-            }
-        } else if (Ext.isObject(cmp)) {
-            cmp = me.lookupItemFromObject(cmp);
-        }
-
-        // Apply our minWidth to all of our non-docked child components (Menu extends Panel)
-        // so it&#39;s accounted for in our VBox layout
-        if (!cmp.dock) {
-            cmp.minWidth = cmp.minWidth || me.minWidth;
-        }
-
-        return cmp;
-    },
-
-<span id='Ext-menu-Menu-method-lookupItemFromObject'>    /**
-</span>     * @private
-     */
-    lookupItemFromObject: function(cmp) {
-        var type = this.defaultType;
-
-        if (!cmp.isComponent) {
-            if (!cmp.xtype &amp;&amp; Ext.isBoolean(cmp.checked)) {
-                type = &#39;menucheckitem&#39;;
-            }
-            cmp = Ext.ComponentManager.create(cmp, type);    
-        }
-
-        if (cmp.isMenuItem) {
-            cmp.parentMenu = this;
-        }
-
-        return cmp;
-    },
-
-<span id='Ext-menu-Menu-method-lookupItemFromString'>    /**
-</span>     * @private
-     */
-    lookupItemFromString: function(cmp) {
-        return (cmp === &#39;separator&#39; || cmp === &#39;-&#39;) ?
-            new Ext.menu.Separator()
-            : new Ext.menu.Item({
-                canActivate: false,
-                hideOnClick: false,
-                plain: true,
-                text: cmp
-            });
-    },
-
-<span id='Ext-menu-Menu-method-configureItem'>    // Override applied to the Menu&#39;s layout. Runs in the context of the layout.
-</span>    // Add special classes to allow non MenuItem components to coexist with MenuItems.
-    // If there is only *one* child, then this Menu is just a vehicle for floating
-    // and aligning the component, so do not do this.
-    configureItem: function(cmp) {
-        var me = this.owner,
-            prefix = Ext.baseCSSPrefix,
-            ui = me.ui,
-            cls, cmpCls;
-
-        if (cmp.isMenuItem) {
-            cmp.setUI(ui);
-        } else if (me.items.getCount() &gt; 1 &amp;&amp; !cmp.rendered &amp;&amp; !cmp.dock) {
-            cmpCls = me._itemCmpCls;
-            cls = [cmpCls + &#39; &#39; + cmpCls + &#39;-&#39; + ui];
-
-            // The &quot;plain&quot; setting means that the menu does not look so much like a menu. It&#39;s more like a grey Panel.
-            // So it has no vertical separator.
-            // Plain menus also will not indent non MenuItem components; there is nothing to indent them to the right of.
-            if (!me.plain &amp;&amp; (cmp.indent !== false || cmp.iconCls === &#39;no-icon&#39;)) {
-                cls.push(prefix + &#39;menu-item-indent-&#39; + ui);
-            }
-
-            if (cmp.rendered) {
-                cmp.el.addCls(cls);
-            } else {
-                cmp.cls = (cmp.cls || &#39;&#39;) + &#39; &#39; + cls.join(&#39; &#39;);
-            }
-            // So we can clean the item if it gets removed.
-            cmp.$extraMenuCls = cls;
-        }
-
-        // @noOptimize.callParent
-        this.callParent(arguments);
-    },
-
-<span id='Ext-menu-Menu-method-onRemove'>    onRemove: function(cmp) {
-</span>        this.callParent([cmp]);
-        
-        // Remove any extra classes we added to non-MenuItem child items
-        if (!cmp.destroyed &amp;&amp; cmp.$extraMenuCls) {
-            cmp.el.removeCls(cmp.$extraMenuCls);
-        }
-    },
-
-<span id='Ext-menu-Menu-method-onClick'>    onClick: function(e) {
-</span>        var me = this,
-            type = e.type,
-            item,
-            clickResult,
-            iskeyEvent = type === &#39;keydown&#39;;
-
-        if (me.disabled) {
-            e.stopEvent();
-            return;
-        }
-
-        item = me.getItemFromEvent(e);
-        if (item &amp;&amp; item.isMenuItem) {
-            if (!item.menu || !me.ignoreParentClicks) {
-                clickResult = item.onClick(e);
-            }
-            else {
-                e.stopEvent();
-            }
-            
-            // Click handler on the item could have destroyed the menu
-            if (me.destroyed) {
-                return;
-            }
-
-            // SPACE and ENTER invokes the menu
-            if (item.menu &amp;&amp; clickResult !== false &amp;&amp; iskeyEvent) {
-                item.expandMenu(e, 0);
-            }
-        }
-        // Click event may be fired without an item, so we need a second check
-        if (!item || item.disabled) {
-            item = undefined;
-        }
-        
-        me.fireEvent(&#39;click&#39;, me, item, e);
-    },
-
-<span id='Ext-menu-Menu-method-doDestroy'>    doDestroy: function() {
-</span>        var me = this;
-        
-        if (me.escapeKeyNav) {
-            me.escapeKeyNav.destroy();
-        }
-
-        me.parentMenu = me.ownerCmp = me.escapeKeyNav = null;
-        
-        if (me.rendered) {
-            me.el.un(me.mouseMonitor);
-            Ext.destroy(me.iconSepEl);
-        }
-        
-        // Menu can be destroyed while shown;
-        // we should notify the Manager
-        Ext.menu.Manager.onHide(me);
-        
-        me.callParent();
-    },
-
-<span id='Ext-menu-Menu-method-onMouseLeave'>    onMouseLeave: function(e) {
-</span>        var me = this;
-        
-        if (me.itemOverTask) {
-            me.itemOverTask.cancel();
-        }
-        
-        if (me.disabled) {
-            return;
-        }
-        
-        me.fireEvent(&#39;mouseleave&#39;, me, e);
-    },
-
-<span id='Ext-menu-Menu-method-onMouseOver'>    onMouseOver: function(e) {
-</span>        var me = this,
-            fromEl = e.getRelatedTarget(),
-            mouseEnter = !me.el.contains(fromEl),
-            item = me.getItemFromEvent(e),
-            parentMenu = me.parentMenu,
-            ownerCmp = me.ownerCmp;
-
-        if (mouseEnter &amp;&amp; parentMenu) {
-            parentMenu.setActiveItem(ownerCmp);
-            ownerCmp.cancelDeferHide();
-            parentMenu.mouseMonitor.mouseenter();
-            parentMenu.itemOverTask.cancel();
-        }
-
-        if (me.disabled) {
-            return;
-        }
-
-        // Do not activate the item if the mouseover was within the item, and it&#39;s already active
-        if (item) {
-            // Activate the item in time specified by mouseLeaveDelay.
-            // If we mouseout, or move to another item this invocation will be canceled.
-            me.itemOverTask.delay(me.mouseLeaveDelay, null, null, [e, item]);
-        }
-        if (mouseEnter) {
-            me.fireEvent(&#39;mouseenter&#39;, me, e);
-        }
-        me.fireEvent(&#39;mouseover&#39;, me, item, e);
-    },
-
-<span id='Ext-menu-Menu-method-setActiveItem'>    setActiveItem: function(item) {
-</span>        var me = this;
-
-        if (item &amp;&amp; (item !== me.lastFocusedChild)) {
-            me.focusChild(item, 1);
-            // Focusing will scroll the item into view.
-        }
-    },
-
-<span id='Ext-menu-Menu-method-onEscapeKey'>    onEscapeKey: function() {
-</span>        if (this.floating) {
-            this.hide();
-        }
-    },
-
-<span id='Ext-menu-Menu-method-onShortcutKey'>    onShortcutKey: function(keyCode, e) {
-</span>        var shortcutChar = String.fromCharCode(e.getCharCode()),
-            items = this.query(&#39;&gt;[text]&#39;),
-            len = items.length,
-            item = this.lastFocusedChild,
-            focusIndex = Ext.Array.indexOf(items, item),
-            i = focusIndex;
-        
-        if (len === 0) {
-            return;
-        }
-
-        // Loop through all items which have a text property starting at the one after the current focus.
-        for (;;) {
-            if (++i === len) {
-                i = 0;
-            }
+        for (i = 0; i &lt; length; i++) {
             item = items[i];
 
-            // Looped back to start - no matches
-            if (i === focusIndex) {
-                return;
+            // What we are doing here is preventing the layout bubble from invalidating our
+            // owner component. We need just the button to be added to the layout run.
+            item.suspendLayouts();
+            item.show();
+            me.clearItem(item);
+            item.resumeLayouts(asLayoutRoot);
+        }
+
+        items.length = 0;
+    },
+
+<span id='Ext-layout-container-boxOverflow-Menu-method-showTrigger'>    /**
+</span>     * @private
+     * Shows the overflow trigger when enableOverflow is set to true and the items
+     * in the layout are too wide to fit in the space available
+     */
+    showTrigger: function(ownerContext) {
+        var me = this,
+            layout = me.layout,
+            owner = layout.owner,
+            names = layout.names,
+            startProp = names.x,
+            sizeProp = names.width,
+            plan = ownerContext.state.boxPlan,
+            available = plan.targetSize[sizeProp],
+            childItems = ownerContext.childItems,
+            menuTrigger = me.menuTrigger,
+            menuItems = me.menuItems,
+            childContext, comp, i, props, len;
+
+        // We don&#39;t want the menuTrigger.show to cause owner&#39;s layout to be invalidated, so
+        // we force just the button to be invalidated and added to the current run.
+        menuTrigger.suspendLayouts();
+        menuTrigger.show();
+        menuTrigger.resumeLayouts(me._asLayoutRoot);
+
+        available -= me.triggerTotalWidth;
+
+        owner.suspendLayouts();
+
+        // Hide all items which are off the end, and store them to allow them to be restored
+        // before each layout operation.
+        for (i = 0, len = menuItems.length; i &lt; len; ++i) {
+            me.clearItem(menuItems[i]);
+        }
+        menuItems.length = 0;
+
+        for (i = 0, len = childItems.length; i &lt; len; i++) {
+            childContext = childItems[i];
+            props = childContext.props;
+            if (props[startProp] + props[sizeProp] &gt; available) {
+                comp = childContext.target;
+                me.menuItems.push(comp);
+                comp.hide();
             }
-            
-            // Found a text match
-            if (item.text &amp;&amp; item.text[0].toUpperCase() === shortcutChar) {
-                item.focus();
-                return;
+        }
+
+        owner.resumeLayouts();
+    },
+
+<span id='Ext-layout-container-boxOverflow-Menu-method-hideTrigger'>    /**
+</span>     * @private
+     */
+    hideTrigger: function() {
+        var menuTrigger = this.menuTrigger;
+        if (menuTrigger) {
+            menuTrigger.hide();
+        }
+    },
+
+<span id='Ext-layout-container-boxOverflow-Menu-method-beforeMenuShow'>    /**
+</span>     * @private
+     * Called before the overflow menu is shown. This constructs the menu&#39;s items, caching them for as long as it can.
+     */
+    beforeMenuShow: function(menu) {
+        var me = this,
+            items = me.menuItems,
+            i = 0,
+            len   = items.length,
+            item,
+            prev,
+            needsSep = function(group, prev){
+                return group.isXType(&#39;buttongroup&#39;) &amp;&amp; !(prev instanceof Ext.toolbar.Separator);
+            };
+
+        menu.suspendLayouts();
+        menu.removeAll(false);
+
+        for (; i &lt; len; i++) {
+            item = items[i];
+
+            // Do not show a separator as a first item
+            if (!i &amp;&amp; (item instanceof Ext.toolbar.Separator)) {
+                continue;
             }
-        }
-    },
-
-<span id='Ext-menu-Menu-method-onBeforeShow'>    onBeforeShow: function() {
-</span>        // Do not allow show immediately after a hide
-        if (Ext.Date.getElapsed(this.lastHide) &lt; this.menuClickBuffer) {
-            return false;
-        }
-    },
-
-<span id='Ext-menu-Menu-method-beforeShow'>    beforeShow: function() {
-</span>        var me = this,
-            parent;
-
-        // Constrain the height to the containing element&#39;s viewable area
-        if (me.floating) {
-            parent = me.hasFloatMenuParent();
-            
-            if (!parent &amp;&amp; !me.allowOtherMenus) {
-                Ext.menu.Manager.hideAll();
+            if (prev &amp;&amp; (needsSep(item, prev) || needsSep(prev, item))) {
+                menu.add(&#39;-&#39;);
             }
+
+            me.addComponentToMenu(menu, item);
+            prev = item;
         }
 
-        me.callParent(arguments);
+        // put something so the menu isn&#39;t empty if no compatible items found
+        if (menu.items.length &lt; 1) {
+            menu.add(me.noItemsMenuText);
+        }
+        menu.resumeLayouts();
     },
-
-<span id='Ext-menu-Menu-method-afterShow'>    afterShow: function() {
-</span>        var me = this,
-            ariaDom = me.ariaEl.dom;
-
-        me.callParent(arguments);
-        Ext.menu.Manager.onShow(me);
-        
-        if (me.floating &amp;&amp; ariaDom) {
-            ariaDom.setAttribute(&#39;aria-expanded&#39;, true);
-        }
-        
-        // Restore configured maxHeight
-        if (me.floating) {
-            me.maxHeight = me.savedMaxHeight;
-        }
-        if (me.autoFocus) {
-            me.focus();
-        }
-    },
-
-<span id='Ext-menu-Menu-method-onHide'>    onHide: function(animateTarget, cb, scope) {
-</span>        var me = this,
-            ariaDom = me.ariaEl.dom;
-
-        me.callParent([animateTarget, cb, scope]);
-        me.lastHide = Ext.Date.now();
-        Ext.menu.Manager.onHide(me);
-        
-        if (me.floating &amp;&amp; ariaDom) {
-            ariaDom.setAttribute(&#39;aria-expanded&#39;, false);
-        }
-    },
-
-<span id='Ext-menu-Menu-method-afterHide'>    afterHide: function(cb, scope) {
-</span>        this.callParent([cb, scope]);
-
-        // Top level focusEnter is only valid when focused
-        delete this.getInherited().topmostFocusEvent;
-    },
-
-<span id='Ext-menu-Menu-method-preventClick'>    preventClick: function (e) {
-</span>        var item = this.getItemFromEvent(e);
-        if (item &amp;&amp; item.isMenuItem &amp;&amp; !item.href) {
-            e.preventDefault();
-        }
-    },
-
-<span id='Ext-menu-Menu-property-privates'>    privates: {
-</span><span id='Ext-menu-Menu-method-applyDefaults'>        /**
-</span>         * @private
-         */
-        applyDefaults: function (config) {
-            if (!Ext.isString(config)) {
-                config = this.callParent(arguments);
-            }
-            return config;
-        },
-        
-        initFocusableElement: function() {
-            var me = this,
-                tabIndex = me.tabIndex,
-                el = me.el;
-            
-            // Floating menus always need to have focusable main el
-            // so that mouse clicks within the menu would not close it.
-            // We&#39;re not checking focusable property here, Component
-            // will do that before we can reach this method.
-            if (me.floating &amp;&amp; tabIndex != null &amp;&amp; el &amp;&amp; el.dom) {
-                el.dom.setAttribute(&#39;tabIndex&#39;, tabIndex);
-                el.dom.setAttribute(&#39;data-componentid&#39;, me.id);
-            }
-        },
-        
-        // Tabbing in a floating menu must hide, but not move focus.
-        // onHide takes care of moving focus back to an owner Component.
-        onFocusableContainerTabKey: function(e) {
-            var me = this;
     
-            if (me.floating) {
-                if (e.shiftKey) {
-                    // We do not want TAB behaviour to proceed.
-                    // SHIFT+TAB reverts &quot;backwards&quot; to the menu&#39;s invoker
-                    // which is the automatic behaviour.
-                    e.preventDefault();
-                } else {
-                    // If we want to navigate forwards, we cannot allow the
-                    // automatic focus reversion to go to the parent menu.
-                    // It must behave as if it were the topmost menu in the
-                    // floating stack, revert to there, and then TAB onwards.
-                    me.focusEnterEvent = me.getInherited().topmostFocusEvent;
+<span id='Ext-layout-container-boxOverflow-Menu-method-createMenuConfig'>    /**
+</span>     * @private
+     * Returns a menu config for a given component. This config is used to create a menu item
+     * to be added to the expander menu
+     * @param {Ext.Component} component The component to create the config for
+     * @param {Boolean} hideOnClick Passed through to the menu item
+     */
+    createMenuConfig: function (component, hideOnClick) {
+        var config = Ext.apply({}, component.initialConfig),
+            group  = component.toggleGroup;
+
+        Ext.copy(config, component, [
+            &#39;iconCls&#39;, &#39;icon&#39;, &#39;itemId&#39;, &#39;disabled&#39;, &#39;handler&#39;, &#39;scope&#39;, &#39;menu&#39;, &#39;tabIndex&#39;
+        ]);
+
+        Ext.applyIf(config, {
+            hideOnClick: hideOnClick,
+            destroyMenu: false,
+            listeners: null
+        });
+        
+        config.text = component.overflowText || component.text;
+        config.masterComponent = component;
+
+        // Clone must have same value, and must sync original&#39;s value on change
+        if (component.isFormField) {
+            config.value = component.getValue();
+            // If the component is a Checkbox/Radio field we replace the config with
+            // a menucheckitem so it will give the Menu a better look and feel.
+            // See additional information on the #addComponentToMenu method below.
+            if(component instanceof Ext.form.field.Checkbox) {
+                config = {
+                    xtype: &#39;menucheckitem&#39;,
+                    group : component.isRadio ? component.name + &#39;_clone&#39; : undefined,
+                    text : component.boxLabel || component.fieldLabel,
+                    name : component.name,
+                    masterComponent : component,
+                    checked : component.getValue(),
+                    hideOnClick : false,
+                    checkChangeDisabled : true
+                };
+            }
+
+            // Sync the original component&#39;s value when the clone changes value.
+            // This intentionally overwrites any developer-configured change listener on the clone.
+            // That&#39;s because we monitor the clone&#39;s change event, and sync the
+            // original field by calling setValue, so the original field&#39;s change
+            // event will still fire.
+            config.listeners = {
+                change: function(c, newVal, oldVal) {                            
+                    c.masterComponent.setValue(newVal);
                 }
-                me.hide();
-            }
-        },
-    
-        onFocusableContainerEnterKey: function(e) {
-            this.onClick(e);
-        },
-    
-        onFocusableContainerSpaceKey: function(e) {
-            this.onClick(e);
-        },
-    
-        onFocusableContainerLeftKey: function(e) {
-            // The default action is to scroll the nearest horizontally scrollable container
-            e.preventDefault();
-            
-            // If we are a submenu, then left arrow focuses the owning MenuItem
-            if (this.parentMenu) {
-                this.ownerCmp.focus();
-                this.hide();
-            }
-        },
-    
-        onFocusableContainerRightKey: function(e) {
-            var me = this,
-                focusItem = me.lastFocusedChild;
-            
-            // See above
-            e.preventDefault();
-    
-            if (focusItem &amp;&amp; focusItem.expandMenu) {
-                focusItem.expandMenu(e, 0);
-            }
-        },
-
-        hasFloatMenuParent: function() {
-            return this.parentMenu || this.up(&#39;menu[floating=true]&#39;);
-        },
-        
-        setOwnerCmp: function(comp, instanced) {
-            var me = this;
-
-            me.parentMenu = comp.isMenuItem ? comp : null;
-            me.ownerCmp = comp;
-            me.registerWithOwnerCt();
-
-            delete me.hierarchicallyHidden;
-            me.onInheritedAdd(comp, instanced);
-            me.containerOnAdded(comp, instanced);
+            };
+            // Sync the cloned Component&#39;s value when the master changes value.
+            component.on(&#39;change&#39;, function(c, newVal, oldVal) {
+                c.overflowClone.setValue(newVal);
+            });
         }
+
+        // ToggleButtons become CheckItems
+        else if (group || component.enableToggle) {
+            Ext.apply(config, {
+                hideOnClick: false,
+                group: group,
+                checked: component.pressed,
+                handler: function (item, e) {
+                    item.masterComponent.onClick(e);
+                }
+            });
+        }
+
+        // Buttons may have their text or icon changed - this must be propagated to the clone in the overflow menu
+        if (component.isButton &amp;&amp; !component.changeListenersAdded) {
+            component.on({
+                textchange: this.onButtonAttrChange,
+                iconchange: this.onButtonAttrChange,
+                toggle: this.onButtonToggle
+            });
+            component.changeListenersAdded = true;
+        }
+
+        // Adding additional listeners
+        component.on({
+            enable: this.onComponentStatusChange,
+            disable: this.onComponentStatusChange
+        });
+
+        // Typically margins are used to separate items in a toolbar
+        // but don&#39;t really make a lot of sense in a menu, so we strip
+        // them out here.
+        delete config.margin;
+        delete config.ownerCt;
+        delete config.xtype;
+        delete config.id;
+        delete config.itemId;
+        return config;
+    },
+
+<span id='Ext-layout-container-boxOverflow-Menu-method-onButtonAttrChange'>    onButtonAttrChange: function(btn) {
+</span>        var clone = btn.overflowClone;
+        clone.suspendLayouts();
+        clone.setText(btn.text);
+        clone.setIcon(btn.icon);
+        clone.setIconCls(btn.iconCls);
+        clone.resumeLayouts(true);
+    },
+
+<span id='Ext-layout-container-boxOverflow-Menu-method-onButtonToggle'>    onButtonToggle: function(btn, state) {
+</span>        // Keep the clone in sync with the original if necessary
+        if (btn.overflowClone.checked !== state) {
+            btn.overflowClone.setChecked(state);
+        }
+    },
+
+<span id='Ext-layout-container-boxOverflow-Menu-method-onComponentStatusChange'>    onComponentStatusChange: function(cmp) {
+</span>        var clone = cmp.overflowClone;
+
+        if (clone) {
+            clone.setDisabled(cmp.disabled);
+        }
+    },
+
+<span id='Ext-layout-container-boxOverflow-Menu-method-addComponentToMenu'>    /**
+</span>     * @private
+     * Adds the given Toolbar item to the given menu. Buttons inside a buttongroup are added individually.
+     * @param {Ext.menu.Menu} menu The menu to add to
+     * @param {Ext.Component} component The component to add
+     * TODO: Implement overrides in Ext.layout.container.boxOverflow which create overrides
+     * for SplitButton, Button, ButtonGroup, and TextField. And a generic one for Component
+     * which create clones suitable for use in an overflow menu.
+     */
+    addComponentToMenu: function(menu, component) {
+        var me = this,
+            i, items, iLen;
+
+        // No equivalent to fill, skip it
+        if (component instanceof Ext.toolbar.Fill) {
+            return;
+        }
+        // Separator maps to MenuSeparator
+        else if (component instanceof Ext.toolbar.Separator) {
+            menu.add(&#39;-&#39;);
+        }
+        else if (component.overflowClone) {
+            menu.add(component.overflowClone);
+        }
+        // Other types...
+        else if (component.isComponent) {
+            if (component.isXType(&#39;splitbutton&#39;)) {
+                component.overflowClone = menu.add(me.createMenuConfig(component, true));
+
+            } else if (component.isXType(&#39;button&#39;)) {
+                component.overflowClone = menu.add(me.createMenuConfig(component, !component.menu));
+
+            } else if (component.isXType(&#39;buttongroup&#39;)) {
+                items = component.items.items;
+                iLen  = items.length;
+
+                for (i = 0; i &lt; iLen; i++) {
+                    me.addComponentToMenu(menu, items[i]);
+                }
+                // If the component is a CheckBox/Radio field, we are supposed to
+                // have a menucheckitem that will replace the original component.
+                // Because of that, we need to add a value getter/setter and an event listener that
+                // will fire the change event on click, making the menuitem behave as a 
+                // checkbox/radio field would have.
+            } else if (component instanceof Ext.form.field.Checkbox) {
+                component.overflowClone = menu.add(me.createMenuConfig(component));
+                
+                Ext.apply(component.overflowClone,{
+                    getValue : function() {
+                        return component.overflowClone.checked;
+                    },
+                    setValue : function() {
+                        component.overflowClone.setChecked(component.getValue());
+                    }
+                });
+                
+                component.overflowClone.on(&#39;click&#39;,function(item){
+                    item.setChecked(true);
+                    item.fireEvent(&#39;change&#39;, item, item.checked);
+                });
+            } else {
+                component.overflowClone = menu.add(Ext.create(Ext.getClassName(component), me.createMenuConfig(component)));
+            }
+        }
+    },
+
+<span id='Ext-layout-container-boxOverflow-Menu-method-destroy'>    destroy: function() {
+</span>        Ext.destroy(this.menu, this.menuTrigger);
+        
+        this.callParent();
     }
 });
 </pre>

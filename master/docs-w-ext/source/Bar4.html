@@ -15,102 +15,33 @@
   </script>
 </head>
 <body onload="prettyPrint(); highlight();">
-  <pre class="prettyprint lang-js"><span id='Ext-menu-Bar'>/**
-</span> * Horizontal Menu bar widget, a specialized version of the {@link Ext.menu.Menu}.
- *
- *      @example
- *      new Ext.menu.Bar({
- *          renderTo: Ext.getBody(),
- *          width: 200,
- *          items: [{
- *              text: &#39;File&#39;,
- *              menu: [
- *                  { text: &#39;Open...&#39; },
- *                  &#39;-&#39;,
- *                  { text: &#39;Close&#39; }
- *              ]
- *          }, {
- *              text: &#39;Edit&#39;,
- *              menu: [
- *                  { text: &#39;Cut&#39; },
- *                  { text: &#39;Copy&#39; }
- *                  { text: &#39;Paste&#39; }
- *              ]
- *          }]
- *      });
- */
-Ext.define(&#39;Ext.menu.Bar&#39;, {
-    extend: &#39;Ext.menu.Menu&#39;,
-    xtype: &#39;menubar&#39;,
-    
-<span id='Ext-menu-Bar-property-isMenuBar'>    isMenuBar: true,
-</span>    
-<span id='Ext-menu-Bar-property-defaultMenuAlign'>    /**
-</span>     * @config {String} defaultMenuAlign The default {@link Ext.menu.Item#menuAlign} config
-     * for direct child items of this Menu bar.
-     */
-    defaultMenuAlign: &#39;tl-bl?&#39;,
-    
-<span id='Ext-menu-Bar-property-floating'>    floating: false,
-</span><span id='Ext-menu-Bar-cfg-constrain'>    constrain: false,
-</span><span id='Ext-menu-Bar-cfg-showSeparator'>    showSeparator: false,
-</span><span id='Ext-menu-Bar-cfg-allowOtherMenus'>    allowOtherMenus: true,
-</span>    
-<span id='Ext-menu-Bar-property-ariaRole'>    ariaRole: &#39;menubar&#39;,
-</span>    
-<span id='Ext-menu-Bar-cfg-ui'>    ui: &#39;default-menubar&#39;,
-</span>    
-<span id='Ext-menu-Bar-cfg-layout'>    layout: {
-</span>        type: &#39;hbox&#39;,
-        align: &#39;stretchmax&#39;,
-        pack: &#39;start&#39;,
-        overflowHandler: &#39;menu&#39;
-    },
-    
-<span id='Ext-menu-Bar-method-lookupComponent'>    lookupComponent: function(comp) {
-</span>        comp = this.callParent([comp]);
-        
-        if (comp.isMenuItem) {
-            comp.menuAlign = this.defaultMenuAlign;
-        }
-        
-        return comp;
-    },
-    
-<span id='Ext-menu-Bar-property-privates'>    privates: {
-</span>        onFocusableContainerLeftKey: function(e) {
-            // The default action is to scroll the nearest horizontally scrollable container
-            e.preventDefault();
-            
-            this.mixins.focusablecontainer.onFocusableContainerLeftKey.call(this, e);
+  <pre class="prettyprint lang-js">Ext.define(&#39;Ext.rtl.tab.Bar&#39;, {
+    override: &#39;Ext.tab.Bar&#39;,
+
+    privates: {
+        // rtl hook
+        _getTabAdjustProp: function() {
+            return this.getInherited().rtl ? &#39;right&#39; : &#39;left&#39;;
         },
-        
-        onFocusableContainerRightKey: function(e) {
-            // Ditto
-            e.preventDefault();
-            
-            this.mixins.focusablecontainer.onFocusableContainerRightKey.call(this, e);
-        },
-        
-        onFocusableContainerUpKey: function(e) {
-            var focusItem = this.lastFocusedChild;
-            
-            e.preventDefault();
-            
-            // As per WAI-ARIA, both Up and Down arrow keys open submenu
-            if (focusItem &amp;&amp; focusItem.expandMenu) {
-                focusItem.expandMenu(e, 0);
+
+        getCloseXY: function(closeEl, tabX, tabY, tabWidth, tabHeight, closeWidth, closeHeight, direction) {
+            var closeXY, closeX, closeY, xy;
+
+            if (this.isOppositeRootDirection()) {
+                closeXY = closeEl.getXY();
+                if (direction === &#39;right&#39;) {
+                    closeX = tabX + closeXY[1] - tabY;
+                    closeY = tabY + tabHeight - (closeXY[0] - (tabX + tabWidth - tabHeight)) - closeWidth;
+                } else {
+                    closeX = tabX + tabWidth - (closeXY[1] - tabY) - closeHeight;
+                    closeY = tabY + (closeXY[0] - (tabX + tabWidth - tabHeight));
+                }
+                xy = [closeX, closeY];
+            } else {
+                xy = this.callParent(arguments);
             }
-        },
-        
-        onFocusableContainerDownKey: function(e) {
-            var focusItem = this.lastFocusedChild;
-            
-            e.preventDefault();
-            
-            if (focusItem &amp;&amp; focusItem.expandMenu) {
-                focusItem.expandMenu(e, 0);
-            }
+
+            return xy;
         }
     }
 });

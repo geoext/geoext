@@ -30,77 +30,44 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see &lt;http://www.gnu.org/licenses/&gt;.
  */
-<span id='GeoExt-data-serializer-Base'>/**
-</span> * The base class for all serializers.
- *
- * @class GeoExt.data.serializer.Base
+<span id='GeoExt-data-model-Base'>/**
+</span> * @class GeoExt.data.model.Base
  */
-Ext.define(&#39;GeoExt.data.serializer.Base&#39;, {
-    extend: &#39;Ext.Base&#39;,
+Ext.define(&#39;GeoExt.data.model.Base&#39;, {
+    extend: &#39;Ext.data.Model&#39;,
     requires: [
-        &#39;GeoExt.data.MapfishPrintProvider&#39;
-    ],
-    mixins: [
-        &#39;GeoExt.mixin.SymbolCheck&#39;
+        &#39;Ext.data.identifier.Uuid&#39;
     ],
 
-<span id='GeoExt-data-serializer-Base-property-symbols'>    // &lt;debug&gt;
-</span>    symbols: [
-        &#39;ol.layer.Layer&#39;,
-        &#39;ol.source.Source&#39;
-    ],
-    // &lt;/debug&gt;
+<span id='GeoExt-data-model-Base-cfg-identifier'>    identifier: &#39;uuid&#39;,
+</span>
+<span id='GeoExt-data-model-Base-property-schema'>    schema: {
+</span>        id: &#39;geoext-schema&#39;,
+        namespace: &#39;GeoExt.data.model&#39;
+    },
 
     inheritableStatics: {
-<span id='GeoExt-data-serializer-Base-static-property-sourceCls'>        /**
-</span>         * The ol.source.Source class that this serializer will serialize.
+<span id='GeoExt-data-model-Base-static-method-loadRawData'>        /**
+</span>         * Loads a record from a provided data structure initializing the models
+         * associations. Simply calling Ext.create will not utilize the models
+         * configured reader and effectivly sidetrack associations configs.
+         * This static helper method makes sure associations are initialized
+         * properly and are available with the returned record.
          *
-         * @type {ol.source.Source}
-         * @protected
+         * Be aware that the provided data may be modified by the models reader
+         * initializing associations.
+         *
+         * @param  {Object} data The data the record will be created with.
+         * @return {GeoExt.data.model.Base} The record.
          */
-        sourceCls: null,
+        loadRawData: function(data) {
+            var me = this;
+            var result = me.getProxy().getReader().readRecords(data || {});
+            var records = result.getRecords();
+            var success = result.getSuccess();
 
-<span id='GeoExt-data-serializer-Base-static-method-serialize'>        /**
-</span>         * Serializes the passed source and layer into an object that the
-         * Mapfish Print Servlet understands.
-         *
-         * @param {ol.layer.Layer} layer The layer to serialize.
-         * @param {ol.source.Source} source The source of the layer to
-         *    serialize.
-         * @param {Number} viewRes The resolution of the mapview.
-         * @return {Object} A serialized representation of source and layer.
-         */
-        serialize: function() {
-            Ext.raise(&#39;This method must be overridden by subclasses.&#39;);
-            return null; // so that we can have a shared JSDoc comment.
-        },
-
-<span id='GeoExt-data-serializer-Base-static-method-register'>        /**
-</span>         * Given a subclass of GeoExt.data.serializer.Base, register the class
-         * with the GeoExt.data.MapfishPrintProvider. This method is usually
-         * called inside the &#39;after-create&#39; function of `Ext.class` definitions.
-         *
-         * @param {GeoExt.data.serializer.Base} subCls The class to register.
-         * @protected
-         */
-        register: function(subCls) {
-            GeoExt.data.MapfishPrintProvider.registerSerializer(
-                subCls.sourceCls,
-                subCls
-            );
-        },
-
-<span id='GeoExt-data-serializer-Base-static-method-validateSource'>        /**
-</span>         * Given a concrete `ol.source.Source` instance, this method checks if
-         * the non-abstract subclass is capable of serializing the source. Will
-         * throw an exception if the source isn&#39;t valid for the serializer.
-         *
-         * @param {ol.source.Source} source The source to test.
-         * @protected
-         */
-        validateSource: function(source) {
-            if (!(source instanceof this.sourceCls)) {
-                Ext.raise(&#39;Cannot serialize this source with this serializer&#39;);
+            if (success &amp;&amp; records.length) {
+                return records[0];
             }
         }
     }

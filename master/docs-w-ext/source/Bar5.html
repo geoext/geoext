@@ -15,33 +15,104 @@
   </script>
 </head>
 <body onload="prettyPrint(); highlight();">
-  <pre class="prettyprint lang-js">Ext.define(&#39;Ext.rtl.tab.Bar&#39;, {
-    override: &#39;Ext.tab.Bar&#39;,
+  <pre class="prettyprint lang-js"><span id='Ext-panel-Bar'>/**
+</span> * Abstract base class for common functionality shared between {@link Ext.panel.Header}
+ * and {@link Ext.tab.Bar}
+ * @private
+ * @abstract
+ */
+Ext.define(&#39;Ext.panel.Bar&#39;, {
+    extend: &#39;Ext.container.Container&#39;,
 
-    privates: {
-        // rtl hook
-        _getTabAdjustProp: function() {
-            return this.getInherited().rtl ? &#39;right&#39; : &#39;left&#39;;
+<span id='Ext-panel-Bar-property-vertical'>    vertical: false,
+</span>
+<span id='Ext-panel-Bar-property-_verticalSides'>    _verticalSides: {
+</span>        left: 1,
+        right: 1
+    },
+
+<span id='Ext-panel-Bar-method-initComponent'>    initComponent: function() {
+</span>        var me = this,
+            vertical = me.vertical;
+
+        me.dock = me.dock || (vertical ? &#39;left&#39; : &#39;top&#39;);
+
+        me.layout = Ext.apply(vertical ? {
+            type: &#39;vbox&#39;,
+            align: &#39;middle&#39;,
+            alignRoundingMethod: &#39;ceil&#39;
+        } : {
+            type: &#39;hbox&#39;,
+            align: &#39;middle&#39;,
+            alignRoundingMethod: &#39;floor&#39;
+        }, me.layout);
+
+        this.callParent();
+    },
+
+<span id='Ext-panel-Bar-method-onAdded'>    onAdded: function(container, pos, instanced) {
+</span>        this.initOrientation();
+        this.callParent([container, pos, instanced]);
+    },
+
+<span id='Ext-panel-Bar-method-onRemoved'>    onRemoved: function(destroying) {
+</span>        this.removeClsWithUI(this.uiCls);
+        this.callParent([destroying]);
+    },
+
+<span id='Ext-panel-Bar-method-beforeRender'>    beforeRender: function() {
+</span>        var me = this;
+
+        if (me.forceOrientation || !me.ownerCt) {
+            // allows bars to be rendered directly to body with no owner container
+            me.initOrientation();
+        }
+        me.callParent();
+    },
+
+<span id='Ext-panel-Bar-method-setDock'>    setDock: function(dock) {
+</span>        var me = this,
+            layout, vertical;
+
+        if (dock !== me.dock) {
+            Ext.suspendLayouts();
+
+            me.clearOrientation();
+
+            me.callParent([dock]);
+
+            me.initOrientation();
+            
+            vertical = me.vertical;
+            layout = me.layout;
+            layout.setVertical(vertical);
+            layout.setAlignRoundingMethod(vertical ? &#39;ceil&#39; : &#39;floor&#39;);
+
+            Ext.resumeLayouts(true);
+        }
+    },
+
+<span id='Ext-panel-Bar-property-privates'>    privates: {
+</span>        clearOrientation: function() {
+            this.removeClsWithUI([
+                this.vertical ? &#39;vertical&#39; : &#39;horizontal&#39;,
+                this.getDockName()
+            ]);
         },
 
-        getCloseXY: function(closeEl, tabX, tabY, tabWidth, tabHeight, closeWidth, closeHeight, direction) {
-            var closeXY, closeX, closeY, xy;
+        getDockName: function() {
+            return this.dock;
+        },
 
-            if (this.isOppositeRootDirection()) {
-                closeXY = closeEl.getXY();
-                if (direction === &#39;right&#39;) {
-                    closeX = tabX + closeXY[1] - tabY;
-                    closeY = tabY + tabHeight - (closeXY[0] - (tabX + tabWidth - tabHeight)) - closeWidth;
-                } else {
-                    closeX = tabX + tabWidth - (closeXY[1] - tabY) - closeHeight;
-                    closeY = tabY + (closeXY[0] - (tabX + tabWidth - tabHeight));
-                }
-                xy = [closeX, closeY];
-            } else {
-                xy = this.callParent(arguments);
-            }
+        initOrientation: function() {
+            var me = this,
+                dock = me.dock,
+                vertical = (me.vertical = (dock ? dock in me._verticalSides : me.vertical));
 
-            return xy;
+            me.addClsWithUI([
+                vertical ? &#39;vertical&#39; : &#39;horizontal&#39;,
+                me.getDockName()
+            ]);
         }
     }
 });

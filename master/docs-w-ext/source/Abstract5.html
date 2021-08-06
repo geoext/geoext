@@ -15,152 +15,221 @@
   </script>
 </head>
 <body onload="prettyPrint(); highlight();">
-  <pre class="prettyprint lang-js"><span id='Ext-util-sizemonitor-Abstract'>/**
+  <pre class="prettyprint lang-js"><span id='Ext-fx-animation-Abstract'>/**
 </span> * @private
  */
-Ext.define(&#39;Ext.util.sizemonitor.Abstract&#39;, {
+Ext.define(&#39;Ext.fx.animation.Abstract&#39;, {
 
-    mixins: [&#39;Ext.mixin.Templatable&#39;],
+    extend: &#39;Ext.Evented&#39;,
 
+<span id='Ext-fx-animation-Abstract-property-isAnimation'>    isAnimation: true,
+</span>
     requires: [
-        &#39;Ext.TaskQueue&#39;
+        &#39;Ext.fx.State&#39;
     ],
 
     config: {
-<span id='Ext-util-sizemonitor-Abstract-cfg-element'>        element: null,
+<span id='Ext-fx-animation-Abstract-cfg-name'>        name: &#39;&#39;,
 </span>
-<span id='Ext-util-sizemonitor-Abstract-cfg-callback'>        callback: Ext.emptyFn,
+<span id='Ext-fx-animation-Abstract-cfg-element'>        element: null,
 </span>
-<span id='Ext-util-sizemonitor-Abstract-cfg-scope'>        scope: null,
+<span id='Ext-fx-animation-Abstract-cfg-before'>        /**
+</span>         * @cfg
+         * Before configuration.
+         */
+        before: null,
+
+<span id='Ext-fx-animation-Abstract-cfg-from'>        from: {},
 </span>
-<span id='Ext-util-sizemonitor-Abstract-cfg-args'>        args: []
+<span id='Ext-fx-animation-Abstract-cfg-to'>        to: {},
+</span>
+<span id='Ext-fx-animation-Abstract-cfg-after'>        after: null,
+</span>
+<span id='Ext-fx-animation-Abstract-cfg-states'>        states: {},
+</span>
+<span id='Ext-fx-animation-Abstract-cfg-duration'>        duration:  300,
+</span>
+<span id='Ext-fx-animation-Abstract-cfg-easing'>        /**
+</span>         * @cfg
+         * Easing type.
+         */
+        easing: &#39;linear&#39;,
+
+<span id='Ext-fx-animation-Abstract-cfg-iteration'>        iteration: 1,
+</span>
+<span id='Ext-fx-animation-Abstract-cfg-direction'>        direction: &#39;normal&#39;,
+</span>
+<span id='Ext-fx-animation-Abstract-cfg-delay'>        delay: 0,
+</span>
+<span id='Ext-fx-animation-Abstract-cfg-onBeforeStart'>        onBeforeStart: null,
+</span>
+<span id='Ext-fx-animation-Abstract-cfg-callback'>        callback: null,
+</span>
+<span id='Ext-fx-animation-Abstract-cfg-onEnd'>        onEnd: null,
+</span>
+<span id='Ext-fx-animation-Abstract-cfg-onBeforeEnd'>        onBeforeEnd: null,
+</span>
+<span id='Ext-fx-animation-Abstract-cfg-scope'>        scope: null,
+</span>
+<span id='Ext-fx-animation-Abstract-cfg-reverse'>        reverse: null,
+</span>
+<span id='Ext-fx-animation-Abstract-cfg-preserveEndState'>        preserveEndState: false,
+</span>
+<span id='Ext-fx-animation-Abstract-cfg-replacePrevious'>        replacePrevious: true
 </span>    },
 
-<span id='Ext-util-sizemonitor-Abstract-property-width'>    width: null,
+<span id='Ext-fx-animation-Abstract-property-STATE_FROM'>    STATE_FROM: &#39;0%&#39;,
 </span>
-<span id='Ext-util-sizemonitor-Abstract-property-height'>    height: null,
+<span id='Ext-fx-animation-Abstract-property-STATE_TO'>    STATE_TO: &#39;100%&#39;,
 </span>
-<span id='Ext-util-sizemonitor-Abstract-property-contentWidth'>    contentWidth: null,
+<span id='Ext-fx-animation-Abstract-property-DIRECTION_UP'>    DIRECTION_UP: &#39;up&#39;,
 </span>
-<span id='Ext-util-sizemonitor-Abstract-property-contentHeight'>    contentHeight: null,
+<span id='Ext-fx-animation-Abstract-property-DIRECTION_DOWN'>    DIRECTION_DOWN: &#39;down&#39;,
 </span>
-<span id='Ext-util-sizemonitor-Abstract-method-constructor'>    constructor: function(config) {
-</span>        this.refresh = Ext.Function.bind(this.refresh, this);
+<span id='Ext-fx-animation-Abstract-property-DIRECTION_LEFT'>    DIRECTION_LEFT: &#39;left&#39;,
+</span>
+<span id='Ext-fx-animation-Abstract-property-DIRECTION_RIGHT'>    DIRECTION_RIGHT: &#39;right&#39;,
+</span>
+<span id='Ext-fx-animation-Abstract-property-stateNameRegex'>    stateNameRegex: /^(?:[\d\.]+)%$/,
+</span>
+<span id='Ext-fx-animation-Abstract-method-constructor'>    constructor: function() {
+</span>        this.states = {};
 
-        this.info = {
-            width: 0,
-            height: 0,
-            contentWidth: 0,
-            contentHeight: 0,
-            flag: 0
-        };
+        this.callParent(arguments);
 
-        this.initElement();
-
-        this.initConfig(config);
-
-        this.bindListeners(true);
+        return this;
     },
 
-<span id='Ext-util-sizemonitor-Abstract-method-bindListeners'>    bindListeners: Ext.emptyFn,
-</span>
-<span id='Ext-util-sizemonitor-Abstract-method-applyElement'>    applyElement: function(element) {
-</span>        if (element) {
-            return Ext.get(element);
+<span id='Ext-fx-animation-Abstract-method-applyElement'>    applyElement: function(element) {
+</span>        return Ext.get(element);
+    },
+
+<span id='Ext-fx-animation-Abstract-method-applyBefore'>    applyBefore: function(before, current) {
+</span>        if (before) {
+            return Ext.factory(before, Ext.fx.State, current);
         }
     },
 
-<span id='Ext-util-sizemonitor-Abstract-method-updateElement'>    updateElement: function(element) {
-</span>        element.append(this.detectorsContainer);
-        element.addCls(Ext.baseCSSPrefix + &#39;size-monitored&#39;);
-    },
-
-<span id='Ext-util-sizemonitor-Abstract-method-applyArgs'>    applyArgs: function(args) {
-</span>        return args.concat([this.info]);
-    },
-
-<span id='Ext-util-sizemonitor-Abstract-method-refreshMonitors'>    refreshMonitors: Ext.emptyFn,
-</span>
-<span id='Ext-util-sizemonitor-Abstract-method-forceRefresh'>    forceRefresh: function() {
-</span>        Ext.TaskQueue.requestRead(&#39;refresh&#39;, this);
-    },
-
-<span id='Ext-util-sizemonitor-Abstract-method-getContentBounds'>    getContentBounds: function() {
-</span>        return this.detectorsContainer.getBoundingClientRect();
-    },
-
-<span id='Ext-util-sizemonitor-Abstract-method-getContentWidth'>    getContentWidth: function() {
-</span>        return this.detectorsContainer.clientWidth;
-    },
-
-<span id='Ext-util-sizemonitor-Abstract-method-getContentHeight'>    getContentHeight: function() {
-</span>        return this.detectorsContainer.clientHeight;
-    },
-
-<span id='Ext-util-sizemonitor-Abstract-method-refreshSize'>    refreshSize: function() {
-</span>        var element = this.getElement();
-
-        if (!element || element.destroyed) {
-            return false;
-        }
-
-        var width = element.getWidth(),
-            height = element.getHeight(),
-            contentWidth = this.getContentWidth(),
-            contentHeight = this.getContentHeight(),
-            currentContentWidth = this.contentWidth,
-            currentContentHeight = this.contentHeight,
-            info = this.info,
-            resized = false,
-            flag = 0;
-
-        this.width = width;
-        this.height = height;
-        this.contentWidth = contentWidth;
-        this.contentHeight = contentHeight;
-
-        flag = ((currentContentWidth !== contentWidth ? 1 : 0) + (currentContentHeight !== contentHeight ? 2 : 0));
-
-        if (flag &gt; 0) {
-            info.width = width;
-            info.height = height;
-            info.contentWidth = contentWidth;
-            info.contentHeight = contentHeight;
-            info.flag = flag;
-
-            resized = true;
-            this.getCallback().apply(this.getScope(), this.getArgs());
-        }
-
-        return resized;
-    },
-
-<span id='Ext-util-sizemonitor-Abstract-method-refresh'>    refresh: function(force) {
-</span>        if (this.destroying || this.destroyed) {
-            return;
-        }
-        
-        if (this.refreshSize() || force) {
-            Ext.TaskQueue.requestWrite(&#39;refreshMonitors&#39;, this);
+<span id='Ext-fx-animation-Abstract-method-applyAfter'>    applyAfter: function(after, current) {
+</span>        if (after) {
+            return Ext.factory(after, Ext.fx.State, current);
         }
     },
 
-<span id='Ext-util-sizemonitor-Abstract-method-destroy'>    destroy: function() {
+<span id='Ext-fx-animation-Abstract-method-setFrom'>    setFrom: function(from) {
+</span>        return this.setState(this.STATE_FROM, from);
+    },
+
+<span id='Ext-fx-animation-Abstract-method-setTo'>    setTo: function(to) {
+</span>        return this.setState(this.STATE_TO, to);
+    },
+
+<span id='Ext-fx-animation-Abstract-method-getFrom'>    getFrom: function() {
+</span>        return this.getState(this.STATE_FROM);
+    },
+
+<span id='Ext-fx-animation-Abstract-method-getTo'>    getTo: function() {
+</span>        return this.getState(this.STATE_TO);
+    },
+
+<span id='Ext-fx-animation-Abstract-method-setStates'>    setStates: function(states) {
+</span>        var validNameRegex = this.stateNameRegex,
+            name;
+
+        for (name in states) {
+            if (validNameRegex.test(name)) {
+                this.setState(name, states[name]);
+            }
+        }
+
+        return this;
+    },
+
+<span id='Ext-fx-animation-Abstract-method-getStates'>    getStates: function() {
+</span>        return this.states;
+    },
+
+<span id='Ext-fx-animation-Abstract-method-updateCallback'>    updateCallback: function(callback) {
+</span>        if (callback) {
+            this.setOnEnd(callback);
+        }
+    },
+
+<span id='Ext-fx-animation-Abstract-method-end'>    end: function() {
+</span>        // alias for stop so that the following api is the same between ext/touch:
+        // element.getActiveAnimation().end()
+        this.stop();
+    },
+
+<span id='Ext-fx-animation-Abstract-method-stop'>    stop: function() {
+</span>        this.fireEvent(&#39;stop&#39;, this);
+    },
+
+<span id='Ext-fx-animation-Abstract-method-destroy'>    destroy: function() {
+</span>        this.stop();
+        this.callParent();
+    },
+
+<span id='Ext-fx-animation-Abstract-method-setState'>    setState: function(name, state) {
+</span>        var states = this.getStates(),
+            stateInstance;
+
+        stateInstance = Ext.factory(state, Ext.fx.State, states[name]);
+
+        if (stateInstance) {
+            states[name] = stateInstance;
+        }
+        //&lt;debug&gt;
+        else if (name === this.STATE_TO) {
+            Ext.Logger.error(&quot;Setting and invalid &#39;100%&#39; / &#39;to&#39; state of: &quot; + state);
+        }
+        //&lt;/debug&gt;
+
+        return this;
+    },
+
+<span id='Ext-fx-animation-Abstract-method-getState'>    getState: function(name) {
+</span>        return this.getStates()[name];
+    },
+
+<span id='Ext-fx-animation-Abstract-method-getData'>    getData: function() {
 </span>        var me = this,
-            element = me.getElement();
+            states = me.getStates(),
+            statesData = {},
+            before = me.getBefore(),
+            after = me.getAfter(),
+            from = states[me.STATE_FROM],
+            to = states[me.STATE_TO],
+            fromData = from.getData(),
+            toData = to.getData(),
+            data, name, state;
 
-        me.bindListeners(false);
-
-        if (element &amp;&amp; !element.destroyed) {
-            element.removeCls(Ext.baseCSSPrefix + &#39;size-monitored&#39;);
+        for (name in states) {
+            if (states.hasOwnProperty(name)) {
+                state = states[name];
+                data = state.getData();
+                statesData[name] = data;
+            }
         }
 
-        delete me._element;
-        
-        // This is a closure so Base destructor won&#39;t null it
-        me.refresh = null;
-
-        me.callParent();
+        return {
+            before: before ? before.getData() : {},
+            after: after ? after.getData() : {},
+            states: statesData,
+            from: fromData,
+            to: toData,
+            duration: me.getDuration(),
+            iteration: me.getIteration(),
+            direction: me.getDirection(),
+            easing: me.getEasing(),
+            delay: me.getDelay(),
+            onEnd: me.getOnEnd(),
+            onBeforeEnd: me.getOnBeforeEnd(),
+            onBeforeStart: me.getOnBeforeStart(),
+            scope: me.getScope(),
+            preserveEndState: me.getPreserveEndState(),
+            replacePrevious: me.getReplacePrevious()
+        };
     }
 });
 </pre>

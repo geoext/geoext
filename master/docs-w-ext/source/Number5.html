@@ -15,79 +15,535 @@
   </script>
 </head>
 <body onload="prettyPrint(); highlight();">
-  <pre class="prettyprint lang-js"><span id='Ext-grid-column-Number'>/**
-</span> * A Column definition class which renders a numeric data field according to a {@link #format} string.
+  <pre class="prettyprint lang-js"><span id='Ext-form-field-Number'>/**
+</span> * A numeric text field that provides automatic keystroke filtering to disallow non-numeric characters,
+ * and numeric validation to limit the value to a range of valid numbers. The range of acceptable number
+ * values can be controlled by setting the {@link #minValue} and {@link #maxValue} configs, and fractional
+ * decimals can be disallowed by setting {@link #allowDecimals} to `false`.
+ *
+ * By default, the number field is also rendered with a set of up/down spinner buttons and has
+ * up/down arrow key and mouse wheel event listeners attached for incrementing/decrementing the value by the
+ * {@link #step} value. To hide the spinner buttons set `{@link #hideTrigger hideTrigger}:true`; to disable
+ * the arrow key and mouse wheel handlers set `{@link #keyNavEnabled keyNavEnabled}:false` and
+ * `{@link #mouseWheelEnabled mouseWheelEnabled}:false`. See the example below.
+ *
+ * # Example usage
  *
  *     @example
- *     Ext.create(&#39;Ext.data.Store&#39;, {
- *        storeId:&#39;sampleStore&#39;,
- *        fields:[
- *            { name: &#39;symbol&#39;, type: &#39;string&#39; },
- *            { name: &#39;price&#39;,  type: &#39;number&#39; },
- *            { name: &#39;change&#39;, type: &#39;number&#39; },
- *            { name: &#39;volume&#39;, type: &#39;number&#39; }
- *        ],
- *        data:[
- *            { symbol: &quot;msft&quot;,   price: 25.76,  change: 2.43, volume: 61606325 },
- *            { symbol: &quot;goog&quot;,   price: 525.73, change: 0.81, volume: 3053782  },
- *            { symbol: &quot;apple&quot;,  price: 342.41, change: 1.35, volume: 24484858 },
- *            { symbol: &quot;sencha&quot;, price: 142.08, change: 8.85, volume: 5556351  }
- *        ]
+ *     Ext.create(&#39;Ext.form.Panel&#39;, {
+ *         title: &#39;On The Wall&#39;,
+ *         width: 300,
+ *         bodyPadding: 10,
+ *         renderTo: Ext.getBody(),
+ *         items: [{
+ *             xtype: &#39;numberfield&#39;,
+ *             anchor: &#39;100%&#39;,
+ *             name: &#39;bottles&#39;,
+ *             fieldLabel: &#39;Bottles of Beer&#39;,
+ *             value: 99,
+ *             maxValue: 99,
+ *             minValue: 0
+ *         }],
+ *         buttons: [{
+ *             text: &#39;Take one down, pass it around&#39;,
+ *             handler: function() {
+ *                 this.up(&#39;form&#39;).down(&#39;[name=bottles]&#39;).spinDown();
+ *             }
+ *         }]
  *     });
  *
- *     Ext.create(&#39;Ext.grid.Panel&#39;, {
- *         title: &#39;Number Column Demo&#39;,
- *         store: Ext.data.StoreManager.lookup(&#39;sampleStore&#39;),
- *         columns: [
- *             { text: &#39;Symbol&#39;,         dataIndex: &#39;symbol&#39;, flex: 1 },
- *             { text: &#39;Current Price&#39;,  dataIndex: &#39;price&#39;,  renderer: Ext.util.Format.usMoney },
- *             { text: &#39;Change&#39;,         dataIndex: &#39;change&#39;, xtype: &#39;numbercolumn&#39;, format:&#39;0.00&#39; },
- *             { text: &#39;Volume&#39;,         dataIndex: &#39;volume&#39;, xtype: &#39;numbercolumn&#39;, format:&#39;0,000&#39; }
- *         ],
- *         height: 200,
- *         width: 400,
- *         renderTo: Ext.getBody()
+ * # Removing UI Enhancements
+ *
+ *     @example
+ *     Ext.create(&#39;Ext.form.Panel&#39;, {
+ *         title: &#39;Personal Info&#39;,
+ *         width: 300,
+ *         bodyPadding: 10,
+ *         renderTo: Ext.getBody(),
+ *         items: [{
+ *             xtype: &#39;numberfield&#39;,
+ *             anchor: &#39;100%&#39;,
+ *             name: &#39;age&#39;,
+ *             fieldLabel: &#39;Age&#39;,
+ *             minValue: 0, //prevents negative numbers
+ *
+ *             // Remove spinner buttons, and arrow key and mouse wheel listeners
+ *             hideTrigger: true,
+ *             keyNavEnabled: false,
+ *             mouseWheelEnabled: false
+ *         }]
+ *     });
+ *
+ * # Using Step
+ *
+ *     @example
+ *     Ext.create(&#39;Ext.form.Panel&#39;, {
+ *         renderTo: Ext.getBody(),
+ *         title: &#39;Step&#39;,
+ *         width: 300,
+ *         bodyPadding: 10,
+ *         items: [{
+ *             xtype: &#39;numberfield&#39;,
+ *             anchor: &#39;100%&#39;,
+ *             name: &#39;evens&#39;,
+ *             fieldLabel: &#39;Even Numbers&#39;,
+ *
+ *             // Set step so it skips every other number
+ *             step: 2,
+ *             value: 0,
+ *
+ *             // Add change handler to force user-entered numbers to evens
+ *             listeners: {
+ *                 change: function(field, value) {
+ *                     value = parseInt(value, 10);
+ *                     field.setValue(value + value % 2);
+ *                 }
+ *             }
+ *         }]
  *     });
  */
-Ext.define(&#39;Ext.grid.column.Number&#39;, {
-    extend: &#39;Ext.grid.column.Column&#39;,
-    alias: [&#39;widget.numbercolumn&#39;],
+Ext.define(&#39;Ext.form.field.Number&#39;, {
+    extend:&#39;Ext.form.field.Spinner&#39;,
+    alias: &#39;widget.numberfield&#39;,
+    alternateClassName: [&#39;Ext.form.NumberField&#39;, &#39;Ext.form.Number&#39;],
 
-    requires: [&#39;Ext.util.Format&#39;],
-    alternateClassName: &#39;Ext.grid.NumberColumn&#39;,
-
-<span id='Ext-grid-column-Number-property-defaultFilterType'>    defaultFilterType: &#39;number&#39;,
-</span>
-    //&lt;locale&gt;
-<span id='Ext-grid-column-Number-cfg-format'>    /**
-</span>     * @cfg {String} format
-     * A formatting string as used by {@link Ext.util.Format#number} to format a numeric value for this Column.
+<span id='Ext-form-field-Number-cfg-stripCharsRe'>    /**
+</span>     * @cfg {RegExp} stripCharsRe
+     * @private
      */
-    format : &#39;0,000.00&#39;,
+<span id='Ext-form-field-Number-cfg-maskRe'>    /**
+</span>     * @cfg {RegExp} maskRe
+     * @private
+     */
+     
+<span id='Ext-form-field-Number-cfg-allowExponential'>    /**
+</span>     * @cfg {Boolean} [allowExponential=true]
+     * Set to `false` to disallow Exponential number notation
+     */
+    allowExponential: true,
+
+<span id='Ext-form-field-Number-cfg-allowDecimals'>    /**
+</span>     * @cfg {Boolean} [allowDecimals=true]
+     * False to disallow decimal values
+     */
+    allowDecimals : true,
+
+    //&lt;locale&gt;
+<span id='Ext-form-field-Number-cfg-decimalSeparator'>    /**
+</span>     * @cfg {String} decimalSeparator
+     * Character(s) to allow as the decimal separator. Defaults to {@link Ext.util.Format#decimalSeparator decimalSeparator}.
+     */
+    decimalSeparator : null,
+    //&lt;/locale&gt;
+    
+    //&lt;locale&gt;
+<span id='Ext-form-field-Number-cfg-submitLocaleSeparator'>    /**
+</span>     * @cfg {Boolean} [submitLocaleSeparator=true]
+     * False to ensure that the {@link #getSubmitValue} method strips
+     * always uses `.` as the separator, regardless of the {@link #decimalSeparator}
+     * configuration.
+     */
+    submitLocaleSeparator: true,
     //&lt;/locale&gt;
 
-<span id='Ext-grid-column-Number-cfg-renderer'>    /**
-</span>     * @cfg {Object} renderer
-     * @hide
+    //&lt;locale&gt;
+<span id='Ext-form-field-Number-cfg-decimalPrecision'>    /**
+</span>     * @cfg {Number} decimalPrecision
+     * The maximum precision to display after the decimal separator
      */
+    decimalPrecision : 2,
+    //&lt;/locale&gt;
 
-<span id='Ext-grid-column-Number-cfg-scope'>    /**
-</span>     * @cfg {Object} scope
-     * @hide
+<span id='Ext-form-field-Number-cfg-minValue'>    /**
+</span>     * @cfg {Number} minValue
+     * The minimum allowed value. Will be used by the field&#39;s validation logic,
+     * and for {@link Ext.form.field.Spinner#setSpinUpEnabled enabling/disabling the down spinner button}.
+     *
+     * Defaults to Number.NEGATIVE_INFINITY.
      */
+    minValue: Number.NEGATIVE_INFINITY,
 
-<span id='Ext-grid-column-Number-cfg-producesHTML'>    /**
-</span>     * @cfg {Boolean} producesHTML
-     * @inheritdoc
+<span id='Ext-form-field-Number-cfg-maxValue'>    /**
+</span>     * @cfg {Number} maxValue
+     * The maximum allowed value. Will be used by the field&#39;s validation logic, and for
+     * {@link Ext.form.field.Spinner#setSpinUpEnabled enabling/disabling the up spinner button}.
+     *
+     * Defaults to Number.MAX_VALUE.
      */
-    producesHTML: false,
+    maxValue: Number.MAX_VALUE,
 
-<span id='Ext-grid-column-Number-method-defaultRenderer'>    defaultRenderer: function(value) {
-</span>        return Ext.util.Format.number(value, this.format);
+<span id='Ext-form-field-Number-cfg-step'>    /**
+</span>     * @cfg {Number} step
+     * Specifies a numeric interval by which the field&#39;s value will be incremented or decremented when the user invokes
+     * the spinner.
+     */
+    step: 1,
+
+    //&lt;locale&gt;
+<span id='Ext-form-field-Number-cfg-minText'>    /**
+</span>     * @cfg {String} minText
+     * Error text to display if the minimum value validation fails.
+     */
+    minText : &#39;The minimum value for this field is {0}&#39;,
+    //&lt;/locale&gt;
+
+    //&lt;locale&gt;
+<span id='Ext-form-field-Number-cfg-maxText'>    /**
+</span>     * @cfg {String} maxText
+     * Error text to display if the maximum value validation fails.
+     */
+    maxText : &#39;The maximum value for this field is {0}&#39;,
+    //&lt;/locale&gt;
+
+    //&lt;locale&gt;
+<span id='Ext-form-field-Number-cfg-nanText'>    /**
+</span>     * @cfg {String} nanText
+     * Error text to display if the value is not a valid number. For example, this can happen if a valid character like
+     * &#39;.&#39; or &#39;-&#39; is left in the field with no number.
+     */
+    nanText : &#39;{0} is not a valid number&#39;,
+    //&lt;/locale&gt;
+
+    //&lt;locale&gt;
+<span id='Ext-form-field-Number-cfg-negativeText'>    /**
+</span>     * @cfg {String} negativeText
+     * Error text to display if the value is negative and {@link #minValue} is set to 0. This is used instead of the
+     * {@link #minText} in that circumstance only.
+     */
+    negativeText : &#39;The value cannot be negative&#39;,
+    //&lt;/locale&gt;
+
+<span id='Ext-form-field-Number-cfg-baseChars'>    /**
+</span>     * @cfg {String} baseChars
+     * The base set of characters to evaluate as valid numbers.
+     */
+    baseChars : &#39;0123456789&#39;,
+
+<span id='Ext-form-field-Number-cfg-autoStripChars'>    /**
+</span>     * @cfg {Boolean} autoStripChars
+     * True to automatically strip not allowed characters from the field.
+     */
+    autoStripChars: false,
+
+<span id='Ext-form-field-Number-method-initComponent'>    initComponent: function() {
+</span>        var me = this;
+        if (me.decimalSeparator === null) {
+            me.decimalSeparator = Ext.util.Format.decimalSeparator;
+        }
+        me.callParent();
+
+        me.setMinValue(me.minValue);
+        me.setMaxValue(me.maxValue);
+    },
+    
+<span id='Ext-form-field-Number-method-getSubTplData'>    getSubTplData: function(fieldData) {
+</span>        var me = this,
+            min = me.minValue,
+            max = me.maxValue,
+            data, inputElAttr, value;
+        
+        data = me.callParent([fieldData]);
+        
+        inputElAttr = data.inputElAriaAttributes;
+        
+        if (inputElAttr) {
+            // The checks are to skip the default min and max values,
+            // in which case we don&#39;t want to set corresponding ARIA
+            // attributes at all
+            if (min &gt; Number.NEGATIVE_INFINITY) {
+                inputElAttr[&#39;aria-valuemin&#39;] = min;
+            }
+            
+            if (max &lt; Number.MAX_VALUE) {
+                inputElAttr[&#39;aria-valuemax&#39;] = max;
+            }
+            
+            value = me.getValue();
+            
+            if (value != null &amp;&amp; value &gt;= min &amp;&amp; value &lt;= max) {
+                inputElAttr[&#39;aria-valuenow&#39;] = value;
+            }
+        }
+        
+        return data;
     },
 
-<span id='Ext-grid-column-Number-method-updater'>    updater: function(cell, value) {
-</span>        Ext.fly(cell).down(this.getView().innerSelector, true).innerHTML = Ext.grid.column.Number.prototype.defaultRenderer.call(this, value);
+<span id='Ext-form-field-Number-method-setValue'>    setValue: function(value) {
+</span>        var me = this,
+            bind, valueBind;
+
+        // This portion of the code is to prevent a binding from stomping over
+        // the typed value. Say we have decimalPrecision 4 and the user types
+        // 1.23456. The value of the field will be set as 1.2346 and published to
+        // the viewmodel, which will trigger the binding to fire and setValue to
+        // be called on the field, which would then set the value (and rawValue) to
+        // 1.2346. Instead, if we have focus and the value is the same, just leave
+        // the rawValue alone
+        if (me.hasFocus) {
+            bind = me.getBind();
+            valueBind = bind &amp;&amp; bind.value;
+            if (valueBind &amp;&amp; valueBind.syncing &amp;&amp; value === me.value) {
+                return me;
+            }
+        }
+        return me.callParent([value]);
+    },
+
+<span id='Ext-form-field-Number-method-getErrors'>    /**
+</span>     * Runs all of Number&#39;s validations and returns an array of any errors. Note that this first runs Text&#39;s
+     * validations, so the returned array is an amalgamation of all field errors. The additional validations run test
+     * that the value is a number, and that it is within the configured min and max values.
+     * @param {Object} [value] The value to get errors for (defaults to the current field value)
+     * @return {String[]} All validation errors for this field
+     */
+    getErrors: function(value) {
+        value = arguments.length &gt; 0 ? value : this.processRawValue(this.getRawValue());
+
+        var me = this,
+            errors = me.callParent([value]),
+            format = Ext.String.format,
+            num;
+
+        if (value.length &lt; 1) { // if it&#39;s blank and textfield didn&#39;t flag it then it&#39;s valid
+             return errors;
+        }
+
+        value = String(value).replace(me.decimalSeparator, &#39;.&#39;);
+
+        if(isNaN(value)){
+            errors.push(format(me.nanText, value));
+        }
+
+        num = me.parseValue(value);
+
+        if (me.minValue === 0 &amp;&amp; num &lt; 0) {
+            errors.push(this.negativeText);
+        }
+        else if (num &lt; me.minValue) {
+            errors.push(format(me.minText, me.minValue));
+        }
+
+        if (num &gt; me.maxValue) {
+            errors.push(format(me.maxText, me.maxValue));
+        }
+
+
+        return errors;
+    },
+
+<span id='Ext-form-field-Number-method-rawToValue'>    rawToValue: function(rawValue) {
+</span>        var value = this.fixPrecision(this.parseValue(rawValue));
+        if (value === null) {
+            value = rawValue || null;
+        }
+        return  value;
+    },
+
+<span id='Ext-form-field-Number-method-valueToRaw'>    valueToRaw: function(value) {
+</span>        var me = this,
+            decimalSeparator = me.decimalSeparator;
+        value = me.parseValue(value);
+        value = me.fixPrecision(value);
+        value = Ext.isNumber(value) ? value : parseFloat(String(value).replace(decimalSeparator, &#39;.&#39;));
+        value = isNaN(value) ? &#39;&#39; : String(value).replace(&#39;.&#39;, decimalSeparator);
+        return value;
+    },
+    
+<span id='Ext-form-field-Number-method-getSubmitValue'>    getSubmitValue: function() {
+</span>        var me = this,
+            value = me.callParent();
+            
+        if (!me.submitLocaleSeparator) {
+            value = value.replace(me.decimalSeparator, &#39;.&#39;);
+        }  
+        return value;
+    },
+
+<span id='Ext-form-field-Number-method-onChange'>    onChange: function(newValue) {
+</span>        var ariaDom = this.ariaEl.dom;
+        
+        this.toggleSpinners();
+        this.callParent(arguments);
+        
+        if (ariaDom) {
+            if (Ext.isNumber(newValue) &amp;&amp; isFinite(newValue)) {
+                ariaDom.setAttribute(&#39;aria-valuenow&#39;, newValue);
+            }
+            else {
+                ariaDom.removeAttribute(&#39;aria-valuenow&#39;);
+            }
+        }
+    },
+    
+<span id='Ext-form-field-Number-method-toggleSpinners'>    toggleSpinners: function(){
+</span>        var me = this,
+            value = me.getValue(),
+            valueIsNull = value === null,
+            enabled;
+        
+        // If it&#39;s disabled, only allow it to be re-enabled if we are
+        // the ones who are disabling it.
+        if (me.spinUpEnabled || me.spinUpDisabledByToggle) {
+            enabled = valueIsNull || value &lt; me.maxValue;
+            me.setSpinUpEnabled(enabled, true);
+        }
+        
+        
+        if (me.spinDownEnabled || me.spinDownDisabledByToggle) {
+            enabled = valueIsNull || value &gt; me.minValue;
+            me.setSpinDownEnabled(enabled, true);
+        }
+    },
+
+<span id='Ext-form-field-Number-method-setMinValue'>    /**
+</span>     * Replaces any existing {@link #minValue} with the new value.
+     * @param {Number} value The minimum value
+     */
+    setMinValue: function(value) {
+        var me = this,
+            ariaDom = me.ariaEl.dom,
+            minValue, allowed, ariaDom;
+        
+        me.minValue = minValue = Ext.Number.from(value, Number.NEGATIVE_INFINITY);
+        me.toggleSpinners();
+        
+        // May not be rendered yet
+        if (ariaDom) {
+            if (minValue &gt; Number.NEGATIVE_INFINITY) {
+                ariaDom.setAttribute(&#39;aria-valuemin&#39;, minValue);
+            }
+            else {
+                ariaDom.removeAttribute(&#39;aria-valuemin&#39;);
+            }
+        }
+        
+        // Build regexes for masking and stripping based on the configured options
+        if (me.disableKeyFilter !== true) {
+            allowed = me.baseChars + &#39;&#39;;
+            
+            if (me.allowExponential) {
+                allowed += me.decimalSeparator + &#39;e+-&#39;;
+            }
+            else {
+                if (me.allowDecimals) {
+                    allowed += me.decimalSeparator;
+                }
+                if (me.minValue &lt; 0) {
+                    allowed += &#39;-&#39;;
+                }
+            }
+            
+            allowed = Ext.String.escapeRegex(allowed);
+            me.maskRe = new RegExp(&#39;[&#39; + allowed + &#39;]&#39;);
+            if (me.autoStripChars) {
+                me.stripCharsRe = new RegExp(&#39;[^&#39; + allowed + &#39;]&#39;, &#39;gi&#39;);
+            }
+        }
+    },
+
+<span id='Ext-form-field-Number-method-setMaxValue'>    /**
+</span>     * Replaces any existing {@link #maxValue} with the new value.
+     * @param {Number} value The maximum value
+     */
+    setMaxValue: function(value) {
+        var ariaDom = this.ariaEl.dom,
+            maxValue;
+        
+        this.maxValue = maxValue = Ext.Number.from(value, Number.MAX_VALUE);
+        
+        // May not be rendered yet
+        if (ariaDom) {
+            if (maxValue &lt; Number.MAX_VALUE) {
+                ariaDom.setAttribute(&#39;aria-valuemax&#39;, maxValue);
+            }
+            else {
+                ariaDom.removeAttribute(&#39;aria-valuemax&#39;);
+            }
+        }
+        
+        this.toggleSpinners();
+    },
+
+<span id='Ext-form-field-Number-method-parseValue'>    /**
+</span>     * @private
+     */
+    parseValue : function(value) {
+        value = parseFloat(String(value).replace(this.decimalSeparator, &#39;.&#39;));
+        return isNaN(value) ? null : value;
+    },
+
+<span id='Ext-form-field-Number-method-fixPrecision'>    /**
+</span>     * @private
+     */
+    fixPrecision : function(value) {
+        var me = this,
+            nan = isNaN(value),
+            precision = me.decimalPrecision;
+
+        if (nan || !value) {
+            return nan ? &#39;&#39; : value;
+        } else if (!me.allowDecimals || precision &lt;= 0) {
+            precision = 0;
+        }
+
+        return parseFloat(Ext.Number.toFixed(parseFloat(value), precision));
+    },
+
+<span id='Ext-form-field-Number-method-onBlur'>    onBlur : function(e) {
+</span>        var me = this,
+            v = me.rawToValue(me.getRawValue());
+
+        if (!Ext.isEmpty(v)) {
+            me.setValue(v);
+        }
+        me.callParent([e]);
+    },
+
+<span id='Ext-form-field-Number-method-setSpinUpEnabled'>    setSpinUpEnabled: function(enabled, internal){
+</span>        this.callParent(arguments);
+        if (!internal) {
+            delete this.spinUpDisabledByToggle;
+        } else {
+            this.spinUpDisabledByToggle = !enabled;
+        }
+    },
+
+<span id='Ext-form-field-Number-method-onSpinUp'>    onSpinUp: function() {
+</span>        var me = this;
+            
+        if (!me.readOnly) {
+            me.setSpinValue(Ext.Number.constrain(me.getValue() + me.step, me.minValue, me.maxValue));
+        }
+    },
+
+<span id='Ext-form-field-Number-method-setSpinDownEnabled'>    setSpinDownEnabled: function(enabled, internal){
+</span>        this.callParent(arguments);
+        if (!internal) {
+            delete this.spinDownDisabledByToggle;
+        } else {
+            this.spinDownDisabledByToggle = !enabled;
+        }   
+    },
+
+<span id='Ext-form-field-Number-method-onSpinDown'>    onSpinDown: function() {
+</span>        var me = this;
+        
+        if (!me.readOnly) {
+            me.setSpinValue(Ext.Number.constrain(me.getValue() - me.step, me.minValue, me.maxValue));
+        }
+    },
+    
+<span id='Ext-form-field-Number-method-setSpinValue'>    setSpinValue: function(value) {
+</span>        var me = this;
+            
+        if (me.enforceMaxLength) {
+            // We need to round the value here, otherwise we could end up with a
+            // very long number (think 0.1 + 0.2)
+            if (me.fixPrecision(value).toString().length &gt; me.maxLength) {
+                return;
+            }
+        }
+        me.setValue(value);
     }
 });
 </pre>
