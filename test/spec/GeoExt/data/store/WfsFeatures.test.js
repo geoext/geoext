@@ -76,7 +76,7 @@ describe('GeoExt.data.store.WfsFeatures', function() {
             });
         });
 
-        it('WFS parameters are created correctly', function () {
+        it('WFS parameters are created correctly', function() {
 
             var store = Ext.create('GeoExt.data.store.WfsFeatures', {
                 url: url,
