@@ -80,7 +80,7 @@ describe('GeoExt.data.store.WfsFeatures', function() {
 
             var store = Ext.create('GeoExt.data.store.WfsFeatures', {
                 url: url,
-                pageSize: 25,
+                count: 25,
                 srsName: 'EPSG:3857',
                 propertyName: 'FID'
             });
@@ -89,10 +89,10 @@ describe('GeoExt.data.store.WfsFeatures', function() {
 
             expect(params.startIndex).to.be(0);
             expect(params.count).to.be(25);
+            expect(params.propertyName).to.be('FID');
             expect(params.srsName).to.be('EPSG:3857');
-            expect(params.sortBy).to.be('FID ASC');
             expect(params.filter).to.be(undefined);
-
+            expect(params.sortBy).to.be(undefined);
         });
     });
 
