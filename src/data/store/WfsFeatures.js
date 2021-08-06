@@ -376,26 +376,12 @@ Ext.define('GeoExt.data.store.WfsFeatures', {
     },
 
     /**
-     * Loads the data from the connected WFS.
-     * @private
-     */
-    loadWfs: function() {
+     * Create a parameters object used to make a WFS feature request
+     * */
+    createParameters: function () {
+
         var me = this;
 
-        if (me.loadWfsTask_.id === null) {
-            me.loadWfsTask_.delay(me.debounce, function() {});
-            me.loadWfsInternal();
-        } else {
-            me.loadWfsTask_.delay(me.debounce, function() {
-                me.loadWfsInternal();
-            });
-        }
-    },
-
-    loadWfsInternal: function() {
-        var me = this;
-
-        var url = me.url;
         var params = {
             service: me.service,
             version: me.version,
@@ -443,6 +429,32 @@ Ext.define('GeoExt.data.store.WfsFeatures', {
             params.startIndex = me.startIndex;
             params.count = me.pageSize;
         }
+
+        return params;
+    },
+
+    /**
+     * Loads the data from the connected WFS.
+     * @private
+     */
+    loadWfs: function() {
+        var me = this;
+
+        if (me.loadWfsTask_.id === null) {
+            me.loadWfsTask_.delay(me.debounce, function() {});
+            me.loadWfsInternal();
+        } else {
+            me.loadWfsTask_.delay(me.debounce, function() {
+                me.loadWfsInternal();
+            });
+        }
+    },
+
+    loadWfsInternal: function() {
+        var me = this;
+
+        var url = me.url;
+        var params = me.createParameters();
 
         // fire event 'gx-wfsstoreload-beforeload' and skip loading if listener
         // function returns false

@@ -75,6 +75,25 @@ describe('GeoExt.data.store.WfsFeatures', function() {
                 }
             });
         });
+
+        it('WFS parameters are created correctly', function () {
+
+            var store = Ext.create('GeoExt.data.store.WfsFeatures', {
+                url: url,
+                pageSize: 25,
+                srsName: 'EPSG:3857',
+                propertyName: 'FID'
+            });
+
+            var params = store.createParameters();
+
+            expect(params.startIndex).to.be(0);
+            expect(params.count).to.be(25);
+            expect(params.srsName).to.be('EPSG:3857');
+            expect(params.sortBy).to.be('FID ASC');
+            expect(params.filter).to.be(undefined);
+
+        });
     });
 
     describe('loading with paging', function() {
