@@ -392,27 +392,14 @@ Ext.define(&#39;GeoExt.data.store.WfsFeatures&#39;, {
         }
     },
 
-<span id='GeoExt-data-store-WfsFeatures-method-loadWfs'>    /**
-</span>     * Loads the data from the connected WFS.
-     * @private
+<span id='GeoExt-data-store-WfsFeatures-method-createParameters'>    /**
+</span>     * Create a parameters object used to make a WFS feature request
+     * @return {Object} A object of WFS parameter keys and values
      */
-    loadWfs: function() {
+    createParameters: function() {
+
         var me = this;
 
-        if (me.loadWfsTask_.id === null) {
-            me.loadWfsTask_.delay(me.debounce, function() {});
-            me.loadWfsInternal();
-        } else {
-            me.loadWfsTask_.delay(me.debounce, function() {
-                me.loadWfsInternal();
-            });
-        }
-    },
-
-<span id='GeoExt-data-store-WfsFeatures-method-loadWfsInternal'>    loadWfsInternal: function() {
-</span>        var me = this;
-
-        var url = me.url;
         var params = {
             service: me.service,
             version: me.version,
@@ -460,6 +447,32 @@ Ext.define(&#39;GeoExt.data.store.WfsFeatures&#39;, {
             params.startIndex = me.startIndex;
             params.count = me.pageSize;
         }
+
+        return params;
+    },
+
+<span id='GeoExt-data-store-WfsFeatures-method-loadWfs'>    /**
+</span>     * Loads the data from the connected WFS.
+     * @private
+     */
+    loadWfs: function() {
+        var me = this;
+
+        if (me.loadWfsTask_.id === null) {
+            me.loadWfsTask_.delay(me.debounce, function() {});
+            me.loadWfsInternal();
+        } else {
+            me.loadWfsTask_.delay(me.debounce, function() {
+                me.loadWfsInternal();
+            });
+        }
+    },
+
+<span id='GeoExt-data-store-WfsFeatures-method-loadWfsInternal'>    loadWfsInternal: function() {
+</span>        var me = this;
+
+        var url = me.url;
+        var params = me.createParameters();
 
         // fire event &#39;gx-wfsstoreload-beforeload&#39; and skip loading if listener
         // function returns false
