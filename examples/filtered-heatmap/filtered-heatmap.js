@@ -16,7 +16,9 @@ Ext.application({
     name: 'FilteredHeatmap',
     launch: function() {
         // The OL source which will hold our features
-        var vectorSource = new ol.source.Vector();
+        var vectorSource = new ol.source.Vector({
+            features: new ol.Collection()
+        });
 
         // Loading the vector data manually, so we can avoid using the
         // 'url'-parameter of ol.source.Vector. Otherwise filtering of the
