@@ -1,0 +1,66 @@
+{
+  "_args": [
+    [
+      "@geoext/openlayers-legacy@6.5.2",
+      "/home/runner/work/geoext/geoext"
+    ]
+  ],
+  "_development": true,
+  "_from": "@geoext/openlayers-legacy@6.5.2",
+  "_id": "@geoext/openlayers-legacy@6.5.2",
+  "_inBundle": false,
+  "_integrity": "sha512-GB6ixn4+apDXOOBbGu6D97lQaL41YnanFn5qextn9ZphXLHQFOsDsl9HrAbMH6pobPvpjOstalEVRWAIZerYog==",
+  "_location": "/@geoext/openlayers-legacy",
+  "_phantomChildren": {},
+  "_requested": {
+    "type": "version",
+    "registry": true,
+    "raw": "@geoext/openlayers-legacy@6.5.2",
+    "name": "@geoext/openlayers-legacy",
+    "escapedName": "@geoext%2fopenlayers-legacy",
+    "scope": "@geoext",
+    "rawSpec": "6.5.2",
+    "saveSpec": null,
+    "fetchSpec": "6.5.2"
+  },
+  "_requiredBy": [
+    "#DEV:/"
+  ],
+  "_resolved": "https://registry.npmjs.org/@geoext/openlayers-legacy/-/openlayers-legacy-6.5.2.tgz",
+  "_spec": "6.5.2",
+  "_where": "/home/runner/work/geoext/geoext",
+  "author": {
+    "name": "Simon Seyock",
+    "email": "seyock@terrestris.de"
+  },
+  "bugs": {
+    "url": "https://github.com/geoext/openlayers-legacy/issues"
+  },
+  "description": "OpenLayers legacy build for geoext",
+  "devDependencies": {
+    "np": "^7.4.0",
+    "ol": "git+https://github.com/openlayers/openlayers.git#v6.5.0"
+  },
+  "files": [
+    "dist/*"
+  ],
+  "homepage": "https://github.com/geoext/openlayers-legacy#readme",
+  "keywords": [
+    "geoext",
+    "openlayers"
+  ],
+  "license": "BSD-2-Clause",
+  "name": "@geoext/openlayers-legacy",
+  "publishConfig": {
+    "access": "public"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/geoext/openlayers-legacy.git"
+  },
+  "scripts": {
+    "build": "rm -rf dist && cd node_modules/ol/ && npm i && npm run build-legacy && cp -r build/legacy ../../dist && cp LICENSE.md ../../dist/ && cd ../../",
+    "release": "npm run build && np 6.5.2 --no-yarn"
+  },
+  "version": "6.5.2"
+}
