@@ -64,7 +64,7 @@ jobs:
         cp -r examples ${GITHUB_REF##*/}/
         cp -r resources ${GITHUB_REF##*/}/
         cp -r src ${GITHUB_REF##*/}/
-        cp -r classic master/
+        cp -r classic ${GITHUB_REF##*/}/
         npm run generate:docs:tag
         npm run generate:docs-w-ext:tag
 
