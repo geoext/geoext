@@ -25,7 +25,8 @@ Ext.application({
         vectorSource = new ol.source.Vector({
             format: new ol.format.GeoJSON({
                 featureProjection: 'EPSG:3857'
-            })
+            }),
+            features: new ol.Collection()
         });
         var vectorLayer = new ol.layer.Vector({
             source: vectorSource
@@ -36,6 +37,7 @@ Ext.application({
             format: new ol.format.GeoJSON({
                 featureProjection: 'EPSG:3857'
             }),
+            features: new ol.Collection(),
             // the loader will load all features via `GET` per default.
             // If a filter is set, request will change to
             // `POST` with valid OGC filter
