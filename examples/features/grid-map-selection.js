@@ -1,15 +1,16 @@
+// Configure the loader for the components which you can only use in the
+// classic toolkit.
+Ext.Loader.setPath('GeoExt.selection', '../../classic/selection/');
+
 Ext.require([
     'Ext.container.Container',
     'Ext.panel.Panel',
     'Ext.grid.Panel',
     'GeoExt.component.Map',
-    'GeoExt.data.store.Features'
+    'GeoExt.data.store.Features',
+    // the next can only be resolved when Ext.Loader is configured, see 🔝
+    'GeoExt.selection.FeatureRowModel'
 ]);
-
-// load components, which are only compatible with the classic toolkit
-Ext.Loader.loadScript({
-    url: '../../classic/selection/FeatureRowModel.js'
-});
 
 var olMap;
 var gridWest;
