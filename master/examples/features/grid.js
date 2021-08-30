@@ -189,23 +189,24 @@ Ext.application({
             })
         });
 
+        var geojsonFormat = new ol.format.GeoJSON();
         // create a feature collection in order to put into a feature store
-        var vectorSource = new ol.source.Vector({
-            features: (new ol.format.GeoJSON()).readFeatures(geojson1, {
-                dataProjection: 'EPSG:4326',
-                featureProjection: 'EPSG:3857'
-            })
+        var featArray1 = geojsonFormat.readFeatures(geojson1, {
+            dataProjection: 'EPSG:4326',
+            featureProjection: 'EPSG:3857'
         });
-        var featColl = new ol.Collection(vectorSource.getFeatures());
+        var featColl = new ol.Collection(featArray1);
 
         // loading data via into ol source and create a vector layer to bind a
         // vector layer to a feature store
+        var featArray2 = geojsonFormat.readFeatures(geojson2, {
+            dataProjection: 'EPSG:4326',
+            featureProjection: 'EPSG:3857'
+        });
+        var featColl2 = new ol.Collection(featArray2);
         var vectorLayer = new ol.layer.Vector({
             source: new ol.source.Vector({
-                features: (new ol.format.GeoJSON()).readFeatures(geojson2, {
-                    dataProjection: 'EPSG:4326',
-                    featureProjection: 'EPSG:3857'
-                })
+                features: featColl2
             }),
             style: redStyle
         });
