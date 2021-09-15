@@ -15,257 +15,166 @@
   </script>
 </head>
 <body onload="prettyPrint(); highlight();">
-  <pre class="prettyprint lang-js"><span id='Ext-grid-Panel'>/**
-</span> * Grids are an excellent way of showing large amounts of tabular data on the client side.
- * Essentially a supercharged `&lt;table&gt;`, GridPanel makes it easy to fetch, sort and filter
- * large amounts of data.
- *
- * Grids are composed of two main pieces - a {@link Ext.data.Store Store} full of data and
- * a set of columns to render.
- *
- * ## Basic GridPanel
- *
- *     @example
- *     Ext.create(&#39;Ext.data.Store&#39;, {
- *         storeId: &#39;simpsonsStore&#39;,
- *         fields:[ &#39;name&#39;, &#39;email&#39;, &#39;phone&#39;],
- *         data: [
- *             { name: &#39;Lisa&#39;, email: &#39;lisa@simpsons.com&#39;, phone: &#39;555-111-1224&#39; },
- *             { name: &#39;Bart&#39;, email: &#39;bart@simpsons.com&#39;, phone: &#39;555-222-1234&#39; },
- *             { name: &#39;Homer&#39;, email: &#39;homer@simpsons.com&#39;, phone: &#39;555-222-1244&#39; },
- *             { name: &#39;Marge&#39;, email: &#39;marge@simpsons.com&#39;, phone: &#39;555-222-1254&#39; }
- *         ]
- *     });
- *
- *     Ext.create(&#39;Ext.grid.Panel&#39;, {
- *         title: &#39;Simpsons&#39;,
- *         store: Ext.data.StoreManager.lookup(&#39;simpsonsStore&#39;),
- *         columns: [
- *             { text: &#39;Name&#39;, dataIndex: &#39;name&#39; },
- *             { text: &#39;Email&#39;, dataIndex: &#39;email&#39;, flex: 1 },
- *             { text: &#39;Phone&#39;, dataIndex: &#39;phone&#39; }
- *         ],
- *         height: 200,
- *         width: 400,
- *         renderTo: Ext.getBody()
- *     });
- *
- * The code above produces a simple grid with three columns. We specified a Store which
- * will load JSON data inline.
- * In most apps we would be placing the grid inside another container and wouldn&#39;t need to
- * use the {@link #height}, {@link #width} and {@link #renderTo} configurations but they
- * are included here to make it easy to get up and running.
- *
- * The grid we created above will contain a header bar with a title (&#39;Simpsons&#39;), a row of
- * column headers directly underneath and finally the grid rows under the headers.
- *
- * **Height config with bufferedRenderer: true**
- *
- * The {@link #height} config must be set when creating a grid using
- * {@link #bufferedRenderer bufferedRenderer}: true _and_ the grid&#39;s height is not managed
- * by an owning container layout.  In Ext JS 5.x bufferedRendering is true by default.
- *
- * ## Configuring columns
- *
- * By default, each column is sortable and will toggle between ASC and DESC sorting when
- * you click on its header. Each column header is also reorderable by default, and each
- * gains a drop-down menu with options to hide and show columns.  It&#39;s easy to configure
- * each column - here we use the same example as above and just modify the columns config:
- *
- *     columns: [
- *         {
- *             text: &#39;Name&#39;,
- *             dataIndex: &#39;name&#39;,
- *             sortable: false,
- *             hideable: false,
- *             flex: 1
- *         },
- *         {
- *             text: &#39;Email&#39;,
- *             dataIndex: &#39;email&#39;,
- *             hidden: true
- *         },
- *         {
- *             text: &#39;Phone&#39;,
- *             dataIndex: &#39;phone&#39;,
- *             width: 100
- *         }
- *     ]
- *
- * We turned off sorting and hiding on the &#39;Name&#39; column so clicking its header now has no
- * effect. We also made the Email column hidden by default (it can be shown again by using
- * the menu on any other column). We also set the Phone column to a fixed with of 100px
- * and flexed the Name column, which means it takes up all remaining width after the other
- * columns have been accounted for. See the {@link Ext.grid.column.Column column docs} for
- * more details.
- *
- * ## Renderers
- *
- * As well as customizing columns, it&#39;s easy to alter the rendering of individual cells
- * using renderers. A renderer is tied to a particular column and is passed the value that
- * would be rendered into each cell in that column. For example, we could define a
- * renderer function for the email column to turn each email address into a mailto link:
- *
- *     columns: [
- *         {
- *             text: &#39;Email&#39;,
- *             dataIndex: &#39;email&#39;,
- *             renderer: function(value) {
- *                 return Ext.String.format(&#39;&lt;a href=&quot;mailto:{0}&quot;&gt;{1}&lt;/a&gt;&#39;, value, value);
- *             }
- *         }
- *     ]
- *
- * See the {@link Ext.grid.column.Column column docs} for more information on renderers.
- *
- * ## Selection Models
- *
- * Sometimes you simply want to render data for viewing, but usually it&#39;s
- * necessary to interact with or update that data. Grids use a concept called a Selection
- * Model, which is simply a mechanism for selecting some part of the data in the grid. The
- * two main types of Selection Model are RowSelectionModel, where entire rows are
- * selected, and CellSelectionModel, where individual cells are selected.
- *
- * Grids use a Row Selection Model by default, but this is easy to customize like so:
- *
- *     Ext.create(&#39;Ext.grid.Panel&#39;, {
- *         selModel: &#39;cellmodel&#39;,
- *         store: ...
- *     });
- *
- *
- * Specifying the `cellmodel` changes a couple of things. Firstly, clicking on a cell now
- * selects just that cell (using a {@link Ext.selection.RowModel rowmodel} will select the
- * entire row), and secondly the keyboard navigation will walk from cell to cell instead 
- * of row to row. Cell-based selection models are usually used in conjunction with
- * editing.
- *
- * You may also utilize selModel as a config object for an instance of {@link Ext.selection.Model}.
- *
- * For example:
- *
- *     selModel: {
- *         selType: &#39;cellmodel&#39;,
- *         mode   : &#39;MULTI&#39;
- *     }
- *
- * This allows you to modify additional selection model configurations such as:
- *
- * + {@link Ext.selection.Model#mode mode} - Specifies whether user may select multiple
- * rows or single rows
- * + {@link Ext.selection.Model#allowDeselect allowDeselect} - Specifies whether user may
- * deselect records (when in SINGLE mode)
- * + {@link Ext.selection.Model#ignoreRightMouseSelection ignoreRightMouseSelection} - Specifies
- * whether user may ignore right clicks
- * for selection purposes
- *
- * ## Sorting &amp; Filtering
- *
- * Every grid is attached to a {@link Ext.data.Store Store}, which provides multi-sort and
- * filtering capabilities. It&#39;s
- * easy to set up a grid to be sorted from the start:
- *
- *     var myGrid = Ext.create(&#39;Ext.grid.Panel&#39;, {
- *         store: {
- *             fields: [&#39;name&#39;, &#39;email&#39;, &#39;phone&#39;],
- *             sorters: [&#39;name&#39;, &#39;phone&#39;]
- *         },
- *         columns: [
- *             { text: &#39;Name&#39;,  dataIndex: &#39;name&#39; },
- *             { text: &#39;Email&#39;, dataIndex: &#39;email&#39; }
- *         ]
- *     });
- *
- * Sorting at run time is easily accomplished by simply clicking each column header. If
- * you need to perform sorting on more than one field at run time it&#39;s easy to do so by
- * adding new sorters to the store:
- *
- *     myGrid.store.sort([
- *         { property: &#39;name&#39;,  direction: &#39;ASC&#39; },
- *         { property: &#39;email&#39;, direction: &#39;DESC&#39; }
- *     ]);
- *
- * See {@link Ext.data.Store} for examples of filtering.
- *
- * ## State saving
- *
- * When configured {@link #stateful}, grids save their column state (order and width)
- * encapsulated within the default Panel state of changed width and height and
- * collapsed/expanded state.
- *
- * On a `stateful` grid, not only should the Grid have a {@link #stateId}, each 
- * {@link #columns column} of the grid should also be configured with a
- * {@link Ext.grid.column.Column#stateId stateId} which identifies that column locally
- * within the grid.
- * 
- * Omitting the `stateId` config from the columns results in columns with generated 
- * internal ID&#39;s.  The generated ID&#39;s are subject to change on each page load 
- * making it impossible for the state manager to restore the previous state of the 
- * columns.
- *
- * ## Plugins and Features
- *
- * Grid supports addition of extra functionality through features and plugins:
- *
- * - {@link Ext.grid.plugin.CellEditing CellEditing} - editing grid contents one cell at a time.
- *
- * - {@link Ext.grid.plugin.RowEditing RowEditing} - editing grid contents an entire row at a time.
- *
- * - {@link Ext.grid.plugin.DragDrop DragDrop} - drag-drop reordering of grid rows.
- *
- * - {@link Ext.toolbar.Paging Paging toolbar} - paging through large sets of data.
- *
- * - {@link Ext.grid.plugin.BufferedRenderer Infinite scrolling} - another way to handle large sets of data.
- *
- * - {@link Ext.grid.RowNumberer RowNumberer} - automatically numbered rows.
- *
- * - {@link Ext.grid.feature.Grouping Grouping} - grouping together rows having the same value in a particular field.
- *
- * - {@link Ext.grid.feature.Summary Summary} - a summary row at the bottom of a grid.
- *
- * - {@link Ext.grid.feature.GroupingSummary GroupingSummary} - a summary row at the bottom of each group.
+  <pre class="prettyprint lang-js"><span id='Ext-dashboard-Panel'>/**
+</span> * This class is used to wrap content items in the `Dashboard`. It uses an
+ * `anchor` layout by default and provides resizing on the bottom edge only.
+ * @protected
  */
-Ext.define(&#39;Ext.grid.Panel&#39;, {
-    extend: &#39;Ext.panel.Table&#39;,
-    requires: [&#39;Ext.view.Table&#39;],
-    alias: [&#39;widget.gridpanel&#39;, &#39;widget.grid&#39;],
-    alternateClassName: [&#39;Ext.list.ListView&#39;, &#39;Ext.ListView&#39;, &#39;Ext.grid.GridPanel&#39;],
-    
-<span id='Ext-grid-Panel-cfg-viewType'>    viewType: &#39;tableview&#39;,
-</span><span id='Ext-grid-Panel-property-ariaRole'>    ariaRole: &#39;grid&#39;,
+Ext.define(&#39;Ext.dashboard.Panel&#39;, {
+    extend: &#39;Ext.panel.Panel&#39;,
+
+    xtype: &#39;dashboard-panel&#39;,
+
+<span id='Ext-dashboard-Panel-cfg-cls'>    cls: Ext.baseCSSPrefix + &#39;dashboard-panel&#39;,
 </span>
-<span id='Ext-grid-Panel-property-lockable'>    lockable: false,
+<span id='Ext-dashboard-Panel-cfg-anchor'>    anchor: &#39;100%&#39;,
 </span>
-<span id='Ext-grid-Panel-cfg-rowLines'>    /**
-</span>     * @cfg {Boolean} rowLines False to remove row line styling
-     */
-    rowLines: true
+<span id='Ext-dashboard-Panel-cfg-layout'>    layout  : &#39;fit&#39;,
+</span>
+<span id='Ext-dashboard-Panel-cfg-frame'>    frame: true,
+</span><span id='Ext-dashboard-Panel-cfg-closable'>    closable: true,
+</span><span id='Ext-dashboard-Panel-cfg-collapsible'>    collapsible: true,
+</span><span id='Ext-dashboard-Panel-cfg-animCollapse'>    animCollapse: true,
+</span><span id='Ext-dashboard-Panel-cfg-titleCollapse'>    titleCollapse  : true,
+</span>
+<span id='Ext-dashboard-Panel-cfg-stateful'>    stateful : true,
+</span>
+<span id='Ext-dashboard-Panel-cfg-draggable'>    draggable: {
+</span>        moveOnDrag: false
+    },
 
-    // Columns config is required in Grid
-<span id='Ext-grid-Panel-cfg-columns'>    /**
-</span>     * @cfg {Ext.grid.column.Column[]/Object} columns (required)
-     * @inheritdoc
-     */
+<span id='Ext-dashboard-Panel-property-animateClose'>    animateClose: true,
+</span>
+<span id='Ext-dashboard-Panel-property-loadMask'>    loadMask: true,
+</span><span id='Ext-dashboard-Panel-property-loadMessage'>    loadMessage: &#39;Loading...&#39;,
+</span>
+<span id='Ext-dashboard-Panel-cfg-minHeight'>    minHeight: 90,
+</span>
+<span id='Ext-dashboard-Panel-cfg-resizable'>    resizable: true,
+</span><span id='Ext-dashboard-Panel-cfg-resizeHandles'>    resizeHandles: &#39;s&#39;,
+</span>
+<span id='Ext-dashboard-Panel-method-doClose'>    // Override Panel&#39;s default doClose to provide a custom fade out effect
+</span>    // when a portlet is removed from the portal
+    doClose: function() {
+        var me = this;
 
-<span id='Ext-grid-Panel-event-beforereconfigure'>    /**
-</span>     * @event beforereconfigure
-     * Fires before a reconfigure to enable modification of incoming Store and columns.
-     * @param {Ext.grid.Panel} this
-     * @param {Ext.data.Store} store The store that was passed to the {@link #method-reconfigure} method
-     * @param {Object[]} columns The column configs that were passed to the {@link #method-reconfigure} method
-     * @param {Ext.data.Store} oldStore The store that will be replaced
-     * @param {Ext.grid.column.Column[]} oldColumns The column headers that will be replaced.
-     */
+        if (me.animateClose) {
+            if (!me.closing) {
+                me.closing = true;
+                me.el.animate({
+                    opacity: 0,
+                    callback: me.finishClose,
+                    scope: me
+                });
+            }
+        } else {
+            me.finishClose();
+        }
+    },
 
-<span id='Ext-grid-Panel-event-reconfigure'>    /**
-</span>     * @event reconfigure
-     * Fires after a reconfigure.
-     * @param {Ext.grid.Panel} this
-     * @param {Ext.data.Store} store The store that was passed to the {@link #method-reconfigure} method
-     * @param {Object[]} columns The column configs that were passed to the {@link #method-reconfigure} method
-     * @param {Ext.data.Store} oldStore The store that was replaced
-     * @param {Ext.grid.column.Column[]} oldColumns The column headers that were replaced.
-     */
+<span id='Ext-dashboard-Panel-method-finishClose'>    finishClose: function () {
+</span>        var me = this,
+            closeAction = me.closeAction;
+
+        me.closing = false;
+        me.fireEvent(&#39;close&#39;, me);
+
+        // The close of the last portlet within a column results in removal of both the column and its splitter.
+        // So coalesce any layouts resulting from this operation.
+        Ext.suspendLayouts();
+        me[closeAction]();
+        Ext.resumeLayouts(true);
+
+        if (closeAction === &#39;hide&#39;) {
+            // Restore the opacity from doClose
+            me.el.setOpacity(1);
+        }
+    },
+
+<span id='Ext-dashboard-Panel-method-afterRender'>    afterRender: function () {
+</span>        this.callParent();
+
+        if (this.loading) {
+            this.onViewBeforeLoad();
+        }
+    },
+
+<span id='Ext-dashboard-Panel-method-getLoadMask'>    getLoadMask: function () {
+</span>        var me = this,
+            loadMask = me.rendered &amp;&amp; me.loadMask,
+            config;
+
+        if (loadMask &amp;&amp; !loadMask.isComponent) {
+            config = {
+                target: me
+            };
+
+            if (loadMask === true) {
+                loadMask = config;
+            } else {
+                Ext.apply(config, loadMask);
+            }
+
+            me.loadMask = loadMask = Ext.ComponentManager.create(config, &#39;loadmask&#39;);
+        }
+
+        return loadMask || null;
+    },
+
+<span id='Ext-dashboard-Panel-method-onAdd'>    onAdd: function (view) {
+</span>        this.callParent(arguments);
+
+        view.on({
+            beforeload: &#39;onViewBeforeLoad&#39;,
+            load: &#39;onViewLoaded&#39;,
+            scope: this
+        });
+    },
+
+<span id='Ext-dashboard-Panel-method-onViewBeforeLoad'>    onViewBeforeLoad: function () {
+</span>        this.loading = true;
+
+        var loadMask = this.getLoadMask();
+        if (loadMask) {
+            loadMask.show();
+        }
+    },
+
+<span id='Ext-dashboard-Panel-method-onViewLoaded'>    onViewLoaded: function () {
+</span>        this.loading = false;
+
+        var loadMask = this.getLoadMask();
+        if (loadMask) {
+            loadMask.hide();
+        }
+        var view = this.items.getAt(0);
+        if (view.getTitle) {
+            var title = view.getTitle();
+            if (title) {
+                this.setTitle(title);
+            }
+        }
+    },
+
+<span id='Ext-dashboard-Panel-method-setBox'>    /** @private */
+</span>    setBox: function (box) {
+        // The resizer calls setBox which would set our left/top coordinates but
+        // that is a BAD thing in a column layout which relies on flow!
+        this.setSize(box.width, box.height);
+    },
+
+<span id='Ext-dashboard-Panel-method-getState'>    /** @private */
+</span>    getState : function() {
+        var me = this,
+            state = me.callParent() || {};
+
+        if (!state.collapsed) {
+            me.addPropertyToState(state, &#39;height&#39;, me.rendered ? me.getHeight() : me.height || me.minHeight || 100);
+        }
+
+        return state;
+
+    }
 });
 </pre>
 </body>

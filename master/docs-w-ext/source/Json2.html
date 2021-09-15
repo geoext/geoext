@@ -15,182 +15,471 @@
   </script>
 </head>
 <body onload="prettyPrint(); highlight();">
-  <pre class="prettyprint lang-js"><span id='Ext-data-writer-Json'>/**
-</span> * This class is used to write {@link Ext.data.Model} data to the server in a JSON format.
- * The {@link #allowSingle} configuration can be set to false to force the records to always
- * be encoded in an array, even if there is only a single record being sent.
+  <pre class="prettyprint lang-js"><span id='Ext-data-reader-Json'>/**
+</span> * The JSON Reader is used by a Proxy to read a server response that is sent back in JSON format. This usually
+ * happens as a result of loading a Store - for example we might create something like this:
+ *
+ *     Ext.define(&#39;User&#39;, {
+ *         extend: &#39;Ext.data.Model&#39;,
+ *         fields: [&#39;id&#39;, &#39;name&#39;, &#39;email&#39;]
+ *     });
+ *
+ *     var store = Ext.create(&#39;Ext.data.Store&#39;, {
+ *         model: &#39;User&#39;,
+ *         proxy: {
+ *             type: &#39;ajax&#39;,
+ *             url : &#39;users.json&#39;,
+ *             reader: {
+ *                 type: &#39;json&#39;
+ *             }
+ *         }
+ *     });
+ *
+ * The example above creates a &#39;User&#39; model. Models are explained in the {@link Ext.data.Model Model} docs if you&#39;re
+ * not already familiar with them.
+ *
+ * We created the simplest type of JSON Reader possible by simply telling our {@link Ext.data.Store Store}&#39;s
+ * {@link Ext.data.proxy.Proxy Proxy} that we want a JSON Reader. The Store automatically passes the configured model to the
+ * Store, so it is as if we passed this instead:
+ *
+ *     reader: {
+ *         type : &#39;json&#39;,
+ *         model: &#39;User&#39;
+ *     }
+ *
+ * The reader we set up is ready to read data from our server - at the moment it will accept a response like this:
+ *
+ *     [
+ *         {
+ *             &quot;id&quot;: 1,
+ *             &quot;name&quot;: &quot;Ed Spencer&quot;,
+ *             &quot;email&quot;: &quot;ed@sencha.com&quot;
+ *         },
+ *         {
+ *             &quot;id&quot;: 2,
+ *             &quot;name&quot;: &quot;Abe Elias&quot;,
+ *             &quot;email&quot;: &quot;abe@sencha.com&quot;
+ *         }
+ *     ]
+ *
+ * ## Reading other JSON formats
+ *
+ * If you already have your JSON format defined and it doesn&#39;t look quite like what we have above, you can usually
+ * pass JsonReader a couple of configuration options to make it parse your format. For example, we can use the
+ * {@link #cfg-rootProperty} configuration to parse data that comes back like this:
+ *
+ *     {
+ *         &quot;users&quot;: [
+ *            {
+ *                &quot;id&quot;: 1,
+ *                &quot;name&quot;: &quot;Ed Spencer&quot;,
+ *                &quot;email&quot;: &quot;ed@sencha.com&quot;
+ *            },
+ *            {
+ *                &quot;id&quot;: 2,
+ *                &quot;name&quot;: &quot;Abe Elias&quot;,
+ *                &quot;email&quot;: &quot;abe@sencha.com&quot;
+ *            }
+ *         ]
+ *     }
+ *
+ * To parse this we just pass in a {@link #rootProperty} configuration that matches the &#39;users&#39; above:
+ *
+ *     reader: {
+ *         type: &#39;json&#39;,
+ *         rootProperty: &#39;users&#39;
+ *     }
+ *
+ * Sometimes the JSON structure is even more complicated. Document databases like CouchDB often provide metadata
+ * around each record inside a nested structure like this:
+ *
+ *     {
+ *         &quot;total&quot;: 122,
+ *         &quot;offset&quot;: 0,
+ *         &quot;users&quot;: [
+ *             {
+ *                 &quot;id&quot;: &quot;ed-spencer-1&quot;,
+ *                 &quot;value&quot;: 1,
+ *                 &quot;user&quot;: {
+ *                     &quot;id&quot;: 1,
+ *                     &quot;name&quot;: &quot;Ed Spencer&quot;,
+ *                     &quot;email&quot;: &quot;ed@sencha.com&quot;
+ *                 }
+ *             }
+ *         ]
+ *     }
+ *
+ * In the case above the record data is nested an additional level inside the &quot;users&quot; array as each &quot;user&quot; item has
+ * additional metadata surrounding it (&#39;id&#39; and &#39;value&#39; in this case). To parse data out of each &quot;user&quot; item in the
+ * JSON above we need to specify the {@link #record} configuration like this:
+ *
+ *     reader: {
+ *         type  : &#39;json&#39;,
+ *         rootProperty  : &#39;users&#39;,
+ *         record: &#39;user&#39;
+ *     }
+ *
+ * ## Response MetaData
+ *
+ * The server can return metadata in its response, in addition to the record data, that describe attributes
+ * of the data set itself or are used to reconfigure the Reader. To pass metadata in the response you simply
+ * add a `metaData` attribute to the root of the response data. The metaData attribute can contain anything,
+ * but supports a specific set of properties that are handled by the Reader if they are present:
+ * 
+ * - {@link #rootProperty}: the property name of the root response node containing the record data
+ * - {@link #totalProperty}: property name for the total number of records in the data
+ * - {@link #successProperty}: property name for the success status of the response
+ * - {@link #messageProperty}: property name for an optional response message
+ * - {@link Ext.data.Model#cfg-fields fields}: Config used to reconfigure the Model&#39;s fields before converting the
+ * response data into records
+ * 
+ * An initial Reader configuration containing all of these properties might look like this (&quot;fields&quot; would be
+ * included in the Model definition, not shown):
+ *
+ *     reader: {
+ *         type : &#39;json&#39;,
+ *         rootProperty : &#39;root&#39;,
+ *         totalProperty  : &#39;total&#39;,
+ *         successProperty: &#39;success&#39;,
+ *         messageProperty: &#39;message&#39;
+ *     }
+ *
+ * If you were to pass a response object containing attributes different from those initially defined above, you could
+ * use the `metaData` attribute to reconfigure the Reader on the fly. For example:
+ *
+ *     {
+ *         &quot;count&quot;: 1,
+ *         &quot;ok&quot;: true,
+ *         &quot;msg&quot;: &quot;Users found&quot;,
+ *         &quot;users&quot;: [{
+ *             &quot;userId&quot;: 123,
+ *             &quot;name&quot;: &quot;Ed Spencer&quot;,
+ *             &quot;email&quot;: &quot;ed@sencha.com&quot;
+ *         }],
+ *         &quot;metaData&quot;: {
+ *             &quot;rootProperty&quot;: &quot;users&quot;,
+ *             &quot;totalProperty&quot;: &#39;count&#39;,
+ *             &quot;successProperty&quot;: &#39;ok&#39;,
+ *             &quot;messageProperty&quot;: &#39;msg&#39;
+ *         }
+ *     }
+ *
+ * You can also place any other arbitrary data you need into the `metaData` attribute which will be ignored by the Reader,
+ * but will be accessible via the Reader&#39;s {@link #metaData} property (which is also passed to listeners via the Proxy&#39;s
+ * {@link Ext.data.proxy.Proxy#metachange metachange} event (also relayed by the store). Application code can then
+ * process the passed metadata in any way it chooses.
+ * 
+ * A simple example for how this can be used would be customizing the fields for a Model that is bound to a grid. By passing
+ * the `fields` property the Model will be automatically updated by the Reader internally, but that change will not be
+ * reflected automatically in the grid unless you also update the column configuration. You could do this manually, or you
+ * could simply pass a standard grid {@link Ext.panel.Table#columns column} config object as part of the `metaData` attribute
+ * and then pass that along to the grid. Here&#39;s a very simple example for how that could be accomplished:
+ *
+ *     // response format:
+ *     {
+ *         ...
+ *         &quot;metaData&quot;: {
+ *             &quot;fields&quot;: [
+ *                 { &quot;name&quot;: &quot;userId&quot;, &quot;type&quot;: &quot;int&quot; },
+ *                 { &quot;name&quot;: &quot;name&quot;, &quot;type&quot;: &quot;string&quot; },
+ *                 { &quot;name&quot;: &quot;birthday&quot;, &quot;type&quot;: &quot;date&quot;, &quot;dateFormat&quot;: &quot;Y-j-m&quot; },
+ *             ],
+ *             &quot;columns&quot;: [
+ *                 { &quot;text&quot;: &quot;User ID&quot;, &quot;dataIndex&quot;: &quot;userId&quot;, &quot;width&quot;: 40 },
+ *                 { &quot;text&quot;: &quot;User Name&quot;, &quot;dataIndex&quot;: &quot;name&quot;, &quot;flex&quot;: 1 },
+ *                 { &quot;text&quot;: &quot;Birthday&quot;, &quot;dataIndex&quot;: &quot;birthday&quot;, &quot;flex&quot;: 1, &quot;format&quot;: &#39;Y-j-m&#39;, &quot;xtype&quot;: &quot;datecolumn&quot; }
+ *             ]
+ *         }
+ *     }
+ *
+ * The Reader will automatically read the meta fields config and rebuild the Model based on the new fields, but to handle
+ * the new column configuration you would need to handle the metadata within the application code. This is done simply enough
+ * by handling the metachange event on either the store or the proxy, e.g.:
+ *
+ *     var store = Ext.create(&#39;Ext.data.Store&#39;, {
+ *         ...
+ *         listeners: {
+ *             &#39;metachange&#39;: function(store, meta) {
+ *                 myGrid.reconfigure(store, meta.columns);
+ *             }
+ *         }
+ *     });
+ *
  */
-Ext.define(&#39;Ext.data.writer.Json&#39;, {
-    extend: &#39;Ext.data.writer.Writer&#39;,
-    alternateClassName: &#39;Ext.data.JsonWriter&#39;,
-    alias: &#39;writer.json&#39;,
+Ext.define(&#39;Ext.data.reader.Json&#39;, {
+    extend: &#39;Ext.data.reader.Reader&#39;,
     
+    requires: [
+        &#39;Ext.JSON&#39;
+    ],
+    
+    alternateClassName: &#39;Ext.data.JsonReader&#39;,
+    alias : &#39;reader.json&#39;,
+
     config: {
-<span id='Ext-data-writer-Json-cfg-rootProperty'>        /**
-</span>        * @cfg {String} rootProperty The HTTP parameter name by which JSON encoded records will be passed to the server if the
-        * {@link #encode} option is `true`.
+<span id='Ext-data-reader-Json-cfg-record'>        /**
+</span>        * @cfg {String} record The optional location within the JSON response that the record data itself can be found at.
+        * See the JsonReader intro docs for more details. This is not often needed.
         */
-        rootProperty: undefined,
+       record: null,
     
-<span id='Ext-data-writer-Json-cfg-encode'>        /**
-</span>        * @cfg {Boolean} [encode=false] Configure `true` to send record data (all record fields if {@link #writeAllFields} is `true`)
-        * as a JSON encoded HTTP parameter named by the {@link #rootProperty} configuration.
-        * 
-        * The encode option should only be set to true when a {@link #rootProperty} is defined, because the values will be
-        * sent as part of the request parameters as opposed to a raw post. The root will be the name of the parameter
-        * sent to the server.
+<span id='Ext-data-reader-Json-cfg-metaProperty'>        /**
+</span>        * @cfg {String} [metaProperty]
+        * Name of the property from which to retrieve the `metaData` attribute. See {@link #metaData}.
         */
-        encode: false,
-    
-<span id='Ext-data-writer-Json-cfg-allowSingle'>        /**
-</span>        * @cfg {Boolean} [allowSingle=true] Configure with `false` to ensure that records are always wrapped in an array, even if there is only
-        * one record being sent. When there is more than one record, they will always be encoded into an array.
+        metaProperty: &#39;metaData&#39;,
+
+<span id='Ext-data-reader-Json-cfg-useSimpleAccessors'>        /**
+</span>        * @cfg {Boolean} useSimpleAccessors True to ensure that field names/mappings are treated as literals when
+        * reading values.
+        *
+        * For example, by default, using the mapping &quot;foo.bar.baz&quot; will try and read a property foo from the root, then a property bar
+        * from foo, then a property baz from bar. Setting the simple accessors to true will read the property with the name
+        * &quot;foo.bar.baz&quot; direct from the root object.
         */
-        allowSingle: true,
-    
-<span id='Ext-data-writer-Json-cfg-expandData'>        /**
-</span>        * @cfg {Boolean} [expandData=false] By default, when dot-delimited field {@link #nameProperty mappings} are
-        * used (e.g. `name: &#39;myProperty&#39;, mapping: &#39;my.nested.property&#39;`) the writer will simply output a flat data
-        * object containing the mapping string literal as the property name (e.g. `{ &#39;my.nested.property&#39;: &#39;foo&#39; }`).
-        * 
-        * Mappings are used to map incoming nested JSON to flat Ext models. In many case, the data output by the
-        * writer should preferrably match the original nested data format. Setting this config to `true` will ensure
-        * that the output will instead look like `{ my: { nested: { property: &#39;foo&#39; }}}`. The output is generated
-        * by {@link #getExpandedData}, which can optionally be overridden to apply more customized logic.
-        */
-        expandData: false
-    },
-    
-<span id='Ext-data-writer-Json-method-constructor'>    //&lt;debug&gt;
-</span>    constructor: function(config) {
-        if (config &amp;&amp; config.hasOwnProperty(&#39;root&#39;)) {
-            config = Ext.apply({}, config);
-            config.rootProperty = config.root;
-            delete config.root;
-            Ext.log.warn(&#39;Ext.data.writer.Json: Using the deprecated &quot;root&quot; configuration. Use &quot;rootProperty&quot; instead.&#39;);
-        }
-        this.callParent([config]);
-    },
-    //&lt;/debug&gt;
-    
-<span id='Ext-data-writer-Json-method-getExpandedData'>    /**
-</span>     * @protected
-     * The Reader classes support dot-delimited data mappings for extracting nested raw data into fields, so the
-     * writer must support converting the flat {@link Ext.data.Model} structure back into the original nested data
-     * format. Using the same mappings when available, the Writer will simply split each delimiter into a nested
-     * object in the output, which should exactly match the input format. For example, record data like this:
-     * 
-     *     my.nested.property: &#39;foo&#39;,
-     *     my.nested.another: &#39;bar&#39;,
-     *     my.somethingElse: 123
-     * 
-     * should write out as...
-     * 
-     *     my: {
-     *         nested: {
-     *             property: &#39;foo&#39;,
-     *             another: &#39;bar
-     *         },
-     *         somethingElse: 123
-     *     }
-     *
-     * This behavior is governed by the {@link #expandData} config. By default, this option is `false` for
-     * compatibility reasons, and will output a flat structure matching the flat record format. Setting this config
-     * to `true` will enable the expanded mapping behavior as shown here. This method could also be overridden
-     * to provide an even more customized output data structure.
-     */
-    getExpandedData: function(data) {
-        var dataLength = data.length,
-            i = 0,
-            item,
-            prop,
-            nameParts,
-            j,
-            tempObj,
-            
-            toObject = function(name, value) {
-                var o = {};
-                o[name] = value;
-                return o;
-            };
+        useSimpleAccessors: false,
         
-        for (; i &lt; dataLength; i++) {
-            item = data[i];
+<span id='Ext-data-reader-Json-cfg-preserveRawData'>        /**
+</span>         * @cfg {Boolean} preserveRawData
+         * The reader will keep a copy of the most recent request in the {@link #rawData} property. For performance reasons,
+         * the data object for each record is used directly as the model data. This means that these objects may be modified and
+         * thus modify the raw data. To ensure the objects are copied, set this option to `true`. NB: This only applies to items 
+         * that are read as part of the data array, any other metadata will not be modified:
+         * 
+         *     {
+         *         &quot;someOtherData&quot;: 1, // Won&#39;t be modified
+         *         &quot;root&quot;: [{}, {}, {}] // The objects here will be modified
+         *     }
+         */
+        preserveRawData: false
+    },
+    
+<span id='Ext-data-reader-Json-method-updateRootProperty'>    updateRootProperty: function() {
+</span>        this.forceBuildExtractors();    
+    },
+    
+<span id='Ext-data-reader-Json-method-updateMetaProperty'>    updateMetaProperty: function() {
+</span>        this.forceBuildExtractors();
+    },
+
+<span id='Ext-data-reader-Json-method-readRecords'>    /**
+</span>     * @method readRecords
+     * Reads a JSON object and returns a ResultSet. Uses the internal getTotal and getSuccess extractors to
+     * retrieve meta data from the response, and extractData to turn the JSON data into model instances.
+     * @param {Object} data The raw JSON data
+     * @param {Object} [readOptions] See {@link #read} for details.
+     * @return {Ext.data.ResultSet} A ResultSet containing model instances and meta data about the results
+     */
+
+    getResponseData: function(response) {
+        var error;
+
+        try {
+            return Ext.decode(response.responseText);
+        } catch (ex) {
+            error = this.createReadError(ex.message);
+
+            Ext.Logger.warn(&#39;Unable to parse the JSON returned by the server&#39;);
+            this.fireEvent(&#39;exception&#39;, this, response, error);
+            return error;
+        }
+    },
+
+<span id='Ext-data-reader-Json-method-buildExtractors'>    buildExtractors : function() {
+</span>        var me = this,
+            metaProp, rootProp;
+
+        // Will only return true if we need to build
+        if (me.callParent(arguments)) {
+            metaProp = me.getMetaProperty();
+            rootProp = me.getRootProperty();
+            if (rootProp) {
+                me.getRoot = me.getAccessor(rootProp);
+            } else {
+                me.getRoot = Ext.identityFn;
+            }
+        
+            if (metaProp) {
+                me.getMeta = me.getAccessor(metaProp);
+            }
+        }
+    },
+
+<span id='Ext-data-reader-Json-method-extractData'>    /**
+</span>     * @private
+     * We&#39;re just preparing the data for the superclass by pulling out the record objects we want. If a {@link #record}
+     * was specified we have to pull those out of the larger JSON object, which is most of what this function is doing
+     * @param {Object} root The JSON root node
+     * @param {Object} [readOptions] See {@link #read} for details.
+     * @return {Ext.data.Model[]} The records
+     */
+    extractData: function(root, readOptions) {
+        var recordName = this.getRecord(),
+            data = [],
+            length, i;
+
+        if (recordName) {
+            length = root.length;
             
-            for (prop in item) {
-                if (item.hasOwnProperty(prop)) {
-                    // e.g. my.nested.property: &#39;foo&#39;
-                    nameParts = prop.split(&#39;.&#39;);
-                    j = nameParts.length - 1;
-                    
-                    if (j &gt; 0) {
-                        // Initially this will be the value &#39;foo&#39;.
-                        // Equivalent to rec[&#39;my.nested.property&#39;]
-                        tempObj = item[prop];
-                        
-                        for (; j &gt; 0; j--) {
-                            // Starting with the value above, we loop inside out, assigning the
-                            // current object as the value for the parent name. Work all
-                            // the way up until only the root name is left to assign.
-                            tempObj = toObject(nameParts[j], tempObj);
+            if (!length &amp;&amp; Ext.isObject(root)) {
+                length = 1;
+                root = [root];
+            }
+
+            for (i = 0; i &lt; length; i++) {
+                data[i] = root[i][recordName];
+            }
+        } else {
+            data = root;
+        }
+        return this.callParent([data, readOptions]);
+    },
+    
+<span id='Ext-data-reader-Json-method-getModelData'>    getModelData: function(raw) {
+</span>        return this.getPreserveRawData() ? Ext.apply({}, raw) : raw;    
+    },
+
+<span id='Ext-data-reader-Json-method-createAccessor'>    /**
+</span>     * @private
+     * @method
+     * Returns an accessor function for the given property string. Gives support for properties such as the following:
+     *
+     * - &#39;someProperty&#39;
+     * - &#39;some.property&#39;
+     * - &#39;[&quot;someProperty&quot;]&#39;
+     * - &#39;values[0]&#39;
+     * 
+     * This is used by {@link #buildExtractors} to create optimized extractor functions for properties that are looked
+     * up directly on the source object (e.g. {@link #successProperty}, {@link #messageProperty}, etc.).
+     */
+    createAccessor: (function() {
+        var re = /[\[\.]/;
+
+        return function(expr) {
+            var me = this,
+                simple = me.getUseSimpleAccessors(),
+                operatorIndex, result,
+                current, parts, part, inExpr,
+                isDot, isLeft, isRight,
+                special, c, i, bracketed, len;
+
+            if (!(expr || expr === 0)) {
+                return;
+            }
+
+            if (typeof expr === &#39;function&#39;) {
+                return expr;
+            }
+            
+            if (!simple) {
+                operatorIndex = String(expr).search(re);
+            }
+            
+            if (simple === true || operatorIndex &lt; 0) {
+                result = function(raw) {
+                    return raw[expr];
+                };
+            } else {
+                // The purpose of this part is to generate a &quot;safe&quot; accessor for any complex 
+                // json expression. For example &#39;foo.bar.baz&#39; will get transformed:
+                // raw.foo &amp;&amp; raw.foo.bar &amp;&amp; raw.foo.bar.baz
+                current = &#39;raw&#39;;
+                parts = [];
+                part = &#39;&#39;;
+                inExpr = 0;
+                len = expr.length;
+
+                // The &lt;= is intentional here. We handle the last character
+                // being undefined so that we can append any final values at
+                // the end
+                for (i = 0; i &lt;= len; ++i) {
+                    c = expr[i];
+
+                    isDot = c === &#39;.&#39;;
+                    isLeft = c === &#39;[&#39;;
+                    isRight = c === &#39;]&#39;;
+
+                    special = isDot || isLeft || isRight || !c;
+                    // If either:
+                    // a) Not a special char
+                    // b) We&#39;re nested more than 1 deep, no single char can bring us out
+                    // c) We are in an expr &amp; it&#39;s not an ending brace
+                    // Then just push the character on
+                    if (!special || inExpr &gt; 1 || (inExpr &amp;&amp; !isRight)) {
+                        part += c;
+                    } else if (special) {
+                        bracketed = false;
+                        if (isLeft) {
+                            ++inExpr;
+                        } else if (isRight) {
+                            --inExpr;
+                            bracketed = true;
                         }
-                        
-                        // At this point we&#39;ll have all child properties rolled up into a single
-                        // object like `{ nested: { property: &#39;foo&#39; }}`. Now add the root name
-                        // (e.g. &#39;my&#39;) to the record data if needed (do not overwrite existing):
-                        item[nameParts[0]] = item[nameParts[0]] || {};
-                        // Since there could be duplicate names at any level of the nesting be sure
-                        // to merge rather than assign when setting the object as the value:
-                        Ext.Object.merge(item[nameParts[0]], tempObj);
-                        // Finally delete the original mapped property from the record
-                        delete item[prop];
+
+                        if (part) {
+                            if (bracketed) {
+                                part = &#39;[&#39; + part + &#39;]&#39;;
+                            } else {
+                                part = &#39;.&#39; + part;
+                            }
+                            current += part;
+                            // Concatting the empty string to the start fixes a very odd intermittent bug with IE9/10.
+                            // On some occasions, without it, it will end up generating
+                            // raw.foo.bar.baz &amp;&amp; raw.foo.bar.baz &amp;&amp; raw.foo.bar.baz
+                            // At this point, not really sure why forcibly casting it to a string makes a difference
+                            parts.push(&#39;&#39; + current);
+                            part = &#39;&#39;;
+                        }
                     }
                 }
+                result = parts.join(&#39; &amp;&amp; &#39;);
+                result = Ext.functionFactory(&#39;raw&#39;, &#39;return &#39; + result);
             }
+            return result;
+        };
+    }()),
+
+<span id='Ext-data-reader-Json-method-createFieldAccessor'>    /**
+</span>     * @private
+     * @method
+     * Returns an accessor function for the passed Field. Gives support for properties such as the following:
+     * 
+     * - &#39;someProperty&#39;
+     * - &#39;some.property&#39;
+     * - &#39;[&quot;someProperty&quot;]&#39;
+     * - &#39;values[0]&#39;
+     * 
+     * This is used by {@link #buildExtractors} to create optimized extractor expressions when converting raw
+     * data into model instances. This method is used at the field level to dynamically map values to model fields.
+     */
+    createFieldAccessor: function(field) {
+        // Need to capture me for the extractor
+        var me = this,
+            mapping = field.mapping,
+            hasMap = mapping || mapping === 0,
+            map    = hasMap ? mapping : field.name;
+            
+        if (hasMap) {
+            if (typeof map === &#39;function&#39;) {
+                return function(raw) {
+                    return field.mapping(raw, me);
+                };
+            } else {
+                return me.createAccessor(map);
+            }    
         }
-        return data;
     },
-    
-<span id='Ext-data-writer-Json-method-writeRecords'>    writeRecords: function(request, data) {
-</span>        var me = this,
-            root = me.getRootProperty(),
-            json, single, transform;
-        
-        if (me.getExpandData()) {
-            data = me.getExpandedData(data);
+
+<span id='Ext-data-reader-Json-method-getAccessorKey'>    getAccessorKey: function(prop) {
+</span>        var simple = this.getUseSimpleAccessors() ? &#39;simple&#39; : &#39;&#39;;
+        return this.$className + simple + prop;
+    },
+
+<span id='Ext-data-reader-Json-property-privates'>    privates: {
+</span>        copyFrom: function(reader) {
+            this.callParent([reader]);
+            this.getRoot = reader.getRoot;
         }
-        
-        if (me.getAllowSingle() &amp;&amp; data.length === 1) {
-            // convert to single object format
-            data = data[0];
-            single = true;
-        }
-        
-        transform = this.getTransform();
-        if (transform) {
-            data = transform(data, request);
-        }
-        
-        if (me.getEncode()) {
-            if (root) {
-                // sending as a param, need to encode
-                request.setParam(root, Ext.encode(data));
-            } else {
-                //&lt;debug&gt;
-                Ext.raise(&#39;Must specify a root when using encode&#39;);
-                //&lt;/debug&gt;
-            }
-        } else if (single || (data &amp;&amp; data.length)) {
-            // send as jsonData
-            json = request.getJsonData() || {};
-            if (root) {
-                json[root] = data;
-            } else {
-                json = data;
-            }
-            request.setJsonData(json);
-        }
-        return request;
     }
 });
 </pre>

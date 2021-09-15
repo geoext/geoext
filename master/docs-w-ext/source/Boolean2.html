@@ -15,150 +15,101 @@
   </script>
 </head>
 <body onload="prettyPrint(); highlight();">
-  <pre class="prettyprint lang-js"><span id='Ext-grid-filters-filter-Boolean'>/**
-</span> * The boolean grid filter allows you to create a filter selection that limits results
- * to values matching true or false.  The filter can be set programmatically or via 
- * user input with a configurable {@link Ext.form.field.Radio radio field} in the filter section 
- * of the column header.
- * 
- * Boolean filters use unique radio group IDs, so you may utilize more than one.
+  <pre class="prettyprint lang-js"><span id='Ext-grid-column-Boolean'>/**
+</span> * A Column definition class which renders boolean data fields.  See the {@link Ext.grid.column.Column#xtype xtype}
+ * config option of {@link Ext.grid.column.Column} for more details.
  *
- * Example Boolean Filter Usage:
- * 
  *     @example
- *     var shows = Ext.create(&#39;Ext.data.Store&#39;, {
- *         fields: [&#39;id&#39;,&#39;show&#39;, &#39;visible&#39;],
- *         data: [
- *             {id: 0, show: &#39;Battlestar Galactica&#39;, visible: true},
- *             {id: 1, show: &#39;Doctor Who&#39;, visible: true},
- *             {id: 2, show: &#39;Farscape&#39;, visible: false},
- *             {id: 3, show: &#39;Firefly&#39;, visible: true},
- *             {id: 4, show: &#39;Star Trek&#39;, visible: true},
- *             {id: 5, show: &#39;Star Wars: Christmas Special&#39;, visible: false}
- *         ]
+ *     var store = Ext.create(&#39;Ext.data.Store&#39;, {
+ *        fields: [
+ *            {name: &#39;framework&#39;, type: &#39;string&#39;},
+ *            {name: &#39;rocks&#39;, type: &#39;boolean&#39;}
+ *        ],
+ *        data: [
+ *            { framework: &#39;Ext JS 5&#39;, rocks: true },
+ *            { framework: &#39;Ext GWT&#39;, rocks: true },
+ *            { framework: &#39;Other Guys&#39;, rocks: false }
+ *        ]
  *     });
- *   
+ *
  *     Ext.create(&#39;Ext.grid.Panel&#39;, {
- *         renderTo: Ext.getBody(),
- *         title: &#39;Sci-Fi Television&#39;,
- *         height: 250,
- *         width: 375,
- *         store: shows,
- *         plugins: &#39;gridfilters&#39;,
- *         columns: [{
- *             dataIndex: &#39;id&#39;,
- *             text: &#39;ID&#39;,
- *             width: 50
- *         },{
- *             dataIndex: &#39;show&#39;,
- *             text: &#39;Show&#39;,
- *             flex: 1                  
- *         },{
- *             dataIndex: &#39;visible&#39;,
- *             text: &#39;Visibility&#39;,
- *             width: 125,
- *             filter: {
- *                 type: &#39;boolean&#39;,
- *                 value: &#39;true&#39;,
- *                 yesText: &#39;True&#39;,
- *                 noText: &#39;False&#39;
+ *         title: &#39;Boolean Column Demo&#39;,
+ *         store: store,
+ *         columns: [
+ *             { text: &#39;Framework&#39;,  dataIndex: &#39;framework&#39;, flex: 1 },
+ *             {
+ *                 xtype: &#39;booleancolumn&#39;,
+ *                 text: &#39;Rocks&#39;,
+ *                 trueText: &#39;Yes&#39;,
+ *                 falseText: &#39;No&#39;,
+ *                 dataIndex: &#39;rocks&#39;
  *             }
- *         }]
- *     });  
+ *         ],
+ *         height: 200,
+ *         width: 400,
+ *         renderTo: Ext.getBody()
+ *     });
  */
-Ext.define(&#39;Ext.grid.filters.filter.Boolean&#39;, {
-    extend: &#39;Ext.grid.filters.filter.SingleFilter&#39;,
-    alias: &#39;grid.filter.boolean&#39;,
-
-<span id='Ext-grid-filters-filter-Boolean-property-type'>    type: &#39;boolean&#39;,
-</span>
-<span id='Ext-grid-filters-filter-Boolean-property-operator'>    operator: &#39;==&#39;,
-</span>
-<span id='Ext-grid-filters-filter-Boolean-cfg-defaultValue'>    /**
-</span>     * @cfg {Boolean} defaultValue
-     * Set this to null if you do not want either option to be checked by default. Defaults to false.
-     */
-    defaultValue: false,
+Ext.define(&#39;Ext.grid.column.Boolean&#39;, {
+    extend: &#39;Ext.grid.column.Column&#39;,
+    alias: [&#39;widget.booleancolumn&#39;],
+    alternateClassName: &#39;Ext.grid.BooleanColumn&#39;,
 
     //&lt;locale&gt;
-<span id='Ext-grid-filters-filter-Boolean-cfg-yesText'>    /**
-</span>     * @cfg {String} yesText
-     * Defaults to &#39;Yes&#39;.
+<span id='Ext-grid-column-Boolean-cfg-trueText'>    /**
+</span>     * @cfg {String} trueText
+     * The string returned by the renderer when the column value is not falsey.
      */
-    yesText: &#39;Yes&#39;,
+    trueText: &#39;true&#39;,
     //&lt;/locale&gt;
 
     //&lt;locale&gt;
-<span id='Ext-grid-filters-filter-Boolean-cfg-noText'>    /**
-</span>     * @cfg {String} noText
-     * Defaults to &#39;No&#39;.
+<span id='Ext-grid-column-Boolean-cfg-falseText'>    /**
+</span>     * @cfg {String} falseText
+     * The string returned by the renderer when the column value is falsey (but not undefined).
      */
-    noText: &#39;No&#39;,
-<span id='Ext-grid-filters-filter-Boolean-cfg-updateBuffer'>    //&lt;/locale&gt;
+    falseText: &#39;false&#39;,
+    //&lt;/locale&gt;
+
+<span id='Ext-grid-column-Boolean-cfg-undefinedText'>    /**
+</span>     * @cfg {String} undefinedText
+     * The string returned by the renderer when the column value is undefined.
+     */
+    undefinedText: &#39;&amp;#160;&#39;,
+
+<span id='Ext-grid-column-Boolean-property-defaultFilterType'>    defaultFilterType: &#39;boolean&#39;,
 </span>
-    updateBuffer: 0,
-
-<span id='Ext-grid-filters-filter-Boolean-method-createMenu'>    /**
-</span>     * @private
-     * Template method that is to initialize the filter and install required menu items.
+<span id='Ext-grid-column-Boolean-cfg-renderer'>    /**
+</span>     * @cfg {Object} renderer
+     * @hide
      */
-    createMenu: function (config) {
-        var me = this,
-            gId = Ext.id(),
-            listeners = {
-                scope: me,
-                click: me.onClick
-            },
-            itemDefaults = me.getItemDefaults();
 
-        me.callParent(arguments);
-
-        me.menu.add([Ext.apply({
-            text: me.yesText,
-            filterKey: 1,
-            group: gId,
-            checked: !!me.defaultValue,
-            hideOnClick: false,
-            listeners: listeners
-        }, itemDefaults), Ext.apply({
-            text: me.noText,
-            filterKey: 0,
-            group: gId,
-            checked: !me.defaultValue,
-            hideOnClick: false,
-            listeners: listeners
-        }, itemDefaults)]);
-    },
-
-<span id='Ext-grid-filters-filter-Boolean-method-onClick'>    /**
-</span>     * @private
+<span id='Ext-grid-column-Boolean-cfg-scope'>    /**
+</span>     * @cfg {Object} scope
+     * @hide
      */
-    onClick: function (field) {
-        this.setValue(!!field.filterKey);
-    },
 
-<span id='Ext-grid-filters-filter-Boolean-method-setValue'>    /**
-</span>     * @private
-     * Template method that is to set the value of the filter.
-     * @param {Object} value The value to set the filter.
+<span id='Ext-grid-column-Boolean-cfg-producesHTML'>     /**
+</span>     * @cfg {Boolean} producesHTML
+     * @inheritdoc
      */
-    setValue: function (value) {
-        var me = this;
+    producesHTML: false,
 
-        me.filter.setValue(value);
-
-        if (value !== undefined &amp;&amp; me.active) {
-            me.value = value;
-            me.updateStoreFilter();
-        } else {
-            me.setActive(true);
+<span id='Ext-grid-column-Boolean-method-defaultRenderer'>    defaultRenderer: function(value){
+</span>        if (value === undefined) {
+            return this.undefinedText;
         }
+
+        if (!value || value === &#39;false&#39;) {
+            return this.falseText;
+        }
+        return this.trueText;
     },
 
-<span id='Ext-grid-filters-filter-Boolean-method-activateMenu'>    // This is supposed to be just a stub.
-</span>    activateMenu: Ext.emptyFn
+<span id='Ext-grid-column-Boolean-method-updater'>    updater: function(cell, value) {
+</span>        Ext.fly(cell).down(this.getView().innerSelector, true).innerHTML = Ext.grid.column.Boolean.prototype.defaultRenderer.call(this, value);
+    }
 });
-
 </pre>
 </body>
 </html>

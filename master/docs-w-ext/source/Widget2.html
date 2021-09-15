@@ -15,588 +15,630 @@
   </script>
 </head>
 <body onload="prettyPrint(); highlight();">
-  <pre class="prettyprint lang-js"><span id='Ext-grid-column-Widget'>/**
-</span> * A widget column is configured with a {@link #widget} config object which specifies an
- * {@link Ext.Component#cfg-xtype xtype} to indicate which type of Widget or Component belongs
- * in the cells of this column.
- *
- * When a widget cell is rendered, a {@link Ext.Widget Widget} or {@link Ext.Component Component} of the specified type
- * is rendered into that cell.
- * 
- * There are two ways of setting values in a cell widget.
- * 
- * Ths simplest way is to use data binding. Each cell widget has a {@link Ext.app.ViewModel ViewModel} injected which inherits from any ViewModel
- * that the grid is using, and contains two extra properties:
- *
- * - `record` : {@link Ext.data.Model Model}&lt;br&gt;The record which backs the grid row.
- * - `recordIndex` : {@link Number}&lt;br&gt;The index in the dataset of the record which backs the grid row.
- *
- * The widget configuration may contain a {@link #cfg-bind} config which uses the ViewModel&#39;s data.
- * 
- * The deprecated way is to configure the column with a {@link #dataIndex}. The widget&#39;s
- * {@link Ext.Component#defaultBindProperty defaultBindProperty} will be set using the
- * specified field from the associated record.
- *
- * In the example below we are monitoring the throughput of electricity substations. The capacity being
- * used as a proportion of the maximum rated capacity is displayed as a progress bar. As new data arrives and the
- * instantaneous usage value is updated, the `capacityUsed` field updates itself, and the record&#39;s
- * change is broadcast to all bindings. The {@link Ext.Progress Progress Bar Widget}&#39;s
- * {@link Ext.ProgressBarWidget#defaultBindProperty defaultBindProperty} (which is
- * &quot;value&quot;) is set to the calculated `capacityUsed`.
- *
- *     @example
- *     var grid = new Ext.grid.Panel({
- *         title: &#39;Substation power monitor&#39;,
- *         width: 600,
- *         viewConfig: {
- *             enableTextSelection: false,
- *             markDirty: false
- *         },
- *         columns: [{
- *             text: &#39;Id&#39;,
- *             dataIndex: &#39;id&#39;,
- *             width: 120
- *         }, {
- *             text: &#39;Rating&#39;,
- *             dataIndex: &#39;maxCapacity&#39;,
- *             width: 80
- *         }, {
- *             text: &#39;Avg.&#39;,
- *             dataIndex: &#39;avg&#39;,
- *             width: 85,
- *             formatter: &#39;number(&quot;0.00&quot;)&#39;
- *         }, {
- *             text: &#39;Max&#39;,
- *             dataIndex: &#39;max&#39;,
- *             width: 80
- *         }, {
- *             text: &#39;Instant&#39;,
- *             dataIndex: &#39;instant&#39;,
- *             width: 80
- *         }, {
- *             text: &#39;%Capacity&#39;,
- *             width: 150,
- *
- *             // This is our Widget column
- *             xtype: &#39;widgetcolumn&#39;,
- *
- *             // This is the widget definition for each cell.
- *             // The Progress widget class&#39;s defaultBindProperty is &#39;value&#39;
- *             // so its &quot;value&quot; setting is taken from the ViewModel&#39;s record &quot;capacityUsed&quot; field
- *             widget: {
- *                 xtype: &#39;progressbarwidget&#39;,
- *                 bind: &#39;{record.capacityUsed}&#39;,
- *                 textTpl: [
- *                     &#39;{percent:number(&quot;0&quot;)}% capacity&#39;
- *                 ]
- *             }
- *         }],
- *         renderTo: document.body,
- *         disableSelection: true,
- *         store: {
- *            fields: [{
- *                name: &#39;id&#39;,
- *                type: &#39;string&#39;
- *            }, {
- *                name: &#39;maxCapacity&#39;,
- *                type: &#39;int&#39;
- *            }, {
- *                name: &#39;avg&#39;,
- *                type: &#39;int&#39;,
- *                calculate: function(data) {
- *                    // Make this depend upon the instant field being set which sets the sampleCount and total.
- *                    // Use subscript format to access the other pseudo fields which are set by the instant field&#39;s converter
- *                    return data.instant &amp;&amp; data[&#39;total&#39;] / data[&#39;sampleCount&#39;];
- *                }
- *            }, {
- *                name: &#39;max&#39;,
- *                type: &#39;int&#39;,
- *                calculate: function(data) {
- *                    // This will be seen to depend on the &quot;instant&quot; field.
- *                    // Use subscript format to access this field&#39;s current value to avoid circular dependency error.
- *                    return (data[&#39;max&#39;] || 0) &lt; data.instant ? data.instant : data[&#39;max&#39;];
- *                }
- *            }, {
- *                name: &#39;instant&#39;,
- *                type: &#39;int&#39;,
- *
- *                // Upon every update of instantaneous power throughput,
- *                // update the sample count and total so that the max field can calculate itself
- *                convert: function(value, rec) {
- *                    rec.data.sampleCount = (rec.data.sampleCount || 0) + 1;
- *                    rec.data.total = (rec.data.total || 0) + value;
- *                    return value;
- *                },
- *               depends: []
- *            }, {
- *                name: &#39;capacityUsed&#39;,
- *                calculate: function(data) {
- *                    return data.instant / data.maxCapacity;
- *                }
- *            }],
- *            data: [{
- *                id: &#39;Substation A&#39;,
- *                maxCapacity: 1000,
- *                avg: 770,
- *                max: 950,
- *                instant: 685
- *            }, {
- *                id: &#39;Substation B&#39;,
- *                maxCapacity: 1000,
- *                avg: 819,
- *                max: 992,
- *                instant: 749
- *            }, {
- *                id: &#39;Substation C&#39;,
- *                maxCapacity: 1000,
- *                avg: 588,
- *                  max: 936,
- *                instant: 833
- *            }, {
- *                id: &#39;Substation D&#39;,
- *                maxCapacity: 1000,
- *                avg: 639,
- *                max: 917,
- *                instant: 825
- *            }]
- *        }
- *     });
- *
- *     // Fake data updating...
- *     // Change one record per second to a random power value
- *     Ext.interval(function() {
- *         var recIdx = Ext.Number.randomInt(0, 3),
- *             newPowerReading = Ext.Number.randomInt(500, 1000);
- *
- *         grid.store.getAt(recIdx).set(&#39;instant&#39;, newPowerReading);
- *     }, 1000);
- *
+  <pre class="prettyprint lang-js"><span id='Ext-slider-Widget'>/**
+</span> * A Widget-based implementation of a slider.
  * @since 5.0.0
  */
-Ext.define(&#39;Ext.grid.column.Widget&#39;, {
-    extend: &#39;Ext.grid.column.Column&#39;,
-    alias: &#39;widget.widgetcolumn&#39;,
+Ext.define(&#39;Ext.slider.Widget&#39;, {
+    extend: &#39;Ext.Widget&#39;,
+    alias: &#39;widget.sliderwidget&#39;,
 
-    mixins: [&#39;Ext.mixin.StyleCacher&#39;],
+    // Required to pull in the styles
+    requires: [
+        &#39;Ext.slider.Multi&#39;
+    ], 
+
+    cachedConfig: {
+<span id='Ext-slider-Widget-cfg-vertical'>        /**
+</span>        * @cfg {Boolean} vertical
+        * Orients the slider vertically rather than horizontally.
+        */
+        vertical: false
+    },
 
     config: {
-<span id='Ext-grid-column-Widget-cfg-defaultWidgetUI'>        /**
-</span>         * @cfg defaultWidgetUI
-         * A map of xtype to {@link Ext.Component#ui} names to use when using Components in this column.
-         *
-         * Currently {@link Ext.Button Button} and all subclasses of {@link Ext.form.field.Text TextField} default
-         * to using `ui: &quot;default&quot;` when in a WidgetColumn except for in the &quot;classic&quot; theme, when they use ui &quot;grid-cell&quot;.
+<span id='Ext-slider-Widget-cfg-clickToChange'>        /**
+</span>         * @cfg {Boolean} clickToChange
+         * Determines whether or not clicking on the Slider axis will change the slider.
          */
-        defaultWidgetUI: {}
+        clickToChange: true,
+
+<span id='Ext-slider-Widget-cfg-ui'>        ui: &#39;widget&#39;,
+</span>
+<span id='Ext-slider-Widget-cfg-value'>        /**
+</span>         * @cfg {Number/Number[]} value
+         * One more values for the position of the slider&#39;s thumb(s).
+         */
+        value: 0,
+        
+<span id='Ext-slider-Widget-cfg-minValue'>        /**
+</span>         * @cfg {Number} minValue
+         * The minimum value for any slider thumb.
+         */
+        minValue: 0,
+        
+<span id='Ext-slider-Widget-cfg-maxValue'>        /**
+</span>         * @cfg {Number} maxValue
+         * The maximum value for any slider thumb.
+         */
+        maxValue: 100,
+
+<span id='Ext-slider-Widget-cfg-publishOnComplete'>        /**
+</span>         * @cfg {Boolean} [publishOnComplete=true]
+         * This controls when the value of the slider is published to the `ViewModel`. By
+         * default this is done only when the thumb is released (the change is complete). To
+         * cause this to happen on every change of the thumb position, specify `false`. This
+         * setting is `true` by default for improved performance on slower devices (such as
+         * older browsers or tablets).
+         */
+        publishOnComplete: true,
+
+<span id='Ext-slider-Widget-cfg-twoWayBindable'>        /**
+</span>         * @cfg {Object} twoWayBindable
+         * This object is a map of config property names holding a `true` if changes to
+         * that config should written back to its binding. Most commonly this is used to
+         * indicate that the `value` config should be monitored and changes written back
+         * to the bound value.
+         */
+        twoWayBindable: {
+            value: 1
+        }
     },
 
-<span id='Ext-grid-column-Widget-cfg-ignoreExport'>    ignoreExport: true,
+<span id='Ext-slider-Widget-property-decimalPrecision'>    decimalPrecision: 0,
 </span>
-<span id='Ext-grid-column-Widget-cfg-sortable'>    /**
-</span>     * @cfg
-     * @inheritdoc
-     */
-    sortable: false,
-
-<span id='Ext-grid-column-Widget-cfg-renderer'>    /**
-</span>     * @cfg {Object} renderer
-     * @hide
-     */
-
-<span id='Ext-grid-column-Widget-cfg-scope'>    /**
-</span>     * @cfg {Object} scope
-     * @hide
-     */
-
-<span id='Ext-grid-column-Widget-cfg-widget'>    /**
-</span>     * @cfg {Object} widget
-     * A config object containing an {@link Ext.Component#cfg-xtype xtype}.
-     *
-     * This is used to create the widgets or components which are rendered into the cells of this column.
-     *
-     * The rendered component has a {@link Ext.app.ViewModel ViewModel} injected which inherits from any ViewModel
-     * that the grid is using, and contains two extra properties:
-     *
-     * - `record` : {@link Ext.data.Model Model}&lt;br&gt;The record which backs the grid row.
-     * - `recordIndex` : {@link Number}&lt;br&gt;The index in the dataset of the record which backs the grid row.
-     *
-     * The widget configuration may contain a {@link #cfg-bind} config which uses the ViewModel&#39;s data.
-     *
-     * The derecated way of obtaining data from the record is still supported if the widget does *not* use a {@link #cfg-bind} config.
-     *
-     * This column&#39;s {@link #dataIndex} is used to update the widget/component&#39;s {@link Ext.Component#defaultBindProperty defaultBindProperty}.
-     *
-     * The widget will be decorated with 2 methods:
-     * `getWidgetRecord` - Returns the {@link Ext.data.Model record} the widget is associated with.
-     * `getWidgetColumn` - Returns the {@link Ext.grid.column.Widget column} the widget 
-     * was associated with.
-     */
-    
-<span id='Ext-grid-column-Widget-cfg-onWidgetAttach'>    /**
-</span>     * @cfg {Function/String} onWidgetAttach
-     * A function that will be called when a widget is attached to a record. This may be useful for
-     * doing any post-processing.
-     * 
-     *     Ext.create({
-     *         xtype: &#39;grid&#39;,
-     *         title: &#39;Student progress report&#39;,
-     *         width: 250,
-     *         renderTo: Ext.getBody(),
-     *         disableSelection: true,
-     *         store: {
-     *             fields: [&#39;name&#39;, &#39;isHonorStudent&#39;],
-     *             data: [{
-     *                 name: &#39;Finn&#39;,
-     *                 isHonorStudent: true
-     *             }, {
-     *                 name: &#39;Jake&#39;,
-     *                 isHonorStudent: false
-     *             }]
-     *         },
-     *         columns: [{
-     *             text: &#39;Name&#39;,
-     *             dataIndex: &#39;name&#39;,
-     *             flex: 1
-     *         }, {
-     *             xtype: &#39;widgetcolumn&#39;,
-     *             text: &#39;Honor Roll&#39;,
-     *             dataIndex: &#39;isHonorStudent&#39;,
-     *             width: 150,
-     *             widget: {
-     *                 xtype: &#39;button&#39;,
-     *                 handler: function() {
-     *                     // print certificate handler
-     *                 }
-     *             },
-     *             // called when the widget is initially instantiated
-     *             // on the widget column
-     *             onWidgetAttach: function(col, widget, rec) {
-     *                 widget.setText(&#39;Print Certificate&#39;);
-     *                 widget.setDisabled(!rec.get(&#39;isHonorStudent&#39;));
-     *             }
-     *         }]
-     *     });
-     * 
-     * @param {Ext.grid.column.Column} column The column.
-     * @param {Ext.Component/Ext.Widget} widget The {@link #widget} rendered to each cell.
-     * @param {Ext.data.Model} record The record used with the current widget (cell).
-     * @controllable
-     */
-    onWidgetAttach: null,
-
-<span id='Ext-grid-column-Widget-property-preventUpdate'>    preventUpdate: true,
+<span id='Ext-slider-Widget-property-defaultBindProperty'>    defaultBindProperty: &#39;value&#39;,
 </span>
-<span id='Ext-grid-column-Widget-property-innerCls'>    innerCls: Ext.baseCSSPrefix + &#39;grid-widgetcolumn-cell-inner&#39;,
-</span>
-<span id='Ext-grid-column-Widget-cfg-stopSelection'>    /**
-</span>     * @cfg {Boolean} [stopSelection=true]
-     * Prevent grid selection upon click on the widget.
-     */
-    stopSelection: true,
+<span id='Ext-slider-Widget-property-element'>    element: {
+</span>        reference: &#39;element&#39;,
+        cls: Ext.baseCSSPrefix + &#39;slider&#39;,
+        listeners: {
+            mousedown: &#39;onMouseDown&#39;,
+            dragstart: &#39;cancelDrag&#39;,
+            drag: &#39;cancelDrag&#39;,
+            dragend: &#39;cancelDrag&#39;
+        },
+        children: [{
+            reference: &#39;endEl&#39;,
+            cls: Ext.baseCSSPrefix + &#39;slider-end&#39;,
+            children: [{
+                reference: &#39;innerEl&#39;,
+                cls: Ext.baseCSSPrefix + &#39;slider-inner&#39;
+            }]
+        }]
+    },
 
-<span id='Ext-grid-column-Widget-method-initComponent'>    initComponent: function() {
+<span id='Ext-slider-Widget-property-thumbCls'>    thumbCls: Ext.baseCSSPrefix + &#39;slider-thumb&#39;,
+</span>
+<span id='Ext-slider-Widget-property-horizontalProp'>    horizontalProp: &#39;left&#39;,
+</span>
+<span id='Ext-slider-Widget-property-animateOnSetValue'>    // This property is set to false onMouseDown and deleted onMouseUp. It is used only
+</span>    // by applyValue when it passes the animate parameter to setThumbValue.
+    animateOnSetValue: undefined,
+
+<span id='Ext-slider-Widget-method-applyValue'>    applyValue: function(value) {
 </span>        var me = this,
-            widget;
+            animate = me.animateOnSetValue,
+            i, len;
 
-        me.callParent(arguments);
-
-        widget = me.widget;
-        //&lt;debug&gt;
-        if (!widget || widget.isComponent) {
-            Ext.raise(&#39;column.Widget requires a widget configuration.&#39;);
+        if (Ext.isArray(value)) {
+            value = Ext.Array.from(value);
+            for (i = 0, len = value.length; i &lt; len; ++i) {
+                me.setThumbValue(i, value[i] = me.normalizeValue(value[i]), animate, true);
+            }
+        } else {
+            value = me.normalizeValue(value);
+            me.setThumbValue(0, value, animate, true);
         }
-        //&lt;/debug&gt;
-        me.widget = widget = Ext.apply({}, widget);
-
-        // Apply the default UI for the xtype which is going to feature in this column.
-        if (!widget.ui) {
-            widget.ui = me.getDefaultWidgetUI()[widget.xtype] || &#39;default&#39;;
-        }
-        me.isFixedSize = Ext.isNumber(widget.width);
+        return value;
     },
 
-<span id='Ext-grid-column-Widget-method-processEvent'>    processEvent : function(type, view, cell, recordIndex, cellIndex, e, record, row) {
-</span>        var target;
-         
-        if (this.stopSelection &amp;&amp; type === &#39;click&#39;) {
-            // Grab the target that matches the cell inner selector. If we have a target, then,
-            // that means we either clicked on the inner part or the widget inside us. If 
-            // target === e.target, then it was on the cell, so it&#39;s ok. Otherwise, inside so
-            // prevent the selection from happening
-            target = e.getTarget(view.innerSelector);
-            if (target &amp;&amp; target !== e.target) {
-                e.stopSelection = true;
+<span id='Ext-slider-Widget-method-updateVertical'>    updateVertical: function(vertical, oldVertical) {
+</span>        this.element.removeCls(Ext.baseCSSPrefix + &#39;slider-&#39; + (oldVertical ? &#39;vert&#39; : &#39;horz&#39;));
+        this.element.addCls(   Ext.baseCSSPrefix + &#39;slider-&#39; + (vertical    ? &#39;vert&#39; : &#39;horz&#39;));
+    },
+
+<span id='Ext-slider-Widget-method-updateHeight'>    updateHeight: function(height, oldHeight) {
+</span>        this.callParent([height, oldHeight]);
+        this.endEl.dom.style.height = this.innerEl.dom.style.height = &#39;100%&#39;;
+    },
+
+<span id='Ext-slider-Widget-method-cancelDrag'>    cancelDrag: function(e) {
+</span>        // prevent the touch scroller from scrolling when the slider is being dragged
+        e.stopPropagation();
+    },
+
+<span id='Ext-slider-Widget-method-getThumb'>    getThumb: function(ordinal) {
+</span>        var me = this,
+            thumbConfig,
+            result = (me.thumbs || (me.thumbs = []))[ordinal],
+            panDisable = me.getVertical() ? &#39;panY&#39; : &#39;panX&#39;,
+            touchAction = {};
+
+        if (!result) {
+            thumbConfig = {
+                cls: me.thumbCls,
+                style: {}
+            };
+            thumbConfig[&#39;data-thumbIndex&#39;] = ordinal;
+            result = me.thumbs[ordinal] = me.innerEl.createChild(thumbConfig);
+            touchAction[panDisable] = false;
+            result.setTouchAction(touchAction);
+        }
+        return result;
+    },
+
+<span id='Ext-slider-Widget-method-getThumbPositionStyle'>    getThumbPositionStyle: function() {
+</span>        return this.getVertical() ? &#39;bottom&#39; : this.horizontalProp;
+    },
+
+<span id='Ext-slider-Widget-method-update'>//    // TODO: RTL
+</span>//    getRenderTree: function() {
+//        var me = this,
+//            rtl = me.rtl;
+//
+//        if (rtl &amp;&amp; Ext.rtl) {
+//            me.baseCls += &#39; &#39; + (Ext.rtl.util.Renderable.prototype._rtlCls);
+//            me.horizontalProp = &#39;right&#39;;
+//        } else if (rtl === false) {
+//            me.addCls(Ext.rtl.util.Renderable.prototype._ltrCls);
+//        }
+//
+//        return me.callParent();
+//    },
+
+    update: function() {
+        var me = this,
+            values = me.getValue(),
+            len = values.length,
+            i;
+
+        for (i = 0; i &lt; len; i++) {
+            this.thumbs[i].dom.style[me.getThumbPositionStyle()] = me.calculateThumbPosition(values[i]) + &#39;%&#39;;
+        }
+    },
+
+<span id='Ext-slider-Widget-method-updateMaxValue'>    updateMaxValue: function (maxValue) {
+</span>        this.onRangeAdjustment(maxValue, &#39;min&#39;);
+    },
+
+<span id='Ext-slider-Widget-method-updateMinValue'>    updateMinValue: function (minValue) {
+</span>        this.onRangeAdjustment(minValue, &#39;max&#39;);
+    },
+
+<span id='Ext-slider-Widget-method-onRangeAdjustment'>    /**
+</span>     * @private
+     * Conditionally updates value of slider when minValue or maxValue are updated
+     * @param {Number} rangeValue The new min or max value
+     * @param {String} compareType The comparison type (e.g., min/max)
+     */
+    onRangeAdjustment: function (rangeValue, compareType) {
+        var value = this._value,
+            newValue;
+
+        if (!isNaN(value)) {
+            newValue = Math[compareType](value, rangeValue);
+        }
+        
+        if (newValue !== undefined) {
+            this.setValue(newValue);
+        }
+    },
+
+<span id='Ext-slider-Widget-method-onMouseDown'>    onMouseDown: function(e) {
+</span>        var me = this,
+            thumb,
+            trackPoint = e.getXY(),
+            delta;
+
+        if (!me.disabled &amp;&amp; e.button === 0) {
+            // Stop any selection caused by mousedown + mousemove
+            Ext.getDoc().on({
+                scope: me,
+                capture: true,
+                selectstart: me.stopSelect
+            });
+
+            thumb = e.getTarget(&#39;.&#39; + me.thumbCls, null, true);
+
+            if (thumb) {
+                me.animateOnSetValue = false;
+
+                me.promoteThumb(thumb);
+                me.captureMouse(me.onMouseMove, me.onMouseUp, [thumb], 1);
+                delta = me.pointerOffset = thumb.getXY();
+
+                // Work out the delta of the pointer from the dead centre of the thumb.
+                // Slider.getTrackPoint positions the centre of the slider at the reported
+                // pointer position, so we have to correct for that in getValueFromTracker.
+                delta[0] += Math.floor(thumb.getWidth() / 2) - trackPoint[0];
+                delta[1] += Math.floor(thumb.getHeight() / 2) - trackPoint[1];
+            } else {
+                if (me.getClickToChange()) {
+                    trackPoint = me.getTrackpoint(trackPoint);
+                    if (trackPoint != null) {
+                        me.onClickChange(trackPoint);
+                    }
+                }
             }
         }
     },
 
-<span id='Ext-grid-column-Widget-method-beforeRender'>    beforeRender: function() {
-</span>        var me = this,
-            tdCls = me.tdCls,
-            widget;
+<span id='Ext-slider-Widget-method-onClickChange'>    /**
+</span>     * @private
+     * Moves the thumb to the indicated position.
+     * Only changes the value if the click was within this.clickRange.
+     * @param {Number} trackPoint local pixel offset **from the origin** (left for horizontal and bottom for vertical) along the Slider&#39;s axis at which the click event occured.
+     */
+    onClickChange : function(trackPoint) {
+        var me = this,
+            thumb, index, value;
 
-        me.listenerScopeFn = function (defaultScope) {
-            if (defaultScope === &#39;this&#39;) {
-                return this;
+        // How far along the track *from the origin* was the click.
+        // If vertical, the origin is the bottom of the slider track.
+
+        //find the nearest thumb to the click event
+        thumb = me.getNearest(trackPoint);
+        index = parseInt(thumb.getAttribute(&#39;data-thumbIndex&#39;), 10);
+        value = Ext.util.Format.round(me.reversePixelValue(trackPoint), me.decimalPrecision);
+        if (index) {
+            me.setThumbValue(index, value, undefined, true);
+        } else {
+            me.setValue(value);
+        }
+    },
+
+<span id='Ext-slider-Widget-method-getNearest'>    /**
+</span>     * @private
+     * Returns the nearest thumb to a click event, along with its distance
+     * @param {Number} trackPoint local pixel position along the Slider&#39;s axis to find the Thumb for
+     * @return {Object} The closest thumb object and its distance from the click event
+     */
+    getNearest: function(trackPoint) {
+        var me = this,
+            clickValue = me.reversePixelValue(trackPoint),
+            nearestDistance = me.getRange() + 5, //add a small fudge for the end of the slider
+            nearest = null,
+            thumbs = me.thumbs,
+            i = 0,
+            len = thumbs.length,
+            thumb,
+            value,
+            dist;
+
+        for (; i &lt; len; i++) {
+            thumb = thumbs[i];
+            value = me.reversePercentageValue(parseInt(thumb.dom.style[me.getThumbPositionStyle()], 10));
+            dist  = Math.abs(value - clickValue);
+
+            if (Math.abs(dist) &lt;= nearestDistance) {
+                nearest = thumb;
+                nearestDistance = dist;
             }
-            return me.resolveListenerScope(defaultScope);
+        }
+        return nearest;
+    },
+
+<span id='Ext-slider-Widget-method-promoteThumb'>    /**
+</span>     * @private
+     * Moves the given thumb above all other by increasing its z-index. This is called when as drag
+     * any thumb, so that the thumb that was just dragged is always at the highest z-index. This is
+     * required when the thumbs are stacked on top of each other at one of the ends of the slider&#39;s
+     * range, which can result in the user not being able to move any of them.
+     * @param {Ext.slider.Thumb} topThumb The thumb to move to the top
+     */
+    promoteThumb: function(topThumb) {
+        var thumbs = this.thumbStack || (this.thumbStack = Ext.Array.slice(this.thumbs)),
+            ln = thumbs.length,
+            zIndex = 10000, i;
+
+        // Move topthumb to position zero
+        if (thumbs[0] !== topThumb) {
+            Ext.Array.remove(thumbs, topThumb);
+            thumbs.unshift(topThumb);
+        }
+
+        // Then shuffle the zIndices
+        for (i = 0; i &lt; ln; i++) {
+            thumbs[i].el.setStyle(&#39;zIndex&#39;, zIndex);
+            zIndex -= 1000;
+        }
+    },
+
+<span id='Ext-slider-Widget-method-doMouseMove'>    doMouseMove: function (e, thumb, changeComplete) {
+</span>        var me = this,
+            trackerXY = e.getXY(),
+            newValue, thumbIndex, trackPoint;
+
+        trackerXY[0] += me.pointerOffset[0];
+        trackerXY[1] += me.pointerOffset[1];
+        trackPoint = me.getTrackpoint(trackerXY);
+
+        // If dragged out of range, value will be undefined
+        if (trackPoint) {
+            newValue = me.reversePixelValue(trackPoint);
+            thumbIndex = parseInt(thumb.getAttribute(&#39;data-thumbIndex&#39;), 10);
+            if (thumbIndex || (!changeComplete &amp;&amp; me.getPublishOnComplete())) {
+                me.setThumbValue(thumbIndex, newValue, false, changeComplete);
+            } else {
+                me.setValue(newValue);
+            }
+        }
+    },
+
+<span id='Ext-slider-Widget-method-onMouseMove'>    onMouseMove: function(e, thumb) {
+</span>        this.doMouseMove(e, thumb, false);
+    },
+
+<span id='Ext-slider-Widget-method-onMouseUp'>    onMouseUp: function(e, thumb) {
+</span>        var me = this;
+        
+        me.doMouseMove(e, thumb, true);
+        Ext.getDoc().un({
+            scope: me,
+            capture: true,
+            selectstart: me.stopSelect
+        });
+        delete me.animateOnSetValue; // expose &quot;undefined&quot; on prototype
+    },
+
+<span id='Ext-slider-Widget-method-stopSelect'>    stopSelect : function(e) {
+</span>        e.stopEvent();
+        return false;
+    },
+
+<span id='Ext-slider-Widget-method-setThumbValue'>    /**
+</span>     * Programmatically sets the value of the Slider. Ensures that the value is constrained within the minValue and
+     * maxValue.
+     *
+     * Setting a single value:
+     *     // Set the second slider value, don&#39;t animate
+     *     mySlider.setThumbValue(1, 50, false);
+     *
+     * Setting multiple values at once
+     *     // Set 3 thumb values, animate
+     *     mySlider.setThumbValue([20, 40, 60], true);
+     *
+     * @param {Number/Number[]} index Index of the thumb to move. Alternatively, it can be an array of values to set
+     * for each thumb in the slider.
+     * @param {Number} value The value to set the slider to. (This will be constrained within minValue and maxValue)
+     * @param {Boolean} [animate=true] Turn on or off animation
+     * @return {Ext.slider.Multi} this
+     */
+    setThumbValue : function(index, value, animate, changeComplete) {
+        var me = this,
+            thumb, thumbValue, len, i, values;
+
+        if (Ext.isArray(index)) {
+            values = index;
+            animate = value;
+
+            for (i = 0, len = values.length; i &lt; len; ++i) {
+                me.setThumbValue(i, values[i], animate, changeComplete);
+            }
+            return me;
+        }
+
+        thumb = me.getThumb(index);
+        thumbValue = me.reversePercentageValue(parseInt(thumb.dom.style[me.getThumbPositionStyle()], 10));
+
+        // ensures value is contstrained and snapped
+        value = me.normalizeValue(value);
+
+        if (value !== thumbValue &amp;&amp; me.fireEvent(&#39;beforechange&#39;, me, value, thumbValue, thumb) !== false) {
+            if (me.element.dom) {
+                // TODO this only handles a single value; need a solution for exposing multiple values to aria.
+                // Perhaps this should go on each thumb element rather than the outer element.
+                me.element.set({
+                    &#39;aria-valuenow&#39;: value,
+                    &#39;aria-valuetext&#39;: value
+                });
+
+                me.moveThumb(thumb, me.calculateThumbPosition(value), Ext.isDefined(animate) ? animate !== false : me.animate);
+                me.fireEvent(&#39;change&#39;, me, value, thumb);
+            }
+        }
+        return me;
+    },
+
+<span id='Ext-slider-Widget-method-getValue'>    /**
+</span>     * Returns the current value of the slider
+     * @param {Number} index The index of the thumb to return a value for
+     * @return {Number/Number[]} The current value of the slider at the given index, or an array of all thumb values if
+     * no index is given.
+     */
+    getValue : function(index) {
+        var me = this,
+            value;
+
+        if (Ext.isNumber(index)) {
+            value = me.thumbs[index].dom.style[me.getThumbPositionStyle()];
+            value = me.reversePercentageValue(parseInt(value, 10));
+        } else {
+            value = me.getValues();
+            if (value.length === 1) {
+                value = value[0];
+            }
+        }
+
+        return value;
+    },
+
+<span id='Ext-slider-Widget-method-getValues'>    /**
+</span>     * Returns an array of values - one for the location of each thumb
+     * @return {Number[]} The set of thumb values
+     */
+    getValues: function() {
+        var me = this,
+            values = [],
+            i = 0,
+            thumbs = me.thumbs,
+            len = thumbs.length;
+
+        for (; i &lt; len; i++) {
+            values.push(me.reversePercentageValue(parseInt(me.thumbs[i].dom.style[me.getThumbPositionStyle()], 10)));
+        }
+        return values;
+    },
+
+<span id='Ext-slider-Widget-method-moveThumb'>    /**
+</span>     * @private
+     * move the thumb
+     */
+    moveThumb: function(thumb, v, animate) {
+        var me = this,
+            styleProp = me.getThumbPositionStyle(),
+            to,
+            from;
+
+        v += &#39;%&#39;;
+
+        if (!animate) {
+            thumb.dom.style[styleProp] = v;
+        } else {
+            to = {};
+            to[styleProp] = v;
+
+            if (!Ext.supports.GetPositionPercentage) {
+                from = {};
+                from[styleProp] = thumb.dom.style[styleProp];
+            }
+
+            new Ext.fx.Anim({ // jshint ignore:line
+                target: thumb,
+                duration: 350,
+                from: from,
+                to: to
+            });
+        }
+    },
+
+<span id='Ext-slider-Widget-method-normalizeValue'>    /**
+</span>     * @private
+     * Returns a snapped, constrained value when given a desired value
+     * @param {Number} value Raw number value
+     * @return {Number} The raw value rounded to the correct d.p. and constrained within the set max and min values
+     */
+    normalizeValue : function(v) {
+        var me = this,
+            snapFn = me.zeroBasedSnapping ? &#39;snap&#39; : &#39;snapInRange&#39;;
+
+        v = Ext.Number[snapFn](v, me.increment, me.minValue, me.maxValue);
+        v = Ext.util.Format.round(v, me.decimalPrecision);
+        v = Ext.Number.constrain(v, me.minValue, me.maxValue);
+        return v;
+    },
+
+<span id='Ext-slider-Widget-method-getTrackpoint'>    /**
+</span>     * @private
+     * Given an `[x, y]` position within the slider&#39;s track (Points outside the slider&#39;s track are coerced to either the minimum or maximum value),
+     * calculate how many pixels **from the slider origin** (left for horizontal Sliders and bottom for vertical Sliders) that point is.
+     *
+     * If the point is outside the range of the Slider&#39;s track, the return value is `undefined`
+     * @param {Number[]} xy The point to calculate the track point for
+     */
+    getTrackpoint: function(xy) {
+        var me = this,
+            vertical = me.getVertical(),
+            sliderTrack = me.innerEl,
+            trackLength, result,
+            positionProperty;
+
+        if (vertical) {
+            positionProperty = &#39;top&#39;;
+            trackLength = sliderTrack.getHeight();
+        }
+        else {
+            positionProperty = me.horizontalProp;
+            trackLength = sliderTrack.getWidth();
+        }
+        
+        xy = me.transformTrackPoints(sliderTrack.translatePoints(xy));
+        result = Ext.Number.constrain(xy[positionProperty], 0, trackLength);
+        
+        return vertical ? trackLength - result : result;
+    },
+
+<span id='Ext-slider-Widget-property-transformTrackPoints'>    transformTrackPoints: Ext.identityFn,
+</span>
+<span id='Ext-slider-Widget-method-calculateThumbPosition'>    /**
+</span>     * @private
+     * Given a value within this Slider&#39;s range, calculates a Thumb&#39;s percentage CSS position to map that value.
+     */
+    calculateThumbPosition : function(v) {
+        var me = this,
+            pos = (v - me.getMinValue()) / me.getRange() * 100;
+
+        if (isNaN(pos)) {
+            pos = 0;
+        }
+
+        return pos;
+    },
+
+<span id='Ext-slider-Widget-method-getRatio'>    /**
+</span>     * @private
+     * Returns the ratio of pixels to mapped values. e.g. if the slider is 200px wide and maxValue - minValue is 100,
+     * the ratio is 2
+     * @return {Number} The ratio of pixels to mapped values
+     */
+    getRatio : function() {
+        var me = this,
+            innerEl = me.innerEl,
+            trackLength = me.getVertical() ? innerEl.getHeight() : innerEl.getWidth(),
+            valueRange = me.getRange();
+
+        return valueRange === 0 ? trackLength : (trackLength / valueRange);
+    },
+
+<span id='Ext-slider-Widget-method-getRange'>    getRange: function() {
+</span>        return this.getMaxValue() - this.getMinValue();
+    },
+
+<span id='Ext-slider-Widget-method-reversePixelValue'>    /**
+</span>     * @private
+     * Given a pixel location along the slider, returns the mapped slider value for that pixel.
+     * E.g. if we have a slider 200px wide with minValue = 100 and maxValue = 500, reversePixelValue(50)
+     * returns 200
+     * @param {Number} pos The position along the slider to return a mapped value for
+     * @return {Number} The mapped value for the given position
+     */
+    reversePixelValue : function(pos) {
+        return this.getMinValue() + (pos / this.getRatio());
+    },
+
+<span id='Ext-slider-Widget-method-reversePercentageValue'>    /**
+</span>     * @private
+     * Given a Thumb&#39;s percentage position along the slider, returns the mapped slider value for that pixel.
+     * E.g. if we have a slider 200px wide with minValue = 100 and maxValue = 500, reversePercentageValue(25)
+     * returns 200
+     * @param {Number} pos The percentage along the slider track to return a mapped value for
+     * @return {Number} The mapped value for the given position
+     */
+    reversePercentageValue : function(pos) {
+        return this.getMinValue() + this.getRange() * (pos / 100);
+    },
+
+<span id='Ext-slider-Widget-method-captureMouse'>    captureMouse: function(onMouseMove, onMouseUp, args, appendArgs) {
+</span>        var me = this,
+            onMouseupWrap,
+            listeners;
+
+        onMouseMove = onMouseMove &amp;&amp; Ext.Function.bind(onMouseMove, me, args, appendArgs);
+        onMouseUp   = onMouseUp   &amp;&amp; Ext.Function.bind(onMouseUp,   me, args, appendArgs);
+        onMouseupWrap = function() {
+            Ext.getDoc().un(listeners);
+            if (onMouseUp) {
+                onMouseUp.apply(me, arguments);
+            }
+        };
+        listeners = {
+            mousemove: onMouseMove,
+            mouseup: onMouseupWrap
         };
 
-        // Need an instantiated example to retrieve the tdCls that it needs
-        widget = Ext.widget(me.widget);
-
-        // If the widget is not using binding, but we have a dataIndex, and there&#39;s
-        // a defaultBindProperty to push it into, set flag to indicate to do that.
-        me.bindDataIndex = me.dataIndex &amp;&amp; widget.defaultBindProperty &amp;&amp; !widget.bind;
-
-        tdCls = tdCls ? tdCls + &#39; &#39; : &#39;&#39;;
-        me.tdCls = tdCls + widget.getTdCls();
-        me.setupViewListeners(me.getView());
-        me.callParent();
-
-        widget.destroy();
-    },
-
-<span id='Ext-grid-column-Widget-method-afterRender'>    afterRender: function() {
-</span>        var view = this.getView();
-
-        this.callParent();
-
-        // View already ready, means we were added later so go and set up our widgets, but if the grid
-        // is reconfiguring, then the column will be rendered &amp; the view will be ready, so wait until
-        // the reconfigure forces a refresh
-        if (view &amp;&amp; view.viewReady &amp;&amp; !view.ownerGrid.reconfiguring) {
-            this.onViewRefresh(view, view.getViewRange());
-        }
-    },
-
-<span id='Ext-grid-column-Widget-method-defaultRenderer'>    // Cell must be left blank
-</span>    defaultRenderer: Ext.emptyFn, 
-
-<span id='Ext-grid-column-Widget-method-updater'>    updater: function(cell, value, record) {
-</span>        this.updateWidget(record);
-    },
-
-<span id='Ext-grid-column-Widget-method-onCellsResized'>    onCellsResized: function(newWidth) {
-</span>        var me = this,
-            liveWidgets = me.ownerGrid.getManagedWidgets(me.getId()),
-            len = liveWidgets.length,
-            view = me.getView(),
-            i, cell;
-
-        if (!me.isFixedSize &amp;&amp; me.rendered &amp;&amp; view &amp;&amp; view.viewReady) {
-            cell = view.getEl().down(me.getCellInnerSelector());
-            if (cell) {
-                // Subtract innerCell padding width
-                newWidth -= parseInt(me.getCachedStyle(cell, &#39;padding-left&#39;), 10) + parseInt(me.getCachedStyle(cell, &#39;padding-right&#39;), 10);
-
-                for (i = 0; i &lt; len; ++i) {
-
-                    // Ensure these are treated as the top of the modified tree.
-                    // If not within a layout run, this will work fine.
-                    // If within a layout run, Component#updateLayout will
-                    // just ask its runningLayoutContext to invalidate it.
-                    liveWidgets[i].ownerLayout = null;
-                    liveWidgets[i].setWidth(newWidth);
-                    liveWidgets[i].ownerLayout = view.componentLayout;
-                }
-            }
-        }
-    },
-
-<span id='Ext-grid-column-Widget-method-onAdded'>    onAdded: function() {
-</span>        var me = this,
-            view;
-
-        me.callParent(arguments);
-
-        me.ownerGrid = me.up(&#39;tablepanel&#39;).ownerGrid;
-        view = me.getView();
-
-        // If we are being added to a rendered HeaderContainer
-        if (view) {
-            me.setupViewListeners(view);
-        }
-    },
-
-<span id='Ext-grid-column-Widget-method-onRemoved'>    onRemoved: function(isDestroying) {
-</span>        var viewListeners = this.viewListeners;
-
-        if (viewListeners) {
-            Ext.destroy(viewListeners);
-        }
-        if (isDestroying) {
-            this.ownerGrid.destroyManagedWidgets(this.getId());
-        }
-        this.callParent(arguments);
-    },
-
-<span id='Ext-grid-column-Widget-method-doDestroy'>    doDestroy: function() {
-</span>        this.ownerGrid.destroyManagedWidgets(this.getId());
-        this.callParent();
-    },
-
-<span id='Ext-grid-column-Widget-property-privates'>    privates: {
-</span>        getWidget: function(record) {
-            var me = this,
-                result = null;
-
-            if (record) {
-                result = me.ownerGrid.createManagedWidget(me.getId(), me.widget, record);
-                result.resolveListenerScope = me.listenerScopeFn;
-                result.getWidgetRecord = me.widgetRecordDecorator;
-                result.getWidgetColumn = me.widgetColumnDecorator;
-                result.measurer = me;
-                result.ownerCmp = me.getView();
-                // The ownerCmp of the widget is the encapsulating view, which means it will be considered
-                // as a layout child, but it isn&#39;t really, we always need the layout on the
-                // component to run if asked.
-                result.isLayoutChild = me.returnFalse;
-            }
-
-            return result;
-        },
-
-        onItemAdd: function(records) {
-            var me = this,
-                view = me.getView(),
-                hasAttach = !!me.onWidgetAttach,
-                dataIndex = me.dataIndex,
-                isFixedSize = me.isFixedSize,
-                len = records.length, i,
-                record,
-                cell,
-                widget,
-                el,
-                focusEl,
-                width;
-
-            // Loop through all records added, ensuring that our corresponding cell in each item
-            // has a Widget of the correct type in it, and is updated with the correct value from the record.
-            if (me.isVisible(true)) {
-                for (i = 0; i &lt; len; i++) {
-                    record = records[i];
-                    if (record.isNonData) {
-                        continue;
-                    }
-
-                    cell = view.getCell(record, me);
-
-                    // May be a placeholder with no data row
-                    if (cell) {
-                        cell = cell.dom.firstChild;
-                        if (!isFixedSize &amp;&amp; !width &amp;&amp; me.lastBox) {
-                            width = me.lastBox.width - parseInt(me.getCachedStyle(cell, &#39;padding-left&#39;), 10) - parseInt(me.getCachedStyle(cell, &#39;padding-right&#39;), 10);
-                        }
-
-                        widget = me.getWidget(record);
-                        widget.$widgetColumn = me;
-                        widget.$widgetRecord = record;
-
-                        // Render/move a widget into the new row
-                        Ext.fly(cell).empty();
-
-                        // Call the appropriate setter with this column&#39;s data field
-                        if (widget.defaultBindProperty &amp;&amp; dataIndex) {
-                            widget.setConfig(widget.defaultBindProperty, record.get(dataIndex));
-                        }
-
-                        el = widget.el || widget.element;
-                        if (el) {
-                            cell.appendChild(el.dom);
-                            if (!isFixedSize) {
-                                widget.setWidth(width);
-                            }
-                            widget.reattachToBody();
-                        } else {
-                            if (!isFixedSize) {
-                                // Must have a width so that the initial layout works
-                                widget.width = width || 100;
-                            }
-                            widget.render(cell);
-                        }
-
-                        // We have to run the callback *after* reattaching the Widget
-                        // back to the document body. Otherwise widget&#39;s layout may fail
-                        // because there are no dimensions to measure when the callback is fired!
-                        if (hasAttach) {
-                            Ext.callback(me.onWidgetAttach, me.scope, [me, widget, record], 0, me);
-                        }
-                       
-                        // If the widget has a focusEl, ensure that its tabbability status is synched
-                        // with the view&#39;s navigable/actionable state.
-                        focusEl = widget.getFocusEl();
-
-                        if (focusEl) {
-                            if (view.actionableMode) {
-                                if (!focusEl.isTabbable()) {
-                                    focusEl.restoreTabbableState();
-                                }
-                            }
-                            else {
-                                if (focusEl.isTabbable()) {
-                                    focusEl.saveTabbableState();
-                                }
-                            }
-                        }
-                    }
-                }
-            } else {
-                view.refreshNeeded = true;
-            }
-        },
-
-        onItemUpdate: function(record, recordIndex, oldItemDom) {
-            this.updateWidget(record);
-        },
-
-        onViewRefresh: function(view, records) {
-            Ext.suspendLayouts();
-            this.onItemAdd(records);
-            Ext.resumeLayouts(true);
-        },
-
-        returnFalse: function() {
-            return false;
-        },
-
-        setupViewListeners: function(view) {
-            var me = this,
-                listeners = {
-                    refresh: me.onViewRefresh,
-                    itemadd: me.onItemAdd,
-                    scope: me,
-                    destroyable: true
-                };
-
-            // If we are set up to push a dataIndex property into the widget&#39;s defaultBindProperty
-            // then we must react to itemupdate events to keep the widget fresh.
-            if (me.bindDataIndex) {
-                listeners.itemUpdate = me.onItemUpdate;
-            }
-            me.viewListeners = view.on(listeners);
-        },
-
-        updateWidget: function(record) {
-            var dataIndex = this.dataIndex,
-                widget;
-
-            if (this.rendered &amp;&amp; this.bindDataIndex) {
-                widget = this.getWidget(record);
-                // Call the appropriate setter with this column&#39;s data field unless it&#39;s using binding
-                if (widget) {
-                    widget.setConfig(widget.defaultBindProperty, record.get(dataIndex));
-                }
-            }
-        }, 
-        
-        widgetRecordDecorator: function() {
-            return this.$widgetRecord;
-        },
-        
-        widgetColumnDecorator: function() {
-            return this.$widgetColumn;
-        }
+        // Funnel mousemove events and the final mouseup event back into the gadget
+        Ext.getDoc().on(listeners);
     }
 });
 </pre>
