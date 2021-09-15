@@ -1,4 +1,4 @@
-# GeoExt 3
+# GeoExt
 
 JavaScript Toolkit for Rich Web Mapping Applications.
 
@@ -11,18 +11,21 @@ JavaScript Toolkit for Rich Web Mapping Applications.
 
 GeoExt is Open Source and enables building desktop-like GIS applications through the web. It is a JavaScript framework that combines the GIS functionality of OpenLayers with the user interface savvy of the ExtJS library provided by Sencha.
 
-Version 3 of GeoExt is the successor to the GeoExt 2.x-series and is built atop the newest official installments of its base libraries; OpenLayers (v3.x and v4.x) and ExtJS 6.
+Version 3 of GeoExt was the successor to the GeoExt 2.x-series and has been built atop the following versions of its base libraries: OpenLayers v3.x / v4.x and ExtJS 6.
+
+With version 4 GeoExt supports the newest official installment v6.x of OpenLayers and ExtJS 6.2. 
 
 We are trying hard to keep up with developments on both our parent libraries.
-The current state of GeoExt is compatible with ExtJS 6.2.0 and OpenLayers 4.6.5. This state is released as GeoExt v3.2.0.
+The current state of GeoExt is compatible with ExtJS 6.2.0 and OpenLayers 6.5.0. This state is released as GeoExt v4.0.0.
 
 | OpenLayers       | ExtJS | GeoExt         |
 | ---------------- | ----- | -------------- |
-| 4.6.5            | 6.2.0 | 3.3.x & 3.2.0  |
+| 6.5.0            | 6.2.0 | 4.0.x          |
+| 4.6.5            | 6.2.0 | 3.4.0 & 3.3.x & 3.2.0  |
 | 3.20.1 / 4.3.x   | 6.2.0 | 3.1.0          |
 | 3.20.1           | 6.2.0 | 3.0.0          |
 
-## More information on GeoExt 3
+## More information on GeoExt
 
 Have a look at the official homepage: https://geoext.github.io/geoext/
 
@@ -30,9 +33,9 @@ You will find examples, API documentation (with and without inherited functional
 
 > What you see on https://geoext.github.io/geoext/ are the contents of the `gh-pages`-branch. If you encounter anything that should be fixed, please issue a pull request against that branch and we will merge it as soon as possible.
 
-## How to use GeoExt 3 inside your Sencha app
+## How to use GeoExt inside your Sencha app
 
-You can use GeoExt 3 either via an `npm install @geoext/geoext` in your application folder, or (if you want the latest and greatest), you can use it from a `git clone` of this repository.
+You can use GeoExt either via an `npm install @geoext/geoext` in your application folder, or (if you want the latest and greatest), you can use it from a `git clone` of this repository.
 
 ### Configuring your apps classpath
 
@@ -65,7 +68,7 @@ In case you want to use them you also have to add the `classic` folder to the
     ]
 ```
 
-To help with your first GeoExt 3 project, follow the instructions provided to build a [GeoExt 3 Universal app](universal-app.md). This app runs on the desktop and on mobile.
+To help with your first GeoExt project, follow the instructions provided to build a [GeoExt Universal app](universal-app.md). This app runs on the desktop and on mobile.
 
 ## Examples
 
