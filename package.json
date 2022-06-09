@@ -83,7 +83,8 @@
     "sinon": "14.0.0"
   },
   "engines": {
-    "node": ">= 10"
+    "node": ">= 16",
+    "npm": ">= 8"
   },
   "### sencha package related confguration follows": "",
   "namespace": "GeoExt3",
