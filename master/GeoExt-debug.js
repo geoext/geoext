@@ -2402,8 +2402,9 @@ Ext.define('GeoExt.component.OverviewMap', {
     initOverviewMap: function() {
         var me = this;
         var parentMap = me.getParentMap();
+        var ovMap = me.getMap();
         me.getLayers().push(me.extentLayer);
-        if (!me.getMap()) {
+        if (!ovMap) {
             var parentView = parentMap.getView();
             var olMap = new ol.Map({
                     controls: new ol.Collection(),
@@ -2415,6 +2416,14 @@ Ext.define('GeoExt.component.OverviewMap', {
                     })
                 });
             me.setMap(olMap);
+        } else if (ovMap.getView() && !ovMap.getView().getCenter()) {
+            // OL expects (any) center here.
+            // otherwise problems as described in
+            // https://github.com/geoext/geoext/issues/707 can occur
+            ovMap.getView().setCenter([
+                0,
+                0
+            ]);
         }
         GeoExt.util.Layer.cascadeLayers(parentMap.getLayerGroup(), function(layer) {
             if (me.getLayers().indexOf(layer) > -1) {
