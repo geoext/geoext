@@ -15,11 +15,20 @@
   </script>
 </head>
 <body onload="prettyPrint(); highlight();">
-  <pre class="prettyprint lang-js">//&lt;debug&gt;
-Ext.define(&#39;Ext.grid.Scroller&#39;, {
-    constructor: Ext.deprecated()
+  <pre class="prettyprint lang-js">Ext.define(&#39;Ext.rtl.layout.container.boxOverflow.Scroller&#39;, {
+    override: &#39;Ext.layout.container.boxOverflow.Scroller&#39;,
+
+    getWheelDelta: function(e) {
+        var layout = this.layout,
+            delta = e.getWheelDelta();
+
+        if (layout.direction === &#39;horizontal&#39; &amp;&amp; layout.owner.getInherited().rtl) {
+            delta = -delta;
+        }
+
+        return delta;
+    }
 });
-//&lt;/debug&gt;
 </pre>
 </body>
 </html>

@@ -1,66 +1,33 @@
 {
-  "_args": [
-    [
-      "@geoext/openlayers-legacy@6.5.2",
-      "/home/runner/work/geoext/geoext"
-    ]
-  ],
-  "_development": true,
-  "_from": "@geoext/openlayers-legacy@6.5.2",
-  "_id": "@geoext/openlayers-legacy@6.5.2",
-  "_inBundle": false,
-  "_integrity": "sha512-GB6ixn4+apDXOOBbGu6D97lQaL41YnanFn5qextn9ZphXLHQFOsDsl9HrAbMH6pobPvpjOstalEVRWAIZerYog==",
-  "_location": "/@geoext/openlayers-legacy",
-  "_phantomChildren": {},
-  "_requested": {
-    "type": "version",
-    "registry": true,
-    "raw": "@geoext/openlayers-legacy@6.5.2",
-    "name": "@geoext/openlayers-legacy",
-    "escapedName": "@geoext%2fopenlayers-legacy",
-    "scope": "@geoext",
-    "rawSpec": "6.5.2",
-    "saveSpec": null,
-    "fetchSpec": "6.5.2"
-  },
-  "_requiredBy": [
-    "#DEV:/"
-  ],
-  "_resolved": "https://registry.npmjs.org/@geoext/openlayers-legacy/-/openlayers-legacy-6.5.2.tgz",
-  "_spec": "6.5.2",
-  "_where": "/home/runner/work/geoext/geoext",
-  "author": {
-    "name": "Simon Seyock",
-    "email": "seyock@terrestris.de"
-  },
-  "bugs": {
-    "url": "https://github.com/geoext/openlayers-legacy/issues"
-  },
+  "name": "@geoext/openlayers-legacy",
+  "version": "6.5.4",
   "description": "OpenLayers legacy build for geoext",
-  "devDependencies": {
-    "np": "^7.4.0",
-    "ol": "git+https://github.com/openlayers/openlayers.git#v6.5.0"
+  "scripts": {
+    "build": "./build-openlayers-legacy.sh",
+    "release": "npm run build && np --no-yarn --no-tests --no-release-draft"
   },
-  "files": [
-    "dist/*"
-  ],
-  "homepage": "https://github.com/geoext/openlayers-legacy#readme",
   "keywords": [
     "geoext",
     "openlayers"
   ],
+  "author": "Simon Seyock <seyock@terrestris.de>",
   "license": "BSD-2-Clause",
-  "name": "@geoext/openlayers-legacy",
-  "publishConfig": {
-    "access": "public"
+  "devDependencies": {
+    "@babel/cli": "^7.14.5",
+    "@babel/core": "^7.14.5",
+    "@babel/preset-env": "^7.14.5",
+    "np": "^7.4.0",
+    "npx": "^10.2.2",
+    "ol": "git+https://github.com/openlayers/openlayers.git#v6.5.0"
   },
   "repository": {
     "type": "git",
-    "url": "git://github.com/geoext/openlayers-legacy.git"
+    "url": "git://github.com:geoext/openlayers-legacy.git"
   },
-  "scripts": {
-    "build": "rm -rf dist && cd node_modules/ol/ && npm i && npm run build-legacy && cp -r build/legacy ../../dist && cp LICENSE.md ../../dist/ && cd ../../",
-    "release": "npm run build && np 6.5.2 --no-yarn"
+  "publishConfig": {
+    "access": "public"
   },
-  "version": "6.5.2"
+  "files": [
+    "dist/*"
+  ]
 }

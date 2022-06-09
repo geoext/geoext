@@ -15,152 +15,149 @@
   </script>
 </head>
 <body onload="prettyPrint(); highlight();">
-  <pre class="prettyprint lang-js"><span id='Ext-util-sizemonitor-Abstract'>/**
-</span> * @private
+  <pre class="prettyprint lang-js"><span id='Ext-plugin-Abstract'>/**
+</span> * This is the base class from which all plugins should extend.
+ *
+ * This class defines the essential API of plugins as used by Components by defining the
+ * following methods:
+ *
+ *  - `init` : The plugin initialization method which the host Component calls during
+ *     Component initialization. The Component passes itself as the sole parameter.
+ *     Subclasses should set up bidirectional links between the plugin and its host
+ *     Component here.
+ *
+ *  - `destroy` : The plugin cleanup method which the host Component calls at Component
+ *     destruction time. Use this method to break links between the plugin and the
+ *     Component and to free any allocated resources.
  */
-Ext.define(&#39;Ext.util.sizemonitor.Abstract&#39;, {
+Ext.define(&#39;Ext.plugin.Abstract&#39;, {
+    alternateClassName: &#39;Ext.AbstractPlugin&#39;,
 
-    mixins: [&#39;Ext.mixin.Templatable&#39;],
+<span id='Ext-plugin-Abstract-property-isPlugin'>    /**
+</span>     * @property {Boolean} isPlugin
+     * The value `true` to identify objects of this class or a subclass thereof.
+     * @readonly
+     */
+    isPlugin: true,
 
-    requires: [
-        &#39;Ext.TaskQueue&#39;
-    ],
-
-    config: {
-<span id='Ext-util-sizemonitor-Abstract-cfg-element'>        element: null,
-</span>
-<span id='Ext-util-sizemonitor-Abstract-cfg-callback'>        callback: Ext.emptyFn,
-</span>
-<span id='Ext-util-sizemonitor-Abstract-cfg-scope'>        scope: null,
-</span>
-<span id='Ext-util-sizemonitor-Abstract-cfg-args'>        args: []
-</span>    },
-
-<span id='Ext-util-sizemonitor-Abstract-property-width'>    width: null,
-</span>
-<span id='Ext-util-sizemonitor-Abstract-property-height'>    height: null,
-</span>
-<span id='Ext-util-sizemonitor-Abstract-property-contentWidth'>    contentWidth: null,
-</span>
-<span id='Ext-util-sizemonitor-Abstract-property-contentHeight'>    contentHeight: null,
-</span>
-<span id='Ext-util-sizemonitor-Abstract-method-constructor'>    constructor: function(config) {
-</span>        this.refresh = Ext.Function.bind(this.refresh, this);
-
-        this.info = {
-            width: 0,
-            height: 0,
-            contentWidth: 0,
-            contentHeight: 0,
-            flag: 0
-        };
-
-        this.initElement();
-
-        this.initConfig(config);
-
-        this.bindListeners(true);
-    },
-
-<span id='Ext-util-sizemonitor-Abstract-method-bindListeners'>    bindListeners: Ext.emptyFn,
-</span>
-<span id='Ext-util-sizemonitor-Abstract-method-applyElement'>    applyElement: function(element) {
-</span>        if (element) {
-            return Ext.get(element);
+<span id='Ext-plugin-Abstract-method-constructor'>    /**
+</span>     * Initializes the plugin.
+     * @param {Object} [config] Configuration object.
+     */
+    constructor: function (config) {
+        if (config) {
+            this.pluginConfig = config;
+            this.initConfig(config);
         }
     },
 
-<span id='Ext-util-sizemonitor-Abstract-method-updateElement'>    updateElement: function(element) {
-</span>        element.append(this.detectorsContainer);
-        element.addCls(Ext.baseCSSPrefix + &#39;size-monitored&#39;);
+<span id='Ext-plugin-Abstract-method-clonePlugin'>    /**
+</span>     * Creates clone of the plugin.
+     * @param {Object} [overrideCfg] Additional config for the derived plugin.
+     */
+    clonePlugin: function (overrideCfg) {
+        return new this.self(Ext.apply({}, overrideCfg, this.pluginConfig));
     },
 
-<span id='Ext-util-sizemonitor-Abstract-method-applyArgs'>    applyArgs: function(args) {
-</span>        return args.concat([this.info]);
+<span id='Ext-plugin-Abstract-method-detachCmp'>    /**
+</span>     * @method detachCmp
+     * Plugins that can be disconnected from their host component should implement
+     * this method.
+     * @since 6.2.0
+     */
+
+<span id='Ext-plugin-Abstract-method-getCmp'>    /**
+</span>     * Returns the component to which this plugin is attached.
+     * @return {Ext.Component} The owning host component.
+     */
+    getCmp: function() {
+        return this.cmp;
     },
 
-<span id='Ext-util-sizemonitor-Abstract-method-refreshMonitors'>    refreshMonitors: Ext.emptyFn,
-</span>
-<span id='Ext-util-sizemonitor-Abstract-method-forceRefresh'>    forceRefresh: function() {
-</span>        Ext.TaskQueue.requestRead(&#39;refresh&#39;, this);
+<span id='Ext-plugin-Abstract-method-setCmp'>    /**
+</span>     * Sets the host component to which this plugin is attached. For a plugin to be
+     * removable without being destroyed, this method should be provided and be prepared
+     * to receive `null` for the component.
+     * @param {Ext.Component} host The owning host component.
+     */
+    setCmp: function (host) {
+        this.cmp = host;
     },
 
-<span id='Ext-util-sizemonitor-Abstract-method-getContentBounds'>    getContentBounds: function() {
-</span>        return this.detectorsContainer.getBoundingClientRect();
-    },
+<span id='Ext-plugin-Abstract-cfg-id'>    /**
+</span>     * @cfg {String} id
+     * An identifier for the plugin that can be set at creation time to later retrieve the
+     * plugin using the {@link #getPlugin getPlugin} method. For example:
+     *
+     *      var panel = Ext.create({
+     *          xtype: &#39;panel&#39;,
+     *
+     *          plugins: [{
+     *              id: &#39;foo&#39;,
+     *              ...
+     *          }]
+     *      });
+     *
+     *      // later on:
+     *      var plugin = panel.getPlugin(&#39;foo&#39;);
+     * @since 6.2.0
+     */
 
-<span id='Ext-util-sizemonitor-Abstract-method-getContentWidth'>    getContentWidth: function() {
-</span>        return this.detectorsContainer.clientWidth;
-    },
+<span id='Ext-plugin-Abstract-cfg-pluginId'>    /**
+</span>     * @cfg {String} pluginId
+     * @deprecated 6.2.0 Use `id` instead
+     */
 
-<span id='Ext-util-sizemonitor-Abstract-method-getContentHeight'>    getContentHeight: function() {
-</span>        return this.detectorsContainer.clientHeight;
-    },
+<span id='Ext-plugin-Abstract-method-init'>    /**
+</span>     * @method init
+     * The init method is invoked to formally associate the host component and the plugin.
+     *
+     * Subclasses should perform initialization and set up any requires links between the
+     * plugin and its host Component in their own implementation of this method.
+     * @param {Ext.Component} host The host Component which owns this plugin.
+     */
+    init: Ext.emptyFn,
 
-<span id='Ext-util-sizemonitor-Abstract-method-refreshSize'>    refreshSize: function() {
-</span>        var element = this.getElement();
-
-        if (!element || element.destroyed) {
-            return false;
-        }
-
-        var width = element.getWidth(),
-            height = element.getHeight(),
-            contentWidth = this.getContentWidth(),
-            contentHeight = this.getContentHeight(),
-            currentContentWidth = this.contentWidth,
-            currentContentHeight = this.contentHeight,
-            info = this.info,
-            resized = false,
-            flag = 0;
-
-        this.width = width;
-        this.height = height;
-        this.contentWidth = contentWidth;
-        this.contentHeight = contentHeight;
-
-        flag = ((currentContentWidth !== contentWidth ? 1 : 0) + (currentContentHeight !== contentHeight ? 2 : 0));
-
-        if (flag &gt; 0) {
-            info.width = width;
-            info.height = height;
-            info.contentWidth = contentWidth;
-            info.contentHeight = contentHeight;
-            info.flag = flag;
-
-            resized = true;
-            this.getCallback().apply(this.getScope(), this.getArgs());
-        }
-
-        return resized;
-    },
-
-<span id='Ext-util-sizemonitor-Abstract-method-refresh'>    refresh: function(force) {
-</span>        if (this.destroying || this.destroyed) {
-            return;
-        }
+<span id='Ext-plugin-Abstract-method-destroy'>    /**
+</span>     * @method destroy
+     *
+     * The destroy method is invoked by the owning Component at the time the Component is
+     * being destroyed.
+     */
+    destroy: function() {
+        this.cmp = this.pluginConfig = null;
         
-        if (this.refreshSize() || force) {
-            Ext.TaskQueue.requestWrite(&#39;refreshMonitors&#39;, this);
+        this.callParent();
+    },
+
+<span id='Ext-plugin-Abstract-method-onClassExtended'>    onClassExtended: function (cls, data, hooks) {
+</span>        var alias = data.alias,
+            prototype = cls.prototype;
+
+        // Inject a ptype property so that findPlugin() works.
+        if (alias &amp;&amp; !data.ptype) {
+            if (Ext.isArray(alias)) {
+                alias = alias[0];
+            }
+            
+            prototype.ptype = alias.split(&#39;plugin.&#39;)[1];
         }
     },
 
-<span id='Ext-util-sizemonitor-Abstract-method-destroy'>    destroy: function() {
+<span id='Ext-plugin-Abstract-method-resolveListenerScope'>    resolveListenerScope: function (defaultScope) {
 </span>        var me = this,
-            element = me.getElement();
+            cmp = me.getCmp(),
+            scope;
 
-        me.bindListeners(false);
-
-        if (element &amp;&amp; !element.destroyed) {
-            element.removeCls(Ext.baseCSSPrefix + &#39;size-monitored&#39;);
+        if (cmp) {
+            scope = cmp.resolveSatelliteListenerScope(me, defaultScope);
         }
 
-        delete me._element;
-        
-        // This is a closure so Base destructor won&#39;t null it
-        me.refresh = null;
-
-        me.callParent();
+        // If this method was called, it means the plugin subclass must
+        // have mixed in Observable, so we can rely on there being
+        // a &quot;this.mixins.observable&quot; even though Ext.plugin.Abstract
+        // does not mix it in directly
+        return scope || me.mixins.observable.resolveListenerScope.call(me, defaultScope);
     }
 });
 </pre>

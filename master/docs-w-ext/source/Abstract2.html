@@ -15,71 +15,67 @@
   </script>
 </head>
 <body onload="prettyPrint(); highlight();">
-  <pre class="prettyprint lang-js"><span id='Ext-util-paintmonitor-Abstract'>/**
+  <pre class="prettyprint lang-js"><span id='Ext-fx-layout-card-Abstract'>/**
 </span> * @private
  */
-Ext.define(&#39;Ext.util.paintmonitor.Abstract&#39;, {
-
+Ext.define(&#39;Ext.fx.layout.card.Abstract&#39;, {
+    extend: &#39;Ext.Evented&#39;,
+<span id='Ext-fx-layout-card-Abstract-property-isAnimation'>    isAnimation: true,
+</span>
     config: {
-<span id='Ext-util-paintmonitor-Abstract-cfg-element'>        element: null,
+<span id='Ext-fx-layout-card-Abstract-cfg-direction'>        direction: &#39;left&#39;,
 </span>
-<span id='Ext-util-paintmonitor-Abstract-cfg-callback'>        callback: Ext.emptyFn,
+<span id='Ext-fx-layout-card-Abstract-cfg-duration'>        duration: null,
 </span>
-<span id='Ext-util-paintmonitor-Abstract-cfg-scope'>        scope: null,
+<span id='Ext-fx-layout-card-Abstract-cfg-reverse'>        reverse: null,
 </span>
-<span id='Ext-util-paintmonitor-Abstract-cfg-args'>        args: []
+<span id='Ext-fx-layout-card-Abstract-cfg-layout'>        layout: null
 </span>    },
 
-<span id='Ext-util-paintmonitor-Abstract-property-eventName'>    eventName: &#39;&#39;,
-</span>
-<span id='Ext-util-paintmonitor-Abstract-property-monitorClass'>    monitorClass: &#39;&#39;,
-</span>
-<span id='Ext-util-paintmonitor-Abstract-method-constructor'>    constructor: function(config) {
-</span>        this.onElementPainted = Ext.Function.bind(this.onElementPainted, this);
-
-        this.initConfig(config);
-    },
-
-<span id='Ext-util-paintmonitor-Abstract-method-bindListeners'>    bindListeners: function(bind) {
-</span>        this.monitorElement[bind ? &#39;addEventListener&#39; : &#39;removeEventListener&#39;](this.eventName, this.onElementPainted, true);
-    },
-
-<span id='Ext-util-paintmonitor-Abstract-method-applyElement'>    applyElement: function(element) {
-</span>        if (element) {
-            return Ext.get(element);
+<span id='Ext-fx-layout-card-Abstract-method-updateLayout'>    updateLayout: function(layout) {
+</span>        if (layout) {
+            this.enable();
         }
     },
 
-<span id='Ext-util-paintmonitor-Abstract-method-updateElement'>    updateElement: function(element) {
-</span>        this.monitorElement = Ext.Element.create({
-            classList: [Ext.baseCSSPrefix + &#39;paint-monitor&#39;, this.monitorClass]
-        }, true);
+<span id='Ext-fx-layout-card-Abstract-method-enable'>    enable: function() {
+</span>        var layout = this.getLayout();
 
-        element.appendChild(this.monitorElement);
-        element.addCls(Ext.baseCSSPrefix + &#39;paint-monitored&#39;);
-        this.bindListeners(true);
+        if (layout) {
+            layout.on(&#39;beforeactiveitemchange&#39;, &#39;onActiveItemChange&#39;, this);
+        }
     },
 
-<span id='Ext-util-paintmonitor-Abstract-method-onElementPainted'>    onElementPainted: function() {},
+<span id='Ext-fx-layout-card-Abstract-method-disable'>    disable: function() {
+</span>        var layout = this.getLayout();
+
+        if (this.isAnimating) {
+            this.stopAnimation();
+        }
+
+        if (layout) {
+            layout.un(&#39;beforeactiveitemchange&#39;, &#39;onActiveItemChange&#39;, this);
+        }
+    },
+
+<span id='Ext-fx-layout-card-Abstract-method-onActiveItemChange'>    onActiveItemChange: Ext.emptyFn,
 </span>
-<span id='Ext-util-paintmonitor-Abstract-method-destroy'>    destroy: function() {
+<span id='Ext-fx-layout-card-Abstract-method-destroy'>    destroy: function() {
 </span>        var me = this,
-            monitorElement = me.monitorElement,
-            parentNode = monitorElement.parentNode,
-            element = me.getElement();
+            layout = me.getLayout();
 
-        me.bindListeners(false);
-        delete me.monitorElement;
-
-        if (element &amp;&amp; !element.destroyed) {
-            element.removeCls(Ext.baseCSSPrefix + &#39;paint-monitored&#39;);
-            delete me._element;
+        if (me.isAnimating) {
+            me.stopAnimation();
         }
 
-        if (parentNode) {
-            parentNode.removeChild(monitorElement);
+        if (layout) {
+            layout.un(&#39;beforeactiveitemchange&#39;, &#39;onActiveItemChange&#39;, this);
         }
+        me.setLayout(null);
 
+        if (me.observableId) {
+            me.fireEvent(&#39;destroy&#39;, this);
+        }
         me.callParent();
     }
 });

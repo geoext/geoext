@@ -15,85 +15,165 @@
   </script>
 </head>
 <body onload="prettyPrint(); highlight();">
-  <pre class="prettyprint lang-js"><span id='Ext-util-Queue'>/**
-</span> * An internal Queue class.
+  <pre class="prettyprint lang-js"><span id='Ext-fx-Queue'>/**
+</span> * @class Ext.fx.Queue
+ * Animation Queue mixin to handle chaining and queueing by target.
  * @private
  */
-Ext.define(&#39;Ext.util.Queue&#39;, {
 
-<span id='Ext-util-Queue-method-constructor'>    constructor: function() {
-</span>        this.clear();
+Ext.define(&#39;Ext.fx.Queue&#39;, {
+
+    requires: [&#39;Ext.util.HashMap&#39;],
+
+<span id='Ext-fx-Queue-method-constructor'>    constructor: function() {
+</span>        this.targets = new Ext.util.HashMap();
+        this.fxQueue = {};
     },
 
-<span id='Ext-util-Queue-method-add'>    add : function(obj, replace) {
-</span>        var me = this,
-            key = me.getKey(obj),
-            prevEntry;
+<span id='Ext-fx-Queue-method-getFxDefaults'>    /**
+</span>     * @private
+     */
+    getFxDefaults: function(targetId) {
+        var target = this.targets.get(targetId);
+        if (target) {
+            return target.fxDefaults;
+        }
+        return {};
+    },
 
-        if (!(prevEntry = me.map[key])) {
-            ++me.length;
-            me.items.push(obj);
-            me.map[key] = obj;
-        } else if (replace) {
-            me.map[key] = obj;
-            me.items[Ext.Array.indexOf(me.items, prevEntry)] = obj;
+<span id='Ext-fx-Queue-method-setFxDefaults'>    /**
+</span>     * @private
+     */
+    setFxDefaults: function(targetId, obj) {
+        var target = this.targets.get(targetId);
+        if (target) {
+            target.fxDefaults = Ext.apply(target.fxDefaults || {}, obj);
+        }
+    },
+
+<span id='Ext-fx-Queue-method-stopAnimation'>    /**
+</span>     * @private
+     */
+    stopAnimation: function(targetId, suppressEvent) {
+        var me = this,
+            queue = me.getFxQueue(targetId),
+            ln = queue.length,
+            item;
+        
+        while (ln) {
+            item = queue[ln - 1];
+            
+            if (item) {
+                item.end(suppressEvent);
+            }
+            
+            ln--;
+        }
+    },
+
+<span id='Ext-fx-Queue-method-getActiveAnimation'>    /**
+</span>     * @private
+     * Returns current animation object if the element has any effects actively running or queued, else returns false.
+     */
+    getActiveAnimation: function(targetId) {
+        var queue = this.getFxQueue(targetId);
+        return (queue &amp;&amp; !!queue.length) ? queue[0] : false;
+    },
+
+<span id='Ext-fx-Queue-method-hasFxBlock'>    /**
+</span>     * @private
+     */
+    hasFxBlock: function(targetId) {
+        var queue = this.getFxQueue(targetId);
+        return queue &amp;&amp; queue[0] &amp;&amp; queue[0].block;
+    },
+
+<span id='Ext-fx-Queue-method-getFxQueue'>    /**
+</span>     * @private
+     * Get fx queue for passed target, create if needed.
+     */
+    getFxQueue: function(targetId) {
+        if (!targetId) {
+            return false;
+        }
+        var me = this,
+            fxQueue = me.fxQueue,
+            queue = fxQueue[targetId],
+            target = me.targets.get(targetId);
+
+        if (!target) {
+            return false;
         }
 
-        return obj;
+        if (!queue) {
+            me.fxQueue[targetId] = fxQueue[targetId] = [];
+            
+            // GarbageCollector will need to clean up Elements since they aren&#39;t currently observable
+            if (target.type !== &#39;element&#39;) {
+                target.target.on(&#39;destroy&#39;, function() {
+                    fxQueue[targetId] = null;
+                    delete fxQueue[targetId];
+                });
+            }
+        }
+        return me.fxQueue[targetId];
     },
 
-<span id='Ext-util-Queue-method-clear'>    /**
-</span>     * Removes all items from the collection.
+<span id='Ext-fx-Queue-method-queueFx'>    /**
+</span>     * @private
      */
-    clear : function(){
+    queueFx: function(anim) {
         var me = this,
-            items = me.items;
+            target = anim.target,
+            targetId = target.getId(),
+            queue, ln;
 
-        me.items = [];
-        me.map = {};
-        me.length = 0;
-
-        return items;
-    },
-
-<span id='Ext-util-Queue-method-contains'>    contains: function (obj) {
-</span>        var key = this.getKey(obj);
-
-        return this.map.hasOwnProperty(key);
-    },
-
-<span id='Ext-util-Queue-method-getCount'>    /**
-</span>     * Returns the number of items in the collection.
-     * @return {Number} the number of items in the collection.
-     */
-    getCount : function(){
-        return this.length;
-    },
-
-<span id='Ext-util-Queue-method-getKey'>    getKey : function(obj){
-</span>         return obj.id;
-    },
-
-<span id='Ext-util-Queue-method-remove'>    /**
-</span>     * Remove an item from the collection.
-     * @param {Object} obj The item to remove.
-     * @return {Object} The item removed or false if no item was removed.
-     */
-    remove : function(obj){
-        var me = this,
-            key = me.getKey(obj),
-            items = me.items,
-            index;
-
-        if (me.map[key]) {
-            index = Ext.Array.indexOf(items, obj);
-            Ext.Array.erase(items, index, 1);
-            delete me.map[key];
-            --me.length;
+        if (!target) {
+            return;
         }
 
-        return obj;
+        queue = me.getFxQueue(targetId);
+        ln = queue.length;
+
+        if (ln) {
+            if (anim.concurrent) {
+                anim.paused = false;
+            }
+            else {
+                queue[ln - 1].on(&#39;afteranimate&#39;, function() {
+                    anim.paused = false;
+                });
+            }
+        }
+        else {
+            anim.paused = false;
+        }
+        
+        anim.on(&#39;afteranimate&#39;, function() {
+            Ext.Array.remove(queue, anim);
+            
+            if (queue.length === 0) {
+                me.targets.remove(anim.target);
+                me.fxQueue[targetId] = null;
+                delete me.fxQueue[targetId];
+            }
+            
+            if (anim.remove) {
+                if (target.type === &#39;element&#39;) {
+                    var el = Ext.get(targetId);
+                    
+                    if (el) {
+                        el.destroy();
+                    }
+                }
+            }
+        }, me, {
+            single: true
+        });
+        
+        queue.push(anim);
     }
-});</pre>
+});
+</pre>
 </body>
 </html>

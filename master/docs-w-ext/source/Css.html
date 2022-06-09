@@ -1,0 +1,367 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <title>The source code</title>
+  <link href="../resources/prettify/prettify.css" type="text/css" rel="stylesheet" />
+  <script type="text/javascript" src="../resources/prettify/prettify.js"></script>
+  <style type="text/css">
+    .highlight { display: block; background-color: #ddd; }
+  </style>
+  <script type="text/javascript">
+    function highlight() {
+      document.getElementById(location.hash.replace(/#/, "")).className = "highlight";
+    }
+  </script>
+</head>
+<body onload="prettyPrint(); highlight();">
+  <pre class="prettyprint lang-js"><span id='Ext-fx-runner-Css'>/**
+</span> * @private
+ */
+Ext.define(&#39;Ext.fx.runner.Css&#39;, {
+    extend: &#39;Ext.Evented&#39;,
+
+    requires: [
+        &#39;Ext.fx.Animation&#39;
+    ],
+
+<span id='Ext-fx-runner-Css-property-prefixedProperties'>    prefixedProperties: {
+</span>        &#39;transform&#39;                 : true,
+        &#39;transform-origin&#39;          : true,
+        &#39;perspective&#39;               : true,
+        &#39;transform-style&#39;           : true,
+        &#39;transition&#39;                : true,
+        &#39;transition-property&#39;       : true,
+        &#39;transition-duration&#39;       : true,
+        &#39;transition-timing-function&#39;: true,
+        &#39;transition-delay&#39;          : true,
+        &#39;animation&#39;                 : true,
+        &#39;animation-name&#39;            : true,
+        &#39;animation-duration&#39;        : true,
+        &#39;animation-iteration-count&#39; : true,
+        &#39;animation-direction&#39;       : true,
+        &#39;animation-timing-function&#39; : true,
+        &#39;animation-delay&#39;           : true
+    },
+
+<span id='Ext-fx-runner-Css-property-lengthProperties'>    lengthProperties: {
+</span>        &#39;top&#39;                : true,
+        &#39;right&#39;              : true,
+        &#39;bottom&#39;             : true,
+        &#39;left&#39;               : true,
+        &#39;width&#39;              : true,
+        &#39;height&#39;             : true,
+        &#39;max-height&#39;         : true,
+        &#39;max-width&#39;          : true,
+        &#39;min-height&#39;         : true,
+        &#39;min-width&#39;          : true,
+        &#39;margin-bottom&#39;      : true,
+        &#39;margin-left&#39;        : true,
+        &#39;margin-right&#39;       : true,
+        &#39;margin-top&#39;         : true,
+        &#39;padding-bottom&#39;     : true,
+        &#39;padding-left&#39;       : true,
+        &#39;padding-right&#39;      : true,
+        &#39;padding-top&#39;        : true,
+        &#39;border-bottom-width&#39;: true,
+        &#39;border-left-width&#39;  : true,
+        &#39;border-right-width&#39; : true,
+        &#39;border-spacing&#39;     : true,
+        &#39;border-top-width&#39;   : true,
+        &#39;border-width&#39;       : true,
+        &#39;outline-width&#39;      : true,
+        &#39;letter-spacing&#39;     : true,
+        &#39;line-height&#39;        : true,
+        &#39;text-indent&#39;        : true,
+        &#39;word-spacing&#39;       : true,
+        &#39;font-size&#39;          : true,
+        &#39;translate&#39;          : true,
+        &#39;translateX&#39;         : true,
+        &#39;translateY&#39;         : true,
+        &#39;translateZ&#39;         : true,
+        &#39;translate3d&#39;        : true,
+        &#39;x&#39;                  : true,
+        &#39;y&#39;                  : true
+    },
+
+<span id='Ext-fx-runner-Css-property-durationProperties'>    durationProperties: {
+</span>        &#39;transition-duration&#39;   : true,
+        &#39;transition-delay&#39;      : true,
+        &#39;animation-duration&#39;    : true,
+        &#39;animation-delay&#39;       : true
+    },
+
+<span id='Ext-fx-runner-Css-property-angleProperties'>    angleProperties: {
+</span>        rotate     : true,
+        rotateX    : true,
+        rotateY    : true,
+        rotateZ    : true,
+        skew       : true,
+        skewX      : true,
+        skewY      : true
+    },
+
+<span id='Ext-fx-runner-Css-property-lengthUnitRegex'>    lengthUnitRegex: /([a-z%]*)$/,
+</span>
+<span id='Ext-fx-runner-Css-property-DEFAULT_UNIT_LENGTH'>    DEFAULT_UNIT_LENGTH: &#39;px&#39;,
+</span>
+<span id='Ext-fx-runner-Css-property-DEFAULT_UNIT_ANGLE'>    DEFAULT_UNIT_ANGLE: &#39;deg&#39;,
+</span>
+<span id='Ext-fx-runner-Css-property-DEFAULT_UNIT_DURATION'>    DEFAULT_UNIT_DURATION: &#39;ms&#39;,
+</span>
+<span id='Ext-fx-runner-Css-property-customProperties'>    customProperties: {
+</span>        x: true,
+        y: true
+    },
+
+<span id='Ext-fx-runner-Css-property-formattedNameCache'>    formattedNameCache: {
+</span>        &#39;x&#39;: &#39;left&#39;,
+        &#39;y&#39;: &#39;top&#39;
+    },
+
+<span id='Ext-fx-runner-Css-property-transformMethods3d'>    transformMethods3d: [
+</span>        &#39;translateX&#39;, 
+        &#39;translateY&#39;, 
+        &#39;translateZ&#39;, 
+        &#39;rotate&#39;, 
+        &#39;rotateX&#39;, 
+        &#39;rotateY&#39;, 
+        &#39;rotateZ&#39;, 
+        &#39;skewX&#39;, 
+        &#39;skewY&#39;, 
+        &#39;scaleX&#39;, 
+        &#39;scaleY&#39;, 
+        &#39;scaleZ&#39;
+    ],
+
+<span id='Ext-fx-runner-Css-property-transformMethodsNo3d'>    transformMethodsNo3d: [
+</span>        &#39;translateX&#39;, 
+        &#39;translateY&#39;, 
+        &#39;rotate&#39;, 
+        &#39;skewX&#39;, 
+        &#39;skewY&#39;, 
+        &#39;scaleX&#39;, 
+        &#39;scaleY&#39;
+    ],
+
+<span id='Ext-fx-runner-Css-method-constructor'>    constructor: function() {
+</span>        var me = this;
+
+        me.transformMethods = Ext.feature.has.Css3dTransforms ? me.transformMethods3d : me.transformMethodsNo3d;
+        me.vendorPrefix = Ext.browser.getStyleDashPrefix();
+        me.ruleStylesCache = {};
+
+        me.callParent();
+    },
+
+<span id='Ext-fx-runner-Css-method-getStyleSheet'>    getStyleSheet: function() {
+</span>        var styleSheet = this.styleSheet,
+            styleElement, styleSheets;
+
+        if (!styleSheet) {
+            styleElement = document.createElement(&#39;style&#39;);
+            styleElement.type = &#39;text/css&#39;;
+
+            (document.head || document.getElementsByTagName(&#39;head&#39;)[0]).appendChild(styleElement);
+
+            styleSheets = document.styleSheets;
+
+            this.styleSheet = styleSheet = styleSheets[styleSheets.length - 1];
+        }
+
+        return styleSheet;
+    },
+
+<span id='Ext-fx-runner-Css-method-applyRules'>    applyRules: function(selectors) {
+</span>        var styleSheet = this.getStyleSheet(),
+            ruleStylesCache = this.ruleStylesCache,
+            rules = styleSheet.cssRules,
+            selector, properties, ruleStyle,
+            ruleStyleCache, rulesLength, name, value;
+
+        for (selector in selectors) {
+            properties = selectors[selector];
+
+            ruleStyle = ruleStylesCache[selector];
+
+            if (ruleStyle === undefined) {
+                rulesLength = rules.length;
+                styleSheet.insertRule(selector + &#39;{}&#39;, rulesLength);
+                ruleStyle = ruleStylesCache[selector] = rules.item(rulesLength).style;
+            }
+
+            ruleStyleCache = ruleStyle.$cache;
+
+            if (!ruleStyleCache) {
+                ruleStyleCache = ruleStyle.$cache = {};
+            }
+
+            for (name in properties) {
+                value = this.formatValue(properties[name], name);
+                name = this.formatName(name);
+
+                if (ruleStyleCache[name] !== value) {
+                    ruleStyleCache[name] = value;
+
+                    if (value === null) {
+                        ruleStyle.removeProperty(name);
+                    }
+                    else {
+                        ruleStyle.setProperty(name, value, &#39;important&#39;);
+                    }
+                }
+            }
+        }
+
+        return this;
+    },
+
+<span id='Ext-fx-runner-Css-method-applyStyles'>    applyStyles: function(styles) {
+</span>        var id, element, elementStyle, properties, name, value;
+
+        for (id in styles) {
+            if (styles.hasOwnProperty(id)) {
+                this.activeElement = element = document.getElementById(id);
+
+                if (!element) {
+                    continue;
+                }
+
+                elementStyle = element.style;
+
+                properties = styles[id];
+                for (name in properties) {
+                    if (properties.hasOwnProperty(name)) {
+                        value = this.formatValue(properties[name], name);
+                        name = this.formatName(name);
+
+                        if (value === null) {
+                            elementStyle.removeProperty(name);
+                        }
+                        else {
+                            elementStyle.setProperty(name, value, &#39;important&#39;);
+                        }
+                    }
+                }
+            }
+        }
+
+        this.activeElement = null;
+
+        return this;
+    },
+
+<span id='Ext-fx-runner-Css-method-formatName'>    formatName: function(name) {
+</span>        var cache = this.formattedNameCache,
+            formattedName = cache[name];
+
+        if (!formattedName) {
+            if ((Ext.os.is.Tizen || !Ext.feature.has.CssTransformNoPrefix) &amp;&amp; this.prefixedProperties[name]) {
+                formattedName = this.vendorPrefix + name;
+            }
+            else {
+                formattedName = name;
+            }
+
+            cache[name] = formattedName;
+        }
+
+        return formattedName;
+    },
+
+<span id='Ext-fx-runner-Css-method-formatValue'>    formatValue: function(value, name) {
+</span>        var type = typeof value,
+            lengthUnit = this.DEFAULT_UNIT_LENGTH,
+            isCustom = this.customProperties[name],
+            transformMethods,
+            method, i, ln,
+            transformValues, values, unit;
+
+        if (value === null) {
+            return &#39;&#39;;
+        }
+
+        if (type === &#39;string&#39;) {
+            if (this.lengthProperties[name]) {
+                unit = value.match(this.lengthUnitRegex)[1];
+
+                if (unit.length &gt; 0) {
+                    //&lt;debug&gt;
+                    if (unit !== lengthUnit) {
+                        Ext.Logger.error(&quot;Length unit: &#39;&quot; + unit + &quot;&#39; in value: &#39;&quot; + value + &quot;&#39; of property: &#39;&quot; + name + &quot;&#39; is not &quot; +
+                            &quot;valid for animation. Only &#39;px&#39; is allowed&quot;);
+                    }
+                    //&lt;/debug&gt;
+                }
+                else {
+                    value = value + lengthUnit;
+                    if (isCustom) {
+                        value = this.getCustomValue(value, name);
+                    }
+                    return value;
+                }
+            }
+
+            return value;
+        }
+        else if (type === &#39;number&#39;) {
+            if (value == 0) {
+                return &#39;0&#39;;
+            }
+
+            if (this.lengthProperties[name]) {
+                value = value + lengthUnit;
+                if (isCustom) {
+                    value = this.getCustomValue(value, name);
+                }
+                return value;
+            }
+
+            if (this.angleProperties[name]) {
+                return value + this.DEFAULT_UNIT_ANGLE;
+            }
+
+            if (this.durationProperties[name]) {
+                return value + this.DEFAULT_UNIT_DURATION;
+            }
+        }
+        else if (name === &#39;transform&#39;) {
+            transformMethods = this.transformMethods;
+            transformValues = [];
+
+            for (i = 0,ln = transformMethods.length; i &lt; ln; i++) {
+                method = transformMethods[i];
+
+                transformValues.push(method + &#39;(&#39; + this.formatValue(value[method], method) + &#39;)&#39;);
+            }
+
+            return transformValues.join(&#39; &#39;);
+        }
+        else if (Ext.isArray(value)) {
+            values = [];
+
+            for (i = 0,ln = value.length; i &lt; ln; i++) {
+                values.push(this.formatValue(value[i], name));
+            }
+
+            return (values.length &gt; 0) ? values.join(&#39;, &#39;) : &#39;none&#39;;
+        }
+
+        return value;
+    },
+
+<span id='Ext-fx-runner-Css-method-getCustomValue'>    getCustomValue: function(value, name) {
+</span>        var el = Ext.fly(this.activeElement),
+             unit = value.match(this.lengthUnitRegex)[1];
+
+        if (name === &#39;x&#39;) {
+            value = el.translateXY(parseInt(value, 10)).x;
+        } else if (name === &#39;y&#39;) {
+            value = el.translateXY(null, parseInt(value, 10)).y;
+        }
+        return value + unit;
+    }
+});
+</pre>
+</body>
+</html>
