@@ -58,7 +58,7 @@
     "release": "npm run build && np --no-yarn --contents ./dist && git push https://github.com/geoext/geoext.git master --tags"
   },
   "devDependencies": {
-    "@geoext/openlayers-legacy": "^6.5.0",
+    "@geoext/openlayers-legacy": "^6.15.1",
     "browser-sync": "2.27.10",
     "copyfiles": "2.4.1",
     "coveralls": "3.1.1",
