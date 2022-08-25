@@ -270,7 +270,7 @@ describe('GeoExt.data.store.Layers', function() {
                 expect(store.destroy).not.to.be(undefined);
             });
 
-            it('unbinds events an destroys store', function() {
+            it('unbinds events and destroys store', function() {
                 store.destroy();
                 expect(store.map).to.be(null);
                 // exemplary check "remove" event to ensure the events are
