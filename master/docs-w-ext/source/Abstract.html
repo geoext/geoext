@@ -15,44 +15,223 @@
   </script>
 </head>
 <body onload="prettyPrint(); highlight();">
-  <pre class="prettyprint lang-js"><span id='Ext-fx-easing-Abstract'>/**
+  <pre class="prettyprint lang-js"><span id='Ext-fx-animation-Abstract'>/**
 </span> * @private
  */
-Ext.define(&#39;Ext.fx.easing.Abstract&#39;, {
+Ext.define(&#39;Ext.fx.animation.Abstract&#39;, {
+
+    extend: &#39;Ext.Evented&#39;,
+
+<span id='Ext-fx-animation-Abstract-property-isAnimation'>    isAnimation: true,
+</span>
+    requires: [
+        &#39;Ext.fx.State&#39;
+    ],
 
     config: {
-<span id='Ext-fx-easing-Abstract-cfg-startTime'>        startTime: 0,
-</span><span id='Ext-fx-easing-Abstract-cfg-startValue'>        startValue: 0
+<span id='Ext-fx-animation-Abstract-cfg-name'>        name: &#39;&#39;,
+</span>
+<span id='Ext-fx-animation-Abstract-cfg-element'>        element: null,
+</span>
+<span id='Ext-fx-animation-Abstract-cfg-before'>        /**
+</span>         * @cfg
+         * Before configuration.
+         */
+        before: null,
+
+<span id='Ext-fx-animation-Abstract-cfg-from'>        from: {},
+</span>
+<span id='Ext-fx-animation-Abstract-cfg-to'>        to: {},
+</span>
+<span id='Ext-fx-animation-Abstract-cfg-after'>        after: null,
+</span>
+<span id='Ext-fx-animation-Abstract-cfg-states'>        states: {},
+</span>
+<span id='Ext-fx-animation-Abstract-cfg-duration'>        duration:  300,
+</span>
+<span id='Ext-fx-animation-Abstract-cfg-easing'>        /**
+</span>         * @cfg
+         * Easing type.
+         */
+        easing: &#39;linear&#39;,
+
+<span id='Ext-fx-animation-Abstract-cfg-iteration'>        iteration: 1,
+</span>
+<span id='Ext-fx-animation-Abstract-cfg-direction'>        direction: &#39;normal&#39;,
+</span>
+<span id='Ext-fx-animation-Abstract-cfg-delay'>        delay: 0,
+</span>
+<span id='Ext-fx-animation-Abstract-cfg-onBeforeStart'>        onBeforeStart: null,
+</span>
+<span id='Ext-fx-animation-Abstract-cfg-callback'>        callback: null,
+</span>
+<span id='Ext-fx-animation-Abstract-cfg-onEnd'>        onEnd: null,
+</span>
+<span id='Ext-fx-animation-Abstract-cfg-onBeforeEnd'>        onBeforeEnd: null,
+</span>
+<span id='Ext-fx-animation-Abstract-cfg-scope'>        scope: null,
+</span>
+<span id='Ext-fx-animation-Abstract-cfg-reverse'>        reverse: null,
+</span>
+<span id='Ext-fx-animation-Abstract-cfg-preserveEndState'>        preserveEndState: false,
+</span>
+<span id='Ext-fx-animation-Abstract-cfg-replacePrevious'>        replacePrevious: true
 </span>    },
 
-<span id='Ext-fx-easing-Abstract-property-isEasing'>    isEasing: true,
+<span id='Ext-fx-animation-Abstract-property-STATE_FROM'>    STATE_FROM: &#39;0%&#39;,
 </span>
-<span id='Ext-fx-easing-Abstract-property-isEnded'>    isEnded: false,
+<span id='Ext-fx-animation-Abstract-property-STATE_TO'>    STATE_TO: &#39;100%&#39;,
 </span>
-<span id='Ext-fx-easing-Abstract-method-constructor'>    constructor: function(config) {
-</span>        this.initConfig(config);
+<span id='Ext-fx-animation-Abstract-property-DIRECTION_UP'>    DIRECTION_UP: &#39;up&#39;,
+</span>
+<span id='Ext-fx-animation-Abstract-property-DIRECTION_DOWN'>    DIRECTION_DOWN: &#39;down&#39;,
+</span>
+<span id='Ext-fx-animation-Abstract-property-DIRECTION_LEFT'>    DIRECTION_LEFT: &#39;left&#39;,
+</span>
+<span id='Ext-fx-animation-Abstract-property-DIRECTION_RIGHT'>    DIRECTION_RIGHT: &#39;right&#39;,
+</span>
+<span id='Ext-fx-animation-Abstract-property-stateNameRegex'>    stateNameRegex: /^(?:[\d\.]+)%$/,
+</span>
+<span id='Ext-fx-animation-Abstract-method-constructor'>    constructor: function() {
+</span>        this.states = {};
+
+        this.callParent(arguments);
 
         return this;
     },
 
-<span id='Ext-fx-easing-Abstract-method-applyStartTime'>    applyStartTime: function(startTime) {
-</span>        if (!startTime) {
-            startTime = Ext.Date.now();
+<span id='Ext-fx-animation-Abstract-method-applyElement'>    applyElement: function(element) {
+</span>        return Ext.get(element);
+    },
+
+<span id='Ext-fx-animation-Abstract-method-applyBefore'>    applyBefore: function(before, current) {
+</span>        if (before) {
+            return Ext.factory(before, Ext.fx.State, current);
+        }
+    },
+
+<span id='Ext-fx-animation-Abstract-method-applyAfter'>    applyAfter: function(after, current) {
+</span>        if (after) {
+            return Ext.factory(after, Ext.fx.State, current);
+        }
+    },
+
+<span id='Ext-fx-animation-Abstract-method-setFrom'>    setFrom: function(from) {
+</span>        return this.setState(this.STATE_FROM, from);
+    },
+
+<span id='Ext-fx-animation-Abstract-method-setTo'>    setTo: function(to) {
+</span>        return this.setState(this.STATE_TO, to);
+    },
+
+<span id='Ext-fx-animation-Abstract-method-getFrom'>    getFrom: function() {
+</span>        return this.getState(this.STATE_FROM);
+    },
+
+<span id='Ext-fx-animation-Abstract-method-getTo'>    getTo: function() {
+</span>        return this.getState(this.STATE_TO);
+    },
+
+<span id='Ext-fx-animation-Abstract-method-setStates'>    setStates: function(states) {
+</span>        var validNameRegex = this.stateNameRegex,
+            name;
+
+        for (name in states) {
+            if (validNameRegex.test(name)) {
+                this.setState(name, states[name]);
+            }
         }
 
-        return startTime;
+        return this;
     },
 
-<span id='Ext-fx-easing-Abstract-method-updateStartTime'>    updateStartTime: function(startTime) {
-</span>        this.reset();
+<span id='Ext-fx-animation-Abstract-method-getStates'>    getStates: function() {
+</span>        return this.states;
     },
 
-<span id='Ext-fx-easing-Abstract-method-reset'>    reset: function() {
-</span>        this.isEnded = false;
+<span id='Ext-fx-animation-Abstract-method-updateCallback'>    updateCallback: function(callback) {
+</span>        if (callback) {
+            this.setOnEnd(callback);
+        }
     },
 
-<span id='Ext-fx-easing-Abstract-method-getValue'>    getValue: Ext.emptyFn
-</span>});
+<span id='Ext-fx-animation-Abstract-method-end'>    end: function() {
+</span>        // alias for stop so that the following api is the same between ext/touch:
+        // element.getActiveAnimation().end()
+        this.stop();
+    },
+
+<span id='Ext-fx-animation-Abstract-method-stop'>    stop: function() {
+</span>        this.fireEvent(&#39;stop&#39;, this);
+    },
+
+<span id='Ext-fx-animation-Abstract-method-destroy'>    destroy: function() {
+</span>        this.stop();
+        this.callParent();
+    },
+
+<span id='Ext-fx-animation-Abstract-method-setState'>    setState: function(name, state) {
+</span>        var states = this.getStates(),
+            stateInstance;
+
+        stateInstance = Ext.factory(state, Ext.fx.State, states[name]);
+
+        if (stateInstance) {
+            states[name] = stateInstance;
+        }
+        //&lt;debug&gt;
+        else if (name === this.STATE_TO) {
+            Ext.Logger.error(&quot;Setting and invalid &#39;100%&#39; / &#39;to&#39; state of: &quot; + state);
+        }
+        //&lt;/debug&gt;
+
+        return this;
+    },
+
+<span id='Ext-fx-animation-Abstract-method-getState'>    getState: function(name) {
+</span>        return this.getStates()[name];
+    },
+
+<span id='Ext-fx-animation-Abstract-method-getData'>    getData: function() {
+</span>        var me = this,
+            states = me.getStates(),
+            statesData = {},
+            before = me.getBefore(),
+            after = me.getAfter(),
+            from = states[me.STATE_FROM],
+            to = states[me.STATE_TO],
+            fromData = from.getData(),
+            toData = to.getData(),
+            data, name, state;
+
+        for (name in states) {
+            if (states.hasOwnProperty(name)) {
+                state = states[name];
+                data = state.getData();
+                statesData[name] = data;
+            }
+        }
+
+        return {
+            before: before ? before.getData() : {},
+            after: after ? after.getData() : {},
+            states: statesData,
+            from: fromData,
+            to: toData,
+            duration: me.getDuration(),
+            iteration: me.getIteration(),
+            direction: me.getDirection(),
+            easing: me.getEasing(),
+            delay: me.getDelay(),
+            onEnd: me.getOnEnd(),
+            onBeforeEnd: me.getOnBeforeEnd(),
+            onBeforeStart: me.getOnBeforeStart(),
+            scope: me.getScope(),
+            preserveEndState: me.getPreserveEndState(),
+            replacePrevious: me.getReplacePrevious()
+        };
+    }
+});
 </pre>
 </body>
 </html>

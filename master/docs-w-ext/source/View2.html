@@ -15,655 +15,895 @@
   </script>
 </head>
 <body onload="prettyPrint(); highlight();">
-  <pre class="prettyprint lang-js"><span id='Ext-grid-locking-View'>/**
-</span> * This class is used internally to provide a single interface when using
- * a locking grid. Internally, the locking grid creates two separate grids,
- * so this class is used to map calls appropriately.
- * @private
+  <pre class="prettyprint lang-js"><span id='Ext-tree-View'>/**
+</span> * Used as a view by {@link Ext.tree.Panel TreePanel}.
  */
-Ext.define(&#39;Ext.grid.locking.View&#39;, {
-    alternateClassName: &#39;Ext.grid.LockingView&#39;,
-    requires: [
-        &#39;Ext.view.AbstractView&#39;,
-        &#39;Ext.view.Table&#39;
-    ],
+Ext.define(&#39;Ext.tree.View&#39;, {
+    extend: &#39;Ext.view.Table&#39;,
+    alias: &#39;widget.treeview&#39;,
 
-    mixins: [
-        &#39;Ext.util.Observable&#39;,
-        &#39;Ext.util.StoreHolder&#39;,
-        &#39;Ext.util.Focusable&#39;
-    ],
-
-<span id='Ext-grid-locking-View-property-isLockingView'>    /**
-</span>     * @property {Boolean} isLockingView
-     * `true` in this class to identify an object as an instantiated LockingView, or subclass thereof.
+    config: {
+<span id='Ext-tree-View-cfg-selectionModel'>        selectionModel: {
+</span>            type: &#39;treemodel&#39;
+        }
+    },
+    
+<span id='Ext-tree-View-property-isTreeView'>    /**
+</span>     * @property {Boolean} isTreeView
+     * `true` in this class to identify an object as an instantiated TreeView, or subclass thereof.
      */
-    isLockingView: true,
+    isTreeView: true,
 
-<span id='Ext-grid-locking-View-property-loadMask'>    loadMask: true,
+<span id='Ext-tree-View-cfg-loadingCls'>    loadingCls: Ext.baseCSSPrefix + &#39;grid-tree-loading&#39;,
+</span><span id='Ext-tree-View-property-expandedCls'>    expandedCls: Ext.baseCSSPrefix + &#39;grid-tree-node-expanded&#39;,
+</span><span id='Ext-tree-View-property-leafCls'>    leafCls: Ext.baseCSSPrefix + &#39;grid-tree-node-leaf&#39;,
 </span>
-<span id='Ext-grid-locking-View-property-eventRelayRe'>    eventRelayRe: /^(beforeitem|beforecontainer|item|container|cell|refresh)/,
+<span id='Ext-tree-View-property-expanderSelector'>    expanderSelector: &#39;.&#39; + Ext.baseCSSPrefix + &#39;tree-expander&#39;,
+</span><span id='Ext-tree-View-property-checkboxSelector'>    checkboxSelector: &#39;.&#39; + Ext.baseCSSPrefix + &#39;tree-checkbox&#39;,
+</span><span id='Ext-tree-View-property-expanderIconOverCls'>    expanderIconOverCls: Ext.baseCSSPrefix + &#39;tree-expander-over&#39;,
 </span>
-<span id='Ext-grid-locking-View-method-constructor'>    constructor: function(config){
-</span>        var ext = Ext,
-            me = this,
-            lockedView,
-            normalView;
+<span id='Ext-tree-View-property-nodeAnimWrapCls'>    // Class to add to the node wrap element used to hold nodes when a parent is being
+</span>    // collapsed or expanded. During the animation, UI interaction is forbidden by testing
+    // for an ancestor node with this class.
+    nodeAnimWrapCls: Ext.baseCSSPrefix + &#39;tree-animator-wrap&#39;,
 
-        me.ownerGrid = config.ownerGrid;
-        me.ownerGrid.view = me;
+<span id='Ext-tree-View-property-ariaRole'>    ariaRole: &#39;treegrid&#39;,
+</span>
+<span id='Ext-tree-View-cfg-loadMask'>    /**
+</span>     * @cfg {Boolean}
+     * @inheritdoc
+     */
+    loadMask: false,
 
-        // A single NavigationModel is configured into both views.
-        me.navigationModel = config.locked.xtype === &#39;treepanel&#39; ? new ext.tree.NavigationModel(me) : new ext.grid.NavigationModel(me);
+<span id='Ext-tree-View-cfg-rootVisible'>    /**
+</span>     * @cfg {Boolean} rootVisible
+     * False to hide the root node.
+     */
+    rootVisible: true,
 
-        // Disable store binding for the two child views.
-        // The store is bound to the *this* locking View.
-        // This avoids the store being bound to two views (with duplicated layouts on each store mutation)
-        // and also avoids the store being bound to the selection model twice.
-        config.locked.viewConfig.bindStore = ext.emptyFn;
-        config.normal.viewConfig.bindStore = me.subViewBindStore;
-        config.normal.viewConfig.isNormalView = config.locked.viewConfig.isLockedView = true;
+<span id='Ext-tree-View-cfg-animate'>    /**
+</span>     * @cfg {Boolean} animate
+     * True to enable animated expand/collapse (defaults to the value of {@link Ext#enableFx Ext.enableFx})
+     */
 
-        // Share the same NavigationModel
-        config.locked.viewConfig.navigationModel = config.normal.viewConfig.navigationModel = me.navigationModel;
+    expandDuration: 250,
+<span id='Ext-tree-View-property-collapseDuration'>    collapseDuration: 250,
+</span>
+<span id='Ext-tree-View-property-toggleOnDblClick'>    toggleOnDblClick: true,
+</span>
+<span id='Ext-tree-View-cfg-stripeRows'>    stripeRows: false,
+</span>
+<span id='Ext-tree-View-property-treeRowTpl'>    // treeRowTpl which is inserted into the rowTpl chain before the base rowTpl. Sets tree-specific classes and attributes
+</span>    treeRowTpl: [
+        &#39;{%&#39;,
+            &#39;this.processRowValues(values);&#39;,
+            &#39;this.nextTpl.applyOut(values, out, parent);&#39;,
+        &#39;%}&#39;, {
+            priority: 10,
+            processRowValues: function(rowValues) {
+                var record = rowValues.record,
+                    view = rowValues.view;
 
-        me.lockedGrid = me.ownerGrid.lockedGrid = ext.ComponentManager.create(config.locked);
+                // We always need to set the qtip/qtitle, because they may have been
+                // emptied, which means we still need to flush that change to the DOM
+                // so the old values are overwritten
+                rowValues.rowAttr[&#39;data-qtip&#39;] = record.get(&#39;qtip&#39;) || &#39;&#39;;
+                rowValues.rowAttr[&#39;data-qtitle&#39;] = record.get(&#39;qtitle&#39;) || &#39;&#39;;
+                
+                // aria-level is 1-based
+                rowValues.rowAttr[&#39;aria-level&#39;] = record.getDepth() + 1;
 
-        me.lockedView = lockedView = me.lockedGrid.getView();
+                if (record.isLeaf()) {
+                    rowValues.rowClasses.push(view.leafCls);
+                }
+                else {
+                    if (record.isExpanded()) {
+                        rowValues.rowClasses.push(view.expandedCls);
+                        rowValues.rowAttr[&#39;aria-expanded&#39;] = true;
+                    }
+                    else {
+                        rowValues.rowAttr[&#39;aria-expanded&#39;] = false;
+                    }
+                }
+                
+                if (record.isLoading()) {
+                    rowValues.rowClasses.push(view.loadingCls);
+                }
+            }
+        }
+    ],
 
-        // The normal view uses the same selection model
-        me.selModel = config.normal.viewConfig.selModel = lockedView.getSelectionModel();
+<span id='Ext-tree-View-event-afteritemexpand'>    /**
+</span>     * @event afteritemexpand
+     * Fires after an item has been visually expanded and is visible in the tree.
+     * @param {Ext.data.NodeInterface} node         The node that was expanded
+     * @param {Number} index                        The index of the node
+     * @param {HTMLElement} item                    The HTML element for the node that was expanded
+     */
 
-        if (me.lockedGrid.isTree) {
-            // Tree must not animate because the partner grid is unable to animate
-            me.lockedView.animate = false;
+<span id='Ext-tree-View-event-afteritemcollapse'>    /**
+</span>     * @event afteritemcollapse
+     * Fires after an item has been visually collapsed and is no longer visible in the tree.
+     * @param {Ext.data.NodeInterface} node         The node that was collapsed
+     * @param {Number} index                        The index of the node
+     * @param {HTMLElement} item                    The HTML element for the node that was collapsed
+     */
 
-            // When this is a locked tree, the normal side is just a gridpanel, so needs the flat NodeStore
-            config.normal.store = lockedView.store;
+<span id='Ext-tree-View-event-nodedragover'>    /**
+</span>     * @event nodedragover
+     * Fires when a tree node is being targeted for a drag drop, return false to signal drop not allowed.
+     * @param {Ext.data.NodeInterface} targetNode The target node
+     * @param {String} position The drop position, &quot;before&quot;, &quot;after&quot; or &quot;append&quot;,
+     * @param {Object} dragData Data relating to the drag operation
+     * @param {Ext.event.Event} e The event object for the drag
+     */
 
-            // Match configs between sides
-            config.normal.viewConfig.stripeRows = me.lockedView.stripeRows;
-            config.normal.rowLines = me.lockedGrid.rowLines;
+    initComponent: function() {
+        var me = this;
+
+        if (me.bufferedRenderer) {
+            me.animate = false;
+        }
+        else if (me.initialConfig.animate === undefined) {
+            me.animate = Ext.enableFx;
         }
 
-        // Set up a bidirectional relationship between the two sides of the locked view.
-        // Inject lockingGrid and normalGrid into owning panel.
-        // This is because during constraction, it must be possible for descendant components
-        // to navigate up to the owning lockable panel and then down into either side.
-        me.normalGrid = me.ownerGrid.normalGrid = ext.ComponentManager.create(config.normal);
-        lockedView.lockingPartner = normalView = me.normalView = me.normalGrid.getView();
-        normalView.lockingPartner = lockedView;
+        me.store = me.panel.getStore();
+        me.onRootChange(me.store.getRoot());
 
-        // We need to examine locked grid state at this time to sync the normal grid.
-        Ext.override(me.normalGrid, {
-            beforeRender: me.beforeNormalGridRender
-        });
+        me.animQueue = {};
+        me.animWraps = {};
 
-        me.loadMask = (config.loadMask !== undefined) ? config.loadMask : me.loadMask;
-
-        me.mixins.observable.constructor.call(me);
-
-        // Relay both view&#39;s events.
-        me.lockedViewEventRelayers = me.relayEvents(lockedView, ext.view.Table.events);
-
-        // Relay extra events from only the normal view.
-        // These are events that both sides fire (selection events), so avoid firing them twice.
-        me.normalViewEventRelayers = me.relayEvents(normalView, ext.view.Table.events.concat(ext.view.Table.normalSideEvents));
-
-        normalView.on({
-            scope: me,
-            itemmouseleave: me.onItemMouseLeave,
-            itemmouseenter: me.onItemMouseEnter
-        });
-
-        lockedView.on({
-            scope: me,
-            itemmouseleave: me.onItemMouseLeave,
-            itemmouseenter: me.onItemMouseEnter
-        });
-
-        me.loadingText = normalView.loadingText;
-        me.loadingCls = normalView.loadingCls;
-        me.loadingUseMsg = normalView.loadingUseMsg;
-
-        me.itemSelector = me.getItemSelector();
-
-        // Share the items arrey with the normal view.
-        // Certain methods need access to the start/end/count
-        me.all = normalView.all;
-
-        // Bind to the data source. Cache it by the property name &quot;dataSource&quot;.
-        // The store property is public and must reference the provided store.
-        // We relay each call into both normal and locked views bracketed by a layout suspension.
-        me.bindStore(normalView.dataSource, true, &#39;dataSource&#39;);
+        me.callParent();
+        me.store.setRootVisible(me.rootVisible);
+        me.addRowTpl(me.lookupTpl(&#39;treeRowTpl&#39;));
     },
 
-<span id='Ext-grid-locking-View-method-subViewBindStore'>    // This is injected into the two child views as the bindStore implementation.
-</span>    // Subviews in a lockable asseembly do not bind to stores.
-    subViewBindStore: function(store, initial) {
-        var me = this,
-            grid = me.ownerGrid,
-            selModel;
+<span id='Ext-tree-View-method-onFillComplete'>    onFillComplete: function(treeStore, fillRoot, newNodes) {
+</span>        var me = this,
+            store = me.store,
+            start = store.indexOf(newNodes[0]);
 
-        if (me.destroying || me.destroyed || grid.destroying || grid.destroyed) {
+        // Always update the current node, since the load may be triggered
+        // by .load() directly instead of .expand() on the node
+        fillRoot.triggerUIUpdate();
+
+        // In the cases of expand, the records might not be in the store yet,
+        // so jump out early and expand will handle it later
+        if (!newNodes.length || start === -1) {
             return;
         }
 
-        selModel = me.getSelectionModel();
-        selModel.bindStore(store, initial);
-        selModel.bindComponent(me);
+        // Insert new nodes into the view
+        me.onAdd(me.store, newNodes, start);
+
+        me.refreshPartner();
     },
 
-<span id='Ext-grid-locking-View-method-beforeNormalGridRender'>    beforeNormalGridRender: function() {
-</span>        // This method is used in an Ext.override call, so the &#39;this&#39; pointer will
-        // not be the normal reference
-
-        // If the locked side has a header (for example it&#39;s collapsible, or has tools)
-        // and this has not been configured with a title, we need an &amp;nbsp; title.
-        if (this.ownerGrid.lockedGrid.getHeader() &amp;&amp; !this.title) {
-            this.title = &#39;\u00a0&#39;;
-        }
-
-        // @noOptimize.callParent
-        this.callParent();
-    },
-
-<span id='Ext-grid-locking-View-method-onPanelRender'>    onPanelRender: function(el) {
-</span>        var me = this,
-            mask = me.loadMask,
-            cfg = {
-                target: me.ownerGrid,
-                msg: me.loadingText,
-                msgCls: me.loadingCls,
-                useMsg: me.loadingUseMsg,
-                store: me.ownerGrid.store
-            };
-
-        // Because this is used as a View, it should have an el. Use the owning Lockable&#39;s scrolling el.
-        // It also has to fire a render event so that Editing plugins can attach listeners
-        me.el = el;
-        me.rendered = true;
-        me.fireEvent(&#39;render&#39;, me);
-
-        if (mask) {
-            // either a config object 
-            if (Ext.isObject(mask)) {
-                cfg = Ext.apply(cfg, mask);
-            }
-            // Attach the LoadMask to a *Component* so that it can be sensitive to resizing during long loads.
-            // If this DataView is floating, then mask this DataView.
-            // Otherwise, mask its owning Container (or this, if there *is* no owning Container).
-            // LoadMask captures the element upon render.
-            me.loadMask = new Ext.LoadMask(cfg);
+<span id='Ext-tree-View-method-refreshPartner'>    refreshPartner: function() {
+</span>        var partner = this.lockingPartner;
+        if (partner) {
+            partner.refresh();
         }
     },
 
-<span id='Ext-grid-locking-View-method-getRefOwner'>    getRefOwner: function() {
-</span>        return this.ownerGrid;
+<span id='Ext-tree-View-method-afterRender'>    afterRender: function() {		
+</span>        var me = this;		
+		
+        me.callParent();		
+		
+        me.el.on({		
+            scope: me,		
+            delegate: me.expanderSelector,
+            mouseover: me.onExpanderMouseOver,
+            mouseout: me.onExpanderMouseOut
+        });		
     },
 
-<span id='Ext-grid-locking-View-method-getVisibleColumnManager'>    // Implement the same API as Ext.view.Table.
-</span>    // This will return the topmost, unified visible column manager
-    getVisibleColumnManager: function() {
-        // ownerGrid refers to the topmost responsible Ext.panel.Grid.
-        // This could be this view&#39;s ownerCt, or if part of a locking arrangement, the locking grid
-        return this.ownerGrid.getVisibleColumnManager();
+<span id='Ext-tree-View-method-processUIEvent'>    processUIEvent: function(e) {
+</span>        // If the clicked node is part of an animation, ignore the click.
+        // This is because during a collapse animation, the associated Records
+        // will already have been removed from the Store, and the event is not processable.
+        if (e.getTarget(&#39;.&#39; + this.nodeAnimWrapCls, this.el)) {
+            return false;
+        }
+        return this.callParent([e]);
     },
 
-<span id='Ext-grid-locking-View-method-getTopLevelVisibleColumnManager'>    getTopLevelVisibleColumnManager: function() {
-</span>        // ownerGrid refers to the topmost responsible Ext.panel.Grid.
-        // This could be this view&#39;s ownerCt, or if part of a locking arrangement, the locking grid
-        return this.ownerGrid.getVisibleColumnManager();
+<span id='Ext-tree-View-method-setRootNode'>    setRootNode: function(node) {
+</span>        this.node = node;
     },
 
-<span id='Ext-grid-locking-View-method-getGridColumns'>    getGridColumns: function() {
-</span>        return this.getVisibleColumnManager().getColumns();
-    },
-
-<span id='Ext-grid-locking-View-method-getEl'>    getEl: function(column){
-</span>        return this.getViewForColumn(column).getEl();
-    },
-
-<span id='Ext-grid-locking-View-method-getCellSelector'>    getCellSelector: function() {
-</span>        return this.normalView.getCellSelector();
-    },
-
-<span id='Ext-grid-locking-View-method-getItemSelector'>    getItemSelector: function () {
-</span>        return this.normalView.getItemSelector();
-    },
-
-<span id='Ext-grid-locking-View-method-getViewForColumn'>    getViewForColumn: function(column) {
-</span>        var view = this.lockedView,
-            inLocked;
-
-        view.headerCt.cascade(function(col){
-            if (col === column) {
-                inLocked = true;
-                return false;
+<span id='Ext-tree-View-method-getChecked'>    getChecked: function() {
+</span>        var checked = [];
+        this.node.cascade(function(rec){
+            if (rec.get(&#39;checked&#39;)) {
+                checked.push(rec);
             }
         });
-
-        return inLocked ? view : this.normalView;
+        return checked;
     },
 
-<span id='Ext-grid-locking-View-method-onItemMouseEnter'>    onItemMouseEnter: function(view, record){
-</span>        var me = this,
-            locked = me.lockedView,
-            other = me.normalView,
-            item;
-
-        if (view.trackOver) {
-            if (view !== locked) {
-                other = locked;
-            }
-            item = other.getNode(record);
-            other.highlightItem(item);
-        }
+<span id='Ext-tree-View-method-isItemChecked'>    isItemChecked: function(rec) {
+</span>        return rec.get(&#39;checked&#39;);
     },
 
-<span id='Ext-grid-locking-View-method-onItemMouseLeave'>    onItemMouseLeave: function(view, record){
-</span>        var me = this,
-            locked = me.lockedView,
-            other = me.normalView;
-
-        if (view.trackOver) {
-            if (view !== locked) {
-                other = locked;
-            }
-            other.clearHighlight();
-        }
-    },
-
-<span id='Ext-grid-locking-View-method-relayFn'>    relayFn: function(name, args){
-</span>        args = args || [];
-
-        var me = this,
-            view = me.lockedView;
-
-        // Flag that we are already manipulating the view pair, so resulting excursions
-        // back into this class can avoid breaking the sequence.
-        me.relayingOperation = true;
-        view[name].apply(view, args);
-        view = me.normalView;
-        view[name].apply(view, args);
-        me.relayingOperation = false;
-    },
-
-<span id='Ext-grid-locking-View-method-getSelectionModel'>    getSelectionModel: function(){
-</span>        return this.normalView.getSelectionModel();
-    },
-
-<span id='Ext-grid-locking-View-method-getNavigationModel'>    getNavigationModel: function() {
-</span>        return this.navigationModel;
-    },
-
-<span id='Ext-grid-locking-View-method-getStore'>    getStore: function(){
-</span>        return this.ownerGrid.store;
-    },
-
-<span id='Ext-grid-locking-View-method-onBindStore'>    /**
-</span>     * Changes the data store bound to this view and refreshes it.
-     * @param {Ext.data.Store} store The store to bind to this view
-     * @since 3.4.0
+<span id='Ext-tree-View-method-createAnimWrap'>    /**
+</span>     * @private
      */
-    onBindStore : function(store, initial, propName) {
+    createAnimWrap: function(record, index) {
         var me = this,
-            lockedView = me.lockedView,
-            normalView = me.normalView;
+            node = me.getNode(record),
+            tmpEl;
 
-        // If we have already achieved our first layout, refresh immediately.
-        // If we have bound to the Store before the first layout, then onBoxReady will
-        // call doFirstRefresh
-        if (normalView.componentLayoutCounter &amp;&amp; !(lockedView.blockRefresh &amp;&amp; normalView.blockRefresh)) {
-            Ext.suspendLayouts();
-            lockedView.doFirstRefresh(store);
-            normalView.doFirstRefresh(store);
-            Ext.resumeLayouts(true);
-        }
-    },
+        tmpEl = Ext.fly(node).insertSibling({
+            role: &#39;presentation&#39;,
+            tag: &#39;div&#39;,
+            cls: me.nodeAnimWrapCls
+        }, &#39;after&#39;);
 
-<span id='Ext-grid-locking-View-method-getStoreListeners'>    getStoreListeners: function() {
-</span>        var me = this;
         return {
-            // Give view listeners the highest priority, since they need to relay things to
-            // children first
-            priority: 1000,
-            refresh: me.onDataRefresh,
-            replace: me.onReplace,
-            add: me.onAdd,
-            remove: me.onRemove,
-            update: me.onUpdate,
-            clear: me.onDataRefresh,
-            beginupdate: me.onBeginUpdate,
-            endupdate: me.onEndUpdate
+            record: record,
+            node: node,
+            el: tmpEl,
+            expanding: false,
+            collapsing: false,
+            animateEl: tmpEl,
+            targetEl: tmpEl
         };
     },
 
-<span id='Ext-grid-locking-View-method-onOwnerGridHide'>    onOwnerGridHide: function() {
-</span>        Ext.suspendLayouts();
-        this.relayFn(&#39;onOwnerGridHide&#39;, arguments);
-        Ext.resumeLayouts(true);
-    },
-
-<span id='Ext-grid-locking-View-method-onOwnerGridShow'>    onOwnerGridShow: function() {
-</span>        Ext.suspendLayouts();
-        this.relayFn(&#39;onOwnerGridShow&#39;, arguments);
-        Ext.resumeLayouts(true);
-    },
-
-<span id='Ext-grid-locking-View-method-onBeginUpdate'>    onBeginUpdate: function() {
-</span>        Ext.suspendLayouts();
-        this.relayFn(&#39;onBeginUpdate&#39;, arguments);
-        Ext.resumeLayouts(true);
-    },
-    
-<span id='Ext-grid-locking-View-method-onEndUpdate'>    onEndUpdate: function() {
-</span>        Ext.suspendLayouts();
-        this.relayFn(&#39;onEndUpdate&#39;, arguments);
-        Ext.resumeLayouts(true);
-    },
-
-<span id='Ext-grid-locking-View-method-onDataRefresh'>    onDataRefresh: function() {
-</span>        Ext.suspendLayouts();
-        this.relayFn(&#39;onDataRefresh&#39;, arguments);
-        Ext.resumeLayouts(true);
-    },
-
-<span id='Ext-grid-locking-View-method-onReplace'>    onReplace: function() {
-</span>        Ext.suspendLayouts();
-        this.relayFn(&#39;onReplace&#39;, arguments);
-        Ext.resumeLayouts(true);
-    },
-
-<span id='Ext-grid-locking-View-method-onAdd'>    onAdd: function() {
-</span>        Ext.suspendLayouts();
-        this.relayFn(&#39;onAdd&#39;, arguments);
-        Ext.resumeLayouts(true);
-    },
-
-<span id='Ext-grid-locking-View-method-onRemove'>    onRemove: function() {
-</span>        Ext.suspendLayouts();
-        this.relayFn(&#39;onRemove&#39;, arguments);
-        Ext.resumeLayouts(true);
-    },
-
-<span id='Ext-grid-locking-View-method-setActionableMode'>    /**
-</span>     * Toggles ARIA actionable mode on/off
-     * @param {Boolean} enabled
-     * @return {Boolean} Returns `false` if the request failed.
-     * @private
+<span id='Ext-tree-View-method-getAnimWrap'>    /**
+</span>     * @private
+     * Returns the animation wrapper element for the specified parent node, used to wrap the child nodes as
+     * they slide up or down during expand/collapse.
+     *
+     * @param parent The parent node to be expanded or collapsed
+     *
+     * @param [bubble=true] If the passed parent node does not already have a wrap element created, by default
+     * this function will bubble up to each parent node looking for a valid wrap element to reuse, returning
+     * the first one it finds. This is the appropriate behavior, e.g., for the collapse direction, so that the
+     * entire expanded set of branch nodes can collapse as a single unit.
+     *
+     * However for expanding each parent node should instead always create its own animation wrap if one
+     * doesn&#39;t exist, so that its children can expand independently of any other nodes -- this is crucial
+     * when executing the &quot;expand all&quot; behavior. If multiple nodes attempt to reuse the same ancestor wrap
+     * element concurrently during expansion it will lead to problems as the first animation to complete will
+     * delete the wrap el out from under other running animations. For that reason, when expanding you should
+     * always pass `bubble: false` to be on the safe side.
+     *
+     * If the passed parent has no wrap (or there is no valid ancestor wrap after bubbling), this function
+     * will return null and the calling code should then call {@link #createAnimWrap} if needed.
+     *
+     * @return {Ext.dom.Element} The wrapping element as created in {@link #createAnimWrap}, or null
      */
-    setActionableMode: function(enabled, position) {
-        var result,
-            targetView;
+    getAnimWrap: function(parent, bubble) {
+        if (!this.animate) {
+            return null;
+        }
 
-        if (enabled) {
-            if (!position) {
-                position = this.getNavigationModel().getPosition();
-            }
-            if (position) {
-                position = position.clone();
+        var wraps = this.animWraps,
+            wrap = wraps[parent.internalId];
 
-                // Drill down to the side that we&#39;re actioning
-                position.view = targetView = position.column.getView();
-
-                // Attempt to switch the focused view to actionable.
-                result = targetView.setActionableMode(enabled, position);
-
-                // If successful, and the partner is visible, switch that too.
-                if (result !== false &amp;&amp; targetView.lockingPartner.grid.isVisible()) {
-                    targetView.lockingPartner.setActionableMode(enabled, position);
-
-                    // If the partner side refused to cooperate, the whole locking.View must not enter actionable mode
-                    if (!targetView.lockingPartner.actionableMode) {
-                        targetView.setActionableMode(false);
-                        result = false;
-                    }
+        if (bubble !== false) {
+            while (!wrap &amp;&amp; parent) {
+                parent = parent.parentNode;
+                if (parent) {
+                    wrap = wraps[parent.internalId];
                 }
-                return result;
-            } else {
-                return false;
             }
-        } else {
-            this.relayFn(&#39;setActionableMode&#39;, [false]);
         }
+        return wrap;
     },
 
-<span id='Ext-grid-locking-View-method-onUpdate'>    onUpdate: function() {
-</span>        Ext.suspendLayouts();
-        this.relayFn(&#39;onUpdate&#39;, arguments);
-        Ext.resumeLayouts(true);
-    },
-
-<span id='Ext-grid-locking-View-method-refresh'>    refresh: function() {
-</span>        var lockedView = this.lockedView,
-            normalView = this.normalView;
-
-        Ext.suspendLayouts();
-
-        // Clear both views first so that any widgets are cached first.
-        // Otherwise the second refresh&#39;s clear could remove widgets
-        // that are in the first view who&#39;s column has been moved.
-        lockedView.clearViewEl(true);
-        normalView.clearViewEl(true);
-
-        // Refresh locked view second, so that if it&#39;s refreshing from empty (can start with no locked columns),
-        // the buffered renderer can look to its partner to get the correct range to refresh.
-        normalView.refresh();
-        lockedView.refresh();
-
-        Ext.resumeLayouts(true);
-    },
-
-<span id='Ext-grid-locking-View-method-refreshView'>    refreshView: function() {
-</span>        var lockedView = this.lockedView,
-            normalView = this.normalView,
-            startIndex = normalView.all.startIndex;
-
-        Ext.suspendLayouts();
-
-        // Clear both views first so that any widgets are cached first.
-        // Otherwise the second refresh&#39;s clear could remove widgets
-        // that are in the first view who&#39;s column has been moved.
-        lockedView.clearViewEl(true);
-        normalView.clearViewEl(true);
-
-        // Refresh locked view second, so that if it&#39;s refreshing from empty (can start with no locked columns),
-        // the buffered renderer can look to its partner to get the correct range to refresh.
-        normalView.refreshView(startIndex);
-        lockedView.refreshView(startIndex);
-
-        Ext.resumeLayouts(true);
-    },
-    
-<span id='Ext-grid-locking-View-method-setScrollable'>    setScrollable: function(scrollable) {
-</span>        Ext.suspendLayouts();
-        this.lockedView.setScrollable(scrollable);
-        if (scrollable.isScroller) {
-            scrollable = new Ext.scroll.Scroller(scrollable.initialConfig);
-        }
-        this.normalView.setScrollable(scrollable);
-        Ext.resumeLayouts(true);
-    },
-
-<span id='Ext-grid-locking-View-method-getNode'>    getNode: function(nodeInfo) {
-</span>        // default to the normal view
-        return this.normalView.getNode(nodeInfo);
-    },
-
-<span id='Ext-grid-locking-View-method-getRow'>    getRow: function(nodeInfo) {
-</span>        // default to the normal view
-        return this.normalView.getRow(nodeInfo);
-    },
-
-<span id='Ext-grid-locking-View-method-getCell'>    getCell: function(record, column) {
-</span>        var view = this.getViewForColumn(column),
-            row = view.getRow(record);
-            
-        return Ext.fly(row).down(column.getCellSelector());
-    },
-
-<span id='Ext-grid-locking-View-method-indexOf'>    indexOf: function(record) {
-</span>        var result = this.lockedView.indexOf(record);
-        if (!result) {
-            result = this.normalView.indexOf(record);
-        }
-        return result;
-    },
-
-<span id='Ext-grid-locking-View-method-focus'>    focus: function() {
-</span>        // Delegate to the view of first visible child tablepanel of the owning lockable assembly.
-        var target = this.ownerGrid.down(&#39;&gt;tablepanel:not(hidden)&gt;tableview&#39;);
-
-        if (target) {
-            target.focus();
-        }
-    },
-
-<span id='Ext-grid-locking-View-method-focusRow'>    focusRow: function(row) {
-</span>        var view,
-            // Access lastFocused directly because getter nulls it if the record is no longer in view
-            // and all we are interested in is the lastFocused View.
-            lastFocused = this.getNavigationModel().lastFocused;
-    
-        view = lastFocused ? lastFocused.view : this.normalView;
-        view.focusRow(row);
-    },
-
-<span id='Ext-grid-locking-View-method-focusCell'>    focusCell: function(position) {
-</span>        position.view.focusCell(position);
-    },
-
-<span id='Ext-grid-locking-View-method-onRowFocus'>    onRowFocus: function() {
-</span>        this.relayFn(&#39;onRowFocus&#39;, arguments);
-    },
-
-<span id='Ext-grid-locking-View-method-isVisible'>    isVisible: function(deep) {
-</span>        return this.ownerGrid.isVisible(deep);
-    },
-
-<span id='Ext-grid-locking-View-method-getCellInclusive'>    // Old API. Used by tests now to test coercion of navigation from hidden column to closest visible.
-</span>    // Position.column includes all columns including hidden ones.
-    getCellInclusive: function(pos, returnDom) {
-        var col = pos.column,
-            lockedSize = this.lockedGrid.getColumnManager().getColumns().length;
-            
-        // Normalize view
-        if (col &gt;= lockedSize) {
-            // Make a copy so we don&#39;t mutate the passed object
-            pos = Ext.apply({}, pos);
-            pos.column -= lockedSize;
-            return this.normalView.getCellInclusive(pos, returnDom);
-        } else {
-            return this.lockedView.getCellInclusive(pos, returnDom);
-        }
-    },
-
-<span id='Ext-grid-locking-View-method-getHeaderByCell'>    getHeaderByCell: function(cell) {
-</span>        if (cell) {
-            return this.getVisibleColumnManager().getHeaderById(cell.getAttribute(&#39;data-columnId&#39;));
-        }
-        return false;
-    },
-
-<span id='Ext-grid-locking-View-method-onRowSelect'>    onRowSelect: function() {
-</span>        this.relayFn(&#39;onRowSelect&#39;, arguments);
-    },
-
-<span id='Ext-grid-locking-View-method-onRowDeselect'>    onRowDeselect: function() {
-</span>        this.relayFn(&#39;onRowDeselect&#39;, arguments);
-    },
-
-<span id='Ext-grid-locking-View-method-onCellSelect'>    onCellSelect: function(cellContext) {
-</span>        // Pass a contextless cell descriptor to the child view
-        cellContext.column.getView().onCellSelect({
-            record: cellContext.record,
-            column: cellContext.column
-        });
-    },
-
-<span id='Ext-grid-locking-View-method-onCellDeselect'>    onCellDeselect: function(cellContext) {
-</span>        // Pass a contextless cell descriptor to the child view
-        cellContext.column.getView().onCellDeselect({
-            record: cellContext.record,
-            column: cellContext.column
-        });
-    },
-
-<span id='Ext-grid-locking-View-method-getCellByPosition'>    getCellByPosition: function(pos, returnDom) {
+<span id='Ext-tree-View-method-doAdd'>    doAdd: function(records, index) {
 </span>        var me = this,
-            view = pos.view,
-            col = pos.column;
+            record = records[0],
+            parent = record.parentNode,
+            all = me.all,
+            relativeIndex,
+            animWrap = me.getAnimWrap(parent),
+            targetEl, childNodes, len, result, children;
 
-        // Access the real Ext.view.Table for the specified Column
-        if (view === me) {
-            pos = new Ext.grid.CellContext(col.getView()).setPosition(pos.record, pos.column);
+        if (!animWrap || !animWrap.expanding) {
+            return me.callParent([records, index]);
         }
-        return view.getCellByPosition(pos, returnDom);
+
+        // If we are adding records which have a parent that is currently expanding
+        // lets add them to the animation wrap
+        result = me.bufferRender(records, index, true);
+        children = result.children;
+
+        // We need the parent that has the animWrap, not the node&#39;s parent
+        parent = animWrap.record;
+
+        // If there is an anim wrap we do our special magic logic
+        targetEl = animWrap.targetEl;
+        childNodes = targetEl.dom.childNodes;
+        len = childNodes.length;
+
+        // The relative index is the index in the full flat collection minus the index of the wraps parent
+        relativeIndex = index - me.indexInStore(parent) - 1;
+
+        // If we are adding records to the wrap that have a higher relative index then there are currently children
+        // it means we have to append the nodes to the wrap
+        if (!len || relativeIndex &gt;= len) {
+            targetEl.appendChild(result.fragment, true);
+        }
+        // If there are already more children then the relative index it means we are adding child nodes of
+        // some expanded node in the anim wrap. In this case we have to insert the nodes in the right location
+        else {
+            Ext.fly(childNodes[relativeIndex]).insertSibling(children, &#39;before&#39;, true);
+        }
+
+        // We also have to update the node cache of the DataView
+        all.insert(index, children);
+        return children;
     },
 
-<span id='Ext-grid-locking-View-method-getRecord'>    getRecord: function(node) {
-</span>        var result = this.lockedView.getRecord(node);
-        if (!result) {
-            result = this.normalView.getRecord(node);
+<span id='Ext-tree-View-method-onRemove'>    onRemove: function(ds, records, index) {
+</span>        var me = this,
+            empty, i,
+            fireRemoveEvent = me.hasListeners.remove,
+            oldItems;
+
+        if (me.viewReady) {
+            empty = me.store.getCount() === 0;
+
+            // If buffered rendering is being used, call the parent class.
+            if (me.bufferedRenderer) {
+                return me.callParent([ds, records, index]);
+            }
+            if (fireRemoveEvent) {
+                oldItems = this.all.slice(index, index + records.length);
+            }
+            // Nothing left, just refresh the view.
+            if (empty) {
+                me.refresh();
+            }
+            else {
+                // Remove in reverse order so that indices remain correct
+                for (i = records.length - 1, index += i; i &gt;= 0; --i, --index) {
+                    me.doRemove(records[i], index);
+                }
+                me.refreshSizePending = true;
+            }
+
+            // Only fire the event if there&#39;s anyone listening
+            if (fireRemoveEvent) {
+                me.fireItemMutationEvent(&#39;itemremove&#39;, records, index, oldItems, me);
+            }
         }
-        return result;
+    },
+
+<span id='Ext-tree-View-method-doRemove'>    doRemove: function(record, index) {
+</span>        // If we are adding records which have a parent that is currently expanding
+        // lets add them to the animation wrap
+        var me = this,
+            all = me.all,
+            animWrap = me.getAnimWrap(record),
+            item = all.item(index),
+            node = item ? item.dom : null;
+
+        if (!node || !animWrap || !animWrap.collapsing) {
+            return me.callParent([record, index]);
+        }
+
+        // Insert the item at the beginning of the animate el - child nodes are removed
+        // in reverse order so that the index can be used.
+        animWrap.targetEl.dom.insertBefore(node, animWrap.targetEl.dom.firstChild);
+        all.removeElement(index);
+    },
+
+<span id='Ext-tree-View-method-onBeforeExpand'>    onBeforeExpand: function(parent, records, index) {
+</span>        var me = this,
+            animWrap;
+
+        if (me.rendered &amp;&amp; me.all.getCount() &amp;&amp; me.animate) {
+            if (me.getNode(parent)) {
+                animWrap = me.getAnimWrap(parent, false);
+                if (!animWrap) {
+                    animWrap = me.animWraps[parent.internalId] = me.createAnimWrap(parent);
+                    animWrap.animateEl.setHeight(0);
+                }
+                else if (animWrap.collapsing) {
+                    // If we expand this node while it is still expanding then we
+                    // have to remove the nodes from the animWrap.
+                    animWrap.targetEl.select(me.itemSelector).destroy();
+                }
+                animWrap.expanding = true;
+                animWrap.collapsing = false;
+            }
+        }
+    },
+
+<span id='Ext-tree-View-method-onExpand'>    onExpand: function(parent) {
+</span>        var me = this,
+            queue = me.animQueue,
+            id = parent.getId(),
+            node = me.getNode(parent),
+            index = node ? me.indexOf(node) : -1,
+            animWrap,
+            animateEl,
+            targetEl;
+
+        if (me.singleExpand) {
+            me.ensureSingleExpand(parent);
+        }
+
+        // The item is not visible yet
+        if (index === -1) {
+            return;
+        }
+
+        animWrap = me.getAnimWrap(parent, false);
+
+        if (!animWrap) {
+            parent.isExpandingOrCollapsing = false;
+            me.fireEvent(&#39;afteritemexpand&#39;, parent, index, node);
+            return;
+        }
+
+        animateEl = animWrap.animateEl;
+        targetEl = animWrap.targetEl;
+
+        animateEl.stopAnimation();
+        queue[id] = true;
+
+        // Must set element height before this event finishes because animation does not set
+        // initial condition until first tick has elapsed.
+        // Which is good because the upcoming layout resumption must read the content height BEFORE it gets squished.
+        Ext.on(&#39;idle&#39;, function() {
+	    animateEl.dom.style.height = &#39;0px&#39;;
+        }, null, {single: true});
+
+        animateEl.animate({
+            from: {
+                height: 0
+            },
+            to: {
+                height: targetEl.dom.scrollHeight
+            },
+            duration: me.expandDuration,
+            listeners: {
+                afteranimate: function() {
+                    // Move all the nodes out of the anim wrap to their proper location
+                    // Must do this in afteranimate because lastframe does not fire if the
+                    // animation is stopped.
+                    var items = targetEl.dom.childNodes,
+                        activeEl = Ext.Element.getActiveElement();
+
+                    if (items.length) {
+                        if (!targetEl.contains(activeEl)) {
+                            activeEl = null;
+                        }
+                        
+                        animWrap.el.insertSibling(items, &#39;before&#39;, true);
+                        
+                        if (activeEl) {
+                            Ext.fly(activeEl).focus();
+                        }
+                    }
+                    
+                    animWrap.el.destroy();
+                    me.animWraps[animWrap.record.internalId] = queue[id] = null;
+                }
+            },
+            callback: function() {
+                parent.isExpandingOrCollapsing = false;
+                if (!me.destroyed) {
+                    me.refreshSize(true);
+                }
+                me.fireEvent(&#39;afteritemexpand&#39;, parent, index, node);
+            }
+        });
+    },
+
+<span id='Ext-tree-View-method-onBeforeCollapse'>    // Triggered by the TreeStore&#39;s beforecollapse event.
+</span>    onBeforeCollapse: function(parent, records, index, callback, scope) {
+        var me = this,
+            animWrap;
+
+        if (me.rendered &amp;&amp; me.all.getCount()) {
+            if (me.animate) {
+                // Only process if the collapsing node is in the UI.
+                // A node may be collapsed as part of a recursive ancestor collapse, and if it
+                // has already been removed from the UI by virtue of an ancestor being collapsed, we should not do anything.
+                if (parent.isVisible()) {
+                    animWrap = me.getAnimWrap(parent);
+                    if (!animWrap) {
+                        animWrap = me.animWraps[parent.internalId] = me.createAnimWrap(parent, index);
+                    }
+                    else if (animWrap.expanding) {
+                        // If we collapse this node while it is still expanding then we
+                        // have to remove the nodes from the animWrap.
+                        animWrap.targetEl.select(this.itemSelector).destroy();
+                    }
+                    animWrap.expanding = false;
+                    animWrap.collapsing = true;
+                    animWrap.callback = callback;
+                    animWrap.scope = scope;
+                }
+            } else {
+                // Cache any passed callback for use in the onCollapse post collapse handler non-animated codepath
+                me.onCollapseCallback = callback;
+                me.onCollapseScope = scope;
+            }
+        }
+    },
+
+<span id='Ext-tree-View-method-onCollapse'>    onCollapse: function(parent) {
+</span>        var me = this,
+            queue = me.animQueue,
+            id = parent.getId(),
+            node = me.getNode(parent),
+            index = node ? me.indexOf(node) : -1,
+            animWrap = me.getAnimWrap(parent),
+            animateEl;
+
+        // If the collapsed node is already removed from the UI
+        // by virtue of being a descendant of a collapsed node, then
+        // we have nothing to do here.
+        if (!me.all.getCount() || !parent.isVisible()) {
+            return;
+        }
+
+        // Not animating, all items will have been added, so updateLayout and resume layouts
+        if (!animWrap) {
+            parent.isExpandingOrCollapsing = false;
+            me.fireEvent(&#39;afteritemcollapse&#39;, parent, index, node);
+
+            // Call any collapse callback cached in the onBeforeCollapse handler
+            Ext.callback(me.onCollapseCallback, me.onCollapseScope);
+            me.onCollapseCallback = me.onCollapseScope = null;
+            return;
+        }
+
+        animateEl = animWrap.animateEl;
+
+        queue[id] = true;
+
+        animateEl.stopAnimation();
+        animateEl.animate({
+            to: {
+                height: 0
+            },
+            duration: me.collapseDuration,
+            listeners: {
+                afteranimate: function() {
+                    // In case lastframe did not fire because the animation was stopped.
+                    animWrap.el.destroy();
+                    me.animWraps[animWrap.record.internalId] = queue[id] = null;
+                }
+            },
+            callback: function() {
+                parent.isExpandingOrCollapsing = false;
+                if (!me.destroyed) {
+                    me.refreshSize(true);
+                }
+                me.fireEvent(&#39;afteritemcollapse&#39;, parent, index, node);
+
+                // Call any collapse callback cached in the onBeforeCollapse handler
+                Ext.callback(animWrap.callback, animWrap.scope);
+                animWrap.callback = animWrap.scope = null;
+            }
+        });
+    },
+
+<span id='Ext-tree-View-method-isAnimating'>    /**
+</span>     * Checks if a node is currently undergoing animation
+     * @private
+     * @param {Ext.data.Model} node The node
+     * @return {Boolean} True if the node is animating
+     */
+    isAnimating: function(node) {
+        return !!this.animQueue[node.getId()];
+    },
+
+<span id='Ext-tree-View-method-expand'>    /**
+</span>     * Expands a record that is loaded in the view.
+     *
+     * If an animated collapse or expand of the record is in progress, this call will be ignored.
+     * @param {Ext.data.Model} record The record to expand
+     * @param {Boolean} [deep] True to expand nodes all the way down the tree hierarchy.
+     * @param {Function} [callback] The function to run after the expand is completed
+     * @param {Object} [scope] The scope of the callback function.
+     */
+    expand: function(record, deep, callback, scope) {
+        var me = this,
+            doAnimate = !!me.animate,
+            result;
+
+        // Block toggling if we are already animating an expand or collapse operation.
+        if (!doAnimate || !record.isExpandingOrCollapsing) {
+            if (!record.isLeaf()) {
+                record.isExpandingOrCollapsing = doAnimate;
+            }
+
+            // Need to suspend layouts because the expand process makes multiple changes to the UI
+            // in addition to inserting new nodes. Folder and elbow images have to change, so we
+            // need to coalesce all resulting layouts.
+            Ext.suspendLayouts();
+            result = record.expand(deep, callback, scope);
+            Ext.resumeLayouts(true);
+            return result;
+        }
+    },
+
+<span id='Ext-tree-View-method-collapse'>    /**
+</span>     * Collapses a record that is loaded in the view.
+     *
+     * If an animated collapse or expand of the record is in progress, this call will be ignored.
+     * @param {Ext.data.Model} record The record to collapse
+     * @param {Boolean} [deep] True to collapse nodes all the way up the tree hierarchy.
+     * @param {Function} [callback] The function to run after the collapse is completed
+     * @param {Object} [scope] The scope of the callback function.
+     */
+    collapse: function(record, deep, callback, scope) {
+        var me = this,
+            doAnimate = !!me.animate;
+
+        // Block toggling if we are already animating an expand or collapse operation.
+        if (!doAnimate || !record.isExpandingOrCollapsing) {
+            if (!record.isLeaf()) {
+                record.isExpandingOrCollapsing = doAnimate;
+            }
+            return record.collapse(deep, callback, scope);
+        }
+    },
+
+<span id='Ext-tree-View-method-toggle'>    /**
+</span>     * Toggles a record between expanded and collapsed.
+     *
+     * If an animated collapse or expand of the record is in progress, this call will be ignored.
+     * @param {Ext.data.Model} record
+     * @param {Boolean} [deep] True to collapse nodes all the way up the tree hierarchy.
+     * @param {Function} [callback] The function to run after the expand/collapse is completed
+     * @param {Object} [scope] The scope of the callback function.
+     */
+    toggle: function(record, deep, callback, scope) {
+        if (record.isExpanded()) {
+            this.collapse(record, deep, callback, scope);
+        } else {
+            this.expand(record, deep, callback, scope);
+        }
+    },
+
+<span id='Ext-tree-View-method-onItemDblClick'>    onItemDblClick: function(record, item, index, e) {
+</span>        var me = this,
+            editingPlugin = me.editingPlugin;
+
+        me.callParent([record, item, index, e]);
+        if (me.toggleOnDblClick &amp;&amp; record.isExpandable() &amp;&amp; !(editingPlugin &amp;&amp; editingPlugin.clicksToEdit === 2)) {
+            me.toggle(record);
+        }
     },
     
-<span id='Ext-grid-locking-View-method-scrollBy'>    scrollBy: function(){
-</span>        var scroller = this.ownerGrid.getScrollable();
-        scroller.scrollBy.apply(scroller, arguments);
-    },
+<span id='Ext-tree-View-method-onCellClick'>    onCellClick: function(cell, cellIndex, record, row, rowIndex, e) {
+</span>        var me = this,
+            column = e.position.column;
 
-<span id='Ext-grid-locking-View-method-ensureVisible'>    ensureVisible: function() {
-</span>        var normal = this.normalView;
-        normal.ensureVisible.apply(normal, arguments);
-    },
+        // We&#39;re only interested in clicks in the tree column
+        if (column.isTreeColumn) {
+            
+            // Click on the checkbox and there is a defined data value; toggle it.
+            if (e.getTarget(me.checkboxSelector, cell) &amp;&amp; record.get(&#39;checked&#39;) != null) {
+                me.onCheckChange(e);
 
-<span id='Ext-grid-locking-View-method-disable'>    disable: function() {
-</span>        this.relayFn(&#39;disable&#39;, arguments);
-    },
+                // Allow the stopSelection config on checkable tree columns to prevent selection
+                if (column.stopSelection) {
+                    e.stopSelection = true;
+                }
+            }
 
-<span id='Ext-grid-locking-View-method-enable'>    enable: function() {
-</span>        this.relayFn(&#39;enable&#39;, arguments);
-    },
+            // Click on the expander
+            else if (e.getTarget(me.expanderSelector, cell) &amp;&amp; record.isExpandable()) {
+                // Ensure focus is on the clicked cell so that if this causes a refresh,
+                // focus restoration does not scroll back to the previouslty focused position.
+                // onCellClick is called *befor* cellclick is fired which is what changes focus position.
+                // TODO: connect directly from View&#39;s event processing to NavigationModel without relying on events.
+                me.getNavigationModel().setPosition(e.position);
+                me.toggle(record, e.ctrlKey);
 
-<span id='Ext-grid-locking-View-method-addElListener'>    addElListener: function() {
-</span>        this.relayFn(&#39;addElListener&#39;, arguments);
-    },
-
-<span id='Ext-grid-locking-View-method-refreshNode'>    refreshNode: function(){
-</span>        this.relayFn(&#39;refreshNode&#39;, arguments);
-    },
-
-<span id='Ext-grid-locking-View-method-addRowCls'>    addRowCls: function(){
-</span>        this.relayFn(&#39;addRowCls&#39;, arguments);
-    },
-
-<span id='Ext-grid-locking-View-method-removeRowCls'>    removeRowCls: function(){
-</span>        this.relayFn(&#39;removeRowCls&#39;, arguments);
+                // So that we know later to stop event propagation by returning false from the NavigationModel
+                // TODO: when NavigationModel is directly hooked up to be called *before* the event sequence
+                // This flag will not be necessary.
+                e.nodeToggled = true;
+            }
+            return me.callParent([cell, cellIndex, record, row, rowIndex, e]);
+        }
     },
     
-<span id='Ext-grid-locking-View-method-destroy'>    destroy: function() {
-</span>        var me = this;
-        
-        me.rendered = false;
+<span id='Ext-tree-View-method-onCheckChange'>    onCheckChange: function(e) {
+</span>        var me = this,
+            record = e.record,
+            wasChecked = record.get(&#39;checked&#39;),
+            checked;
+    
+        // 1 means semi-checked.
+        // Toggle of that state checks.
+        if (wasChecked === 1) {
+            checked = true;
+        } else {
+            checked = !wasChecked;
+        }
+        me.setChecked(record, checked, e);
+    },
 
-        // Unbind from the dataSource we bound to in constructor
-        me.bindStore(null, false, &#39;dataSource&#39;);
-        
-        Ext.destroy(me.selModel, me.navigationModel, me.loadMask,
-                    me.lockedViewEventRelayers, me.normalViewEventRelayers);
-        
-        me.lockedView.lockingPartner = me.normalView.lockingPartner = null;
-        
-        me.callParent();
-    }
+<span id='Ext-tree-View-method-setChecked'>    setChecked: function(record, meChecked, e, options) {
+</span>        var me = this,
+            checkPropagation = me.checkPropagationFlags[me.ownerGrid.checkPropagation.toLowerCase()],
+            wasChecked = record.data.checked,
+            halfCheckedValue = me.ownerGrid.triStateCheckbox ? 1 : false,
+            progagateCheck = (!options || options.propagateCheck !== false) &amp;&amp; (checkPropagation &amp; 1),
+            checkParent = (!options || options.checkParent !== false) &amp;&amp; (checkPropagation &amp; 2),
+            parentNode,
+            parentChecked,
+            foundCheck,
+            foundClear,
+            childNodes,
+            matchedChildCount = 0,
+            len, i;
 
-}, function() {
-    this.borrow(Ext.Component, [&#39;up&#39;]);
-    this.borrow(Ext.view.AbstractView, [&#39;doFirstRefresh&#39;, &#39;applyFirstRefresh&#39;]);
-    this.borrow(Ext.view.Table, [&#39;cellSelector&#39;, &#39;selectedCellCls&#39;, &#39;selectedItemCls&#39;]);
+        if (me.fireEvent(&#39;beforecheckchange&#39;, record, wasChecked, e) === false) {
+            return;
+        }
+
+        // Propagate full -&gt;true and -&gt;false changes to child nodes
+        // unless we&#39;re being called from a setChecked on a child node.
+        if (meChecked !== 1 &amp;&amp; progagateCheck) {
+            childNodes = record.childNodes;
+            len = childNodes.length;
+            for (i = 0; i &lt; len; i++) {
+
+                // We are setting child nodes, so pass the
+                // checkParent flag as false to avoid reentry back into this node.
+                me.setChecked(childNodes[i], meChecked, e, {
+                    checkParent: false
+                });
+
+                if (childNodes[i].get(&#39;checked&#39;) === meChecked) {
+                    matchedChildCount++;
+                }
+            }
+
+            // If one or more of the child nodes refused
+            if (matchedChildCount !== len) {
+                meChecked = matchedChildCount ? halfCheckedValue : false;
+            }
+        }
+
+        // If the new valud was not reset due to vetoing from
+        // changes propagated to child nodes, then go ahead with the change.
+        if (record.get(&#39;data&#39;) !== meChecked) {
+            record.set(&#39;checked&#39;, meChecked, options);
+
+            // Fire checkchange now we know the valus has changed.
+            me.fireEvent(&#39;checkchange&#39;, record, meChecked, e);
+
+            // If there&#39;s a parent node, and the parent node has a checked data property
+            // keep parent up to date with checkedness of its child nodes.
+            if (checkParent &amp;&amp; (parentNode = record.parentNode) &amp;&amp; (parentChecked = parentNode.data.checked) != null) {
+                childNodes = parentNode.childNodes;
+                len = childNodes.length;
+
+                // If we&#39;re semi checked, the parent is semi checked.
+                if (meChecked === halfCheckedValue) {
+                    parentChecked = halfCheckedValue;
+                }
+                // If we&#39;re the sole child, the parent is our state.
+                else if (len === 1) {
+                    parentChecked = meChecked;
+                } else {
+                    foundCheck = foundClear = false;
+                    for (i = 0; !(foundCheck &amp;&amp; foundClear) &amp; i &lt; len; i++) {
+                        if (childNodes[i].data.checked === 1) {
+                            foundCheck = foundClear = true;
+                        } else if (!childNodes[i].data.checked) {
+                            foundClear = true;
+                        } else {
+                            foundCheck = true;
+                        }
+                    }
+                    parentChecked = foundCheck &amp;&amp; foundClear ? halfCheckedValue : (foundCheck ? true : false);
+                }
+
+                // We are setting the parent node, so pass the
+                // progagateCheck flag as false to avoid reentry back into this node.
+                me.setChecked(parentNode, parentChecked, e, {
+                    propagateCheck: false
+                });
+            }
+        }
+    },
+
+<span id='Ext-tree-View-method-onExpanderMouseOver'>    onExpanderMouseOver: function(e) {
+</span>        e.getTarget(this.cellSelector, 10, true).addCls(this.expanderIconOverCls);
+    },
+
+<span id='Ext-tree-View-method-onExpanderMouseOut'>    onExpanderMouseOut: function(e) {
+</span>        e.getTarget(this.cellSelector, 10, true).removeCls(this.expanderIconOverCls);
+    },
+
+<span id='Ext-tree-View-method-getStoreListeners'>    getStoreListeners: function() {
+</span>        return Ext.apply(this.callParent(), {
+            rootchange: this.onRootChange,
+            fillcomplete: this.onFillComplete
+        });
+    },
+
+<span id='Ext-tree-View-method-onBindStore'>    onBindStore: function(store, initial, propName, oldStore) {
+</span>        var oldRoot = oldStore &amp;&amp; oldStore.getRootNode(),
+            newRoot = store &amp;&amp; store.getRootNode();
+
+        this.callParent([store, initial, propName, oldStore]);
+
+        // The root implicitly changes when reconfigured with a new store.
+        // The store&#39;s own rootChange event when it initially sets its own rootNode
+        // will not have reached us because it was not ourt store during its initialization.
+        if (newRoot !== oldRoot) {
+            this.onRootChange(newRoot, oldRoot);
+        }
+    },
+
+<span id='Ext-tree-View-method-onRootChange'>    onRootChange: function(newRoot, oldRoot) {
+</span>        var me = this,
+            grid = me.grid;
+
+        if (oldRoot) {
+            me.rootListeners.destroy();
+            me.rootListeners = null;
+        }
+        
+        if (newRoot) {
+            me.rootListeners = newRoot.on({
+                beforeexpand: me.onBeforeExpand,
+                expand: me.onExpand,
+                beforecollapse: me.onBeforeCollapse,
+                collapse: me.onCollapse,
+                destroyable: true,
+                scope: me
+            });
+
+            grid.addRelayers(newRoot);
+        }
+    },
+
+<span id='Ext-tree-View-method-ensureSingleExpand'>    ensureSingleExpand: function(node) {
+</span>        var parent = node.parentNode;
+        if (parent) {
+            parent.eachChild(function(child) {
+                if (child !== node &amp;&amp; child.isExpanded()) {
+                    child.collapse();
+                }
+            });
+        }
+    },
+
+<span id='Ext-tree-View-property-privates'>    privates: {
+</span>        checkPropagationFlags: {
+            none: 0,
+            down: 1,
+            up: 2,
+            both: 3
+        },
+
+        deferRefreshForLoad: function(store) {
+            var ret = this.callParent([store]),
+                options, node;
+
+            if (ret) {
+                options = store.lastOptions;
+                node = options &amp;&amp; options.node;
+                // If the root isn&#39;t loading, then proceed with the refresh, we&#39;ll
+                // add the other nodes as they come in
+                if (node &amp;&amp; node !== store.getRoot()) {
+                    ret = false;
+                }
+            }
+            return ret;
+        }
+     }
 });
 </pre>
 </body>

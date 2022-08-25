@@ -451,15 +451,17 @@ Ext.define('GeoExt.data.store.Layers', {
     getByLayer: function(layer, filterFn) {
         var me = this;
         var index;
-        if (Ext.isFunction(filterFn)) {
-            index = me.findBy(filterFn);
-        } else {
-            index = me.findBy(function(rec) {
-                return rec.getOlLayer() === layer;
-            });
-        }
-        if (index > -1) {
-            return me.getAt(index);
+        if (me.getData()) {
+            if (Ext.isFunction(filterFn)) {
+                index = me.findBy(filterFn);
+            } else {
+                index = me.findBy(function(rec) {
+                    return rec.getOlLayer() === layer;
+                });
+            }
+            if (index > -1) {
+                return me.getAt(index);
+            }
         }
     },
 

@@ -1,6 +1,6 @@
 {
   "name": "@geoext/openlayers-legacy",
-  "version": "6.5.4",
+  "version": "6.15.1",
   "description": "OpenLayers legacy build for geoext",
   "scripts": {
     "build": "./build-openlayers-legacy.sh",
@@ -13,12 +13,12 @@
   "author": "Simon Seyock <seyock@terrestris.de>",
   "license": "BSD-2-Clause",
   "devDependencies": {
-    "@babel/cli": "^7.14.5",
-    "@babel/core": "^7.14.5",
-    "@babel/preset-env": "^7.14.5",
-    "np": "^7.4.0",
+    "@babel/cli": "^7.18.10",
+    "@babel/core": "^7.18.13",
+    "@babel/preset-env": "^7.18.10",
+    "np": "^7.6.2",
     "npx": "^10.2.2",
-    "ol": "git+https://github.com/openlayers/openlayers.git#v6.5.0"
+    "ol": "git+https://github.com/openlayers/openlayers.git#v6.15.1"
   },
   "repository": {
     "type": "git",
@@ -29,5 +29,6 @@
   },
   "files": [
     "dist/*"
-  ]
+  ],
+  "dependencies": {}
 }

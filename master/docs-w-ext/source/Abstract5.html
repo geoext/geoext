@@ -15,311 +15,152 @@
   </script>
 </head>
 <body onload="prettyPrint(); highlight();">
-  <pre class="prettyprint lang-js"><span id='Ext-util-translatable-Abstract'>/**
+  <pre class="prettyprint lang-js"><span id='Ext-util-sizemonitor-Abstract'>/**
 </span> * @private
- *
- * The abstract class. Sub-classes are expected, at the very least, to implement translation logics inside
- * the &#39;translate&#39; method
  */
-Ext.define(&#39;Ext.util.translatable.Abstract&#39;, {
-    extend: &#39;Ext.Evented&#39;,
+Ext.define(&#39;Ext.util.sizemonitor.Abstract&#39;, {
 
-    requires: [&#39;Ext.fx.easing.Linear&#39;],
+    mixins: [&#39;Ext.mixin.Templatable&#39;],
+
+    requires: [
+        &#39;Ext.TaskQueue&#39;
+    ],
 
     config: {
-<span id='Ext-util-translatable-Abstract-cfg-useWrapper'>        useWrapper: null,
+<span id='Ext-util-sizemonitor-Abstract-cfg-element'>        element: null,
 </span>
-<span id='Ext-util-translatable-Abstract-cfg-easing'>        easing: null,
+<span id='Ext-util-sizemonitor-Abstract-cfg-callback'>        callback: Ext.emptyFn,
 </span>
-<span id='Ext-util-translatable-Abstract-cfg-easingX'>        easingX: {
-</span>            duration: 300
-        },
-
-<span id='Ext-util-translatable-Abstract-cfg-easingY'>        easingY: {
-</span>            duration: 300
-        }
-    },
-
-<span id='Ext-util-translatable-Abstract-event-animationstart'>    /**
-</span>     * @event animationstart
-     * Fires whenever the animation is started
-     * @param {Ext.util.translatable.Abstract} this
-     * @param {Number} x The current translation on the x axis
-     * @param {Number} y The current translation on the y axis
-     */
-
-<span id='Ext-util-translatable-Abstract-event-animationframe'>    /**
-</span>     * @event animationframe
-     * Fires for each animation frame
-     * @param {Ext.util.translatable.Abstract} this
-     * @param {Number} x The new translation on the x axis
-     * @param {Number} y The new translation on the y axis
-     */
-
-<span id='Ext-util-translatable-Abstract-event-animationend'>    /**
-</span>     * @event animationend
-     * Fires whenever the animation is ended
-     * @param {Ext.util.translatable.Abstract} this
-     * @param {Number} x The current translation on the x axis
-     * @param {Number} y The current translation on the y axis
-     */
-
-<span id='Ext-util-translatable-Abstract-property-x'>    /**
-</span>     * @property {Number} x
-     * @private
-     * The last translated x value
-     */
-    x: 0,
-
-<span id='Ext-util-translatable-Abstract-property-y'>    /**
-</span>     * @property {Number} y
-     * @private
-     * The last translated y value
-     */
-    y: 0,
-
-<span id='Ext-util-translatable-Abstract-property-activeEasingX'>    activeEasingX: null,
+<span id='Ext-util-sizemonitor-Abstract-cfg-scope'>        scope: null,
 </span>
-<span id='Ext-util-translatable-Abstract-property-activeEasingY'>    activeEasingY: null,
+<span id='Ext-util-sizemonitor-Abstract-cfg-args'>        args: []
+</span>    },
+
+<span id='Ext-util-sizemonitor-Abstract-property-width'>    width: null,
 </span>
-<span id='Ext-util-translatable-Abstract-property-isAnimating'>    isAnimating: false,
+<span id='Ext-util-sizemonitor-Abstract-property-height'>    height: null,
 </span>
-<span id='Ext-util-translatable-Abstract-property-isTranslatable'>    isTranslatable: true,
+<span id='Ext-util-sizemonitor-Abstract-property-contentWidth'>    contentWidth: null,
 </span>
-<span id='Ext-util-translatable-Abstract-method-constructor'>    constructor: function(config) {
-</span>        this.mixins.observable.constructor.call(this, config);
-        // this.position is simply an internal reusable object for GC purposes and should
-        // not be accessed directly as it&#39;s values are not kept in sync.  always use
-        // getPosition() to get the position
-        this.position = { x: 0, y: 0};
+<span id='Ext-util-sizemonitor-Abstract-property-contentHeight'>    contentHeight: null,
+</span>
+<span id='Ext-util-sizemonitor-Abstract-method-constructor'>    constructor: function(config) {
+</span>        this.refresh = Ext.Function.bind(this.refresh, this);
+
+        this.info = {
+            width: 0,
+            height: 0,
+            contentWidth: 0,
+            contentHeight: 0,
+            flag: 0
+        };
+
+        this.initElement();
+
+        this.initConfig(config);
+
+        this.bindListeners(true);
     },
 
-<span id='Ext-util-translatable-Abstract-method-factoryEasing'>    factoryEasing: function(easing) {
-</span>        return Ext.factory(easing, Ext.fx.easing.Linear, null, &#39;easing&#39;);
-    },
-
-<span id='Ext-util-translatable-Abstract-method-applyEasing'>    applyEasing: function(easing) {
-</span>        if (!this.getEasingX()) {
-            this.setEasingX(this.factoryEasing(easing));
-        }
-
-        if (!this.getEasingY()) {
-            this.setEasingY(this.factoryEasing(easing));
-        }
-    },
-
-<span id='Ext-util-translatable-Abstract-method-applyEasingX'>    applyEasingX: function(easing) {
-</span>        return this.factoryEasing(easing);
-    },
-
-<span id='Ext-util-translatable-Abstract-method-applyEasingY'>    applyEasingY: function(easing) {
-</span>        return this.factoryEasing(easing);
-    },
-
-<span id='Ext-util-translatable-Abstract-method-doTranslate'>    doTranslate: function(x, y) {
-</span>        if (this.hasListeners.translate) {
-            this.fireEvent(&#39;translate&#39;, this, x, y);
+<span id='Ext-util-sizemonitor-Abstract-method-bindListeners'>    bindListeners: Ext.emptyFn,
+</span>
+<span id='Ext-util-sizemonitor-Abstract-method-applyElement'>    applyElement: function(element) {
+</span>        if (element) {
+            return Ext.get(element);
         }
     },
 
-<span id='Ext-util-translatable-Abstract-method-translate'>    translate: function(x, y, animation) {
-</span>        if (animation) {
-            return this.translateAnimated(x, y, animation);
-        }
-
-        if (this.isAnimating) {
-            this.stopAnimation();
-        }
-
-        if (!isNaN(x) &amp;&amp; typeof x == &#39;number&#39;) {
-            this.x = x;
-        }
-
-        if (!isNaN(y) &amp;&amp; typeof y == &#39;number&#39;) {
-            this.y = y;
-        }
-        this.doTranslate(x, y);
+<span id='Ext-util-sizemonitor-Abstract-method-updateElement'>    updateElement: function(element) {
+</span>        element.append(this.detectorsContainer);
+        element.addCls(Ext.baseCSSPrefix + &#39;size-monitored&#39;);
     },
 
-<span id='Ext-util-translatable-Abstract-method-translateAxis'>    translateAxis: function(axis, value, animation) {
-</span>        var x, y;
-
-        if (axis == &#39;x&#39;) {
-            x = value;
-        }
-        else {
-            y = value;
-        }
-
-        return this.translate(x, y, animation);
+<span id='Ext-util-sizemonitor-Abstract-method-applyArgs'>    applyArgs: function(args) {
+</span>        return args.concat([this.info]);
     },
 
-<span id='Ext-util-translatable-Abstract-method-getPosition'>    /**
-</span>     * Returns the translatable object&#39;s current position.
-     * @return {Object} position An object with x and y properties
-     */
-    getPosition: function() {
-        var me = this,
-            position = me.position;
-
-        position.x = -me.x;
-        position.y = -me.y;
-
-        return position;
+<span id='Ext-util-sizemonitor-Abstract-method-refreshMonitors'>    refreshMonitors: Ext.emptyFn,
+</span>
+<span id='Ext-util-sizemonitor-Abstract-method-forceRefresh'>    forceRefresh: function() {
+</span>        Ext.TaskQueue.requestRead(&#39;refresh&#39;, this);
     },
 
-<span id='Ext-util-translatable-Abstract-method-animate'>    animate: function(easingX, easingY) {
-</span>        this.activeEasingX = easingX;
-        this.activeEasingY = easingY;
-
-        this.isAnimating = true;
-        this.lastX = null;
-        this.lastY = null;
-
-        Ext.AnimationQueue.start(this.doAnimationFrame, this);
-
-        this.fireEvent(&#39;animationstart&#39;, this, this.x, this.y);
-        return this;
+<span id='Ext-util-sizemonitor-Abstract-method-getContentBounds'>    getContentBounds: function() {
+</span>        return this.detectorsContainer.getBoundingClientRect();
     },
 
-<span id='Ext-util-translatable-Abstract-method-translateAnimated'>    translateAnimated: function(x, y, animation) {
-</span>        var me = this;
-
-        if (!Ext.isObject(animation)) {
-            animation = {};
-        }
-
-        if (me.isAnimating) {
-            me.stopAnimation();
-        }
-
-        // Callback must be called in stopAnimation
-        me.callback = animation.callback;
-        me.callbackScope = animation.scope;
-
-        var now = Ext.Date.now(),
-            easing = animation.easing,
-            easingX = (typeof x == &#39;number&#39;) ? (animation.easingX || easing || me.getEasingX() || true) : null,
-            easingY = (typeof y == &#39;number&#39;) ? (animation.easingY || easing || me.getEasingY() || true) : null;
-
-        if (easingX) {
-            easingX = me.factoryEasing(easingX);
-            easingX.setStartTime(now);
-            easingX.setStartValue(me.x);
-            easingX.setEndValue(x);
-
-            if (&#39;duration&#39; in animation) {
-                easingX.setDuration(animation.duration);
-            }
-        }
-
-        if (easingY) {
-            easingY = me.factoryEasing(easingY);
-            easingY.setStartTime(now);
-            easingY.setStartValue(me.y);
-            easingY.setEndValue(y);
-
-            if (&#39;duration&#39; in animation) {
-                easingY.setDuration(animation.duration);
-            }
-        }
-
-        return me.animate(easingX, easingY);
+<span id='Ext-util-sizemonitor-Abstract-method-getContentWidth'>    getContentWidth: function() {
+</span>        return this.detectorsContainer.clientWidth;
     },
 
-<span id='Ext-util-translatable-Abstract-method-doAnimationFrame'>    doAnimationFrame: function() {
+<span id='Ext-util-sizemonitor-Abstract-method-getContentHeight'>    getContentHeight: function() {
+</span>        return this.detectorsContainer.clientHeight;
+    },
+
+<span id='Ext-util-sizemonitor-Abstract-method-refreshSize'>    refreshSize: function() {
+</span>        var element = this.getElement();
+
+        if (!element || element.destroyed) {
+            return false;
+        }
+
+        var width = element.getWidth(),
+            height = element.getHeight(),
+            contentWidth = this.getContentWidth(),
+            contentHeight = this.getContentHeight(),
+            currentContentWidth = this.contentWidth,
+            currentContentHeight = this.contentHeight,
+            info = this.info,
+            resized = false,
+            flag = 0;
+
+        this.width = width;
+        this.height = height;
+        this.contentWidth = contentWidth;
+        this.contentHeight = contentHeight;
+
+        flag = ((currentContentWidth !== contentWidth ? 1 : 0) + (currentContentHeight !== contentHeight ? 2 : 0));
+
+        if (flag &gt; 0) {
+            info.width = width;
+            info.height = height;
+            info.contentWidth = contentWidth;
+            info.contentHeight = contentHeight;
+            info.flag = flag;
+
+            resized = true;
+            this.getCallback().apply(this.getScope(), this.getArgs());
+        }
+
+        return resized;
+    },
+
+<span id='Ext-util-sizemonitor-Abstract-method-refresh'>    refresh: function(force) {
+</span>        if (this.destroying || this.destroyed) {
+            return;
+        }
+        
+        if (this.refreshSize() || force) {
+            Ext.TaskQueue.requestWrite(&#39;refreshMonitors&#39;, this);
+        }
+    },
+
+<span id='Ext-util-sizemonitor-Abstract-method-destroy'>    destroy: function() {
 </span>        var me = this,
-            easingX = me.activeEasingX,
-            easingY = me.activeEasingY,
-            now = Date.now(),
-            x, y;
+            element = me.getElement();
 
-        if (!me.isAnimating) {
-            return;
+        me.bindListeners(false);
+
+        if (element &amp;&amp; !element.destroyed) {
+            element.removeCls(Ext.baseCSSPrefix + &#39;size-monitored&#39;);
         }
 
-        me.lastRun = now;
-
-        if (easingX === null &amp;&amp; easingY === null) {
-            me.stopAnimation();
-            return;
-        }
-
-        if (easingX !== null) {
-            me.x = x = Math.round(easingX.getValue());
-
-            if (easingX.isEnded) {
-                me.activeEasingX = null;
-                me.fireEvent(&#39;axisanimationend&#39;, me, &#39;x&#39;, x);
-            }
-        }
-        else {
-            x = me.x;
-        }
-
-        if (easingY !== null) {
-            me.y = y = Math.round(easingY.getValue());
-
-            if (easingY.isEnded) {
-                me.activeEasingY = null;
-                me.fireEvent(&#39;axisanimationend&#39;, me, &#39;y&#39;, y);
-            }
-        }
-        else {
-            y = me.y;
-        }
-
-        if (me.lastX !== x || me.lastY !== y) {
-            me.doTranslate(x, y);
-
-            me.lastX = x;
-            me.lastY = y;
-        }
-
-        me.fireEvent(&#39;animationframe&#39;, me, x, y);
-    },
-
-<span id='Ext-util-translatable-Abstract-method-stopAnimation'>    stopAnimation: function() {
-</span>        var me = this;
-
-        if (!me.isAnimating) {
-            return;
-        }
-
-        me.activeEasingX = null;
-        me.activeEasingY = null;
-
-        me.isAnimating = false;
-
-        Ext.AnimationQueue.stop(me.doAnimationFrame, me);
+        delete me._element;
         
-        if (!me.destroying) {
-            me.fireEvent(&#39;animationend&#39;, me, me.x, me.y);
-            
-            if (me.callback) {
-                me.callback.call(me.callbackScope);
-                me.callback = null;
-            }
-        }
-    },
-
-<span id='Ext-util-translatable-Abstract-method-refresh'>    refresh: function() {
-</span>        this.translate(this.x, this.y);
-    },
-
-<span id='Ext-util-translatable-Abstract-method-destroy'>    destroy: function() {
-</span>        var me = this;
-        
-        me.destroying = true;
-        
-        if (me.isAnimating) {
-            me.stopAnimation();
-        }
+        // This is a closure so Base destructor won&#39;t null it
+        me.refresh = null;
 
         me.callParent();
-        
-        me.destroying = false;
-        me.destroyed = true;
     }
 });
 </pre>
