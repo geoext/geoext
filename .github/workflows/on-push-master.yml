@@ -102,8 +102,8 @@ jobs:
         cp -r resources master/
         cp -r src master/
         cp -r classic master/
-        cp -r node_modules/@geoext/openlayers-legacy master/resources/
-        find master/examples -type f -name "*.html" -exec sed -i 's|../../node_modules/@geoext/openlayers-legacy|../../resources/openlayers-legacy|g' {} +
+        cp -r node_modules/ol master/resources/
+        find master/examples -type f -name "*.html" -exec sed -i 's|../../node_modules/ol|g' {} +
         cp /tmp/sencha-workspace/packages/geoext3/build/*js master/
         npm run generate:docs:master
         npm run generate:docs-w-ext:master

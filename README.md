@@ -13,13 +13,14 @@ GeoExt is Open Source and enables building desktop-like GIS applications through
 
 Version 3 of GeoExt was the successor to the GeoExt 2.x-series and has been built atop the following versions of its base libraries: OpenLayers v3.x / v4.x and ExtJS 6.
 
-With version 4 GeoExt supports the newest official installment v6.x of OpenLayers and ExtJS 6.2. 
+With version 4 GeoExt supports the newest official installment v6.x of OpenLayers and ExtJS 6.2.
 
 We are trying hard to keep up with developments on both our parent libraries.
-The current state of GeoExt is compatible with ExtJS 6.2.0 and OpenLayers 6.5.0. This state is released as GeoExt v4.0.0.
+The current state of GeoExt is compatible with ExtJS 6.2.0 and OpenLayers 7.1.0. This state is released as GeoExt v4.0.0.
 
 | OpenLayers       | ExtJS | GeoExt         |
 | ---------------- | ----- | -------------- |
+| 7.1.0            | 6.2.0 | 5.0.x          |
 | 6.5.0            | 6.2.0 | 4.0.x          |
 | 4.6.5            | 6.2.0 | 3.4.0 & 3.3.x & 3.2.0  |
 | 3.20.1 / 4.3.x   | 6.2.0 | 3.1.0          |

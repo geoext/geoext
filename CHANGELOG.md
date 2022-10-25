@@ -1,12 +1,19 @@
 Next Version
 ------------
 
+v4.0.0
+------
+
+BREAKING CHANGES:
+
+Updates openlayers to v7.1.0
+
 
 v4.0.0
 ------
 
 BREAKING CHANGES:
-- If a features store is configured with a layer this layer needs to be an `ol.layer.Vector` with an `ol.source.Vector` 
+- If a features store is configured with a layer this layer needs to be an `ol.layer.Vector` with an `ol.source.Vector`
 with a `ol.Collection`. That means, if you used it like this before, it will now throw an Error:
 ```js
 Ext.create('GeoExt.data.store.Features', {
@@ -14,7 +21,7 @@ Ext.create('GeoExt.data.store.Features', {
     source: new ol.source.Vector()
   })
 });
-``` 
+```
 If you change it to the following code it will work and keep the elements of the store, and the layer in sync.
 ```js
 Ext.create('GeoExt.data.store.Features', {
@@ -24,8 +31,8 @@ Ext.create('GeoExt.data.store.Features', {
     })
   })
 });
-``` 
-- The OpenLayers version was updated to v6.5.0. To use this version run `npm i @geoext/openlayers-legacy` and include the
+```
+- The OpenLayers version was updated to v6.5.0. To use this version run `npm i ol` and include the
 `ol.js` and `ol.css` files from there.
 - Due to the OpenLayers update the OverviewMap no longer can use the same layers as the main map and always has to be
 provided own layers.
