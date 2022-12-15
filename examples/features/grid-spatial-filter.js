@@ -249,7 +249,7 @@ Ext.application({
     onDrawEnd: function(evt) {
         var feature = evt.feature;
         var geometry = feature.getGeometry();
-        var typeName = 'THE_GEOM';
+        var typeName = 'SHAPE';
         var spatialOperatorsCombo = Ext.ComponentQuery.
             query('combobox[name="spatialOperatorsCombo"]')[0];
         var operator = spatialOperatorsCombo.getValue();
