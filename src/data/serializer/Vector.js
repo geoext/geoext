@@ -401,10 +401,10 @@ Ext.define('GeoExt.data.serializer.Vector', {
             } else if (imageStyle instanceof ol.style.Icon) {
                 var src = imageStyle.getSrc();
                 if (Ext.isDefined(src)) {
-                    var img = imageStyle.getImage();
+                    var img = imageStyle.getImage(window.devicePixelRatio || 1);
                     var canvas = document.createElement('canvas');
-                    canvas.width = img.naturalWidth;
-                    canvas.height = img.naturalHeight;
+                    canvas.width = img.naturalWidth || img.width;
+                    canvas.height = img.naturalHeight || img.height;
                     canvas.getContext('2d').drawImage(img, 0, 0);
                     var format = 'image/' + src.match(/\.(\w+)$/)[1];
                     symbolizer = {
