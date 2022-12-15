@@ -1,7 +1,6 @@
 Ext.require([
     'GeoExt.component.Map',
     'Ext.panel.Panel',
-    'Ext.Viewport',
     'Ext.Toolbar',
     'Ext.Button',
     'Ext.TabPanel'

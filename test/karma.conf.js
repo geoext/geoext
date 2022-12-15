@@ -21,11 +21,11 @@ module.exports = function(config) {
                 included: false
             },
             // CSS files
-            'node_modules/@geoext/openlayers-legacy/dist/ol.css',
+            'node_modules/ol/ol.css',
             'resources/external/theme-crisp-all' + suffix + '_1.css',
             'resources/external/theme-crisp-all' + suffix + '_2.css',
             // OpenLayers 6
-            'node_modules/@geoext/openlayers-legacy/dist/ol.js',
+            'node_modules/ol/dist/ol.js',
             // ExtJS 6
             'resources/external/ext-all' + suffix + '.js',
             // Ext.Loader configuration

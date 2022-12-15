@@ -36,7 +36,7 @@ Ext.application({
 
         olMap = new ol.Map({
             layers: [layer1],
-            interactions: ol.interaction.defaults().extend([
+            interactions: ol.interaction.defaults.defaults().extend([
                 new ol.interaction.DragRotateAndZoom()
             ]),
             view: new ol.View({

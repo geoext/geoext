@@ -3,7 +3,6 @@ Ext.require([
     'GeoExt.data.store.Layers',
     'Ext.panel.Panel',
     'Ext.grid.Grid',
-    'Ext.Viewport',
     'Ext.Toolbar',
     'Ext.Button',
     'Ext.TabPanel'
