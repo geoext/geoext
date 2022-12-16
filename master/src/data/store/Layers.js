@@ -36,12 +36,10 @@ Ext.define('GeoExt.data.store.Layers', {
         'ol.Collection#forEach',
         'ol.Collection#getArray',
         'ol.Collection#insertAt',
-        'ol.Collection#on',
         'ol.Collection#push',
         'ol.Collection#remove',
         'ol.layer.Layer',
         'ol.layer.Layer#get',
-        'ol.layer.Layer#on',
         'ol.layer.Layer#set',
         'ol.Map',
         'ol.Map#getLayers'

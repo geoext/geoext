@@ -175,7 +175,7 @@ Ext.define(&#39;GeoExt.data.store.Features&#39;, {
 
             cfg.data = cfg.features;
         } else {
-            if (!(cfg.layer instanceof ol.layer.Vector)) {
+            if (!(cfg.layer instanceof ol.layer.BaseVector)) {
                 throw new Error(&#39;Layer is no vector layer. &#39;
                     + configErrorMessage);
             }

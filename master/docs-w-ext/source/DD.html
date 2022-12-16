@@ -15,27 +15,109 @@
   </script>
 </head>
 <body onload="prettyPrint(); highlight();">
-  <pre class="prettyprint lang-js">Ext.define(&#39;Ext.rtl.dd.DD&#39;, {
-    override: &#39;Ext.dd.DD&#39;,
+  <pre class="prettyprint lang-js"><span id='Ext-panel-DD'>/**
+</span> * DD implementation for Panels.
+ * @private
+ */
+Ext.define(&#39;Ext.panel.DD&#39;, {
+    extend: &#39;Ext.dd.DragSource&#39;,
+    requires: [&#39;Ext.panel.Proxy&#39;],
 
-    // used be alignElWithMouse to get the local x coordinate adjusted for rtl mode if
-    // the page-level coordinate system is rtl.
-    getLocalX: function(el) {
-        return Ext.rootInheritedState.rtl ? el.rtlGetLocalX() : el.getLocalX();
+<span id='Ext-panel-DD-method-constructor'>    constructor : function(panel, cfg){
+</span>        var me = this;
+        
+        me.panel = panel;
+        me.dragData = {panel: panel};
+        me.panelProxy = new Ext.panel.Proxy(panel, cfg);
+        me.proxy = me.panelProxy.proxy;
+
+        me.callParent([panel.el, cfg]);
+        me.setupEl(panel);
+    },
+    
+<span id='Ext-panel-DD-method-setupEl'>    setupEl: function(panel){
+</span>        var me = this,
+            header = panel.header,
+            el = panel.body;
+            
+        if (header) {
+            me.setHandleElId(header.id);
+            el = header.el;
+        }
+        if (el) {
+            el.setStyle(&#39;cursor&#39;, &#39;move&#39;);
+            me.scroll = false;
+        } else {
+            // boxready fires after first layout, so we&#39;ll definitely be rendered
+            panel.on(&#39;boxready&#39;, me.setupEl, me, {single: true});
+        }
     },
 
-    // setLocalXY is used by alignElWithMouse to avoid the overhead that would be incurred
-    // by using setXY to calculate left/right/top styles from page coordinates.  Since the
-    // coordinates that go into the calculation are page-level, we need to use rtl local
-    // coordinates if the page-level coordinate system is rtl.
-    setLocalXY: function(el, x, y) {
-        if (Ext.rootInheritedState.rtl) {
-            el.rtlSetLocalXY(x, y);
-        } else {
-            el.setLocalXY(x, y);
+<span id='Ext-panel-DD-method-showFrame'>    showFrame: Ext.emptyFn,
+</span><span id='Ext-panel-DD-method-startDrag'>    startDrag: Ext.emptyFn,
+</span>    
+<span id='Ext-panel-DD-method-b4StartDrag'>    b4StartDrag: function(x, y) {
+</span>        this.panelProxy.show();
+    },
+    
+<span id='Ext-panel-DD-method-b4MouseDown'>    b4MouseDown: function(e) {
+</span>        var xy = e.getXY(),
+            x = xy[0],
+            y = xy[1];
+            
+       this.autoOffset(x, y);
+    },
+    
+<span id='Ext-panel-DD-method-onInitDrag'>    onInitDrag : function(x, y){
+</span>        this.onStartDrag(x, y);
+        return true;
+    },
+    
+<span id='Ext-panel-DD-method-createFrame'>    createFrame : Ext.emptyFn,
+</span>    
+<span id='Ext-panel-DD-method-getDragEl'>    getDragEl : function(e){
+</span>        var ghost = this.panelProxy.ghost;
+        if (ghost) {
+            return ghost.el.dom;
+        }
+    },
+    
+<span id='Ext-panel-DD-method-endDrag'>    endDrag : function(e){
+</span>        this.panelProxy.hide();
+        this.panel.saveState();
+    },
+
+<span id='Ext-panel-DD-method-autoOffset'>    autoOffset : function(x, y) {
+</span>        x -= this.startPageX;
+        y -= this.startPageY;
+        this.setDelta(x, y);
+    },
+    
+<span id='Ext-panel-DD-method-onInvalidDrop'>    // Override this, we don&#39;t want to repair on an &quot;invalid&quot; drop, the panel
+</span>    // should main it&#39;s position
+    onInvalidDrop: function(target, e, id) {
+        var me = this;
+        
+        if (me.beforeInvalidDrop(target, e, id) !== false) {
+            if (me.cachedTarget) {
+                if(me.cachedTarget.isNotifyTarget){
+                    me.cachedTarget.notifyOut(me, e, me.dragData);
+                }
+                me.cacheTarget = null;
+            }
+
+            if (me.afterInvalidDrop) {
+<span id='Ext-panel-DD-method-afterInvalidDrop'>                /**
+</span>                * An empty function by default, but provided so that you can perform a custom action
+                * after an invalid drop has occurred by providing an implementation.
+                * @param {Event} e The event object
+                * @param {String} id The id of the dropped element
+                * @method afterInvalidDrop
+                */
+                me.afterInvalidDrop(e, id);
+            }
         }
     }
-});
-</pre>
+});</pre>
 </body>
 </html>

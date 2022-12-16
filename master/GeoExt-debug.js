@@ -969,12 +969,10 @@ Ext.define('GeoExt.data.store.Layers', {
         'ol.Collection#forEach',
         'ol.Collection#getArray',
         'ol.Collection#insertAt',
-        'ol.Collection#on',
         'ol.Collection#push',
         'ol.Collection#remove',
         'ol.layer.Layer',
         'ol.layer.Layer#get',
-        'ol.layer.Layer#on',
         'ol.layer.Layer#set',
         'ol.Map',
         'ol.Map#getLayers'
@@ -5061,7 +5059,7 @@ Ext.define('GeoExt.data.store.Features', {
             }
             cfg.data = cfg.features;
         } else {
-            if (!(cfg.layer instanceof ol.layer.Vector)) {
+            if (!(cfg.layer instanceof ol.layer.BaseVector)) {
                 throw new Error('Layer is no vector layer. ' + configErrorMessage);
             }
             if (!cfg.layer.getSource()) {

@@ -15,249 +15,270 @@
   </script>
 </head>
 <body onload="prettyPrint(); highlight();">
-  <pre class="prettyprint lang-js"><span id='Ext-view-DropZone'>/**
-</span> * @private
+  <pre class="prettyprint lang-js"><span id='Ext-dashboard-DropZone'>/**
+</span> * Internal class that manages drag/drop for the `Dashboard`.
+ * @private
  */
-Ext.define(&#39;Ext.view.DropZone&#39;, {
-    extend: &#39;Ext.dd.DropZone&#39;,
+Ext.define(&#39;Ext.dashboard.DropZone&#39;, {
+    extend: &#39;Ext.dd.DropTarget&#39;,
 
-<span id='Ext-view-DropZone-property-indicatorCls'>    indicatorCls: Ext.baseCSSPrefix + &#39;grid-drop-indicator&#39;,
-</span><span id='Ext-view-DropZone-property-indicatorHtml'>    indicatorHtml: [
-</span>        &#39;&lt;div class=&quot;&#39;, Ext.baseCSSPrefix, &#39;grid-drop-indicator-left&quot; role=&quot;presentation&quot;&gt;&lt;/div&gt;&#39;,
-        &#39;&lt;div class=&quot;&#39; + Ext.baseCSSPrefix + &#39;grid-drop-indicator-right&quot; role=&quot;presentation&quot;&gt;&lt;/div&gt;&#39;
-    ].join(&#39;&#39;),
-
-<span id='Ext-view-DropZone-method-constructor'>    constructor: function(config) {
-</span>        var me = this;
-        Ext.apply(me, config);
-
-        // Create a ddGroup unless one has been configured.
-        // User configuration of ddGroups allows users to specify which
-        // DD instances can interact with each other. Using one
-        // based on the id of the View would isolate it and mean it can only
-        // interact with a DragZone on the same View also using a generated ID.
-        if (!me.ddGroup) {
-            me.ddGroup = &#39;view-dd-zone-&#39; + me.view.id;
-        }
-
-        // The DropZone&#39;s encapsulating element is the View&#39;s main element. It must be this because drop gestures
-        // may require scrolling on hover near a scrolling boundary. In Ext 4.x two DD instances may not use the
-        // same element, so a DragZone on this same View must use the View&#39;s parent element as its element.
-        me.callParent([me.view.el]);
+<span id='Ext-dashboard-DropZone-property-ddScrollConfig'>    ddScrollConfig: {
+</span>        vthresh: 75,
+        hthresh: -1,
+        animate: true,
+        increment: 200
     },
 
-<span id='Ext-view-DropZone-method-fireViewEvent'>//  Fire an event through the client DataView. Lock this DropZone during the event processing so that
-</span>//  its data does not become corrupted by processing mouse events.
-    fireViewEvent: function() {
-        var me = this,
-            result;
+<span id='Ext-dashboard-DropZone-cfg-containerScroll'>    containerScroll: true,
+</span>
+<span id='Ext-dashboard-DropZone-cfg-overClass'>    // This causes overflow to go hidden during the drag so that we don&#39;t cause panels to
+</span>    // wrap by triggering overflow.
+    overClass: Ext.baseCSSPrefix + &#39;dashboard-dd-over&#39;,
 
-        me.lock();
-        result = me.view.fireEvent.apply(me.view, arguments);
-        me.unlock();
-        return result;
+<span id='Ext-dashboard-DropZone-method-constructor'>    constructor: function (dashboard, cfg) {
+</span>        this.dashboard = dashboard;
+        dashboard.body.ddScrollConfig = this.ddScrollConfig;
+
+        this.callParent([dashboard.body, cfg]);
     },
 
-<span id='Ext-view-DropZone-method-getTargetFromEvent'>    getTargetFromEvent : function(e) {
-</span>        var node = e.getTarget(this.view.getItemSelector()),
-            mouseY, nodeList, testNode, i, len, box;
-
-//      Not over a row node: The content may be narrower than the View&#39;s encapsulating element, so return the closest.
-//      If we fall through because the mouse is below the nodes (or there are no nodes), we&#39;ll get an onContainerOver call.
-        if (!node) {
-            mouseY = e.getY();
-            for (i = 0, nodeList = this.view.getNodes(), len = nodeList.length; i &lt; len; i++) {
-                testNode = nodeList[i];
-                box = Ext.fly(testNode).getBox();
-                if (mouseY &lt;= box.bottom) {
-                    return testNode;
-                }
-            }
-        }
-        return node;
-    },
-
-<span id='Ext-view-DropZone-method-getIndicator'>    getIndicator: function() {
-</span>        var me = this;
-
-        if (!me.indicator) {
-            me.indicator = new Ext.Component({
-                ariaRole: &#39;presentation&#39;,
-                html: me.indicatorHtml,
-                cls: me.indicatorCls,
-                ownerCt: me.view,
-                floating: true,
-                alignOnScroll: false,
-                shadow: false
-            });
-        }
-        return me.indicator;
-    },
-
-<span id='Ext-view-DropZone-method-getPosition'>    getPosition: function(e, node) {
-</span>        var y      = e.getXY()[1],
-            region = Ext.fly(node).getRegion(),
-            pos;
-
-        if ((region.bottom - y) &gt;= (region.bottom - region.top) / 2) {
-            pos = &quot;before&quot;;
-        } else {
-            pos = &quot;after&quot;;
-        }
-        return pos;
-    },
-
-<span id='Ext-view-DropZone-method-containsRecordAtOffset'>    /**
-</span>     * @private
-     * Determines whether the record at the specified offset from the passed record
-     * is in the drag payload.
-     * @param records
-     * @param record
-     * @param offset
-     * @return {Boolean} True if the targeted record is in the drag payload
-     */
-    containsRecordAtOffset: function(records, record, offset) {
-        if (!record) {
-            return false;
-        }
-        var view = this.view,
-            recordIndex = view.indexOf(record),
-            nodeBefore = view.getNode(recordIndex + offset),
-            recordBefore = nodeBefore ? view.getRecord(nodeBefore) : null;
-
-        return recordBefore &amp;&amp; Ext.Array.contains(records, recordBefore);
-    },
-
-<span id='Ext-view-DropZone-method-positionIndicator'>    positionIndicator: function(node, data, e) {
-</span>        var me = this,
-            view = me.view,
-            pos = me.getPosition(e, node),
-            overRecord = view.getRecord(node),
-            draggingRecords = data.records,
-            indicatorY;
-
-        if (!Ext.Array.contains(draggingRecords, overRecord) &amp;&amp; (
-            pos === &#39;before&#39; &amp;&amp; !me.containsRecordAtOffset(draggingRecords, overRecord, -1) ||
-            pos === &#39;after&#39; &amp;&amp; !me.containsRecordAtOffset(draggingRecords, overRecord, 1)
-        )) {
-            me.valid = true;
-
-            if (me.overRecord !== overRecord || me.currentPosition !== pos) {
-
-                indicatorY = Ext.fly(node).getY() - view.el.getY() - 1;
-                if (pos === &#39;after&#39;) {
-                    indicatorY += Ext.fly(node).getHeight();
-                }
-
-                me.getIndicator().setWidth(Ext.fly(view.el).getWidth()).showAt(0, indicatorY);
-
-                // Cache the overRecord and the &#39;before&#39; or &#39;after&#39; indicator.
-                me.overRecord = overRecord;
-                me.currentPosition = pos;
-            }
-        } else {
-            me.invalidateDrop();
-        }
-    },
-
-<span id='Ext-view-DropZone-method-invalidateDrop'>    invalidateDrop: function() {
-</span>        if (this.valid) {
-            this.valid = false;
-            this.getIndicator().hide();
-        }
-    },
-
-<span id='Ext-view-DropZone-method-onNodeOver'>    // The mouse is over a View node
-</span>    onNodeOver: function(node, dragZone, e, data) {
-        var me = this;
-
-        if (!Ext.Array.contains(data.records, me.view.getRecord(node))) {
-            me.positionIndicator(node, data, e);
-        }
-        return me.valid ? me.dropAllowed : me.dropNotAllowed;
-    },
-
-<span id='Ext-view-DropZone-method-notifyOut'>    // Moved out of the DropZone without dropping.
-</span>    // Remove drop position indicator
-    notifyOut: function(node, dragZone, e, data) {
-        var me = this;
-
-        me.callParent(arguments);
-        me.overRecord = me.currentPosition = null;
-        me.valid = false;
-        if (me.indicator) {
-            me.indicator.hide();
-        }
-    },
-
-<span id='Ext-view-DropZone-method-onContainerOver'>    // The mouse is past the end of all nodes (or there are no nodes)
-</span>    onContainerOver : function(dd, e, data) {
-        var me = this,
-            view = me.view,
-            count = view.dataSource.getCount();
-
-        // There are records, so position after the last one
-        if (count) {
-            me.positionIndicator(view.all.last(), data, e);
-        }
-
-        // No records, position the indicator at the top
-        else {
-            me.overRecord = me.currentPosition = null;
-            me.getIndicator().setWidth(Ext.fly(view.el).getWidth()).showAt(0, 0);
-            me.valid = true;
-        }
-        return me.dropAllowed;
-    },
-
-<span id='Ext-view-DropZone-method-onContainerDrop'>    onContainerDrop : function(dd, e, data) {
-</span>        return this.onNodeDrop(dd, null, e, data);
-    },
-
-<span id='Ext-view-DropZone-method-onNodeDrop'>    onNodeDrop: function(targetNode, dragZone, e, data) {
-</span>        var me = this,
-            dropHandled = false,
- 
-            // Create a closure to perform the operation which the event handler may use.
-            // Users may now set the wait parameter in the beforedrop handler, and perform any kind
-            // of asynchronous processing such as an Ext.Msg.confirm, or an Ajax request,
-            // and complete the drop gesture at some point in the future by calling either the
-            // processDrop or cancelDrop methods.
-            dropHandlers = {
-                wait: false,
-                processDrop: function () {
-                    me.invalidateDrop();
-                    me.handleNodeDrop(data, me.overRecord, me.currentPosition);
-                    dropHandled = true;
-                    me.fireViewEvent(&#39;drop&#39;, targetNode, data, me.overRecord, me.currentPosition);
-                },
- 
-                cancelDrop: function() {
-                    me.invalidateDrop();
-                    dropHandled = true;
-                }
+<span id='Ext-dashboard-DropZone-method-getOverEvent'>    getOverEvent: function (dd, e, data) {
+</span>        var dashboard = this.dashboard,
+            dbody = dashboard.body,
+            items = dashboard.items.items,
+            bodyBox = dbody.getBox(),
+            count = items.length,
+            xy = e.getXY(),
+            x = xy[0] - bodyBox.x + dbody.getScrollLeft(),
+            y = xy[1] - bodyBox.y + dbody.getScrollTop(),
+            over = {
+                columnIndex: 0,
+                column: null,
+                dashboard: dashboard,
+                above: null,
+                extensible : false,
+                beforeAfter : 0,
+                data: data,
+                panel: data.panel,
+                rawEvent: e,
+                source: dd,
+                status: this.dropAllowed
             },
-            performOperation = false;
- 
-        if (me.valid) {
-            performOperation = me.fireViewEvent(&#39;beforedrop&#39;, targetNode, data, me.overRecord, me.currentPosition, dropHandlers);
-            if (dropHandlers.wait) {
+            t, ht, i, k, item, w, childCount, childItems, childItem;
+
+        for (i = 0; i &lt; count; i += 2) {
+            item = items[i];
+            w = item.lastBox.width;
+            if (items[i+1]) {
+                w += items[i+1].lastBox.width;
+            }
+
+            //if (x &lt; w) {
+            if (e.within(item.el)) {
+                over.columnIndex = i;
+                over.column = item;
+                over.extensible = this.isRowExtensible(item.rowIndex);
+
+                t = Math.min(80, w * 0.2);
+                over.beforeAfter = t = (over.extensible &amp;&amp; ((x &lt; t) ? -1 : ((x &gt; w - t) ? 1 : 0)));
+
+                if (!t || !over.extensible) {
+                    childItems = item.items.items;
+                    // if we are not on an edge OR reached maxColumns (which means &quot;insert the panel in
+                    // between the columns&quot;), we need to dig one more level down
+                    //console.log(&#39;inside of column &#39; + i + &#39;: x=&#39; + x + &#39;, y=&#39; + y);
+                    for (k = 0, childCount = childItems.length; k &lt; childCount; ++k) {
+                        childItem = childItems[k];
+                        ht = childItem.el.getHeight();
+                        //console.log(childItem.id + &#39;.ht = &#39; + ht);
+                        if (y &lt; ht / 2) {
+                            //console.log(&#39;above child &#39; + k);
+                            // if mouse is above the current child&#39;s top, Y coord, it
+                            // is considered as &quot;above&quot; the previous child
+                            over.above = childItem;
+                            break;
+                        }
+                        //console.log(&#39;below child &#39; + k);
+                        y -= ht;
+                    }
+
+                }
+
+                break;
+            }
+
+            x -= w;
+        }
+
+        return over;
+    },
+
+<span id='Ext-dashboard-DropZone-method-notifyOver'>    notifyOver: function (dd, e, data) {
+</span>        var me = this,
+            dashboard = me.dashboard,
+            over = me.getOverEvent(dd, e, data),
+            colEl = over.column &amp;&amp; over.column.el,
+            proxy = dd.proxy,
+            proxyProxy,
+            aboveItem = over.above,
+            colWidth, width = 0,
+            padding,
+            hasListeners = dashboard.hasListeners;
+
+        data.lastOver = over;
+
+        if ((!hasListeners.validatedrop || dashboard.fireEvent(&#39;validatedrop&#39;, over) !== false) &amp;&amp;
+            (!hasListeners.beforedragover || dashboard.fireEvent(&#39;beforedragover&#39;, over) !== false ))
+            {
+
+            proxyProxy = dd.panelProxy.getProxy();
+
+            // make sure proxy width is fluid in different width columns
+            proxy.getProxy().setWidth(&#39;auto&#39;);
+
+            if ( colEl) {
+
+                width = colWidth = colEl.getWidth();
+                // A floating column was targeted
+                if (over.beforeAfter) {
+
+                    dd.panelProxy.moveProxy(colEl.dom, colEl.dom.firstChild);
+
+                    width = colWidth / 2;
+                    proxyProxy.setWidth(width);
+
+                } else {
+                    if (aboveItem) {
+                        dd.panelProxy.moveProxy(aboveItem.el.dom.parentNode, aboveItem.el.dom);
+                    } else {
+                        dd.panelProxy.moveProxy(colEl.dom, null);
+                    }
+                    proxyProxy.setWidth(&#39;auto&#39;);
+
+                }
+                if (width) {
+                    //proxy.getProxy().setWidth(width);
+                }
+                proxyProxy.setStyle({
+                    &#39;float&#39;: &#39;none&#39;,
+                    &#39;clear&#39; : &#39;none&#39;,
+                    &#39;margin-left&#39;: (over.beforeAfter &gt; 0) ? (colWidth - width - colEl.getPadding(&#39;lr&#39;)) + &#39;px&#39; : &#39;&#39;,
+                    &#39;margin-top&#39; : &#39;7px&#39;
+                });
+
+            } else {
+                padding = dashboard.body.getPadding(&#39;lr&#39;);
+                proxyProxy.setStyle({
+                    &#39;float&#39; : &#39;left&#39;,
+                    &#39;clear&#39; : &#39;left&#39;,
+                    &#39;margin&#39;: &#39;0 7px 0 7px&#39;
+                });
+                proxyProxy.setWidth(dashboard.body.getWidth() - padding);
+
+                // Target the innerCt for the move
+                dd.panelProxy.moveProxy(dashboard.body.dom.firstChild.firstChild, null);
+            }
+
+            this.scrollPos = dashboard.body.getScroll();
+
+            if (hasListeners.dragover) {
+                dashboard.fireEvent(&#39;dragover&#39;, over);
+            }
+        }
+
+        return over.status;
+    },
+
+<span id='Ext-dashboard-DropZone-method-isRowExtensible'>    isRowExtensible : function(rowIndex) {
+</span>      var me = this,
+          dashboard = me.dashboard,
+          maxColumns = dashboard.getMaxColumns() || 1;
+
+      return Ext.Array.from(dashboard.query(&#39;&gt;dashboard-column[rowIndex=&#39; + rowIndex + &#39;]&#39;)).length &lt; maxColumns;
+    },
+
+<span id='Ext-dashboard-DropZone-method-notifyDrop'>    notifyDrop: function (dd, e, data) {
+</span>        this.callParent(arguments);
+
+        var dashboard = this.dashboard,
+            over = data.lastOver,
+            panel = over.panel,
+            fromCt = panel.ownerCt,
+            toCt = over.column,
+            side = toCt ? over.beforeAfter : 1,
+            currentIndex = fromCt.items.indexOf(panel),
+            newIndex = toCt ? (over.above ? toCt.items.indexOf(over.above) : toCt.items.getCount()) : 0,
+            colIndex, newCol,
+            hasListeners = dashboard.hasListeners;
+
+//        console.log(&#39;DROP: &#39; + panel.id + &#39;@&#39; + currentIndex +
+//                // &#39; from &#39; + fromCt.id +
+//                (side ? ((side &lt; 0) ? &#39; BEFORE &#39; : &#39; AFTER &#39;)
+//                      : (&#39; AT &#39; + newIndex + &#39; IN &#39;)) + toCt.id +
+//                (over.above ? &#39; ABOVE &#39; + over.above.id : &#39; AT END&#39;));
+
+        //Same column tests
+        if (fromCt === toCt) {
+            if (fromCt.items.getCount() === 1) {
+                //console.log(&#39;Null op&#39;);
                 return;
             }
- 
-            if (performOperation !== false) {
-                // If either of the drop handlers were called in the event handler, do not do it again.
-                if (!dropHandled) {
-                    dropHandlers.processDrop();
+            if (!side) {
+                if (currentIndex &lt; newIndex) {
+                    --newIndex;
+                    //console.log(&#39;Adjusted newIndex=&#39; + newIndex);
+                }
+                if (currentIndex === newIndex) {
+                    //console.log(&#39;No change&#39;);
+                    return;
                 }
             }
         }
-        return performOperation;
-    },
-    
-<span id='Ext-view-DropZone-method-destroy'>    destroy: function(){
-</span>        this.indicator = Ext.destroy(this.indicator);
-        this.callParent();
+
+        if ((hasListeners.validatedrop &amp;&amp; dashboard.fireEvent(&#39;validatedrop&#39;, over) === false) ||
+            (hasListeners.beforedrop &amp;&amp; dashboard.fireEvent(&#39;beforedrop&#39;, over) === false)) {
+            return;
+        }
+
+        Ext.suspendLayouts();
+
+        panel.isMoving = true;
+        if (side) {
+            colIndex = dashboard.items.indexOf(toCt);
+
+            // inserting into new Row ?
+            if (colIndex &lt; 0) {
+                colIndex = dashboard.items.getCount();
+            } else if (side &gt; 0) {
+                ++colIndex;
+            }
+
+            newCol = dashboard.createColumn();
+
+            if (toCt) {
+                newCol.columnWidth = toCt.columnWidth = toCt.columnWidth / 2;
+                delete toCt.width;
+            } else {
+                newCol.columnWidth = 1;  //full row
+            }
+
+            toCt = dashboard.insert(colIndex, newCol);
+            newIndex = 0;
+        }
+
+        // make sure panel is visible prior to inserting so the layout doesn&#39;t ignore it
+        panel.el.dom.style.display = &#39;&#39;;
+
+        toCt.insert(newIndex, panel);
+
+        panel.isMoving = false;
+
+        toCt.updateLayout();
+        Ext.resumeLayouts(true);
+
+        if (hasListeners.drop) {
+            dashboard.fireEvent(&#39;drop&#39;, over);
+        }
     }
 });
 </pre>

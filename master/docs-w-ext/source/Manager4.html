@@ -15,70 +15,208 @@
   </script>
 </head>
 <body onload="prettyPrint(); highlight();">
-  <pre class="prettyprint lang-js"><span id='Ext-state-Manager'>/**
-</span> * This is the global state manager. By default all components that are &quot;state aware&quot; check this class
- * for state information if you don&#39;t pass them a custom state provider. In order for this class
- * to be useful, it must be initialized with a provider when your application initializes. Example usage:
+  <pre class="prettyprint lang-js"><span id='Ext-menu-Manager'>/**
+</span> * Provides a common registry groups of {@link Ext.menu.CheckItem}s.
  *
- *      // in your initialization function
- *      init: function() {
- *          Ext.state.Manager.setProvider(new Ext.state.CookieProvider());
- *      }
- *
- * This class passes on calls from components to the underlying {@link Ext.state.Provider} so that
- * there is a common interface that can be used without needing to refer to a specific provider instance
- * in every component.
+ * Since 5.1.0, this class no longer registers all menus in your applications.
+ * To access all menus, use {@link Ext.ComponentQuery ComponentQuery}.
+ * @singleton
  */
-Ext.define(&#39;Ext.state.Manager&#39;, {
+Ext.define(&#39;Ext.menu.Manager&#39;, {
     singleton: true,
 
-    requires: [&#39;Ext.state.Provider&#39;],
+    alternateClassName: &#39;Ext.menu.MenuMgr&#39;,
 
-<span id='Ext-state-Manager-method-constructor'>    constructor: function() {
-</span>        this.provider = new Ext.state.Provider();
+    uses: [&#39;Ext.menu.Menu&#39;],
+
+<span id='Ext-menu-Manager-property-groups'>    groups: {},
+</span>
+<span id='Ext-menu-Manager-property-visible'>    visible: [],
+</span>
+<span id='Ext-menu-Manager-method-constructor'>    /**
+</span>     * @private
+     */
+    constructor: function() {
+        var me = this;
+
+        // Lazily create the mousedown listener on first menu show
+        me.onShow = function () {
+            // This is a separate method to allow calling eagerly in unit tests
+            me.registerGlobalListeners();
+            
+            return me.onShow.apply(me, arguments); // do the real thing
+        };
     },
     
-<span id='Ext-state-Manager-method-setProvider'>    /**
-</span>     * Configures the default state provider for your application
-     * @param {Ext.state.Provider} stateProvider The state provider to set
-     */
-    setProvider: function (stateProvider) {
-        this.provider = stateProvider;
+<span id='Ext-menu-Manager-method-onGlobalScroll'>    onGlobalScroll: function (scroller) {
+</span>        var allMenus = this.visible,
+            len = allMenus.length,
+            i, menu,
+            scrollerEl = scroller.getElement();
+
+        // Scrolling document should not hide menus.
+        // The will move along with the document.
+        if (len &amp;&amp; scroller !== Ext.scroll.Scroller.viewport) {
+            // Clone here, we may modify this collection while the loop is active
+            allMenus = allMenus.slice();
+            for (i = 0; i &lt; len; ++i) {
+                menu = allMenus[i];
+                // Hide the menu if:
+                //      The menu does not own scrolling element
+                if (!menu.alignOnScroll &amp;&amp; menu.hideOnScroll !== false &amp;&amp; !menu.owns(scrollerEl)) {
+                    menu.hide();
+                }
+             }
+         }
     },
 
-<span id='Ext-state-Manager-method-get'>    /**
-</span>     * Returns the current value for a key
-     * @param {String} key The key name
-     * @param {Object} defaultValue The default value to return if the key lookup does not match
-     * @return {Object} The state data
-     */
-    get: function (key, defaultValue) {
-        return this.provider.get(key, defaultValue);
+<span id='Ext-menu-Manager-method-checkActiveMenus'>    checkActiveMenus: function(e) {
+</span>        var allMenus = this.visible,
+            len = allMenus.length,
+            i, menu,
+            mousedownCmp = Ext.Component.fromElement(e.target);
+
+        if (len) {
+            // Clone here, we may modify this collection while the loop is active
+            allMenus = allMenus.slice();
+            for (i = 0; i &lt; len; ++i) {
+                menu = allMenus[i];
+                // Hide the menu if:
+                //      The menu does not own the clicked upon element AND
+                //      The menu is not the child menu of a clicked upon MenuItem
+                if (!(menu.owns(e) || (mousedownCmp &amp;&amp; mousedownCmp.isMenuItem &amp;&amp; mousedownCmp.menu === menu))) {
+                    menu.hide();
+                }
+             }
+         }
     },
 
-<span id='Ext-state-Manager-method-set'>    /**
-</span>     * Sets the value for a key
-     * @param {String} key The key name
-     * @param {Object} value The state data
+<span id='Ext-menu-Manager-method-onShow'>    /**
+</span>     * {@link Ext.menu.Menu#afterShow} adds itself to the visible list here.
+     * @private
      */
-    set: function (key, value) {
-        this.provider.set(key, value);
+    onShow: function(menu) {
+        if (menu.floating) {
+            Ext.Array.include(this.visible, menu);
+        }
     },
 
-<span id='Ext-state-Manager-method-clear'>    /**
-</span>     * Clears a value from the state
-     * @param {String} key The key name
+<span id='Ext-menu-Manager-method-onHide'>    /**
+</span>     * {@link Ext.menu.Menu#onHide} removes itself from the visible list here.
+     * @private
      */
-    clear: function (key) {
-        this.provider.clear(key);
+    onHide: function(menu) {
+        if (menu.floating) {
+            Ext.Array.remove(this.visible, menu);
+        }
     },
 
-<span id='Ext-state-Manager-method-getProvider'>    /**
-</span>     * Gets the currently configured state provider
-     * @return {Ext.state.Provider} The state provider
+<span id='Ext-menu-Manager-method-hideAll'>    /**
+</span>     * Hides all floating menus that are currently visible
+     * @return {Boolean} success True if any active menus were hidden.
      */
-    getProvider: function () {
-        return this.provider;
+    hideAll: function() {
+        var allMenus = this.visible,
+            len = allMenus.length,
+            result = false,
+            i;
+
+        if (len) {
+            // Clone here, we may modify this collection while the loop is active
+            allMenus = allMenus.slice();
+            for (i = 0; i &lt; len; i++) {
+                allMenus[i].hide();
+                result = true;
+            }
+        }
+        return result;
+    },
+
+<span id='Ext-menu-Manager-method-get'>    /**
+</span>     * Returns a {@link Ext.menu.Menu} object
+     * @param {String/Object} menu The string menu id, an existing menu object reference, or a Menu config that will
+     * be used to generate and return a new Menu this.
+     * @param {Object} [config] A configuration to use when creating the menu.
+     * @return {Ext.menu.Menu} The specified menu, or null if none are found
+     */
+    get: function(menu, config) {
+        var result;
+        
+        if (typeof menu === &#39;string&#39;) { // menu id
+            result = Ext.getCmp(menu);
+            if (result instanceof Ext.menu.Menu) {
+                menu = result;
+            }
+        } else if (Ext.isArray(menu)) { // array of menu items
+            config = Ext.apply({items:menu}, config);
+            menu = new Ext.menu.Menu(config);
+        } else if (!menu.isComponent) { // otherwise, must be a config
+            config = Ext.apply({}, menu, config);
+            menu = Ext.ComponentManager.create(config, &#39;menu&#39;);
+        }
+        return menu;
+    },
+
+<span id='Ext-menu-Manager-method-registerCheckable'>    /**
+</span>     * @private
+     */
+    registerCheckable: function(menuItem) {
+        var groups  = this.groups,
+            groupId = menuItem.group;
+
+        if (groupId) {
+            if (!groups[groupId]) {
+                groups[groupId] = [];
+            }
+
+            groups[groupId].push(menuItem);
+        }
+    },
+
+<span id='Ext-menu-Manager-method-unregisterCheckable'>    /**
+</span>     * @private
+     */
+    unregisterCheckable: function(menuItem) {
+        var groups  = this.groups,
+            groupId = menuItem.group;
+
+        if (groupId) {
+            Ext.Array.remove(groups[groupId], menuItem);
+        }
+    },
+
+<span id='Ext-menu-Manager-method-onCheckChange'>    onCheckChange: function(menuItem, state) {
+</span>        var groups  = this.groups,
+            groupId = menuItem.group,
+            i       = 0,
+            group, ln, curr;
+
+        if (groupId &amp;&amp; state) {
+            group = groups[groupId];
+            ln = group.length;
+            for (; i &lt; ln; i++) {
+                curr = group[i];
+                if (curr !== menuItem) {
+                    curr.setChecked(false);
+                }
+            }
+        }
+    },
+    
+<span id='Ext-menu-Manager-method-registerGlobalListeners'>    /**
+</span>     * @private
+     */
+    registerGlobalListeners: function() {
+        var me = this;
+
+        delete me.onShow; // remove the lazy-init hook
+
+        // Use the global mousedown event that gets fired even if propagation is stopped
+        Ext.on({
+            mousedown: me.checkActiveMenus,
+            scroll: me.onGlobalScroll,
+            scope: me
+        });
     }
 });
 </pre>
