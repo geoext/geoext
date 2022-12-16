@@ -24,7 +24,7 @@ jobs:
         java-version: '8'
 
     - name: Install ruby
-      uses: actions/setup-ruby@v1
+      uses: ruby/setup-ruby@v1
       with:
         ruby-version: '2.6'
 
