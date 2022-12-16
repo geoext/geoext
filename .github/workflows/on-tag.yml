@@ -49,7 +49,7 @@ jobs:
         if (test ! -d ext-6.2.0); then unzip -qo ext-6.2.0-gpl.zip; fi
 
     - name: Install ruby
-      uses: actions/setup-ruby@v1
+      uses: ruby/setup-ruby@v1
       with:
         ruby-version: '2.6'
 
