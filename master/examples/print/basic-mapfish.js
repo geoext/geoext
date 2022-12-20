@@ -151,7 +151,7 @@ Ext.application({
                     };
                     Ext.create('Ext.form.Panel', {
                         standardSubmit: true,
-                        url: 'https://apps.terrestris.de/print-servlet-3.1.2/' +
+                        url: 'https://apps.terrestris.de/print-servlet-3.29/' +
                             'print/geoext/buildreport.pdf',
                         method: 'POST',
                         items: [
@@ -167,11 +167,12 @@ Ext.application({
         };
 
         Ext.create('GeoExt.data.MapfishPrintProvider', {
-            url: 'https://apps.terrestris.de/print-servlet-3.1.2/' +
+            url: 'https://apps.terrestris.de/print-servlet-3.29/' +
                     'print/geoext/capabilities.json',
             listeners: {
                 ready: onPrintProviderReady
-            }
+            },
+            useJsonp: false
         });
 
         Ext.create('Ext.Viewport', {

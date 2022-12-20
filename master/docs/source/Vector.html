@@ -418,10 +418,10 @@ Ext.define(&#39;GeoExt.data.serializer.Vector&#39;, {
             } else if (imageStyle instanceof ol.style.Icon) {
                 var src = imageStyle.getSrc();
                 if (Ext.isDefined(src)) {
-                    var img = imageStyle.getImage();
+                    var img = imageStyle.getImage(window.devicePixelRatio || 1);
                     var canvas = document.createElement(&#39;canvas&#39;);
-                    canvas.width = img.naturalWidth;
-                    canvas.height = img.naturalHeight;
+                    canvas.width = img.naturalWidth || img.width;
+                    canvas.height = img.naturalHeight || img.height;
                     canvas.getContext(&#39;2d&#39;).drawImage(img, 0, 0);
                     var format = &#39;image/&#39; + src.match(/\.(\w+)$/)[1];
                     symbolizer = {
