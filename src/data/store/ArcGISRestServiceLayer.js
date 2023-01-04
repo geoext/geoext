@@ -14,7 +14,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 /**
- * Store that TODO
+ * Store that contains information about ArcGIS REST service layers.
  *
  * @class GeoExt.data.store.ArcGISRestServiceLayer
  */
