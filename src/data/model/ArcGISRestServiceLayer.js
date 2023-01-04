@@ -36,14 +36,7 @@ Ext.define('GeoExt.data.model.ArcGISRestServiceLayer', {
         },
         {
             name: 'visibility',
-            type: 'boolean',
-            convert: function(v) {
-                // TODO
-                if (!v) {
-                    return false;
-                }
-                return v.defaultVisibility;
-            }
+            type: 'boolean'
         }
     ]
 });
