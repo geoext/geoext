@@ -208,6 +208,7 @@ Ext.define(&#39;GeoExt.data.store.WfsFeatures&#39;, {
         // (if needed)
         var createLayer = config.createLayer;
         config.createLayer = false;
+        config.passThroughFilter = false; // only has effect for layers
 
         me.callParent([config]);
 

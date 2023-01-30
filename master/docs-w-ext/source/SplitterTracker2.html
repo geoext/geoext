@@ -15,318 +15,44 @@
   </script>
 </head>
 <body onload="prettyPrint(); highlight();">
-  <pre class="prettyprint lang-js"><span id='Ext-resizer-SplitterTracker'>/**
-</span> * Private utility class for Ext.Splitter.
- * @private
- */
-Ext.define(&#39;Ext.resizer.SplitterTracker&#39;, {
-    extend: &#39;Ext.dd.DragTracker&#39;,
-    requires: [&#39;Ext.util.Region&#39;],
-<span id='Ext-resizer-SplitterTracker-property-enabled'>    enabled: true,
-</span>    
-<span id='Ext-resizer-SplitterTracker-property-overlayCls'>    overlayCls: Ext.baseCSSPrefix + &#39;resizable-overlay&#39;,
-</span>
-<span id='Ext-resizer-SplitterTracker-method-createDragOverlay'>    createDragOverlay: function () {
-</span>        var overlay,
-            El = Ext.dom.Element;
+  <pre class="prettyprint lang-js">Ext.define(&#39;Ext.rtl.resizer.SplitterTracker&#39;, {
+    override: &#39;Ext.resizer.SplitterTracker&#39;,
 
-        overlay = this.overlay =  Ext.getBody().createChild({
-            role: &#39;presentation&#39;,
-            cls: this.overlayCls, 
-            html: &#39;&amp;#160;&#39;
-        });
-
-        overlay.unselectable();
-        overlay.setSize(El.getDocumentWidth(), El.getDocumentHeight());
-        overlay.show();
+    getVertPrevConstrainLeft: function(o) {
+        return (!this.splitter.getInherited().rtl !== !Ext.rootInheritedState.rtl) ? // jshint ignore:line
+            ((o.prevCmp.maxWidth ? o.prevBox.right - o.prevCmp.maxWidth :
+            o.nextBox.x + (o.nextCmp.minWidth || o.defaultMin)) - o.splitWidth) :
+            this.callParent(arguments);
     },
 
-<span id='Ext-resizer-SplitterTracker-method-getPrevCmp'>    getPrevCmp: function() {
-</span>        var splitter = this.getSplitter();
-        return splitter.previousSibling(&#39;:not([hidden])&#39;);
+    getVertPrevConstrainRight: function(o) {
+        return (!this.splitter.getInherited().rtl !== !Ext.rootInheritedState.rtl) ? // jshint ignore:line
+            o.prevBox.right - (o.prevCmp.minWidth || o.defaultMin) :
+            this.callParent(arguments);
     },
 
-<span id='Ext-resizer-SplitterTracker-method-getNextCmp'>    getNextCmp: function() {
-</span>        var splitter = this.getSplitter();
-        return splitter.nextSibling(&#39;:not([hidden])&#39;);
+
+    getVertNextConstrainLeft: function(o) {
+        return (!this.splitter.getInherited().rtl !== !Ext.rootInheritedState.rtl) ? // jshint ignore:line
+            o.nextBox.x + (o.nextCmp.minWidth || o.defaultMin) :
+            this.callParent(arguments);
     },
 
-<span id='Ext-resizer-SplitterTracker-method-onBeforeStart'>    // ensure the tracker is enabled, store boxes of previous and next
-</span>    // components and calculate the constrain region
-    onBeforeStart: function(e) {
-        var me = this,
-            prevCmp = me.getPrevCmp(),
-            nextCmp = me.getNextCmp(),
-            collapseEl = me.getSplitter().collapseEl,
-            target = e.getTarget(),
-            box;
-            
-        if (!prevCmp || !nextCmp) {
-            return false;
+    getVertNextConstrainRight: function(o) {
+        return (!this.splitter.getInherited().rtl !== !Ext.rootInheritedState.rtl) ? // jshint ignore:line
+            ((o.nextCmp.maxWidth ? o.nextBox.x + o.nextCmp.maxWidth :
+            o.prevBox.right - (o.prevBox.minWidth || o.defaultMin)) + o.splitWidth) :
+            this.callParent(arguments);
+    },
+
+    getResizeOffset: function() {
+        var offset = this.getOffset(&#39;dragTarget&#39;);
+        if (!this.splitter.getInherited().rtl !== !Ext.rootInheritedState.rtl) { // jshint ignore:line
+            offset[0] = -offset[0];
         }
-
-        if (collapseEl &amp;&amp; target === collapseEl.dom) {
-            return false;
-        }
-
-        // SplitterTracker is disabled if any of its adjacents are collapsed.
-        if (nextCmp.collapsed || prevCmp.collapsed) {
-            return false;
-        }
-
-        // store boxes of previous and next
-        me.prevBox  = prevCmp.getEl().getBox();
-        me.nextBox  = nextCmp.getEl().getBox();
-        me.constrainTo = box = me.calculateConstrainRegion();
-
-        if (!box) {
-            return false;
-        }
-
-        return box;
-    },
-
-<span id='Ext-resizer-SplitterTracker-method-onMouseDown'>    onMouseDown: function(e, target) {
-</span>        // Logic to resize components. If this splitter has an iframe on either side, 
-        // dragging over it will make us not detect startDrag, so we need to cover all iframes and
-        // this has to be done before triggerStart or onStart. We cannot do this in
-        // general (meaning adding this to Ext.dd.DragTracker) because other draggable things cannot 
-        // assume that mouseDown is safe for this purpose. In particular ComponentDragger on a maximizable window will
-        // get tricked by the maximize button onMouseDown and mask everything but will
-        // never get the onMouseUp to unmask the iframes.
-        this.callParent([e, target]);
-
-        if (this.mouseIsDown &amp;&amp; this.getSplitter().el.dom === target) {
-            Ext.dom.Element.maskIframes();
-        }
-    },
-
-<span id='Ext-resizer-SplitterTracker-method-onMouseUp'>    onMouseUp: function(e) {
-</span>        this.callParent([e]);
-        Ext.dom.Element.unmaskIframes();
-    },
-
-<span id='Ext-resizer-SplitterTracker-method-onStart'>    // We move the splitter el. Add the proxy class.
-</span>    onStart: function(e) {
-        var splitter = this.getSplitter();
-        this.createDragOverlay();
-        splitter.addCls(splitter.baseCls + &#39;-active&#39;);
-    },
-
-<span id='Ext-resizer-SplitterTracker-method-onResizeKeyDown'>    onResizeKeyDown: function(e) {
-</span>        var me = this,
-            splitter = me.getSplitter(),
-            key = e.getKey(),
-            incrIdx = splitter.orientation === &#39;vertical&#39; ? 0 : 1,
-            incr = key === e.UP || key === e.LEFT ? -1 : 1,
-            easing;
-
-        if (!me.active &amp;&amp; me.onBeforeStart(e)) {
-            Ext.fly(e.target).on(&#39;keyup&#39;, me.onResizeKeyUp, me);
-            me.triggerStart(e);
-            me.onMouseDown(e);
-            me.startXY = splitter.getXY();
-            me.lastKeyDownXY = Ext.Array.slice(me.startXY);
-
-            // Movement increment eases to 4 over two seconds.
-            easing = me.easing = new Ext.fx.easing.Linear();
-            easing.setStartTime(Ext.Date.now());
-            easing.setStartValue(1);
-            easing.setEndValue(4);
-            easing.setDuration(2000);
-        }
-        if (me.active) {
-            me.lastKeyDownXY[incrIdx] = Math.round(me.lastKeyDownXY[incrIdx] + (incr * me.easing.getValue()));
-            me.lastXY = me.lastKeyDownXY;
-            splitter.setXY(me.getXY(&#39;dragTarget&#39;));
-        }
-    },
-
-<span id='Ext-resizer-SplitterTracker-method-onResizeKeyUp'>    onResizeKeyUp: function(e) {
-</span>        this.onMouseUp(e);
-    },
-
-<span id='Ext-resizer-SplitterTracker-method-calculateConstrainRegion'>    // calculate the constrain Region in which the splitter el may be moved.
-</span>    calculateConstrainRegion: function() {
-        var me         = this,
-            splitter   = me.getSplitter(),
-            splitWidth = splitter.getWidth(),
-            defaultMin = splitter.defaultSplitMin,
-            orient     = splitter.orientation,
-            prevBox    = me.prevBox,
-            prevCmp    = me.getPrevCmp(),
-            nextBox    = me.nextBox,
-            nextCmp    = me.getNextCmp(),
-            // prev and nextConstrainRegions are the maximumBoxes minus the
-            // minimumBoxes. The result is always the intersection
-            // of these two boxes.
-            prevConstrainRegion, nextConstrainRegion, constrainOptions;
-
-        // vertical splitters, so resizing left to right
-        if (orient === &#39;vertical&#39;) {
-            constrainOptions = {
-                prevCmp: prevCmp,
-                nextCmp: nextCmp,
-                prevBox: prevBox,
-                nextBox: nextBox,
-                defaultMin: defaultMin,
-                splitWidth: splitWidth
-            };
-            // Region constructor accepts (top, right, bottom, left)
-            // anchored/calculated from the left
-            prevConstrainRegion = new Ext.util.Region(
-                prevBox.y,
-                me.getVertPrevConstrainRight(constrainOptions),
-                prevBox.bottom,
-                me.getVertPrevConstrainLeft(constrainOptions)
-            );
-            // anchored/calculated from the right
-            nextConstrainRegion = new Ext.util.Region(
-                nextBox.y,
-                me.getVertNextConstrainRight(constrainOptions),
-                nextBox.bottom,
-                me.getVertNextConstrainLeft(constrainOptions)
-            );
-        } else {
-            // anchored/calculated from the top
-            prevConstrainRegion = new Ext.util.Region(
-                prevBox.y + (prevCmp.minHeight || defaultMin),
-                prevBox.right,
-                // Bottom boundary is y + maxHeight if there IS a maxHeight.
-                // Otherwise it is calculated based upon the minWidth of the next Component
-                (prevCmp.maxHeight ? prevBox.y + prevCmp.maxHeight : nextBox.bottom - (nextCmp.minHeight || defaultMin)) + splitWidth,
-                prevBox.x
-            );
-            // anchored/calculated from the bottom
-            nextConstrainRegion = new Ext.util.Region(
-                // Top boundary is bottom - maxHeight if there IS a maxHeight.
-                // Otherwise it is calculated based upon the minHeight of the previous Component
-                (nextCmp.maxHeight ? nextBox.bottom - nextCmp.maxHeight : prevBox.y + (prevCmp.minHeight || defaultMin)) - splitWidth,
-                nextBox.right,
-                nextBox.bottom - (nextCmp.minHeight || defaultMin),
-                nextBox.x
-            );
-        }
-
-        // intersection of the two regions to provide region draggable
-        return prevConstrainRegion.intersect(nextConstrainRegion);
-    },
-
-<span id='Ext-resizer-SplitterTracker-method-performResize'>    // Performs the actual resizing of the previous and next components
-</span>    performResize: function(e, offset) {
-        var me        = this,
-            splitter  = me.getSplitter(),
-            orient    = splitter.orientation,
-            prevCmp   = me.getPrevCmp(),
-            nextCmp   = me.getNextCmp(),
-            owner     = splitter.ownerCt,
-            flexedSiblings = owner.query(&#39;&gt;[flex]&#39;),
-            len       = flexedSiblings.length,
-            vertical  = orient === &#39;vertical&#39;,
-            i         = 0,
-            dimension = vertical ? &#39;width&#39; : &#39;height&#39;,
-            totalFlex = 0,
-            item, size;
-
-        // Convert flexes to pixel values proportional to the total pixel width of all flexes.
-        for (; i &lt; len; i++) {
-            item = flexedSiblings[i];
-            size = vertical ? item.getWidth() : item.getHeight();
-            totalFlex += size;
-            item.flex = size;
-        }
-
-        offset = vertical ? offset[0] : offset[1];
-
-        if (prevCmp) {
-            size = me.prevBox[dimension] + offset;
-            if (prevCmp.flex) {
-                prevCmp.flex = size;
-            } else {
-                prevCmp[dimension] = size;
-            }
-        }
-        if (nextCmp) {
-            size = me.nextBox[dimension] - offset;
-            if (nextCmp.flex) {
-                nextCmp.flex = size;
-            } else {
-                nextCmp[dimension] = size;
-            }
-        }
-
-        owner.updateLayout();
-    },
-
-<span id='Ext-resizer-SplitterTracker-method-endDrag'>    // Cleans up the overlay (if we have one) and calls the base. This cannot be done in
-</span>    // onEnd, because onEnd is only called if a drag is detected but the overlay is created
-    // regardless (by onBeforeStart).
-    endDrag: function () {
-        var me = this;
-
-        if (me.overlay) {
-             me.overlay.destroy();
-             delete me.overlay;
-        }
-
-        me.callParent(arguments); // this calls onEnd
-    },
-
-<span id='Ext-resizer-SplitterTracker-method-onEnd'>    // perform the resize and remove the proxy class from the splitter el
-</span>    onEnd: function(e) {
-        var me = this,
-            splitter = me.getSplitter();
-            
-        splitter.removeCls(splitter.baseCls + &#39;-active&#39;);
-        me.performResize(e, me.getResizeOffset());
-    },
-
-<span id='Ext-resizer-SplitterTracker-method-onDrag'>    // Track the proxy and set the proper XY coordinates
-</span>    // while constraining the drag
-    onDrag: function(e) {
-        var me        = this,
-            offset    = me.getOffset(&#39;dragTarget&#39;),
-            splitter  = me.getSplitter(),
-            splitEl   = splitter.getEl(),
-            orient    = splitter.orientation;
-
-        if (orient === &quot;vertical&quot;) {
-            splitEl.setX(me.startRegion.left + offset[0]);
-        } else {
-            splitEl.setY(me.startRegion.top + offset[1]);
-        }
-    },
-
-<span id='Ext-resizer-SplitterTracker-method-getSplitter'>    getSplitter: function() {
-</span>        return this.splitter;
-    },
-
-<span id='Ext-resizer-SplitterTracker-method-getVertPrevConstrainRight'>    getVertPrevConstrainRight: function(o) {
-</span>        // Right boundary is x + maxWidth if there IS a maxWidth.
-        // Otherwise it is calculated based upon the minWidth of the next Component
-        return (o.prevCmp.maxWidth ? o.prevBox.x + o.prevCmp.maxWidth :
-            o.nextBox.right - (o.nextCmp.minWidth || o.defaultMin)) + o.splitWidth;
-    },
-
-<span id='Ext-resizer-SplitterTracker-method-getVertPrevConstrainLeft'>    getVertPrevConstrainLeft: function(o) {
-</span>        return o.prevBox.x + (o.prevCmp.minWidth || o.defaultMin);
-    },
-
-
-<span id='Ext-resizer-SplitterTracker-method-getVertNextConstrainRight'>    getVertNextConstrainRight: function(o) {
-</span>        return o.nextBox.right - (o.nextCmp.minWidth || o.defaultMin);
-    },
-
-<span id='Ext-resizer-SplitterTracker-method-getVertNextConstrainLeft'>    getVertNextConstrainLeft: function(o) {
-</span>        // Left boundary is right - maxWidth if there IS a maxWidth.
-        // Otherwise it is calculated based upon the minWidth of the previous Component
-        return (o.nextCmp.maxWidth ? o.nextBox.right - o.nextCmp.maxWidth :
-            o.prevBox.x + (o.prevBox.minWidth || o.defaultMin)) - o.splitWidth;
-    },
-
-<span id='Ext-resizer-SplitterTracker-method-getResizeOffset'>    getResizeOffset: function() {
-</span>        return this.getOffset(&#39;dragTarget&#39;);
+        return offset;
     }
-});</pre>
+});
+</pre>
 </body>
 </html>

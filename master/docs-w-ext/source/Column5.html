@@ -15,12 +15,38 @@
   </script>
 </head>
 <body onload="prettyPrint(); highlight();">
-  <pre class="prettyprint lang-js">Ext.define(&#39;Ext.rtl.tree.Column&#39;, {
-    override: &#39;Ext.tree.Column&#39;,
-    
-    getChildCls: function() {
-        return this._childCls || (this._childCls =
-            (this.getInherited().rtl ? Ext.baseCSSPrefix + &#39;rtl&#39; : &#39;&#39;));
+  <pre class="prettyprint lang-js">Ext.define(&#39;Ext.rtl.grid.column.Column&#39;, {
+    override: &#39;Ext.grid.column.Column&#39;,
+
+    isAtStartEdge: function(e, margin) {
+        var me = this,
+            offset;
+
+        if (!me.getInherited().rtl !== !Ext.rootInheritedState.rtl) { // jshint ignore:line
+            offset = me.getX() + me.getWidth() - e.getXY()[0];
+            
+            // To the right of the first column, not over
+            if (offset &lt; 0 &amp;&amp; this.getIndex() === 0) {
+                return false;
+            }
+
+            return (offset &lt;= me.getHandleWidth(e));
+        } else {
+            return me.callParent([e, margin]);
+        }
+    },
+
+    isAtEndEdge: function(e, margin) {
+        var me = this;
+        return (!me.getInherited().rtl !== !Ext.rootInheritedState.rtl) ? // jshint ignore:line
+            (e.getXY()[0] - me.getX() &lt;= me.getHandleWidth(e)) : me.callParent([e, margin]);
+    },
+
+    privates: {
+        _alignMap: {
+            start: &#39;right&#39;,
+            end: &#39;left&#39;
+        }
     }
 });
 </pre>

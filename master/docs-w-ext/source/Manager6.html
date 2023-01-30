@@ -15,113 +15,75 @@
   </script>
 </head>
 <body onload="prettyPrint(); highlight();">
-  <pre class="prettyprint lang-js"><span id='Ext-button-Manager'>/**
-</span> * @private
+  <pre class="prettyprint lang-js"><span id='Ext-plugin-Manager'>/**
+</span> * Creates plugin instances.
+ *
+ * A plugin may be specified simply as a *config object* as long as the correct `ptype` is specified:
+ *
+ *     {
+ *         ptype: &#39;gridviewdragdrop&#39;,
+ *         dragText: &#39;Drag and drop to reorganize&#39;
+ *     }
+ *
+ * Or just use the ptype on its own:
+ *
+ *     &#39;gridviewdragdrop&#39;
+ *
+ * Alternatively you can instantiate the plugin with Ext.create:
+ *
+ *     Ext.create(&#39;Ext.grid.plugin.DragDrop&#39;, {
+ *         dragText: &#39;Drag and drop to reorganize&#39;
+ *     })
+ * @private
  */
-Ext.define(&#39;Ext.button.Manager&#39;, {
+Ext.define(&#39;Ext.plugin.Manager&#39;, {
+    alternateClassName: [
+        &#39;Ext.PluginManager&#39;,
+        &#39;Ext.PluginMgr&#39;
+    ],
+
     singleton: true,
-
-    alternateClassName: &#39;Ext.ButtonToggleManager&#39;,
-
-<span id='Ext-button-Manager-property-groups'>    groups: {},
+<span id='Ext-plugin-Manager-property-typeName'>    typeName: &#39;ptype&#39;,
 </span>
-<span id='Ext-button-Manager-property-pressedButton'>    pressedButton: null,
-</span>
-<span id='Ext-button-Manager-method-init'>    init: function() {
-</span>        var me = this;
-        if (!me.initialized) {
-            Ext.getDoc().on({
-                mouseup: me.onDocumentMouseUp,
-                scope: me
-            });
-            me.initialized = true;
-        }
-    },
-
-<span id='Ext-button-Manager-method-onButtonMousedown'>    // Called by buton instances.
-</span>    // Track the button which was mousedowned upon so that the next *document* mouseup can be delivered to it
-    // in case mouse is moved outside of button element.
-    onButtonMousedown: function(button, e) {
-        var pressed = this.pressedButton;
-        
-        if (pressed &amp;&amp; !pressed.destroying &amp;&amp; !pressed.destroyed) {
-            pressed.onMouseUp(e);
-        }
-        
-        this.pressedButton = button;
-    },
-
-<span id='Ext-button-Manager-method-onDocumentMouseUp'>    onDocumentMouseUp: function(e) {
-</span>        var pressed = this.pressedButton;
-        
-        if (pressed &amp;&amp; !pressed.destroying &amp;&amp; !pressed.destroyed) {
-            pressed.onMouseUp(e);
-            this.pressedButton = null;
-        }
-    },
-
-<span id='Ext-button-Manager-method-toggleGroup'>    toggleGroup: function(btn, state) {
-</span>        if (state) {
-            var g = this.groups[btn.toggleGroup],
-                length = g.length,
-                i;
-
-            for (i = 0; i &lt; length; i++) {
-                if (g[i] !== btn) {
-                    g[i].toggle(false);
-                }
-            }
-        }
-    },
-
-<span id='Ext-button-Manager-method-register'>    register: function(btn) {
-</span>        var me = this,
-            groups = this.groups,
-            group = groups[btn.toggleGroup];
-
-        me.init();
-        if (!btn.toggleGroup) {
-            return;
-        }
-
-        if (!group) {
-            group = groups[btn.toggleGroup] = [];
-        }
-        group.push(btn);
-        btn.on(&#39;toggle&#39;, me.toggleGroup, me);
-    },
-
-<span id='Ext-button-Manager-method-unregister'>    unregister: function(btn) {
-</span>        if (!btn.toggleGroup) {
-            return;
-        }
-        var me = this,
-            group = me.groups[btn.toggleGroup];
-
-        if (group) {
-            Ext.Array.remove(group, btn);
-            btn.un(&#39;toggle&#39;, me.toggleGroup, me);
-        }
-    },
-
-<span id='Ext-button-Manager-method-getPressed'>    /**
-</span>     * Gets the pressed button in the passed group or null
-     * @param {String} groupName
-     * @return {Ext.button.Button}
+<span id='Ext-plugin-Manager-method-create'>    /**
+</span>     * Creates a new Plugin from the specified config object using the config object&#39;s ptype to determine the class to
+     * instantiate.
+     * @param {Object} config A configuration object for the Plugin you wish to create.
+     * @param {Function} defaultType (optional) The constructor to provide the default Plugin type if the config object does not
+     * contain a `ptype`. (Optional if the config contains a `ptype`).
+     * @return {Ext.Component} The newly instantiated Plugin.
      */
-    getPressed: function(groupName) {
-        var group = this.groups[groupName],
-            i = 0,
-            len;
+    create : function(config, defaultType, host) {
+        var result, type;
 
-        if (group) {
-            for (len = group.length; i &lt; len; i++) {
-                if (group[i].pressed === true) {
-                    return group[i];
-                }
+        if (config.init) {
+            result = config;
+        } else {
+            // Inject the host into the config is we know the host
+            if (host) {
+                config = Ext.apply({}, config); // copy since we are going to modify
+                config.cmp = host;
+            }
+            // Grab the host ref if it was configured in
+            else {
+                host = config.cmp;
+            }
+
+            if (config.xclass) {
+                result = Ext.create(config);
+            } else {
+                // Lookup the class from the ptype and instantiate unless its a singleton
+                type = &#39;plugin.&#39; + (config.ptype || defaultType);
+                result = Ext.ClassManager.instantiateByAlias(type, config);
             }
         }
-        return null;
+
+        // If we come out with a non-null plugin, ensure that any setCmp is called once.
+        if (result &amp;&amp; host &amp;&amp; result.setCmp &amp;&amp; !result.setCmpCalled) {
+            result.setCmp(host);
+            result.setCmpCalled = true;
+        }
+        return result;
     }
 });
 </pre>
