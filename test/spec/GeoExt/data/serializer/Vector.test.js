@@ -306,6 +306,7 @@ describe('GeoExt.data.serializer.Vector', function() {
                     fontColor: '#333333', // Default color of ol3
                     fontWeight: 'normal',
                     fontSize: '16px',
+                    fontStyle: 'normal',
                     fontFamily: '"sans serif"',
                     label: 'GeoExt3',
                     labelAlign: 'left',
@@ -319,6 +320,7 @@ describe('GeoExt.data.serializer.Vector', function() {
                     fontColor: '#333333', // Default color of ol3
                     fontWeight: 'normal',
                     fontSize: '16px',
+                    fontStyle: 'normal',
                     fontFamily: '"sans serif"',
                     label: 'Ngeo',
                     labelXOffset: 42,
