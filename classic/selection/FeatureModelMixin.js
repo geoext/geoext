@@ -276,7 +276,7 @@ Ext.define('GeoExt.selection.FeatureModelMixin', {
     selectMapFeature: function(feature) {
         var me = this;
         var row = me.store.findBy(function(record, id) {
-            return record.getFeature() == feature;
+            return record.getFeature() === feature;
         });
 
         // deselect all if only one can be selected at a time
@@ -289,7 +289,7 @@ Ext.define('GeoExt.selection.FeatureModelMixin', {
             me.deselect(row);
         } else {
             // select the feature by selecting grid row
-            if (row != -1 && !me.isSelected(row)) {
+            if (row !== -1 && !me.isSelected(row)) {
                 me.select(row, !this.singleSelect);
                 // focus the row in the grid to ensure it is visible
                 me.view.focusRow(row);

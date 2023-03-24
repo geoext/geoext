@@ -314,12 +314,12 @@ describe('GeoExt.data.store.Features', function() {
         });
 
         it('should add features to the layer', function() {
-            var feature = new ol.Feature();
-            var model = Ext.create('GeoExt.data.model.Feature', feature);
+            var feat = new ol.Feature();
+            var model = Ext.create('GeoExt.data.model.Feature', feat);
 
             store.add(model);
 
-            expect(layer.getSource().getFeatures()).to.contain(feature);
+            expect(layer.getSource().getFeatures()).to.contain(feat);
             expect(layer.getSource().getFeatures().length).to.equal(2);
         });
 
