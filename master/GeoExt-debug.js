@@ -4493,15 +4493,15 @@ Ext.define('GeoExt.data.serializer.Vector', {
             }
             var fontStyle = textStyle.getFont();
             if (Ext.isDefined(fontStyle)) {
-                var font = fontStyle.split(' ');
-                if (font.length >= 3) {
-                    symbolizer.fontWeight = font[0];
-                    symbolizer.fontSize = font[1];
-                    symbolizer.fontFamily = font.splice(2).join(' ');
-                }
+                var el = document.createElement('span');
+                el.style.font = fontStyle;
+                symbolizer.fontWeight = el.style.fontWeight;
+                symbolizer.fontSize = el.style.fontSize;
+                symbolizer.fontFamily = el.style.fontFamily;
+                symbolizer.fontStyle = el.style.fontStyle;
             }
             var strokeStyle = textStyle.getStroke();
-            if (strokeStyle !== null) {
+            if (strokeStyle !== null && strokeStyle.getColor()) {
                 var strokeColor = strokeStyle.getColor();
                 var strokeColorRgba = ol.color.asArray(strokeColor);
                 symbolizer.haloColor = this.rgbArrayToHex(strokeColorRgba);
@@ -4512,7 +4512,7 @@ Ext.define('GeoExt.data.serializer.Vector', {
                 }
             }
             var fillStyle = textStyle.getFill();
-            if (fillStyle !== null) {
+            if (fillStyle !== null && fillStyle.getColor()) {
                 var fillColorRgba = ol.color.asArray(fillStyle.getColor());
                 symbolizer.fontColor = this.rgbArrayToHex(fillColorRgba);
             }
@@ -7423,7 +7423,7 @@ Ext.define('GeoExt.selection.FeatureModelMixin', {
     selectMapFeature: function(feature) {
         var me = this;
         var row = me.store.findBy(function(record, id) {
-                return record.getFeature() == feature;
+                return record.getFeature() === feature;
             });
         // deselect all if only one can be selected at a time
         if (me.getSelectionMode() === 'SINGLE') {
@@ -7434,7 +7434,7 @@ Ext.define('GeoExt.selection.FeatureModelMixin', {
             me.deselect(row);
         } else {
             // select the feature by selecting grid row
-            if (row != -1 && !me.isSelected(row)) {
+            if (row !== -1 && !me.isSelected(row)) {
                 me.select(row, !this.singleSelect);
                 // focus the row in the grid to ensure it is visible
                 me.view.focusRow(row);

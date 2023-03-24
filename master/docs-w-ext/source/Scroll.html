@@ -15,169 +15,72 @@
   </script>
 </head>
 <body onload="prettyPrint(); highlight();">
-  <pre class="prettyprint lang-js"><span id='Ext-fx-layout-card-Scroll'>/**
+  <pre class="prettyprint lang-js"><span id='Ext-util-sizemonitor-Scroll'>/**
 </span> * @private
  */
-Ext.define(&#39;Ext.fx.layout.card.Scroll&#39;, {
-    extend: &#39;Ext.fx.layout.card.Abstract&#39;,
+Ext.define(&#39;Ext.util.sizemonitor.Scroll&#39;, {
 
-    requires: [
-        &#39;Ext.fx.easing.Linear&#39;
-    ],
+    extend: &#39;Ext.util.sizemonitor.Abstract&#39;,
 
-    alias: &#39;fx.layout.card.scroll&#39;,
-
-    config: {
-<span id='Ext-fx-layout-card-Scroll-cfg-duration'>        duration: 150
-</span>    },
-
-<span id='Ext-fx-layout-card-Scroll-method-constructor'>    constructor: function(config) {
-</span>        this.initConfig(config);
-    },
-
-<span id='Ext-fx-layout-card-Scroll-method-getEasing'>    getEasing: function() {
-</span>        var easing = this.easing;
-
-        if (!easing) {
-            this.easing = easing = new Ext.fx.easing.Linear();
-        }
-
-        return easing;
-    },
-
-<span id='Ext-fx-layout-card-Scroll-method-updateDuration'>    updateDuration: function(duration) {
-</span>        this.getEasing().setDuration(duration);
-    },
-
-<span id='Ext-fx-layout-card-Scroll-method-onActiveItemChange'>    onActiveItemChange: function(cardLayout, newItem, oldItem, controller) {
-</span>        var direction = this.getDirection(),
-            easing = this.getEasing(),
-            containerElement, inElement, outElement, containerWidth, containerHeight, reverse;
-
-        if (newItem &amp;&amp; oldItem) {
-            if (this.isAnimating) {
-                this.stopAnimation();
-            }
-
-            newItem.setWidth(&#39;100%&#39;);
-            newItem.setHeight(&#39;100%&#39;);
-
-            containerElement = this.getLayout().container.innerElement;
-            containerWidth = containerElement.getWidth();
-            containerHeight = containerElement.getHeight();
-
-            inElement = newItem.renderElement;
-            outElement = oldItem.renderElement;
-
-            this.oldItem = oldItem;
-            this.newItem = newItem;
-            this.containerElement = containerElement;
-            this.currentEventController = controller;
-            this.isReverse = reverse = this.getReverse();
-
-            newItem.show();
-
-            if (direction == &#39;right&#39;) {
-                direction = &#39;left&#39;;
-                this.isReverse = reverse = !reverse;
-            }
-            else if (direction == &#39;down&#39;) {
-                direction = &#39;up&#39;;
-                this.isReverse = reverse = !reverse;
-            }
-
-            if (direction == &#39;left&#39;) {
-                if (reverse) {
-                    easing.setConfig({
-                        startValue: containerWidth,
-                        endValue: 0
-                    });
-
-                    containerElement.dom.scrollLeft = containerWidth;
-                    outElement.setLeft(containerWidth);
+<span id='Ext-util-sizemonitor-Scroll-method-getElementConfig'>    getElementConfig: function() {
+</span>        return {
+            reference: &#39;detectorsContainer&#39;,
+            classList: [Ext.baseCSSPrefix + &#39;size-monitors&#39;, &#39;scroll&#39;],
+            children: [
+                {
+                    reference: &#39;expandMonitor&#39;,
+                    className: &#39;expand&#39;
+                },
+                {
+                    reference: &#39;shrinkMonitor&#39;,
+                    className: &#39;shrink&#39;
                 }
-                else {
-                    easing.setConfig({
-                        startValue: 0,
-                        endValue: containerWidth
-                    });
-
-                    inElement.setLeft(containerWidth);
-                }
-            }
-            else {
-                if (reverse) {
-                    easing.setConfig({
-                        startValue: containerHeight,
-                        endValue: 0
-                    });
-
-                    containerElement.dom.scrollTop = containerHeight;
-                    outElement.setTop(containerHeight);
-                }
-                else {
-                    easing.setConfig({
-                        startValue: 0,
-                        endValue: containerHeight
-                    });
-
-                    inElement.setTop(containerHeight);
-                }
-            }
-
-            this.startAnimation();
-            controller.pause();
-        }
+            ]
+        };
     },
 
-<span id='Ext-fx-layout-card-Scroll-method-startAnimation'>    startAnimation: function() {
-</span>        this.isAnimating = true;
-        this.getEasing().setStartTime(Date.now());
-        Ext.AnimationQueue.start(this.doAnimationFrame, this);
+<span id='Ext-util-sizemonitor-Scroll-method-constructor'>    constructor: function(config) {
+</span>        this.onScroll = Ext.Function.bind(this.onScroll, this);
+
+        this.callParent(arguments);
     },
 
-<span id='Ext-fx-layout-card-Scroll-method-doAnimationFrame'>    doAnimationFrame: function() {
-</span>        var easing = this.getEasing(),
-            direction = this.getDirection(),
-            scroll = &#39;scrollTop&#39;,
-            value;
+<span id='Ext-util-sizemonitor-Scroll-method-bindListeners'>    bindListeners: function(bind) {
+</span>        var method = bind ? &#39;addEventListener&#39; : &#39;removeEventListener&#39;;
 
-        if (direction == &#39;left&#39; || direction == &#39;right&#39;) {
-            scroll = &#39;scrollLeft&#39;;
-        }
-
-        if (easing.isEnded) {
-            this.stopAnimation();
-        }
-        else {
-            value = easing.getValue();
-            this.containerElement.dom[scroll] = value;
-        }
+        this.expandMonitor[method](&#39;scroll&#39;, this.onScroll, true);
+        this.shrinkMonitor[method](&#39;scroll&#39;, this.onScroll, true);
     },
 
-<span id='Ext-fx-layout-card-Scroll-method-stopAnimation'>    stopAnimation: function() {
-</span>        var me = this,
-            direction = me.getDirection(),
-            scroll = &#39;setTop&#39;,
-            oldItem = me.oldItem,
-            newItem = me.newItem;
+<span id='Ext-util-sizemonitor-Scroll-method-forceRefresh'>    forceRefresh: function() {
+</span>        Ext.TaskQueue.requestRead(&#39;refresh&#39;, this, [true]);
+    },
 
-        if (direction == &#39;left&#39; || direction == &#39;right&#39;) {
-            scroll = &#39;setLeft&#39;;
+<span id='Ext-util-sizemonitor-Scroll-method-onScroll'>    onScroll: function() {
+</span>        Ext.TaskQueue.requestRead(&#39;refresh&#39;, this);
+    },
+
+<span id='Ext-util-sizemonitor-Scroll-method-refreshMonitors'>    refreshMonitors: function() {
+</span>        var expandMonitor = this.expandMonitor,
+            shrinkMonitor = this.shrinkMonitor,
+            end = 1000000;
+
+        if (expandMonitor &amp;&amp; !expandMonitor.destroyed) {
+            expandMonitor.scrollLeft = end;
+            expandMonitor.scrollTop = end;
         }
 
-        me.currentEventController.resume();
-
-        if (me.isReverse &amp;&amp; oldItem &amp;&amp; oldItem.renderElement &amp;&amp; oldItem.renderElement.dom) {
-            oldItem.renderElement[scroll](null);
+        if (shrinkMonitor &amp;&amp; !shrinkMonitor.destroyed) {
+            shrinkMonitor.scrollLeft = end;
+            shrinkMonitor.scrollTop = end;
         }
-        else if (newItem &amp;&amp; newItem.renderElement &amp;&amp; newItem.renderElement.dom) {
-            newItem.renderElement[scroll](null);
-        }
-
-        Ext.AnimationQueue.stop(this.doAnimationFrame, this);
-        me.isAnimating = false;
-        me.fireEvent(&#39;animationend&#39;, me);
+    },
+    
+<span id='Ext-util-sizemonitor-Scroll-method-destroy'>    destroy: function() {
+</span>        // This is a closure so Base destructor won&#39;t null it
+        this.onScroll = null;
+        
+        this.callParent();
     }
 });
 </pre>
