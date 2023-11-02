@@ -20,13 +20,13 @@ Ext.application({
         var olMap;
         var treeStore;
 
-        source1 = new ol.source.Stamen({layer: 'watercolor'});
+        source1 = new ol.source.StadiaMaps({layer: 'stamen_watercolor'});
         layer1 = new ol.layer.Tile({
             source: source1,
             name: 'Stamen Watercolor'
         });
 
-        source2 = new ol.source.Stamen({layer: 'terrain-labels'});
+        source2 = new ol.source.StadiaMaps({layer: 'stamen_terrain_labels'});
         layer2 = new ol.layer.Tile({
             source: source2,
             name: 'Stamen Terrain Labels'

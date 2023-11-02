@@ -27,8 +27,8 @@ Ext.application({
                 }),
                 new ol.layer.Tile({
                     name: 'Labels',
-                    source: new ol.source.Stamen({
-                        layer: 'terrain-labels'
+                    source: new ol.source.StadiaMaps({
+                        layer: 'stamen_terrain_labels'
                     })
                 }),
                 new ol.layer.Vector({
