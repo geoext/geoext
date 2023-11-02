@@ -15,44 +15,70 @@
   </script>
 </head>
 <body onload="prettyPrint(); highlight();">
-  <pre class="prettyprint lang-js"><span id='Ext-fx-easing-Abstract'>/**
+  <pre class="prettyprint lang-js"><span id='Ext-fx-layout-card-Abstract'>/**
 </span> * @private
  */
-Ext.define(&#39;Ext.fx.easing.Abstract&#39;, {
-
+Ext.define(&#39;Ext.fx.layout.card.Abstract&#39;, {
+    extend: &#39;Ext.Evented&#39;,
+<span id='Ext-fx-layout-card-Abstract-property-isAnimation'>    isAnimation: true,
+</span>
     config: {
-<span id='Ext-fx-easing-Abstract-cfg-startTime'>        startTime: 0,
-</span><span id='Ext-fx-easing-Abstract-cfg-startValue'>        startValue: 0
+<span id='Ext-fx-layout-card-Abstract-cfg-direction'>        direction: &#39;left&#39;,
+</span>
+<span id='Ext-fx-layout-card-Abstract-cfg-duration'>        duration: null,
+</span>
+<span id='Ext-fx-layout-card-Abstract-cfg-reverse'>        reverse: null,
+</span>
+<span id='Ext-fx-layout-card-Abstract-cfg-layout'>        layout: null
 </span>    },
 
-<span id='Ext-fx-easing-Abstract-property-isEasing'>    isEasing: true,
-</span>
-<span id='Ext-fx-easing-Abstract-property-isEnded'>    isEnded: false,
-</span>
-<span id='Ext-fx-easing-Abstract-method-constructor'>    constructor: function(config) {
-</span>        this.initConfig(config);
-
-        return this;
+<span id='Ext-fx-layout-card-Abstract-method-updateLayout'>    updateLayout: function(layout) {
+</span>        if (layout) {
+            this.enable();
+        }
     },
 
-<span id='Ext-fx-easing-Abstract-method-applyStartTime'>    applyStartTime: function(startTime) {
-</span>        if (!startTime) {
-            startTime = Ext.Date.now();
+<span id='Ext-fx-layout-card-Abstract-method-enable'>    enable: function() {
+</span>        var layout = this.getLayout();
+
+        if (layout) {
+            layout.on(&#39;beforeactiveitemchange&#39;, &#39;onActiveItemChange&#39;, this);
+        }
+    },
+
+<span id='Ext-fx-layout-card-Abstract-method-disable'>    disable: function() {
+</span>        var layout = this.getLayout();
+
+        if (this.isAnimating) {
+            this.stopAnimation();
         }
 
-        return startTime;
+        if (layout) {
+            layout.un(&#39;beforeactiveitemchange&#39;, &#39;onActiveItemChange&#39;, this);
+        }
     },
 
-<span id='Ext-fx-easing-Abstract-method-updateStartTime'>    updateStartTime: function(startTime) {
-</span>        this.reset();
-    },
+<span id='Ext-fx-layout-card-Abstract-method-onActiveItemChange'>    onActiveItemChange: Ext.emptyFn,
+</span>
+<span id='Ext-fx-layout-card-Abstract-method-destroy'>    destroy: function() {
+</span>        var me = this,
+            layout = me.getLayout();
 
-<span id='Ext-fx-easing-Abstract-method-reset'>    reset: function() {
-</span>        this.isEnded = false;
-    },
+        if (me.isAnimating) {
+            me.stopAnimation();
+        }
 
-<span id='Ext-fx-easing-Abstract-method-getValue'>    getValue: Ext.emptyFn
-</span>});
+        if (layout) {
+            layout.un(&#39;beforeactiveitemchange&#39;, &#39;onActiveItemChange&#39;, this);
+        }
+        me.setLayout(null);
+
+        if (me.observableId) {
+            me.fireEvent(&#39;destroy&#39;, this);
+        }
+        me.callParent();
+    }
+});
 </pre>
 </body>
 </html>

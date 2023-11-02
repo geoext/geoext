@@ -30,19 +30,33 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see &lt;http://www.gnu.org/licenses/&gt;.
  */
-<span id='GeoExt-data-store-ArcGISRestServiceLayer'>/**
-</span> * Store that contains information about ArcGIS REST service layers.
+<span id='GeoExt-data-model-ArcGISRestServiceLayer'>/**
+</span> * The ArcGISRestServiceLayer model class used by the stores.
  *
- * @class GeoExt.data.store.ArcGISRestServiceLayer
+ * @class GeoExt.data.model.ArcGISRestServiceLayer
  */
-Ext.define(&#39;GeoExt.data.store.ArcGISRestServiceLayer&#39;, {
-    extend: &#39;Ext.data.Store&#39;,
-    requires: [
-        &#39;GeoExt.data.model.ArcGISRestServiceLayer&#39;
-    ],
+Ext.define(&#39;GeoExt.data.model.ArcGISRestServiceLayer&#39;, {
+    extend: &#39;GeoExt.data.model.Base&#39;,
 
-<span id='GeoExt-data-store-ArcGISRestServiceLayer-property-model'>    model: &#39;GeoExt.data.model.ArcGISRestServiceLayer&#39;
-</span>});
+<span id='GeoExt-data-model-ArcGISRestServiceLayer-property-fields'>    fields: [
+</span>        {
+            name: &#39;layerId&#39;,
+            type: &#39;int&#39;
+        },
+        {
+            name: &#39;name&#39;,
+            type: &#39;string&#39;
+        },
+        {
+            name: &#39;defaultVisibility&#39;,
+            type: &#39;boolean&#39;
+        },
+        {
+            name: &#39;visibility&#39;,
+            type: &#39;boolean&#39;
+        }
+    ]
+});
 </pre>
 </body>
 </html>

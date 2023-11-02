@@ -15,51 +15,18 @@
   </script>
 </head>
 <body onload="prettyPrint(); highlight();">
-  <pre class="prettyprint lang-js">Ext.define(&#39;Ext.rtl.scroll.Scroller&#39;, {
-    override: &#39;Ext.scroll.Scroller&#39;,
+  <pre class="prettyprint lang-js">Ext.define(&#39;Ext.rtl.layout.container.boxOverflow.Scroller&#39;, {
+    override: &#39;Ext.layout.container.boxOverflow.Scroller&#39;,
 
-    config: {
-<span id='Ext-scroll-Scroller-cfg-rtl'>        /**
-</span>         * @cfg {Boolean} [rtl=false]
-         * `true` to enable scrolling of &quot;right-to-left&quot; content.  This is typically
-         * configured automatically by an {@link Ext.Component} based on its inherited
-         * {@link Ext.Component#rtl rtl} state
-         * @member Ext.scroll.Scroller
-         */
-        rtl: null
-    },
+    getWheelDelta: function(e) {
+        var layout = this.layout,
+            delta = e.getWheelDelta();
 
-    // Empty updater - workaround for https://sencha.jira.com/browse/EXTJS-14574
-    updateRtl: Ext.emptyFn,
-
-    privates: {
-        convertX: function(x) {
-            var element;
-
-            if (this.getRtl()) {
-                element = this.getElement();
-
-                if (element) {
-                    x = element.rtlNormalizeScrollLeft(x);
-                }
-            }
-
-            return x;
-        },
-
-        getElementScroll: function(element) {
-            return this.getRtl() ? element.rtlGetScroll() : element.getScroll();
-        },
-
-        // rtl hook
-        translateSpacer: function(x, y) {
-            if (this.getRtl()) {
-                this.getSpacer().dom.style.right = (x - 1) + &#39;px&#39;;
-                this.callParent([null, y]);
-            } else {
-                this.callParent([x, y]);
-            }
+        if (layout.direction === &#39;horizontal&#39; &amp;&amp; layout.owner.getInherited().rtl) {
+            delta = -delta;
         }
+
+        return delta;
     }
 });
 </pre>
