@@ -15,184 +15,561 @@
   </script>
 </head>
 <body onload="prettyPrint(); highlight();">
-  <pre class="prettyprint lang-js"><span id='Ext-data-request-Base'>/**
-</span> * This class manages a pending Ajax request. Instances of this type are created by the
- * `{@link Ext.data.Connection#request}` method.
- * @since 6.0.0
+  <pre class="prettyprint lang-js"><span id='Ext-sparkline-Base'>/**
+</span> * @class Ext.sparkline.Base
+ *
+ * The base class for ExtJS SparkLines. SparkLines are small, inline graphs used to visually
+ * display small amounts of data. For large datasets, use the {@link Ext.chart.AbstractChart chart package}.
+ *
+ * The SparkLine subclasses accept an {@link #values array of values}, and present the data in different visualizations.
+ *
+ *     @example
+ *     new Ext.Panel({
+ *         height: 300,
+ *         width: 600,
+ *         frame: true,
+ *         title: &#39;Test Sparklines&#39;,
+ *         renderTo:document.body,
+ *         bodyPadding: 10,
+ *
+ *         // Named listeners will resolve to methods in this Panel
+ *         defaultListenerScope: true,
+ *
+ *         // Named references will be collected, and can be access from this Panel
+ *         referenceHolder: true,
+ *
+ *         items: [{
+ *             reference: &#39;values&#39;,
+ *             xtype: &#39;textfield&#39;,
+ *             fieldLabel: &#39;Values&#39;,
+ *             validator: function(v) {
+ *                 var result = [];
+ *
+ *                 v = v.replace(/\s/g, &#39;&#39;);
+ *                 v = v.replace(/,$/, &#39;&#39;);
+ *                 v = v.split(&#39;,&#39;);
+ *                 for (var i = 0; i &lt; v.length; i++) {
+ *                     if (!Ext.isNumeric(v[i])) {
+ *                         return &#39;Value must be a comma separated array of numbers&#39;;
+ *                     }
+ *                     result.push(parseInt(v[i], 10));
+ *                 }
+ *                 this.values = result;
+ *                 return true;
+ *             },
+ *             listeners: {
+ *                 change: &#39;onTypeChange&#39;,
+ *                 buffer: 500,
+ *                 afterrender: {
+ *                     fn: &#39;afterTypeRender&#39;,
+ *                     single: true
+ *                 }
+ *             }
+ *         }, {
+ *             reference: &#39;type&#39;,
+ *             xtype: &#39;combobox&#39;,
+ *             fieldLabel: &#39;Type&#39;,
+ *             store: [
+ *                 [&#39;sparklineline&#39;,     &#39;Line&#39;],
+ *                 [&#39;sparklinebox&#39;,      &#39;Box&#39;],
+ *                 [&#39;sparklinebullet&#39;,   &#39;Bullet&#39;],
+ *                 [&#39;sparklinediscrete&#39;, &#39;Discrete&#39;],
+ *                 [&#39;sparklinepie&#39;,      &#39;Pie&#39;],
+ *                 [&#39;sparklinetristate&#39;, &#39;TriState&#39;]
+ *             ],
+ *             value: &#39;sparklineline&#39;,
+ *             listeners: {
+ *                 change: &#39;onTypeChange&#39;,
+ *                 buffer: 500
+ *             }
+ *         }],
+ *
+ *         // Start with a line plot. 
+ *         afterTypeRender: function(typeField) {
+ *             typeField.setValue(&#39;6,10,4,-3,7,2&#39;);
+ *         },
+ *
+ *         onTypeChange: function() {
+ *             var me = this,
+ *                 refs = me.getReferences(),
+ *                 config;
+ *
+ *             if (me.sparkLine) {
+ *                 me.remove(me.sparkLine, true);
+ *             }
+ *             config = {
+ *                 xtype: refs.type.getValue(),
+ *                 values: refs.values.values,
+ *                 height: 25,
+ *                 width: 100                    
+ *             };
+ *	           me.sparkLine = Ext.create(config);
+ *             me.add(me.sparkLine);
+ *
+ *             // Put under fields
+ *             me.sparkLine.el.dom.style.marginLeft = refs.type.labelEl.getWidth() + &#39;px&#39;;
+ *         }
+ *     });
+ *
  */
-Ext.define(&#39;Ext.data.request.Base&#39;, {
+Ext.define(&#39;Ext.sparkline.Base&#39;, {
+    extend: &#39;Ext.Gadget&#39;,
+    xtype: &#39;sparkline&#39;,
     requires: [
-        &#39;Ext.Deferred&#39;
+        &#39;Ext.XTemplate&#39;,
+        &#39;Ext.sparkline.CanvasCanvas&#39;,
+        &#39;Ext.sparkline.VmlCanvas&#39;,
+        &#39;Ext.util.Color&#39;
     ],
 
-    mixins: [
-        &#39;Ext.mixin.Factoryable&#39;
-    ],
-
-<span id='Ext-data-request-Base-property-factoryConfig'>    // Since this class is abstract, we don&#39;t have an alias of our own for Factoryable
-</span>    // to use.
-    factoryConfig: {
-        type: &#39;request&#39;,
-        defaultType: &#39;ajax&#39;  // this is the default deduced from the alias
-    },
-
-<span id='Ext-data-request-Base-property-result'>    result: null,
+    cachedConfig: {
+<span id='Ext-sparkline-Base-cfg-baseCls'>        baseCls: Ext.baseCSSPrefix + &#39;sparkline&#39;,
 </span>
-<span id='Ext-data-request-Base-property-success'>    success: null,
-</span>
-<span id='Ext-data-request-Base-property-timer'>    timer: null,
-</span>
-<span id='Ext-data-request-Base-method-constructor'>    constructor: function(config) {
-</span>        var me = this;
-        
-        // ownerConfig contains default values for config options
-        // applicable to every Request spawned by that owner;
-        // however the values can be overridden in the options
-        // object passed to owner&#39;s request() method.
-        Ext.apply(me, config.options || {}, config.ownerConfig);
-        
-        me.id = ++Ext.data.Connection.requestId;
-        me.owner = config.owner;
-        me.options = config.options;
-        me.requestOptions = config.requestOptions;
-    },
-    
-<span id='Ext-data-request-Base-method-start'>    /**
-</span>     * Start the request.
-     */
-    start: function() {
-        var me = this,
-            timeout = me.getTimeout();
-        
-        if (timeout &amp;&amp; me.async) {
-            me.timer = Ext.defer(me.onTimeout, timeout, me);
-        }
-    },
-    
-<span id='Ext-data-request-Base-method-abort'>    abort: function() {
-</span>        var me = this;
-
-        me.clearTimer();
-
-        if (!me.timedout) {
-            me.aborted = true;
-        }
-
-        me.abort = Ext.emptyFn;
-    },
-
-<span id='Ext-data-request-Base-method-createDeferred'>    createDeferred: function() {
-</span>        return (this.deferred = new Ext.Deferred());  // deliberate assignment
-    },
-
-<span id='Ext-data-request-Base-method-getDeferred'>    getDeferred: function() {
-</span>        return this.deferred || this.createDeferred();
-    },
-
-<span id='Ext-data-request-Base-method-getPromise'>    getPromise: function() {
-</span>        return this.getDeferred().promise;
-    },
-
-<span id='Ext-data-request-Base-method-then'>    then: function() {
-</span>        var promise = this.getPromise();
-        
-        return promise.then.apply(promise, arguments);
-    },
-
-<span id='Ext-data-request-Base-method-isLoading'>    /**
-</span>     * @method isLoading
-     * Determines whether this request is in progress.
-     *
-     * @return {Boolean} `true` if this request is in progress, `false` if complete.
-     */
-
-    onComplete: function() {
-        var me = this,
-            deferred = me.deferred,
-            result = me.result;
-
-        me.clearTimer();
-
-        if (deferred) {
-            if (me.success) {
-                deferred.resolve(result);
-            }
-            else {
-                deferred.reject(result);
-            }
-        }
-    },
-
-<span id='Ext-data-request-Base-method-onTimeout'>    onTimeout: function() {
-</span>        var me = this;
-
-        me.timedout = true;
-        me.timer = null;
-
-        me.abort(true);
-    },
-    
-<span id='Ext-data-request-Base-method-getTimeout'>    getTimeout: function() {
-</span>        return this.timeout;
-    },
-
-<span id='Ext-data-request-Base-method-clearTimer'>    clearTimer: function() {
-</span>        var timer = this.timer;
-
-        if (timer) {
-            clearTimeout(timer);
-            this.timer = null;
-        }
-    },
-
-<span id='Ext-data-request-Base-method-destroy'>    destroy: function() {
-</span>        var me = this;
-        
-        me.abort();
-        
-        me.owner = me.options = me.requestOptions = me.result = null;
-        
-        me.callParent();
-    },
-    
-<span id='Ext-data-request-Base-property-privates'>    privates: {
-</span><span id='Ext-data-request-Base-method-createException'>        /**
-</span>         * Creates the exception object
-         * @param {Object} request
-         * @private
+<span id='Ext-sparkline-Base-cfg-lineColor'>        /**
+</span>         * @cfg {String} [lineColor=#157fcc] The hex value for line colors in graphs which display lines ({@link Ext.sparkline.Box Box}, {@link Ext.sparkline.Discrete Discrete and {@link Ext.sparkline.Line Line}).
          */
-        createException: function() {
-            var me = this,
-                result;
-            
-            result = {
-                request: me,
-                requestId: me.id,
-                status: me.aborted ? -1 : 0,
-                statusText: me.aborted ? &#39;transaction aborted&#39; : &#39;communication failure&#39;,
-                getResponseHeader: me._getHeader,
-                getAllResponseHeaders: me._getHeaders
-            };
-            
-            if (me.aborted) {
-                result.aborted = true;
-            }
-            
-            if (me.timedout) {
-                result.timedout = true;
-            }
-            
-            return result;
-        },
+        lineColor: &#39;#157fcc&#39;,
 
-        _getHeader: function(name) {
-            var headers = this.headers;
-            return headers &amp;&amp; headers[name.toLowerCase()];
-        },
+<span id='Ext-sparkline-Base-cfg-defaultPixelsPerValue'>        defaultPixelsPerValue: 3,
+</span>
+<span id='Ext-sparkline-Base-cfg-tagValuesAttribute'>        tagValuesAttribute: &#39;values&#39;,
+</span>
+<span id='Ext-sparkline-Base-cfg-enableTagOptions'>        enableTagOptions: false,
+</span>        
+<span id='Ext-sparkline-Base-cfg-enableHighlight'>        enableHighlight: true,
+</span>        
+<span id='Ext-sparkline-Base-cfg-highlightColor'>        /**
+</span>         * @cfg {String} [highlightColor=null] The hex value for the highlight color to use when mouseing over a graph segment.
+         */
+        highlightColor: null,
+        
+<span id='Ext-sparkline-Base-cfg-highlightLighten'>        /**
+</span>         * @cfg {Number} [highlightLighten] How much to lighten the highlight color by when mouseing over a graph segment.
+         */
+        highlightLighten: 0.1,
+        
+<span id='Ext-sparkline-Base-cfg-tooltipSkipNull'>        /**
+</span>         * @cfg {Boolean} [tooltipSkipNull=true] Null values will not have a tooltip displayed.
+         */
+        tooltipSkipNull: true,
+        
+<span id='Ext-sparkline-Base-cfg-tooltipPrefix'>        /**
+</span>         * @cfg {String} [tooltipPrefix] A string to prepend to each field displayed in a tooltip.
+         */
+        tooltipPrefix: &#39;&#39;,
+        
+<span id='Ext-sparkline-Base-cfg-tooltipSuffix'>        /**
+</span>         * @cfg {String} [tooltipSuffix] A string to append to each field displayed in a tooltip.
+         */
+        tooltipSuffix: &#39;&#39;,
+        
+<span id='Ext-sparkline-Base-cfg-disableTooltips'>        /**
+</span>         * @cfg {Boolean} [disableTooltips=false] Set to `true` to disable mouseover tooltips.
+         */
+        disableTooltips: false,
+        
+<span id='Ext-sparkline-Base-cfg-disableInteraction'>        disableInteraction: false,
+</span>        
+<span id='Ext-sparkline-Base-cfg-tipTpl'>        /**
+</span>         * @cfg {String/Ext.XTemplate} [tipTpl] An XTemplate used to display the value or values in a tooltip when hovering over a Sparkline.
+         *
+         * The implemented subclases all define their own `tipTpl`, but it can be overridden.
+         */
+        tipTpl: null
+    },
 
-        _getHeaders: function() {
-            return this.headers;
+    config: {
+<span id='Ext-sparkline-Base-cfg-values'>        /**
+</span>         * @cfg {Number[]} values An array of numbers which define the chart.
+         */
+        values: null
+    },
+
+<span id='Ext-sparkline-Base-property-element'>    element: {
+</span>        tag: &#39;canvas&#39;,
+        reference: &#39;element&#39;,
+        style: {
+            display: &#39;inline-block&#39;,
+            verticalAlign: &#39;top&#39;
+        },
+        listeners: {
+            mouseenter: &#39;onMouseEnter&#39;,
+            mouseleave: &#39;onMouseLeave&#39;,
+            mousemove: &#39;onMouseMove&#39;
+        },
+        // Create canvas zero sized so that it does not affect the containing element&#39;s initial layout
+        // https://sencha.jira.com/browse/EXTJSIV-10145
+        width: 0,
+        height: 0
+    },
+    
+<span id='Ext-sparkline-Base-property-defaultBindProperty'>    defaultBindProperty: &#39;values&#39;,
+</span>
+<span id='Ext-sparkline-Base-property-redrawQueue'>    // When any config is changed, the canvas needs to be redrawn.
+</span>    // This is done at the next animation frame when this queue is traversed.
+    redrawQueue: {},
+
+    inheritableStatics: {
+<span id='Ext-sparkline-Base-static-property-sparkLineTipClass'>        /**
+</span>         * @private
+         * @static
+         * @inheritable
+         */
+        sparkLineTipClass: Ext.baseCSSPrefix + &#39;sparkline-tip-target&#39;,
+
+<span id='Ext-sparkline-Base-static-method-onClassCreated'>        /**
+</span>         * @private
+         * @static
+         * @inheritable
+         */
+        onClassCreated: function(cls) {
+            var configApplier = cls.prototype.applyConfigChange,
+                proto = cls.prototype,
+                configs = cls.getConfigurator().configs,
+                config,
+                applierName;
+
+            // Set up an applier for all local configs which kicks off a request to redraw on the next animation frame
+            for (config in configs) {
+                // tipTpl not included in this scheme
+                if (config !== &#39;tipTpl&#39;) {
+                    applierName = Ext.Config.get(config).names.apply;
+                    if (proto[applierName]) {
+                        proto[applierName] = Ext.Function.createSequence(proto[applierName], configApplier);
+                    } else {
+                        proto[applierName] = configApplier;
+                    }
+                }
+            }    
         }
+    },
+
+<span id='Ext-sparkline-Base-method-constructor'>    constructor: function(config) {
+</span>        var me = this;
+
+        // The canvas sets our element config
+        me.canvas = Ext.supports.Canvas ? new Ext.sparkline.CanvasCanvas(me)
+                                        : new Ext.sparkline.VmlCanvas(me);
+        if (!me.getDisableTooltips()) {
+            me.element.cls = Ext.sparkline.Base.sparkLineTipClass;
+        }
+
+        Ext.apply(me, config);
+        me.callParent([config]);
+    },
+
+<span id='Ext-sparkline-Base-method-all'>    // determine if all values of an array match a value
+</span>    // returns true if the array is empty
+    all: function (val, arr, ignoreNull) {
+        var i;
+        for (i = arr.length; i--; ) {
+            if (ignoreNull &amp;&amp; arr[i] === null) {
+                continue;
+            }
+            if (arr[i] !== val) {
+                return false;
+            }
+        }
+        return true;
+    },
+
+<span id='Ext-sparkline-Base-method-applyConfigChange'>    // generic config value applier.
+</span>    // Adds this to the queue to do a redraw on the next animation frame
+    applyConfigChange: function(newValue) {
+        var me = this;
+        me.redrawQueue[me.getId()] = me;
+
+        // Ensure that there is a single timer to handle all queued redraws.
+        if (!me.redrawTimer) {
+            Ext.sparkline.Base.prototype.redrawTimer =
+                    Ext.Function.requestAnimationFrame(me.processRedrawQueue);
+        }
+        return newValue;
+    },
+
+<span id='Ext-sparkline-Base-method-applyTipTpl'>    // Appliers convert an incoming config value.
+</span>    // Ensure the tipTpl is an XTemplate
+    applyTipTpl: function(tipTpl) {
+        if (tipTpl &amp;&amp; !tipTpl.isTemplate) {
+            tipTpl = new Ext.XTemplate(tipTpl);
+        }
+        return tipTpl;
+    },
+
+<span id='Ext-sparkline-Base-method-normalizeValue'>    normalizeValue: function (val) {
+</span>        var nf;
+        switch (val) {
+            case &#39;undefined&#39;:
+                val = undefined;
+                break;
+            case &#39;null&#39;:
+                val = null;
+                break;
+            case &#39;true&#39;:
+                val = true;
+                break;
+            case &#39;false&#39;:
+                val = false;
+                break;
+            default:
+                nf = parseFloat(val);
+                if (val == nf) {
+                    val = nf;
+                }
+        }
+        return val;
+    },
+
+<span id='Ext-sparkline-Base-method-normalizeValues'>    normalizeValues: function (vals) {
+</span>        var i, result = [];
+        for (i = vals.length; i--;) {
+            result[i] = this.normalizeValue(vals[i]);
+        }
+        return result;
+    },
+
+<span id='Ext-sparkline-Base-method-updateWidth'>    updateWidth: function(width, oldWidth) {
+</span>        var me = this,
+            dom = me.element.dom,
+            measurer = me.measurer;
+
+        me.callParent([width, oldWidth]);
+        me.canvas.setWidth(width);
+        me.width = width;
+        if (me.height == null &amp;&amp; measurer) {
+            me.setHeight(parseInt(measurer.getCachedStyle(dom.parentNode, &#39;line-height&#39;), 10));
+        }
+    },
+
+<span id='Ext-sparkline-Base-method-updateHeight'>    updateHeight: function(height, oldHeight) {
+</span>        var me = this;
+
+        me.callParent([height, oldHeight]);
+        me.canvas.setHeight(height);
+        me.height = height;
+    },
+
+<span id='Ext-sparkline-Base-method-applyValues'>    applyValues: function(values, oldValues)  {
+</span>        if (values &amp;&amp; oldValues &amp;&amp; Ext.Array.equals(values, oldValues)) {
+            values = undefined;
+        }
+        return values;
+    },
+
+<span id='Ext-sparkline-Base-method-updateValues'>    updateValues: function(values) {
+</span>        this.values = values;
+    },
+
+<span id='Ext-sparkline-Base-method-redraw'>    redraw: function() {
+</span>        var me = this;
+
+        if (!me.destroyed &amp;&amp; me.getValues()) {
+            me.onUpdate();
+            me.canvas.onOwnerUpdate();
+            me.renderGraph();
+        }
+    },
+
+<span id='Ext-sparkline-Base-method-onUpdate'>    onUpdate: Ext.emptyFn,
+</span>
+<span id='Ext-sparkline-Base-method-renderGraph'>    /*
+</span>     * Render the chart to the canvas
+     */
+    renderGraph: function () {
+        var ret = true;
+        if (this.disabled) {
+            this.canvas.reset();
+            ret = false;
+        }
+        return ret;
+    },
+
+<span id='Ext-sparkline-Base-method-onMouseEnter'>    onMouseEnter: function(e) {
+</span>        this.onMouseMove(e);
+    },
+
+<span id='Ext-sparkline-Base-method-onMouseMove'>    onMouseMove: function (e) {
+</span>        this.currentPageXY = e.getPoint();
+        this.redraw();
+    },
+
+<span id='Ext-sparkline-Base-method-onMouseLeave'>    onMouseLeave: function () {
+</span>        var me = this;
+        me.currentPageXY = me.targetX = me.targetY = null;
+        me.redraw();
+        me.hideTip();
+    },
+
+<span id='Ext-sparkline-Base-method-updateDisplay'>    updateDisplay: function () {
+</span>        var me = this,
+            values = me.getValues(),
+            offset, tipHtml, region;
+
+        if (values &amp;&amp; values.length &amp;&amp; me.currentPageXY &amp;&amp; me.el.getRegion().contains(me.currentPageXY)) {
+            offset = me.canvas.el.getXY();
+            region = me.getRegion(me.currentPageXY[0] - offset[0], me.currentPageXY[1] - offset[1]);
+
+            if (region != null &amp;&amp; me.isValidRegion(region, values)) {
+                if (!me.disableHighlight) {
+                    me.renderHighlight(region);
+                }
+                tipHtml = me.getRegionTooltip(region);
+            }
+            me.fireEvent(&#39;sparklineregionchange&#39;, me);
+
+            if (tipHtml) {
+                me.tooltip.setHtml(tipHtml);
+                me.showTip();
+            }
+        }
+
+        // No tip content; ensure it&#39;s hidden
+        if (!tipHtml) {
+            me.hideTip();
+        }
+    },
+
+<span id='Ext-sparkline-Base-method-getRegion'>    /**
+</span>     * @method
+     * Return a region id for a given x/y co-ordinate
+     */
+    getRegion: Ext.emptyFn,
+
+<span id='Ext-sparkline-Base-method-getRegionTooltip'>    /**
+</span>     * Fetch the HTML to display as a tooltip
+     */
+    getRegionTooltip: function(region) {
+        var me = this,
+            entries = [],
+            tipTpl = me.getTipTpl(),
+            fields, showFields, showFieldsKey, newFields, fv,
+            formatter, fieldlen, i, j;
+
+        fields = me.getRegionFields(region);
+        formatter = me.tooltipFormatter;
+        if (formatter) {
+            return formatter(me, me, fields);
+        }
+
+        if (!tipTpl) {
+            return &#39;&#39;;
+        }
+        if (!Ext.isArray(fields)) {
+            fields = [fields];
+        }
+        showFields = me.tooltipFormatFieldlist;
+        showFieldsKey = me.tooltipFormatFieldlistKey;
+        if (showFields &amp;&amp; showFieldsKey) {
+            // user-selected ordering of fields
+            newFields = [];
+            for (i = fields.length; i--;) {
+                fv = fields[i][showFieldsKey];
+                if ((j = Ext.Array.indexOf(fv, showFields)) !== -1) {
+                    newFields[j] = fields[i];
+                }
+            }
+            fields = newFields;
+        }
+        fieldlen = fields.length;
+
+        for (j = 0; j &lt; fieldlen; j++) {
+            if (!fields[j].isNull || !me.getTooltipSkipNull()) {
+                Ext.apply(fields[j], {
+                    prefix: me.getTooltipPrefix(),
+                    suffix: me.getTooltipSuffix()
+                });
+                entries.push(tipTpl.apply(fields[j]));
+            }
+        }
+
+        if (entries.length) {
+            return entries.join(&#39;&lt;br&gt;&#39;);
+        }
+        return &#39;&#39;;
+    },
+
+<span id='Ext-sparkline-Base-method-getRegionFields'>    getRegionFields: Ext.emptyFn,
+</span>
+<span id='Ext-sparkline-Base-method-calcHighlightColor'>    calcHighlightColor: function(color) {
+</span>        var me = this,
+            highlightColor = me.getHighlightColor(),
+            lighten = me.getHighlightLighten(),
+            o;
+
+        if (highlightColor) {
+            return highlightColor;
+        }
+        if (lighten) {
+            o = Ext.util.Color.fromString(color);
+            if (o) {
+                o.lighten(lighten);
+                color = o.toHex();
+            }
+        }
+        return color;
+    },
+
+<span id='Ext-sparkline-Base-method-destroy'>    destroy: function() {
+</span>        delete this.redrawQueue[this.getId()];
+        this.callParent();
+    },
+
+<span id='Ext-sparkline-Base-property-privates'>    privates: {
+</span>        hideTip: Ext.privateFn,
+
+        isValidRegion: function(region, values) {
+            return region &lt; values.length;
+        },
+
+        showTip: Ext.privateFn
+    }
+}, function(SparklineBase) {
+    var proto = SparklineBase.prototype;
+
+    Ext.onInternalReady(function() {
+        proto.tooltip = SparklineBase.constructTip();
+    });
+
+    SparklineBase.onClassCreated(SparklineBase);
+    
+    proto.processRedrawQueue = function () {
+        var redrawQueue = proto.redrawQueue,
+            id;
+
+        for (id in redrawQueue) {
+            redrawQueue[id].redraw();
+        }
+        proto.redrawQueue = {};
+        proto.redrawTimer = 0;
+    };
+
+    // If we are on a VML platform (IE8 - TODO: remove this when that retires)...
+    if (!Ext.supports.Canvas) {
+        SparklineBase.prototype.element = {
+            tag: &#39;span&#39;,
+            reference: &#39;element&#39;,
+            listeners: {
+                mouseenter: &#39;onMouseEnter&#39;,
+                mouseleave: &#39;onMouseLeave&#39;,
+                mousemove: &#39;onMouseMove&#39;
+            },
+            style: {
+                display: &#39;inline-block&#39;,
+                position: &#39;relative&#39;,
+                overflow: &#39;hidden&#39;,
+                margin: &#39;0px&#39;,
+                padding: &#39;0px&#39;,
+                verticalAlign: &#39;top&#39;,
+                cursor: &#39;default&#39;
+            },
+            children: [{
+                tag: &#39;svml:group&#39;,
+                reference: &#39;groupEl&#39;,
+                coordorigin: &#39;0 0&#39;,
+                coordsize: &#39;0 0&#39;,
+                style: &#39;position:absolute;width:0;height:0;pointer-events:none&#39;
+            }]
+        };
     }
 });
 </pre>

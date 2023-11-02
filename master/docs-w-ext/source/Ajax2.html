@@ -15,418 +15,632 @@
   </script>
 </head>
 <body onload="prettyPrint(); highlight();">
-  <pre class="prettyprint lang-js"><span id='Ext-data-proxy-Ajax-method-constructor'><span id='Ext-data-proxy-Ajax'>/**
-</span></span> * AjaxProxy is one of the most widely-used ways of getting data into your application. It uses AJAX requests to load
- * data from the server, usually to be placed into a {@link Ext.data.Store Store}. Let&#39;s take a look at a typical setup.
- * Here we&#39;re going to set up a Store that has an AjaxProxy. To prepare, we&#39;ll also set up a {@link Ext.data.Model
- * Model}:
- *
- *     Ext.define(&#39;User&#39;, {
- *         extend: &#39;Ext.data.Model&#39;,
- *         fields: [&#39;id&#39;, &#39;name&#39;, &#39;email&#39;]
- *     });
- *
- *     //The Store contains the AjaxProxy as an inline configuration
- *     var store = Ext.create(&#39;Ext.data.Store&#39;, {
- *         model: &#39;User&#39;,
- *         proxy: {
- *             type: &#39;ajax&#39;,
- *             url : &#39;users.json&#39;
- *         }
- *     });
- *
- *     store.load();
- *
- * Our example is going to load user data into a Store, so we start off by defining a {@link Ext.data.Model Model} with
- * the fields that we expect the server to return. Next we set up the Store itself, along with a
- * {@link Ext.data.Store#proxy proxy} configuration. This configuration was automatically turned into an
- * Ext.data.proxy.Ajax instance, with the url we specified being passed into AjaxProxy&#39;s constructor.
- * It&#39;s as if we&#39;d done this:
- *
- *     new Ext.data.proxy.Ajax({
- *         url: &#39;users.json&#39;,
- *         model: &#39;User&#39;,
- *         reader: &#39;json&#39;
- *     });
- *
- * A couple of extra configurations appeared here - {@link #model} and {@link #reader}. These are set by default when we
- * create the proxy via the Store - the Store already knows about the Model, and Proxy&#39;s default {@link
- * Ext.data.reader.Reader Reader} is {@link Ext.data.reader.Json JsonReader}.
- *
- * Now when we call store.load(), the AjaxProxy springs into action, making a request to the url we configured
- * (&#39;users.json&#39; in this case). As we&#39;re performing a read, it sends a GET request to that url (see
- * {@link #actionMethods} to customize this - by default any kind of read will be sent as a GET request and any kind of write
- * will be sent as a POST request).
- *
- * # Limitations
- *
- * AjaxProxy cannot be used to retrieve data from other domains. If your application is running on http://domainA.com it
- * cannot load data from http://domainB.com because browsers have a built-in security policy that prohibits domains
- * talking to each other via AJAX.
- *
- * If you need to read data from another domain and can&#39;t set up a proxy server (some software that runs on your own
- * domain&#39;s web server and transparently forwards requests to http://domainB.com, making it look like they actually came
- * from http://domainA.com), you can use {@link Ext.data.proxy.JsonP} and a technique known as JSON-P (JSON with
- * Padding), which can help you get around the problem so long as the server on http://domainB.com is set up to support
- * JSON-P responses. See {@link Ext.data.proxy.JsonP JsonPProxy}&#39;s introduction docs for more details.
- *
- * # Readers and Writers
- *
- * AjaxProxy can be configured to use any type of {@link Ext.data.reader.Reader Reader} to decode the server&#39;s response.
- * If no Reader is supplied, AjaxProxy will default to using a {@link Ext.data.reader.Json JsonReader}. Reader
- * configuration can be passed in as a simple object, which the Proxy automatically turns into a {@link
- * Ext.data.reader.Reader Reader} instance:
- *
- *     var proxy = new Ext.data.proxy.Ajax({
- *         model: &#39;User&#39;,
- *         reader: {
- *             type: &#39;xml&#39;,
- *             rootProperty: &#39;users&#39;
- *         }
- *     });
- *
- *     proxy.getReader(); //returns an XmlReader instance based on the config we supplied
- *
- * # Url generation
- *
- * AjaxProxy automatically inserts any sorting, filtering, paging and grouping options into the url it generates for
- * each request. These are controlled with the following configuration options:
- *
- * - {@link #pageParam} - controls how the page number is sent to the server (see also {@link #startParam} and {@link #limitParam})
- * - {@link #sortParam} - controls how sort information is sent to the server
- * - {@link #groupParam} - controls how grouping information is sent to the server
- * - {@link #filterParam} - controls how filter information is sent to the server
- *
- * Each request sent by AjaxProxy is described by an {@link Ext.data.operation.Operation Operation}. To see how we can customize
- * the generated urls, let&#39;s say we&#39;re loading the Proxy with the following Operation:
- *
- *     var proxy = new Ext.data.proxy.Ajax({
- *         url: &#39;/users&#39;
- *     });
- *
- *     var operation = proxy.createOperation(&#39;read&#39;, {
- *         page  : 2
- *     });
- *
- * Now we&#39;ll issue the request for this Operation by calling {@link #read}:
- *
- *     proxy.read(operation); //GET /users?page=2
- *
- * Easy enough - the Proxy just copied the page property from the Operation. We can customize how this page data is sent
- * to the server:
- *
- *     var proxy = new Ext.data.proxy.Ajax({
- *         url: &#39;/users&#39;,
- *         pageParam: &#39;pageNumber&#39;
- *     });
- *
- *     proxy.read(operation); //GET /users?pageNumber=2
- *
- * Alternatively, our Operation could have been configured to send start and limit parameters instead of page:
- *
- *     var proxy = new Ext.data.proxy.Ajax({
- *         url: &#39;/users&#39;
- *     });
- *
- *     var operation = proxy.createOperation(&#39;read&#39;, {
- *         start : 50,
- *         limit : 25
- *     });
- *
- *     proxy.read(operation); //GET /users?start=50&amp;limit;=25
- *
- * Again we can customize this url:
- *
- *     var proxy = new Ext.data.proxy.Ajax({
- *         url: &#39;/users&#39;,
- *         startParam: &#39;startIndex&#39;,
- *         limitParam: &#39;limitIndex&#39;
- *     });
- *
- *     proxy.read(operation); //GET /users?startIndex=50&amp;limitIndex;=25
- *
- * AjaxProxy will also send sort and filter information to the server. Let&#39;s take a look at how this looks with a more
- * expressive Operation object:
- *
- *     var operation = proxy.createOperation(&#39;read&#39;, {
- *         sorters: [
- *             new Ext.util.Sorter({
- *                 property : &#39;name&#39;,
- *                 direction: &#39;ASC&#39;
- *             }),
- *             new Ext.util.Sorter({
- *                 property : &#39;age&#39;,
- *                 direction: &#39;DESC&#39;
- *             })
- *         ],
- *         filters: [
- *             new Ext.util.Filter({
- *                 property: &#39;eyeColor&#39;,
- *                 value   : &#39;brown&#39;
- *             })
- *         ]
- *     });
- *
- * This is the type of object that is generated internally when loading a {@link Ext.data.Store Store} with sorters and
- * filters defined. By default the AjaxProxy will JSON encode the sorters and filters, resulting in something like this
- * (note that the url is escaped before sending the request, but is left unescaped here for clarity):
- *
- *     var proxy = new Ext.data.proxy.Ajax({
- *         url: &#39;/users&#39;
- *     });
- *
- *     proxy.read(operation); //GET /users?sort=[{&quot;property&quot;:&quot;name&quot;,&quot;direction&quot;:&quot;ASC&quot;},{&quot;property&quot;:&quot;age&quot;,&quot;direction&quot;:&quot;DESC&quot;}]&amp;filter;=[{&quot;property&quot;:&quot;eyeColor&quot;,&quot;value&quot;:&quot;brown&quot;}]
- *
- * We can again customize how this is created by supplying a few configuration options. Let&#39;s say our server is set up
- * to receive sorting information is a format like &quot;sortBy=name#ASC,age#DESC&quot;. We can configure AjaxProxy to provide
- * that format like this:
- *
- *      var proxy = new Ext.data.proxy.Ajax({
- *          url: &#39;/users&#39;,
- *          sortParam: &#39;sortBy&#39;,
- *          filterParam: &#39;filterBy&#39;,
- *
- *          //our custom implementation of sorter encoding - turns our sorters into &quot;name#ASC,age#DESC&quot;
- *          encodeSorters: function(sorters) {
- *              var length   = sorters.length,
- *                  sortStrs = [],
- *                  sorter, i;
- *
- *              for (i = 0; i &lt; length; i++) {
- *                  sorter = sorters[i];
- *
- *                  sortStrs[i] = sorter.property + &#39;#&#39; + sorter.direction
- *              }
- *
- *              return sortStrs.join(&quot;,&quot;);
- *          }
- *      });
- *
- *      proxy.read(operation); //GET /users?sortBy=name#ASC,age#DESC&amp;filterBy;=[{&quot;property&quot;:&quot;eyeColor&quot;,&quot;value&quot;:&quot;brown&quot;}]
- *
- * We can also provide a custom {@link #encodeFilters} function to encode our filters.
- *
- * # Debugging your Ajax Proxy
- *
- * If the data is not being loaded into the store as expected, it could be due to a mismatch between the the way that the {@link #reader}
- * is configured, and the shape of the incoming data.
- *
- * To debug from the point that your data arrives back from the network, set a breakpoint inside the callback function
- * created in the `createRequestCallback` method of the Ajax Proxy class, and follow the data to where the {@link #reader} attempts
- * to consume it.
- *
- * @constructor
- * Note that if this HttpProxy is being used by a {@link Ext.data.Store Store}, then the Store&#39;s call to
- * {@link Ext.data.Store#method-load load} will override any specified callback and params options. In this case, use the
- * {@link Ext.data.Store Store}&#39;s events to modify parameters, or react to loading events.
- *
- * @param {Object} config (optional) Config object.
- * If an options parameter is passed, the singleton {@link Ext.Ajax} object will be used to make the request.
+  <pre class="prettyprint lang-js"><span id='Ext-data-request-Ajax'>/**
+</span> * This class manages a pending Ajax request. Instances of this type are created by the
+ * `{@link Ext.data.Connection#request}` method.
+ * @since 6.0.0
  */
-Ext.define(&#39;Ext.data.proxy.Ajax&#39;, {
-    requires: [&#39;Ext.Ajax&#39;],
-    extend: &#39;Ext.data.proxy.Server&#39;,
-    alias: &#39;proxy.ajax&#39;,
-    alternateClassName: [&#39;Ext.data.HttpProxy&#39;, &#39;Ext.data.AjaxProxy&#39;],
-
-<span id='Ext-data-proxy-Ajax-property-isAjaxProxy'>    isAjaxProxy: true,
-</span>    
-<span id='Ext-data-proxy-Ajax-property-defaultActionMethods'>    // Keep a default copy of the action methods here. Ideally could just null
-</span>    // out actionMethods and just check if it exists &amp; has a property, otherwise
-    // fallback to the default. But at the moment it&#39;s defined as a public property,
-    // so we need to be able to maintain the ability to modify/access it. 
-    defaultActionMethods: {
-        create : &#39;POST&#39;,
-        read   : &#39;GET&#39;,
-        update : &#39;POST&#39;,
-        destroy: &#39;POST&#39;    
-    },
-
-    config: {
-<span id='Ext-data-proxy-Ajax-cfg-binary'>        /**
-</span>        * @cfg {Boolean} binary
-        * True to request binary data from the server.  This feature requires
-        * the use of a binary reader such as {@link Ext.data.amf.Reader AMF Reader}
-        */
-        binary: false,
+Ext.define(&#39;Ext.data.request.Ajax&#39;, {
+    extend: &#39;Ext.data.request.Base&#39;,
+    alias:  &#39;request.ajax&#39;,
     
-<span id='Ext-data-proxy-Ajax-cfg-headers'>        /**
-</span>         * @cfg {Object} [headers]
-         * Any headers to add to the Ajax request.
-         *
-         * example:
-         *
-         *     proxy: {
-         *         headers: {&#39;Content-Type&#39;: &quot;text/plain&quot; }
-         *         ...
-         *     }
-         */
-       headers: undefined,
-    
-<span id='Ext-data-proxy-Ajax-cfg-paramsAsJson'>        /**
-</span>        * @cfg {Boolean} paramsAsJson `true` to have any request parameters sent as {@link Ext.data.Connection#method-request jsonData} 
-        * where they can be parsed from the raw request. By default, parameters are sent via the 
-        * {@link Ext.data.Connection#method-request params} property. **Note**: This setting does not apply when the
-        * request is sent as a &#39;GET&#39; request. See {@link #actionMethods} for controlling the HTTP verb
-        * that is used when sending requests.
-        */
-        paramsAsJson: false,
-        
-<span id='Ext-data-proxy-Ajax-cfg-withCredentials'>        /**
-</span>         * @cfg {Boolean} withCredentials
-         * This configuration is sometimes necessary when using cross-origin resource sharing.
-         * @accessor
-         */
-        withCredentials: false,
+    requires: [
+        &#39;Ext.data.flash.BinaryXhr&#39;
+    ],
 
-<span id='Ext-data-proxy-Ajax-cfg-useDefaultXhrHeader'>        /**
-</span>         * @cfg {Boolean} useDefaultXhrHeader
-         * Set this to false to not send the default Xhr header (X-Requested-With) with every request.
-         * This should be set to false when making CORS (cross-domain) requests.
-         * @accessor
-         */
-        useDefaultXhrHeader: true,
+    statics: {
 
-<span id='Ext-data-proxy-Ajax-cfg-username'>        /**
-</span>         * @cfg {String} username
-         * Most oData feeds require basic HTTP authentication. This configuration allows
-         * you to specify the username.
-         * @accessor
+<span id='Ext-data-request-Ajax-static-method-parseStatus'>        /**
+</span>         * Checks if the response status was successful
+         * @param {Number} status The status code
+         * @param {Object} response The Response object
+         * @return {Object} An object containing success/status state
+         * @private
          */
-        username: null,
+        parseStatus: function(status, response) {
+            var len;
 
-<span id='Ext-data-proxy-Ajax-cfg-password'>        /**
-</span>         * @cfg {String} password
-         * Most oData feeds require basic HTTP authentication. This configuration allows
-         * you to specify the password.
-         * @accessor
-         */
-        password: null,
-        
-<span id='Ext-data-proxy-Ajax-cfg-actionMethods'>        /**
-</span>        * @cfg {Object} actionMethods
-        * Mapping of action name to HTTP request method. In the basic AjaxProxy these are set to &#39;GET&#39; for &#39;read&#39; actions
-        * and &#39;POST&#39; for &#39;create&#39;, &#39;update&#39; and &#39;destroy&#39; actions. The {@link Ext.data.proxy.Rest} maps these to the
-        * correct RESTful methods.
-        */
-        actionMethods: {
-            create : &#39;POST&#39;,
-            read   : &#39;GET&#39;,
-            update : &#39;POST&#39;,
-            destroy: &#39;POST&#39;
-        }
-    },
-    
-<span id='Ext-data-proxy-Ajax-method-doRequest'>    doRequest: function(operation) {
-</span>        var me = this,
-            writer  = me.getWriter(),
-            request = me.buildRequest(operation),
-            method  = me.getMethod(request),
-            jsonData, params;
-            
-        if (writer &amp;&amp; operation.allowWrite()) {
-            request = writer.write(request);
-        }
-        
-        request.setConfig({
-            binary              : me.getBinary(),
-            headers             : me.getHeaders(),
-            timeout             : me.getTimeout(),
-            scope               : me,
-            callback            : me.createRequestCallback(request, operation),
-            method              : method,
-            useDefaultXhrHeader : me.getUseDefaultXhrHeader(),
-            disableCaching      : false // explicitly set it to false, ServerProxy handles caching
-        });
-        
-        if (method.toUpperCase() !== &#39;GET&#39; &amp;&amp; me.getParamsAsJson()) {
-            params = request.getParams();
-
-            if (params) {
-                jsonData = request.getJsonData();
-                if (jsonData) {
-                    jsonData = Ext.Object.merge({}, jsonData, params);
-                } else {
-                    jsonData = params;
+            if (response) {
+                //We have to account for binary response type
+                if (response.responseType === &#39;arraybuffer&#39;) {
+                    len = response.byteLength;
+                } else if (response.responseText) {
+                    len = response.responseText.length;
                 }
-                request.setJsonData(jsonData);
-                request.setParams(undefined);
+            }
+
+            // see: https://prototype.lighthouseapp.com/projects/8886/tickets/129-ie-mangles-http-response-status-code-204-to-1223
+            status = status == 1223 ? 204 : status;
+
+            var success = (status &gt;= 200 &amp;&amp; status &lt; 300) || status == 304 || (status == 0 &amp;&amp; Ext.isNumber(len)),
+                isException = false;
+
+            if (!success) {
+                switch (status) {
+                    case 12002:
+                    case 12029:
+                    case 12030:
+                    case 12031:
+                    case 12152:
+                    case 13030:
+                        isException = true;
+                        break;
+                }
+            }
+
+            return {
+                success: success,
+                isException: isException
+            };
+        }
+    },
+    
+<span id='Ext-data-request-Ajax-method-start'>    start: function(data) {
+</span>        var me = this,
+            options = me.options,
+            requestOptions = me.requestOptions,
+            isXdr = me.isXdr,
+            xhr, headers;
+        
+        xhr = me.xhr = me.openRequest(options, requestOptions, me.async, me.username, me.password);
+
+        // XDR doesn&#39;t support setting any headers
+        if (!isXdr) {
+            headers = me.setupHeaders(xhr, options, requestOptions.data, requestOptions.params);
+        }
+
+        if (me.async) {
+            if (!isXdr) {
+                xhr.onreadystatechange = Ext.Function.bind(me.onStateChange, me);
             }
         }
-        
-        if (me.getWithCredentials()) {
-            request.setWithCredentials(true);
-            request.setUsername(me.getUsername());
-            request.setPassword(me.getPassword());
+
+        if (isXdr) {
+            me.processXdrRequest(me, xhr);
         }
-        return me.sendRequest(request);
+        
+        // Parent will set the timeout if needed
+        me.callParent([data]);
+        
+        // start the request!
+        xhr.send(data);
+        
+        if (!me.async) {
+            return me.onComplete();
+        }
+        
+        return me;
     },
     
-<span id='Ext-data-proxy-Ajax-method-sendRequest'>    /**
-</span>     * Fires a request
-     * @param {Ext.data.Request} request The request
-     * @return {Ext.data.Request} The request
+<span id='Ext-data-request-Ajax-method-abort'>    /**
+</span>     * Aborts an active request.
+     */
+    abort: function(force) {
+        var me = this,
+            xhr = me.xhr;
+
+        if (force || me.isLoading()) {
+            /*
+             * Clear out the onreadystatechange here, this allows us
+             * greater control, the browser may/may not fire the function
+             * depending on a series of conditions.
+             */
+            try {
+                xhr.onreadystatechange = null;
+            }
+            catch (e) {
+                // Setting onreadystatechange to null can cause problems in IE, see
+                // http://www.quirksmode.org/blog/archives/2005/09/xmlhttp_notes_a_1.html
+                xhr.onreadystatechange = Ext.emptyFn;
+            }
+            
+            xhr.abort();
+            
+            me.callParent([force]);
+            
+            me.onComplete();
+            me.cleanup();
+        }
+    },
+    
+<span id='Ext-data-request-Ajax-method-cleanup'>    /**
+</span>     * Cleans up any left over information from the request
+     */
+    cleanup: function() {
+        this.xhr = null;
+        delete this.xhr;
+    },
+    
+<span id='Ext-data-request-Ajax-method-isLoading'>    isLoading: function() {
+</span>        var me = this,
+            xhr = me.xhr,
+            state = xhr &amp;&amp; xhr.readyState,
+            C = Ext.data.flash &amp;&amp; Ext.data.flash.BinaryXhr;
+
+        if (!xhr || me.aborted || me.timedout) {
+            return false;
+        }
+
+        // if there is a connection and readyState is not 0 or 4, or in case of
+        // BinaryXHR, not 4
+        if (C &amp;&amp; xhr instanceof C) {
+            return state !== 4;
+        }
+
+        return state !== 0 &amp;&amp; state !== 4;
+    },
+
+<span id='Ext-data-request-Ajax-method-openRequest'>    /**
+</span>     * Creates and opens an appropriate XHR transport for a given request on this browser.
+     * This logic is contained in an individual method to allow for overrides to process all
+     * of the parameters and options and return a suitable, open connection.
      * @private
      */
-    sendRequest: function(request) {
-        request.setRawRequest(Ext.Ajax.request(request.getCurrentConfig()));
-        this.lastRequest = request;
-        
-        return request;
-    },
-    
-<span id='Ext-data-proxy-Ajax-method-abort'>    /**
-</span>     * Aborts a running request.
-     * @param {Ext.data.Request} [request] The request to abort. If not passed, the most recent active
-     * request will be aborted.
-     */
-    abort: function(request) {
-        request = request || this.lastRequest;
-        if (request) {
-            Ext.Ajax.abort(request.getRawRequest());
-        }    
-    },
-    
-<span id='Ext-data-proxy-Ajax-method-getMethod'>    /**
-</span>     * Returns the HTTP method name for a given request. By default this returns based on a lookup on
-     * {@link #actionMethods}.
-     * @param {Ext.data.Request} request The request object
-     * @return {String} The HTTP method to use (should be one of &#39;GET&#39;, &#39;POST&#39;, &#39;PUT&#39; or &#39;DELETE&#39;)
-     */
-    getMethod: function(request) {
-        var actions = this.getActionMethods(),
-            action = request.getAction(),
-            method;
-            
-        if (actions) {
-            method = actions[action];
+    openRequest: function(options, requestOptions, async, username, password) {
+        var me = this,
+            xhr = me.newRequest(options);
+
+        if (username) {
+            xhr.open(requestOptions.method, requestOptions.url, async, username, password);
         }
-        return method || this.defaultActionMethods[action];
-    },
-    
-<span id='Ext-data-proxy-Ajax-method-createRequestCallback'>    /**
-</span>     * @private
-     * TODO: This is currently identical to the JsonPProxy version except for the return function&#39;s signature. There is a lot
-     * of code duplication inside the returned function so we need to find a way to DRY this up.
-     * @param {Ext.data.Request} request The Request object
-     * @param {Ext.data.operation.Operation} operation The Operation being executed
-     * @return {Function} The callback function
-     */
-    createRequestCallback: function(request, operation) {
-        var me = this;
-        
-        return function(options, success, response) {
-            if (request === me.lastRequest) {
-                me.lastRequest = null;
+        else {
+            if (me.isXdr) {
+                xhr.open(requestOptions.method, requestOptions.url);
             }
-            me.processResponse(success, operation, request, response);
+            else {
+                xhr.open(requestOptions.method, requestOptions.url, async);
+            }
+        }
+
+        if (options.binary || me.binary) {
+            if (window.Uint8Array) {
+                xhr.responseType = &#39;arraybuffer&#39;;
+            }
+            else if (xhr.overrideMimeType) {
+                // In some older non-IE browsers, e.g. ff 3.6, that do not
+                // support Uint8Array, a mime type override is required so that
+                // the unprocessed binary data can be read from the responseText
+                // (see createResponse())
+                xhr.overrideMimeType(&#39;text\/plain; charset=x-user-defined&#39;);
+            //&lt;debug&gt;
+            }
+            else if (!Ext.isIE) {
+                Ext.log.warn(&quot;Your browser does not support loading binary data using Ajax.&quot;);
+            //&lt;/debug&gt;
+            }
+        }
+
+        if (options.withCredentials || me.withCredentials) {
+            xhr.withCredentials = true;
+        }
+
+        return xhr;
+    },
+
+<span id='Ext-data-request-Ajax-method-newRequest'>    /**
+</span>     * Creates the appropriate XHR transport for a given request on this browser. On IE
+     * this may be an `XDomainRequest` rather than an `XMLHttpRequest`.
+     * @private
+     */
+    newRequest: function(options) {
+        var me = this,
+            xhr;
+
+        if (options.binaryData) {
+            // This is a binary data request. Handle submission differently for differnet browsers
+            if (window.Uint8Array) {
+                // On browsers that support this, use the native XHR object
+                xhr = me.getXhrInstance();
+            }
+            else {
+                // catch all for all other browser types
+                xhr = new Ext.data.flash.BinaryXhr();
+            }
+        }
+        else if (me.cors &amp;&amp; Ext.isIE9m) {
+            xhr = me.getXdrInstance();
+            me.isXdr = true;
+        }
+        else {
+            xhr = me.getXhrInstance();
+            me.isXdr = false;
+        }
+
+        return xhr;
+    },
+
+<span id='Ext-data-request-Ajax-method-setupHeaders'>    /**
+</span>     * Setup all the headers for the request
+     * @private
+     * @param {Object} xhr The xhr object
+     * @param {Object} options The options for the request
+     * @param {Object} data The data for the request
+     * @param {Object} params The params for the request
+     */
+    setupHeaders: function(xhr, options, data, params) {
+        var me = this,
+            headers = Ext.apply({}, options.headers || {}, me.defaultHeaders),
+            contentType = me.defaultPostHeader,
+            jsonData = options.jsonData,
+            xmlData = options.xmlData,
+            type = &#39;Content-Type&#39;,
+            useHeader = me.useDefaultXhrHeader,
+            key, header;
+
+        if (!headers.hasOwnProperty(type) &amp;&amp; (data || params)) {
+            if (data) {
+                if (options.rawData) {
+                    contentType = &#39;text/plain&#39;;
+                }
+                else {
+                    if (xmlData &amp;&amp; Ext.isDefined(xmlData)) {
+                        contentType = &#39;text/xml&#39;;
+                    }
+                    else if (jsonData &amp;&amp; Ext.isDefined(jsonData)) {
+                        contentType = &#39;application/json&#39;;
+                    }
+                }
+            }
+            
+            headers[type] = contentType;
+        }
+
+        if (useHeader &amp;&amp; !headers[&#39;X-Requested-With&#39;]) {
+            headers[&#39;X-Requested-With&#39;] = me.defaultXhrHeader;
+        }
+
+        // If undefined/null, remove it and don&#39;t set the header.
+        // Allow the browser to do so.
+        if (headers[type] === undefined || headers[type] === null) {
+            delete headers[type];
+        }
+
+        // set up all the request headers on the xhr object
+        try {
+            for (key in headers) {
+                if (headers.hasOwnProperty(key)) {
+                    header = headers[key];
+                    xhr.setRequestHeader(key, header);
+                }
+            }
+        }
+        catch(e) {
+            // TODO Request shouldn&#39;t fire events from its owner
+            me.owner.fireEvent(&#39;exception&#39;, key, header);
+        }
+        
+        return headers;
+    },
+
+<span id='Ext-data-request-Ajax-method-getXdrInstance'>    /**
+</span>     * Creates the appropriate XDR transport for this browser.
+     * - IE 7 and below don&#39;t support CORS
+     * - IE 8 and 9 support CORS with native XDomainRequest object
+     * - IE 10 (and above?) supports CORS with native XMLHttpRequest object
+     * @private
+     */
+    getXdrInstance: function() {
+        var xdr;
+
+        if (Ext.ieVersion &gt;= 8) {
+            xdr = new XDomainRequest();
+        }
+        else {
+            Ext.raise({
+                msg: &#39;Your browser does not support CORS&#39;
+            });
+        }
+
+        return xdr;
+    },
+
+<span id='Ext-data-request-Ajax-property-getXhrInstance'>    /**
+</span>     * Creates the appropriate XHR transport for this browser.
+     * @private
+     */
+    getXhrInstance: (function() {
+        var options = [function() {
+            return new XMLHttpRequest();
+        }, function() {
+            return new ActiveXObject(&#39;MSXML2.XMLHTTP.3.0&#39;); // jshint ignore:line
+        }, function() {
+            return new ActiveXObject(&#39;MSXML2.XMLHTTP&#39;); // jshint ignore:line
+        }, function() {
+            return new ActiveXObject(&#39;Microsoft.XMLHTTP&#39;); // jshint ignore:line
+        }], i = 0,
+            len = options.length,
+            xhr;
+
+        for (; i &lt; len; ++i) {
+            try {
+                xhr = options[i];
+                xhr();
+                break;
+            } catch(e) {
+            }
+        }
+        return xhr;
+    }()),
+
+<span id='Ext-data-request-Ajax-method-processXdrRequest'>    processXdrRequest: function(request, xhr) {
+</span>        var me = this;
+
+        // Mutate the request object as per XDR spec.
+        delete request.headers;
+
+        request.contentType = request.options.contentType || me.defaultXdrContentType;
+
+        xhr.onload = Ext.Function.bind(me.onStateChange, me, [true]);
+        xhr.onerror = xhr.ontimeout = Ext.Function.bind(me.onStateChange, me, [false]);
+    },
+
+<span id='Ext-data-request-Ajax-method-processXdrResponse'>    processXdrResponse: function(response, xhr) {
+</span>        // Mutate the response object as per XDR spec.
+        response.getAllResponseHeaders = function() {
+            return [];
         };
+        
+        response.getResponseHeader = function() {
+            return &#39;&#39;;
+        };
+        
+        response.contentType = xhr.contentType || this.defaultXdrContentType;
+    },
+
+<span id='Ext-data-request-Ajax-method-onStateChange'>    onStateChange: function(xdrResult) {
+</span>        var me = this,
+            xhr = me.xhr,
+            globalEvents = Ext.GlobalEvents;
+
+        // Using CORS with IE doesn&#39;t support readyState so we fake it.
+        if ((xhr &amp;&amp; xhr.readyState == 4) || me.isXdr) {
+            me.clearTimer();
+            
+            me.onComplete(xdrResult);
+            
+            me.cleanup();
+            
+            if (globalEvents.hasListeners.idle) {
+                globalEvents.fireEvent(&#39;idle&#39;);
+            }
+        }
     },
     
-<span id='Ext-data-proxy-Ajax-method-destroy'>    destroy: function() {
-</span>        this.lastRequest = null;
+<span id='Ext-data-request-Ajax-method-onComplete'>    /**
+</span>     * To be called when the request has come back from the server
+     * @param {Object} request
+     * @return {Object} The response
+     * @private
+     */
+    onComplete: function(xdrResult) {
+        var me = this,
+            owner = me.owner,
+            options = me.options,
+            xhr = me.xhr,
+            failure = { success: false, isException: false },
+            result, success, response;
+        
+        if (!xhr || me.destroyed) {
+            return me.result = failure;
+        }
+        
+        try {
+            result = Ext.data.request.Ajax.parseStatus(xhr.status, xhr);
+            
+            if (result.success) {
+                // This is quite difficult to reproduce, however if we abort a request
+                // just before it returns from the server, occasionally the status will be
+                // returned correctly but the request is still yet to be complete.
+                result.success = xhr.readyState === 4;
+            }
+        }
+        catch (e) {
+            // In some browsers we can&#39;t access the status if the readyState is not 4,
+            // so the request has failed
+            result = failure;
+        }
+        
+        success = me.success = me.isXdr ? xdrResult : result.success;
+
+        if (success) {
+            response = me.createResponse(xhr);
+            
+            if (owner.hasListeners.requestcomplete) {
+                owner.fireEvent(&#39;requestcomplete&#39;, owner, response, options);
+            }
+            
+            if (options.success) {
+                Ext.callback(options.success, options.scope, [response, options]);
+            }
+        }
+        else {
+            if (result.isException || me.aborted || me.timedout) {
+                response = me.createException(xhr);
+            }
+            else {
+                response = me.createResponse(xhr);
+            }
+            
+            if (owner.hasListeners.requestexception) {
+                owner.fireEvent(&#39;requestexception&#39;, owner, response, options);
+            }
+            
+            if (options.failure) {
+                Ext.callback(options.failure, options.scope, [response, options]);
+            }
+        }
+        
+        me.result = response;
+        
+        if (options.callback) {
+            Ext.callback(options.callback, options.scope, [options, success, response]);
+        }
+        
+        owner.onRequestComplete(me);
+        
+        me.callParent([xdrResult]);
+        
+        return response;
+    },
+
+<span id='Ext-data-request-Ajax-method-createResponse'>    /**
+</span>     * Creates the response object
+     * @param {Object} request
+     * @private
+     */
+    createResponse: function(xhr) {
+        var me = this,
+            isXdr = me.isXdr,
+            headers = {},
+            lines = isXdr ? [] : xhr.getAllResponseHeaders().replace(/\r\n/g, &#39;\n&#39;).split(&#39;\n&#39;),
+            count = lines.length,
+            line, index, key, response, byteArray;
+
+        while (count--) {
+            line = lines[count];
+            index = line.indexOf(&#39;:&#39;);
+            
+            if (index &gt;= 0) {
+                key = line.substr(0, index).toLowerCase();
+                
+                if (line.charAt(index + 1) == &#39; &#39;) {
+                    ++index;
+                }
+                
+                headers[key] = line.substr(index + 1);
+            }
+        }
+        
+        response = {
+            request: me,
+            requestId: me.id,
+            status: xhr.status,
+            statusText: xhr.statusText,
+            getResponseHeader: function(header) {
+                return headers[header.toLowerCase()];
+            },
+            getAllResponseHeaders: function() {
+                return headers;
+            }
+        };
+
+        if (isXdr) {
+            me.processXdrResponse(response, xhr);
+        }
+
+        if (me.binary) {
+            response.responseBytes = me.getByteArray(xhr);
+        }
+        else {
+            // an error is thrown when trying to access responseText or responseXML
+            // on an xhr object with responseType of &#39;arraybuffer&#39;, so only attempt
+            // to set these properties in the response if we&#39;re not dealing with
+            // binary data
+            response.responseText = xhr.responseText;
+            response.responseXML = xhr.responseXML;
+        }
+
+        return response;
+    },
+
+<span id='Ext-data-request-Ajax-method-destroy'>    destroy: function() {
+</span>        this.xhr = null;
         
         this.callParent();
+    },
+    
+<span id='Ext-data-request-Ajax-property-privates'>    privates: {
+</span><span id='Ext-data-request-Ajax-method-getByteArray'>        /**
+</span>         * Gets binary data from the xhr response object and returns it as a byte array
+         * @param {Object} xhr the xhr response object
+         * @return {Uint8Array/Array}
+         * @private
+         */
+        getByteArray: function(xhr) {
+            var response = xhr.response,
+                responseBody = xhr.responseBody,
+                Cls = Ext.data.flash &amp;&amp; Ext.data.flash.BinaryXhr,
+                byteArray, responseText, len, i;
+            
+            if (xhr instanceof Cls) {
+                // If this was a BinaryXHR request via flash, we already have the bytes ready
+                byteArray = xhr.responseBytes;
+            }
+            else if (window.Uint8Array) {
+                // Modern browsers (including IE10) have a native byte array
+                // which can be created by passing the ArrayBuffer (returned as
+                // the xhr.response property) to the Uint8Array constructor.
+                byteArray = response ? new Uint8Array(response) : [];
+            }
+            else if (Ext.isIE9p) {
+                // In IE9 and below the responseBody property contains a byte array
+                // but it is not directly accessible using javascript.
+                // In IE9p we can get the bytes by constructing a VBArray
+                // using the responseBody and then converting it to an Array.
+                try {
+                    byteArray = new VBArray(responseBody).toArray(); // jshint ignore:line
+                }
+                catch(e) {
+                    // If the binary response is empty, the VBArray constructor will
+                    // choke on the responseBody.  We can&#39;t simply do a null check
+                    // on responseBody because responseBody is always falsy when it
+                    // contains binary data.
+                    byteArray = [];
+                }
+            }
+            else if (Ext.isIE) {
+                // IE8 and below also have a VBArray constructor, but throw a
+                // &quot;VBArray Expected&quot; error if you try to pass the responseBody to
+                // the VBArray constructor.
+                // http://msdn.microsoft.com/en-us/library/ye3x9by3%28v=vs.71%29.aspx
+                // so we have to use vbscript injection to access the bytes
+                if (!this.self.vbScriptInjected) {
+                    this.injectVBScript();
+                }
+                
+                getIEByteArray(xhr.responseBody, byteArray = []); // jshint ignore:line
+            }
+            else {
+                // in other older browsers make a best-effort attempt to read the
+                // bytes from responseText
+                byteArray = [];
+                responseText = xhr.responseText;
+                len = responseText.length;
+                
+                for (i = 0; i &lt; len; i++) {
+                    // Some characters have an extra byte 0xF7 in the high order
+                    // position. Throw away the high order byte and then push the
+                    // result onto the byteArray.
+                    byteArray.push(responseText.charCodeAt(i) &amp; 0xFF);
+                }
+            }
+            
+            return byteArray;
+        },
+
+<span id='Ext-data-request-Ajax-method-injectVBScript'>        /**
+</span>         * Injects a vbscript tag containing a &#39;getIEByteArray&#39; method for reading
+         * binary data from an xhr response in IE8 and below.
+         * @private
+         */
+        injectVBScript: function() {
+            var scriptTag = document.createElement(&#39;script&#39;);
+            
+            scriptTag.type = &#39;text/vbscript&#39;;
+            scriptTag.text = [
+                &#39;Function getIEByteArray(byteArray, out)&#39;,
+                    &#39;Dim len, i&#39;,
+                    &#39;len = LenB(byteArray)&#39;,
+                    &#39;For i = 1 to len&#39;,
+                        &#39;out.push(AscB(MidB(byteArray, i, 1)))&#39;,
+                    &#39;Next&#39;,
+                &#39;End Function&#39;
+            ].join(&#39;\n&#39;);
+            
+            Ext.getHead().dom.appendChild(scriptTag);
+            
+            this.self.vbScriptInjected = true;
+        }
     }
 });
 </pre>

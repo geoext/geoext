@@ -15,130 +15,32 @@
   </script>
 </head>
 <body onload="prettyPrint(); highlight();">
-  <pre class="prettyprint lang-js"><span id='Ext-menu-Separator'>/**
-</span> * Adds a separator bar to a menu, used to divide logical groups of menu items. Generally you will
- * add one of these by using &quot;-&quot; in your call to add() or in your items config rather than creating one directly.
+  <pre class="prettyprint lang-js"><span id='Ext-toolbar-Separator'>/**
+</span> * A simple class that adds a vertical separator bar between toolbar items (css class: &#39;x-toolbar-separator&#39;).
  *
  *     @example
- *     Ext.create(&#39;Ext.menu.Menu&#39;, {
- *         width: 100,
- *         height: 100,
- *         floating: false,  // usually you want this set to True (default)
- *         renderTo: Ext.getBody(),  // usually rendered by it&#39;s containing component
- *         items: [{
- *             text: &#39;icon item&#39;,
- *             iconCls: &#39;add16&#39;
- *         },{
- *             xtype: &#39;menuseparator&#39;
- *         },{
- *            text: &#39;separator above&#39;
- *         },{
- *            text: &#39;regular item&#39;
- *         }]
+ *     Ext.create(&#39;Ext.panel.Panel&#39;, {
+ *         title: &#39;Toolbar Separator Example&#39;,
+ *         width: 300,
+ *         height: 200,
+ *         tbar : [
+ *             &#39;Item 1&#39;,
+ *             { xtype: &#39;tbseparator&#39; },
+ *             &#39;Item 2&#39;
+ *         ],
+ *         renderTo: Ext.getBody()
  *     });
  */
-Ext.define(&#39;Ext.menu.Separator&#39;, {
-    extend: &#39;Ext.menu.Item&#39;,
-    alias: &#39;widget.menuseparator&#39;,
-    
-<span id='Ext-menu-Separator-property-focusable'>    focusable: false,
-</span>
-<span id='Ext-menu-Separator-cfg-activeCls'>    /**
-</span>     * @cfg {String} activeCls
-     * @private
-     */
-
-<span id='Ext-menu-Separator-cfg-canActivate'>    /**
-</span>     * @cfg {Boolean} canActivate
-     * @private
-     */
-    canActivate: false,
-
-<span id='Ext-menu-Separator-cfg-clickHideDelay'>    /**
-</span>     * @cfg {Boolean} clickHideDelay
-     * @private
-     */
-
-<span id='Ext-menu-Separator-cfg-destroyMenu'>    /**
-</span>     * @cfg {Boolean} destroyMenu
-     * @private
-     */
-
-<span id='Ext-menu-Separator-cfg-disabledCls'>    /**
-</span>     * @cfg {Boolean} disabledCls
-     * @private
-     */
-
-<span id='Ext-menu-Separator-cfg-href'>    /**
-</span>     * @cfg {String} href
-     * @private
-     */
-
-<span id='Ext-menu-Separator-cfg-hrefTarget'>    /**
-</span>     * @cfg {String} hrefTarget
-     * @private
-     */
-
-<span id='Ext-menu-Separator-cfg-hideOnClick'>    /**
-</span>     * @cfg {Boolean} hideOnClick
-     * @private
-     */
-    hideOnClick: false,
-
-<span id='Ext-menu-Separator-cfg-icon'>    /**
-</span>     * @cfg {String} icon
-     * @private
-     */
-
-<span id='Ext-menu-Separator-cfg-iconCls'>    /**
-</span>     * @cfg {String} iconCls
-     * @private
-     */
-
-<span id='Ext-menu-Separator-cfg-menu'>    /**
-</span>     * @cfg {Object} menu
-     * @private
-     */
-
-<span id='Ext-menu-Separator-cfg-menuAlign'>    /**
-</span>     * @cfg {String} menuAlign
-     * @private
-     */
-
-<span id='Ext-menu-Separator-cfg-menuExpandDelay'>    /**
-</span>     * @cfg {Number} menuExpandDelay
-     * @private
-     */
-
-<span id='Ext-menu-Separator-cfg-menuHideDelay'>    /**
-</span>     * @cfg {Number} menuHideDelay
-     * @private
-     */
-
-<span id='Ext-menu-Separator-cfg-plain'>    /**
-</span>     * @cfg {Boolean} plain
-     * @private
-     */
-    plain: true,
-
-<span id='Ext-menu-Separator-cfg-separatorCls'>    /**
-</span>     * @cfg {String} separatorCls
-     * The CSS class used by the separator item to show the incised line.
-     */
-    separatorCls: Ext.baseCSSPrefix + &#39;menu-item-separator&#39;,
-
-<span id='Ext-menu-Separator-cfg-text'>    /**
-</span>     * @cfg {String} text
-     * @private
-     */
-    text: &#39;&amp;#160;&#39;,
-    
-<span id='Ext-menu-Separator-property-ariaRole'>    ariaRole: &#39;separator&#39;,
-</span>
-<span id='Ext-menu-Separator-method-beforeRender'>    beforeRender: function() {
-</span>        this.addCls(this.separatorCls);
-        this.callParent();
-    }
-});</pre>
+Ext.define(&#39;Ext.toolbar.Separator&#39;, {
+    extend: &#39;Ext.toolbar.Item&#39;,
+    // Toolbar required here because we&#39;ll try to decorate it&#39;s alternateClassName
+    // with this class&#39; alternate name
+    requires: [&#39;Ext.toolbar.Toolbar&#39;],
+    alias: &#39;widget.tbseparator&#39;,
+    alternateClassName: &#39;Ext.Toolbar.Separator&#39;,
+<span id='Ext-toolbar-Separator-cfg-baseCls'>    baseCls: Ext.baseCSSPrefix + &#39;toolbar-separator&#39;,
+</span>    
+<span id='Ext-toolbar-Separator-property-ariaRole'>    ariaRole: &#39;separator&#39;
+</span>});</pre>
 </body>
 </html>

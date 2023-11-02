@@ -15,75 +15,206 @@
   </script>
 </head>
 <body onload="prettyPrint(); highlight();">
-  <pre class="prettyprint lang-js"><span id='Ext-dashboard-Column'>/**
-</span> * This class manages columns in a `Dashboard`. The primary role here is the `defaultType`
- * config which points to `Ext.dashboard.Panel` and the self-destruct mechanism to get
- * rid of empty columns.
- * @protected
+  <pre class="prettyprint lang-js"><span id='Ext-layout-container-Column'>/**
+</span> * This is the layout style of choice for creating structural layouts in a multi-column format where the width of each
+ * column can be specified as a percentage or fixed width, but the height is allowed to vary based on the content. This
+ * class is intended to be extended or created via the layout:&#39;column&#39; {@link Ext.container.Container#layout} config,
+ * and should generally not need to be created directly via the new keyword.
+ *
+ * ColumnLayout does not have any direct config options (other than inherited ones), but it does support a specific
+ * config property of `columnWidth` that can be included in the config of any panel added to it. The layout will use
+ * the columnWidth (if present) or width of each panel during layout to determine how to size each panel. If width or
+ * columnWidth is not specified for a given panel, its width will default to the panel&#39;s width (or auto).
+ *
+ * The width property is always evaluated as pixels, and must be a number greater than or equal to 1. The columnWidth
+ * property is always evaluated as a percentage, and must be a decimal value greater than 0 and less than 1 (e.g., .25).
+ *
+ * The basic rules for specifying column widths are pretty simple. The logic makes two passes through the set of
+ * contained panels. During the first layout pass, all panels that either have a fixed width or none specified (auto)
+ * are skipped, but their widths are subtracted from the overall container width.
+ *
+ * During the second pass, all panels with columnWidths are assigned pixel widths in proportion to their percentages
+ * based on the total **remaining** container width. In other words, percentage width panels are designed to fill
+ * the space left over by all the fixed-width and/or auto-width panels. Because of this, while you can specify any
+ * number of columns with different percentages, the columnWidths must always add up to 1 (or 100%) when added
+ * together, otherwise your layout may not render as expected.
+ *
+ *     @example
+ *     // All columns are percentages -- they must add up to 1
+ *     Ext.create(&#39;Ext.panel.Panel&#39;, {
+ *         title: &#39;Column Layout - Percentage Only&#39;,
+ *         width: 350,
+ *         height: 250,
+ *         layout:&#39;column&#39;,
+ *         items: [{
+ *             title: &#39;Column 1&#39;,
+ *             columnWidth: 0.25
+ *         },{
+ *             title: &#39;Column 2&#39;,
+ *             columnWidth: 0.55
+ *         },{
+ *             title: &#39;Column 3&#39;,
+ *             columnWidth: 0.20
+ *         }],
+ *         renderTo: Ext.getBody()
+ *     });
+ *
+ *     // Mix of width and columnWidth -- all columnWidth values must add up
+ *     // to 1. The first column will take up exactly 120px, and the last two
+ *     // columns will fill the remaining container width.
+ *
+ *     Ext.create(&#39;Ext.Panel&#39;, {
+ *         title: &#39;Column Layout - Mixed&#39;,
+ *         width: 350,
+ *         height: 250,
+ *         layout:&#39;column&#39;,
+ *         items: [{
+ *             title: &#39;Column 1&#39;,
+ *             width: 120
+ *         },{
+ *             title: &#39;Column 2&#39;,
+ *             columnWidth: 0.7
+ *         },{
+ *             title: &#39;Column 3&#39;,
+ *             columnWidth: 0.3
+ *         }],
+ *         renderTo: Ext.getBody()
+ *     });
  */
-Ext.define(&#39;Ext.dashboard.Column&#39;, {
-    extend: &#39;Ext.container.Container&#39;,
-    xtype: &#39;dashboard-column&#39;,
+Ext.define(&#39;Ext.layout.container.Column&#39;, {
 
-    requires: [
-        &#39;Ext.layout.container.Anchor&#39;,
-        &#39;Ext.dashboard.Panel&#39;
-    ],
+    extend: &#39;Ext.layout.container.Auto&#39;,
+    alias: [&#39;layout.column&#39;],
+    alternateClassName: &#39;Ext.layout.ColumnLayout&#39;,
 
-<span id='Ext-dashboard-Column-cfg-layout'>    layout: &#39;anchor&#39;,
+<span id='Ext-layout-container-Column-property-type'>    type: &#39;column&#39;,
 </span>
-<span id='Ext-dashboard-Column-property-isDashboardColumn'>    isDashboardColumn : true,
+<span id='Ext-layout-container-Column-cfg-itemCls'>    itemCls: Ext.baseCSSPrefix + &#39;column&#39;,
 </span>
-<span id='Ext-dashboard-Column-cfg-defaultType'>    defaultType: &#39;dashboard-panel&#39;,
+<span id='Ext-layout-container-Column-property-targetCls'>    targetCls: Ext.baseCSSPrefix + &#39;column-layout-ct&#39;,
 </span>
-<span id='Ext-dashboard-Column-cfg-cls'>    cls: Ext.baseCSSPrefix + &#39;dashboard-column&#39;,
+<span id='Ext-layout-container-Column-property-clearSide'>    // The clear value to force floats to wrap back to zero
+</span>    clearSide: &#39;left&#39;,
+
+<span id='Ext-layout-container-Column-property-columnWidthSizePolicy'>    // Columns with a columnWidth have their width managed.
+</span>    columnWidthSizePolicy: {
+        readsWidth: 0,
+        readsHeight: 1,
+        setsWidth: 1,
+        setsHeight: 0
+    },
+    
+<span id='Ext-layout-container-Column-property-createsInnerCt'>    createsInnerCt: true,
 </span>
-<span id='Ext-dashboard-Column-method-onRemove'><span id='Ext-dashboard-Column-property-synthetic'>    synthetic: true, // not user-defined
-</span></span>
-    onRemove: function (dashPanel, isDestroying) {
-        var me = this,
-            ownerCt = me.ownerCt,
-            remainingSiblings,
-            numRemaining,
-            columnWidth,
-            totalColumnWidth = 0,
-            i;
+<span id='Ext-layout-container-Column-property-manageOverflow'>    manageOverflow: true,
+</span>
+<span id='Ext-layout-container-Column-property-setsItemSize'>    // Column layout needs to set the size of items configured with columnWidth, and it
+</span>    // needs to read the size of items with a configured width.
+    setsItemSize: true,
+<span id='Ext-layout-container-Column-property-needsItemSize'>    needsItemSize: true,
+</span>    
+<span id='Ext-layout-container-Column-method-isItemShrinkWrap'>    isItemShrinkWrap: function(item) {
+</span>        return true;
+    },
 
-        // If we&#39;ve just emptied this column.
-        if (ownerCt &amp;&amp; me.items.getCount() === 0) {
-            // Collect remaining column siblings of the same row, when this one has gone.
-            remainingSiblings = Ext.Array.filter(ownerCt.query(&#39;&gt;&#39; + me.xtype+ &#39;[rowIndex=&#39; + me.rowIndex + &#39;]&#39;), function(c){
-                return c !== me;
-            });
-            numRemaining = remainingSiblings.length;
+<span id='Ext-layout-container-Column-method-getItemSizePolicy'>    getItemSizePolicy: function (item, ownerSizeModel) {
+</span>        if (item.columnWidth) {
+            if (!ownerSizeModel) {
+                ownerSizeModel = this.owner.getSizeModel();
+            }
 
-            // If this column is not destroyed, then remove this column (unless it is the last one!)
-            if (!me.destroying &amp;&amp; !me.destroyed) {
-                ownerCt.remove(me);
-
-                // Down to just one column; it must take up full width
-                if (numRemaining === 1) {
-                    remainingSiblings[0].columnWidth = 1;
-                }
-                // If more than one remaining sibling, redistribute columnWidths proportionally so that they
-                // still total 1.0
-                else {
-                    for (i = 0; i &lt; numRemaining; i++) {
-                        totalColumnWidth += remainingSiblings[i].columnWidth || 0;
-                    }
-                    for (i = 0; i &lt; numRemaining; i++) {
-                        columnWidth = remainingSiblings[i].columnWidth;
-                        remainingSiblings[i].columnWidth = Math.floor(columnWidth / totalColumnWidth * 100) / 100;
-                    }
-                }
-
-                // Needed if user is *closing* the last portlet in a column as opposed to just dragging it to another place
-                // The destruction will not force a layout
-                if (isDestroying) {
-                    ownerCt.updateLayout();
-                }
+            if (!ownerSizeModel.width.shrinkWrap) {
+                return this.columnWidthSizePolicy;
             }
         }
+        return this.autoSizePolicy;
+    },
+
+<span id='Ext-layout-container-Column-method-calculateItems'>    calculateItems: function (ownerContext, containerSize) {
+</span>        var me = this,
+            columnCount = me.columnCount,
+            targetContext = ownerContext.targetContext,
+            items = ownerContext.childItems,
+            len = items.length,
+            contentWidth = 0,
+            gotWidth = containerSize.gotWidth,
+            blocked, availableWidth, i, itemContext, itemMarginWidth, itemWidth;
+
+        // No parallel measurement, cannot lay out boxes.
+        if (gotWidth === false) { //\\ TODO: Deal with target padding width
+            // TODO: only block if we have items with columnWidth
+            targetContext.domBlock(me, &#39;width&#39;);
+            blocked = true;
+        } else if (gotWidth) {
+            availableWidth = containerSize.width;
+        } else {
+            // gotWidth is undefined, which means we must be width shrink wrap.
+            // cannot calculate columnWidths if we&#39;re shrink wrapping.
+            return true;
+        }
+
+        // we need the widths of the columns we don&#39;t manage to proceed so we block on them
+        // if they are not ready...
+        for (i = 0; i &lt; len; ++i) {
+            itemContext = items[i];
+
+            // Ensure that each row start clears to start of row.
+            // Tall items would block it as below.
+            // &quot;Item 4&quot; requires clear:left to begin at column zero.
+            // +------------------------------- +
+            // |+--------+ +--------+ +--------+|
+            // ||        | |        | |        ||
+            // || Item 1 | | Item 2 | | Item 3 ||
+            // ||        | +--------+ +--------+|
+            // ||        | +--------+           |
+            // |+--------+ |        |           |
+            // |           | Item 4 |           |
+            // |           |        |           |
+            // |           +--------+           |
+            // +--------------------------------+
+            if (columnCount) {
+                if (i % columnCount) {
+                    itemContext.setProp(&#39;clear&#39;, null);
+                } else {
+                    itemContext.setProp(&#39;clear&#39;, me.clearSide);
+                }
+            }
+
+            // this is needed below for non-calculated columns, but is also needed in the
+            // next loop for calculated columns... this way we only call getMarginInfo in
+            // this loop and use the marginInfo property in the next...
+            itemMarginWidth = itemContext.getMarginInfo().width;
+
+            if (!itemContext.widthModel.calculated) {
+                itemWidth = itemContext.getProp(&#39;width&#39;);
+                if (typeof itemWidth !== &#39;number&#39;) {
+                    itemContext.block(me, &#39;width&#39;);
+                    blocked = true;
+                }
+                contentWidth += itemWidth + itemMarginWidth;
+            }
+        }
+
+        if (!blocked) {
+            availableWidth = (availableWidth &lt; contentWidth) ? 0 : availableWidth - contentWidth;
+
+            for (i = 0; i &lt; len; ++i) {
+                itemContext = items[i];
+
+                if (itemContext.widthModel.calculated) {
+                    itemMarginWidth = itemContext.marginInfo.width; // always set by above loop
+                    itemWidth = itemContext.target.columnWidth;
+                    itemWidth = Math.floor(itemWidth * availableWidth) - itemMarginWidth;
+                    itemWidth = itemContext.setWidth(itemWidth); // constrains to min/maxWidth
+                    contentWidth += itemWidth + itemMarginWidth;
+                }
+            }
+
+            ownerContext.setContentWidth(contentWidth + ownerContext.paddingContext.getPaddingInfo().width);
+        }
+
+        // we registered all the values that block this calculation, so abort now if blocked...
+        return !blocked;
     }
 });
 </pre>

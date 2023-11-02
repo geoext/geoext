@@ -59,12 +59,13 @@ Ext.application({
 
         overviewMap1 = Ext.create('GeoExt.component.OverviewMap', {
             parentMap: olMap,
+            magnification: 15,
             layers: [layer2]
         });
 
         overviewMap2 = Ext.create('GeoExt.component.OverviewMap', {
             parentMap: olMap,
-            magnification: 12,
+            magnification: 20,
             layers: [layer3],
             anchorStyle: new ol.style.Style({
                 image: new ol.style.Circle({

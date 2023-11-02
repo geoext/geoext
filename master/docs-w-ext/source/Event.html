@@ -15,688 +15,1161 @@
   </script>
 </head>
 <body onload="prettyPrint(); highlight();">
-  <pre class="prettyprint lang-js">// @tag core
-<span id='Ext-util-Event'>/**
-</span> * Represents single event type that an Observable object listens to.
- * All actual listeners are tracked inside here.  When the event fires,
- * it calls all the registered listener functions.
+  <pre class="prettyprint lang-js"><span id='Ext-event-Event'>/**
+</span> * Just as {@link Ext.dom.Element} wraps around a native DOM node, {@link Ext.event.Event} wraps the browser&#39;s native
+ * event-object normalizing cross-browser differences such as mechanisms to stop event-propagation along with a method
+ * to prevent default actions from taking place.
  *
- * @private
+ * Here is a simple example of how you use it:
+ *
+ *     @example preview
+ *     var container = Ext.create(&#39;Ext.Container&#39;, {
+ *         layout: &#39;fit&#39;,
+ *         renderTo: Ext.getBody(),
+ *         items: [{
+ *             id: &#39;logger&#39;,
+ *             styleHtmlContent: true,
+ *             html: &#39;Click somewhere!&#39;,
+ *             padding: 5
+ *         }]
+ *     });
+ *
+ *     container.getEl().on({
+ *         click: function(e, node) {
+ *             var string = &#39;&#39;;
+ *
+ *             string += &#39;You clicked at: &lt;strong&gt;{ x: &#39; + e.pageX + &#39;, y: &#39; + e.pageY + &#39; }&lt;/strong&gt; &lt;i&gt;(e.pageX &amp; e.pageY)&lt;/i&gt;&#39;;
+ *             string += &#39;&lt;hr /&gt;&#39;;
+ *             string += &#39;The HTMLElement you clicked has the className of: &lt;strong&gt;&#39; + e.target.className + &#39;&lt;/strong&gt; &lt;i&gt;(e.target)&lt;/i&gt;&#39;;
+ *             string += &#39;&lt;hr /&gt;&#39;;
+ *             string += &#39;The HTMLElement which has the listener has a className of: &lt;strong&gt;&#39; + e.currentTarget.className + &#39;&lt;/strong&gt; &lt;i&gt;(e.currentTarget)&lt;/i&gt;&#39;;
+ *
+ *             Ext.getCmp(&#39;logger&#39;).setHtml(string);
+ *         }
+ *     });
+ *
+ * ## Recognizers
+ *
+ * Ext JS includes many default event recognizers to know when a user interacts with the application.
+ *
+ * For a full list of default recognizers, and more information, please view the {@link Ext.event.gesture.Recognizer} documentation.
+ * 
+ * This class also provides a set of constants for use with key events.  These are useful
+ * for determining if a specific key was pressed, and are available both on instances,
+ * and as static properties of the class.  The following two statements are equivalent:
+ * 
+ *     if (e.getKey() === Ext.event.Event.TAB) {
+ *         // tab key was pressed
+ *     }
+ * 
+ *     if (e.getKey() === e.TAB) {
+ *         // tab key was pressed
+ *     }
  */
-Ext.define(&#39;Ext.util.Event&#39;, function() {
-  var arraySlice = Array.prototype.slice,
-      arrayInsert = Ext.Array.insert,
-      toArray = Ext.Array.toArray,
-      fireArgs = {};
+Ext.define(&#39;Ext.event.Event&#39;, {
+    alternateClassName: &#39;Ext.EventObjectImpl&#39;,
 
-  return {
-    requires: &#39;Ext.util.DelayedTask&#39;,
+    requires: [
+        &#39;Ext.util.Point&#39;
+    ],
 
-<span id='Ext-util-Event-property-isEvent'>    /**
-</span>     * @property {Boolean} isEvent
-     * `true` in this class to identify an object as an instantiated Event, or subclass thereof.
+<span id='Ext-event-Event-property-distance'>    /**
+</span>     * @property {Number} distance
+     * The distance of the event.
+     *
+     * **This is only available when the event type is `swipe` and `pinch`.**
      */
-    isEvent: true,
+
+<span id='Ext-event-Event-property-target'>    /**
+</span>     * @property {HTMLElement} target
+     * The element that fired this event.  For the element whose handlers are currently
+     * being processed, i.e. the element that the event handler was attached to, use
+     * `currentTarget`
+     */
+
+<span id='Ext-event-Event-property-currentTarget'>    /**
+</span>     * @property {HTMLElement} currentTarget
+     * Refers to the element the event handler was attached to, vs the `target`, which is
+     * the actual element that fired the event.  For example, if the event bubbles, the
+     * `target` element may be a descendant of the `currentTarget`, as the event may
+     * have been triggered on the `target` and then bubbled up to the `currentTarget`
+     * where it was handled.
+     */
+
+<span id='Ext-event-Event-property-delegatedTarget'>    /**
+</span>     * @property {HTMLElement} delegatedTarget
+     * Same as `currentTarget`
+     * @deprecated 5.0.0 use {@link #currentTarget} instead.
+     */
     
-    // Private. Event suspend count
-    suspended: 0,
+<span id='Ext-event-Event-property-button'>    /**
+</span>     * @property {Number} button
+     * Indicates which mouse button caused the event for mouse events, for example
+     * `mousedown`, `click`, `mouseup`:
+     * - `0` for left button.
+     * - `1` for middle button.
+     * - `2` for right button.
+     *
+     * *Note*: In IE8 &amp; IE9, the `click` event does not provide the button.
+     */
 
-    noOptions: {},
+<span id='Ext-event-Event-property-pageX'>    /**
+</span>     * @property {Number} pageX The browsers x coordinate of the event.
+     * Note: this only works in browsers that support pageX on the native browser event
+     * object (pageX is not natively supported in IE9 and earlier).  In Ext JS, for a
+     * cross browser normalized x-coordinate use {@link #getX}
+     */
 
-    constructor: function(observable, name) {
-        this.name = name;
-        this.observable = observable;
-        this.listeners = [];
-    },
+<span id='Ext-event-Event-property-pageY'>    /**
+</span>     * @property {Number} pageY The browsers y coordinate of the event.
+     * Note: this only works in browsers that support pageY on the native browser event
+     * object (pageY is not natively supported in IE9 and earlier).  In Ext JS, for a
+     * cross browser normalized y-coordinate use {@link #getY}
+     */
 
-    addListener: function(fn, scope, options, caller, manager) {
-        var me = this,
-            added = false,
-            observable = me.observable,
-            eventName = me.name,
-            listeners, listener, priority, isNegativePriority, highestNegativePriorityIndex,
-            hasNegativePriorityIndex, length, index, i, listenerPriority,
-            managedListeners;
+<span id='Ext-event-Event-property-ctrlKey'>    /**
+</span>     * @property {Boolean} ctrlKey
+     * True if the control key was down during the event.
+     * In Mac this will also be true when meta key was down.
+     */
+<span id='Ext-event-Event-property-altKey'>    /**
+</span>     * @property {Boolean} altKey
+     * True if the alt key was down during the event.
+     */
+<span id='Ext-event-Event-property-shiftKey'>    /**
+</span>     * @property {Boolean} shiftKey
+     * True if the shift key was down during the event.
+     */
 
-        //&lt;debug&gt;
-        if (scope &amp;&amp; !Ext._namedScopes[scope] &amp;&amp; (typeof fn === &#39;string&#39;) &amp;&amp; (typeof scope[fn] !== &#39;function&#39;)) {
-            Ext.raise(&quot;No method named &#39;&quot; + fn + &quot;&#39; found on scope object&quot;);
-        }
-        //&lt;/debug&gt;
-
-        if (me.findListener(fn, scope) === -1) {
-            listener = me.createListener(fn, scope, options, caller, manager);
-            if (me.firing) {
-                // if we are currently firing this event, don&#39;t disturb the listener loop
-                me.listeners = me.listeners.slice(0);
-            }
-            listeners = me.listeners;
-            index = length = listeners.length;
-            priority = options &amp;&amp; options.priority;
-            highestNegativePriorityIndex = me._highestNegativePriorityIndex;
-            hasNegativePriorityIndex = highestNegativePriorityIndex !== undefined;
-            if (priority) {
-                // Find the index at which to insert the listener into the listeners array,
-                // sorted by priority highest to lowest.
-                isNegativePriority = (priority &lt; 0);
-                if (!isNegativePriority || hasNegativePriorityIndex) {
-                    // If the priority is a positive number, or if it is a negative number
-                    // and there are other existing negative priority listenrs, then we
-                    // need to calcuate the listeners priority-order index.
-                    // If the priority is a negative number, begin the search for priority
-                    // order index at the index of the highest existing negative priority
-                    // listener, otherwise begin at 0
-                    for(i = (isNegativePriority ? highestNegativePriorityIndex : 0); i &lt; length; i++) {
-                        // Listeners created without options will have no &quot;o&quot; property
-                        listenerPriority = listeners[i].o ? listeners[i].o.priority||0 : 0;
-                        if (listenerPriority &lt; priority) {
-                            index = i;
-                            break;
-                        }
-                    }
-                } else {
-                    // if the priority is a negative number, and there are no other negative
-                    // priority listeners, then no calculation is needed - the negative
-                    // priority listener gets appended to the end of the listeners array.
-                    me._highestNegativePriorityIndex = index;
-                }
-            } else if (hasNegativePriorityIndex) {
-                // listeners with a priority of 0 or undefined are appended to the end of
-                // the listeners array unless there are negative priority listeners in the
-                // listeners array, then they are inserted before the highest negative
-                // priority listener.
-                index = highestNegativePriorityIndex;
-            }
-
-            if (!isNegativePriority &amp;&amp; index &lt;= highestNegativePriorityIndex) {
-                me._highestNegativePriorityIndex ++;
-            }
-            if (index === length) {
-                listeners[length] = listener;
-            } else {
-                arrayInsert(listeners, index, [listener]);
-            }
-
-            if (observable.isElement) {
-                // It is the role of Ext.util.Event (vs Ext.Element) to handle subscribe/
-                // unsubscribe because it is the lowest level place to intercept the
-                // listener before it is added/removed.  For addListener this could easily
-                // be done in Ext.Element&#39;s doAddListener override, but since there are
-                // multiple paths for listener removal (un, clearListeners), it is best
-                // to keep all subscribe/unsubscribe logic here.
-                observable._getPublisher(eventName).subscribe(
-                    observable,
-                    eventName,
-                    options.delegated !== false,
-                    options.capture
-                );
-            }
-
-            // If the listener was passed with a manager, add it to the manager&#39;s list.
-            if (manager) {
-                // if scope is an observable, the listener will be automatically managed
-                // this eliminates the need to call mon() in a majority of cases
-                managedListeners = manager.managedListeners || (manager.managedListeners = []);
-                managedListeners.push({
-                    item: me.observable,
-                    ename: (options &amp;&amp; options.managedName) || me.name,
-                    fn: fn,
-                    scope: scope,
-                    options: options
-                });
-            }
-
-            added = true;
-        }
-
-        return added;
-    },
-
-    createListener: function(fn, scope, o, caller, manager) {
-        var me = this,
-            namedScope = Ext._namedScopes[scope],
-            listener = {
-                fn: fn,
-                scope: scope,
-                ev: me,
-                caller: caller,
-                manager: manager,
-                namedScope: namedScope,
-                defaultScope: namedScope ? (scope || me.observable) : undefined,
-                lateBound: typeof fn === &#39;string&#39;
-            },
-            handler = fn,
-            wrapped = false,
-            type;
-
-        // The order is important. The &#39;single&#39; wrapper must be wrapped by the &#39;buffer&#39; and &#39;delayed&#39; wrapper
-        // because the event removal that the single listener does destroys the listener&#39;s DelayedTask(s)
-        if (o) {
-            listener.o = o;
-            if (o.single) {
-                handler = me.createSingle(handler, listener, o, scope);
-                wrapped = true;
-            }
-            if (o.target) {
-                handler = me.createTargeted(handler, listener, o, scope, wrapped);
-                wrapped = true;
-            }
-            if (o.onFrame) {
-                handler = me.createAnimFrame(handler, listener, o, scope, wrapped);
-                wrapped = true;
-            }
-            if (o.delay) {
-                handler = me.createDelayed(handler, listener, o, scope, wrapped);
-                wrapped = true;
-            }
-            if (o.buffer) {
-                handler = me.createBuffered(handler, listener, o, scope, wrapped);
-                wrapped = true;
-            }
-
-            if (me.observable.isElement) {
-                // If the event type was translated, e.g. mousedown -&gt; touchstart, we need to save
-                // the original type in the listener object so that the Ext.event.Event object can
-                // reflect the correct type at firing time
-                type = o.type;
-                if (type) {
-                    listener.type = type;
-                }
-            }
-        }
-
-        listener.fireFn = handler;
-        listener.wrapped = wrapped;
-        return listener;
-    },
-
-    findListener: function(fn, scope) {
-        var listeners = this.listeners,
-            i = listeners.length,
-            listener;
-
-        while (i--) {
-            listener = listeners[i];
-            if (listener) {
-                // use ==, not === for scope comparison, so that undefined and null are equal
-                if (listener.fn === fn &amp;&amp; listener.scope == scope) {
-                    return i;
-                }
-            }
-        }
-
-        return - 1;
-    },
-
-    removeListener: function(fn, scope, index) {
-        var me = this,
-            removed = false,
-            observable = me.observable,
-            eventName = me.name,
-            listener, options, manager, managedListeners, managedListener, i;
-
-        index = index != null ? index : me.findListener(fn, scope);
-
-        if (index !== -1) {
-            listener = me.listeners[index];
-
-            if (me.firing) {
-                me.listeners = me.listeners.slice(0);
-            }
-
-            // Remove this listener from the listeners array. We can use splice directly here.
-            // The IE8 bug which Ext.Array works around only affects *insertion*
-            // http://social.msdn.microsoft.com/Forums/en-US/iewebdevelopment/thread/6e946d03-e09f-4b22-a4dd-cd5e276bf05a/
-            me.listeners.splice(index, 1);
-
-            // if the listeners array contains negative priority listeners, adjust the
-            // internal index if needed.
-            if (me._highestNegativePriorityIndex) {
-                if (index &lt; me._highestNegativePriorityIndex) {
-                    me._highestNegativePriorityIndex--;
-                }
-                else if (index === me._highestNegativePriorityIndex &amp;&amp; index === me.listeners.length) {
-                    delete me._highestNegativePriorityIndex;
-                }
-            }
-
-            if (listener) {
-                options = listener.o;
+<span id='Ext-event-Event-property-browserEvent'>    /**
+</span>     * @property {Event} browserEvent
+     * The raw browser event which this object wraps.
+     */
     
-                // cancel and remove a buffered handler that hasn&#39;t fired yet.
-                // When the buffered listener is invoked, it must check whether
-                // it still has a task.
-                if (listener.task) {
-                    listener.task.cancel();
-                    delete listener.task;
-                }
-    
-                // cancel and remove all delayed handlers that haven&#39;t fired yet
-                i = listener.tasks &amp;&amp; listener.tasks.length;
+<span id='Ext-event-Event-property-pointerType'>    /**
+</span>     * @property {String} pointerType
+     * The pointer type for this event. May be empty if the event was
+     * not triggered by a pointer. Current available types are:
+     * - `mouse`
+     * - `touch`
+     * - `pen`
+     */
 
-                if (i) {
-                    while (i--) {
-                        listener.tasks[i].cancel();
-                    }
+<span id='Ext-event-Event-property-stopped'>    /**
+</span>     * @property {Boolean}
+     * `true` if {@link #stopPropagation} has been called on this instance
+     * @private
+     */
+    stopped: false,
 
-                    delete listener.tasks;
-                }
-    
-                manager = listener.manager;
+<span id='Ext-event-Event-property-claimed'>    /**
+</span>     * @property {Boolean}
+     * `true` if {@link #claimGesture} has been called on this instance
+     * @private
+     */
+    claimed: false,
 
-                if (manager) {
-                    // If this is a managed listener we need to remove it from the manager&#39;s
-                    // managedListeners array.  This ensures that if we listen using mon
-                    // and then remove without using mun, the managedListeners array is updated
-                    // accordingly, for example
-                    //
-                    //     manager.on(target, &#39;foo&#39;, fn);
-                    //
-                    //     target.un(&#39;foo&#39;, fn);
-                    managedListeners = manager.managedListeners;
+<span id='Ext-event-Event-property-defaultPrevented'>    /**
+</span>     * @property {Boolean}
+     * Indicates whether or not {@link #preventDefault preventDefault()} was called on the event.
+     */
+    defaultPrevented: false,
 
-                    if (managedListeners) {
-                        for (i = managedListeners.length; i--;) {
-                            managedListener = managedListeners[i];
+<span id='Ext-event-Event-property-isEvent'>    isEvent: true,
+</span>
+    statics: {
+<span id='Ext-event-Event-static-method-resolveTextNode'>        resolveTextNode: function(node) {
+</span>            return (node &amp;&amp; node.nodeType === 3) ? node.parentNode : node;
+        },
 
-                            if (managedListener.item === me.observable &amp;&amp;
-                                managedListener.ename === eventName &amp;&amp;
-                                managedListener.fn === fn &amp;&amp; managedListener.scope === scope) {
-                                managedListeners.splice(i, 1);
-                            }
-                        }
-                    }
-                }
-    
-                if (observable.isElement) {
-                    observable._getPublisher(eventName).unsubscribe(
-                        observable,
-                        eventName,
-                        options.delegated !== false,
-                        options.capture
-                    );
-                }
-            }
-            
-            removed = true;
-        }
+<span id='Ext-event-Event-static-property-pointerEvents'>        /**
+</span>         * @private
+         */
+        pointerEvents: {
+            pointerdown: 1,
+            pointermove: 1,
+            pointerup: 1,
+            pointercancel: 1,
+            pointerover: 1,
+            pointerout: 1,
+            pointerenter: 1,
+            pointerleave: 1,
+            MSPointerDown: 1,
+            MSPointerMove: 1,
+            MSPointerUp: 1,
+            MSPointerOver: 1,
+            MSPointerOut: 1,
+            MSPointerCancel: 1,
+            MSPointerEnter: 1,
+            MSPointerLeave: 1
+        },
 
-        return removed;
-    },
+<span id='Ext-event-Event-static-property-mouseEvents'>        /**
+</span>         * @private
+         */
+        mouseEvents: {
+            mousedown: 1,
+            mousemove: 1,
+            mouseup: 1,
+            mouseover: 1,
+            mouseout: 1,
+            mouseenter: 1,
+            mouseleave: 1
+        },
 
-    // Iterate to stop any buffered/delayed events
-    clearListeners: function() {
-        var listeners = this.listeners,
-            i = listeners.length,
-            listener;
+<span id='Ext-event-Event-static-property-clickEvents'>        /**
+</span>         * @private
+         * These are tracked separately from mouseEvents because the mouseEvents map
+         * is used by Dom publisher to eliminate duplicate events on devices that fire
+         * multiple kinds of events (mouse, touch, pointer).  Adding click events to the
+         * mouse events map can cause click events to be blocked from firing in some cases.
+         */
+        clickEvents: {
+            click: 1,
+            dblclick: 1
+        },
 
-        while (i--) {
-            listener = listeners[i];
-            this.removeListener(listener.fn, listener.scope);
-        }
-    },
+<span id='Ext-event-Event-static-property-touchEvents'>        /**
+</span>         * @private
+         */
+        touchEvents: {
+            touchstart: 1,
+            touchmove: 1,
+            touchend: 1,
+            touchcancel: 1
+        },
 
-    suspend: function() {
-        ++this.suspended;
-    },
+<span id='Ext-event-Event-static-property-focusEvents'>        /**
+</span>         * @private
+         */
+        focusEvents: {
+            focus: 1,
+            blur: 1,
+            focusin: 1,
+            focusout: 1,
+            focusenter: 1,
+            focusleave: 1
+        },
 
-    resume: function() {
-        if (this.suspended) {
-            --this.suspended;
-        }
-    },
-    
-    isSuspended: function() {
-        return this.suspended &gt; 0;
-    },
+<span id='Ext-event-Event-static-property-pointerTypeMap'>        // msPointerTypes in IE10 are numbers, in the w3c spec they are strings.
+</span>        // this map allows us to normalize the pointerType for an event
+        // http://www.w3.org/TR/pointerevents/#widl-PointerEvent-pointerType
+        // http://msdn.microsoft.com/en-us/library/ie/hh772359(v=vs.85).aspx
+        pointerTypeMap: {
+            2: &#39;touch&#39;,
+            3: &#39;pen&#39;,
+            4: &#39;mouse&#39;,
+            touch: &#39;touch&#39;,
+            pen: &#39;pen&#39;,
+            mouse: &#39;mouse&#39;
+        },
 
-    fireDelegated: function(firingObservable, args) {
-        this.firingObservable = firingObservable;
-        return this.fire.apply(this, args);
-    },
+<span id='Ext-event-Event-static-property-keyFlags'>        keyFlags: {
+</span>            CTRL: &#39;ctrlKey&#39;,
+            CONTROL: &#39;ctrlKey&#39;,
+            ALT: &#39;altKey&#39;,
+            SHIFT: &#39;shiftKey&#39;,
+            CMD: &#39;metaKey&#39;,
+            COMMAND: &#39;metaKey&#39;,
+            CMDORCTRL: Ext.isMac ? &#39;metaKey&#39; : &#39;ctrlKey&#39;,
+            COMMANDORCONTROL: Ext.isMac ? &#39;metaKey&#39; : &#39;ctrlKey&#39;,
+            META: &#39;metaKey&#39;
+        },
 
-    fire: function() {
-        var me = this,
-            CQ = Ext.ComponentQuery,
-            listeners = me.listeners,
-            count = listeners.length,
-            observable = me.observable,
-            isElement = observable.isElement,
-            isComponent = observable.isComponent,
-            firingObservable = me.firingObservable,
-            options, delegate, fireInfo, i, args, listener, len, delegateEl, currentTarget,
-            type, chained, firingArgs, e, fireFn, fireScope;
+<span id='Ext-event-Event-static-property-modifierGlyphs'>        modifierGlyphs: {
+</span>            ctrlKey: &#39;\u2303&#39;,
+            altKey: &#39;\u2325&#39;,
+            metaKey: Ext.isMac ? &#39;\u2318&#39; : &#39;\u229e&#39;,
+            shiftKey: &#39;\u21E7&#39;
+        },
 
-        if (!me.suspended &amp;&amp; count &gt; 0) {
-            me.firing = true;
-            args = arguments.length ? arraySlice.call(arguments, 0) : [];
-            len = args.length;
-            
-            if (isElement) {
-                e = args[0];
-            }
+<span id='Ext-event-Event-static-property-specialKeyGlyphs'>        specialKeyGlyphs: {
+</span>            BACKSPACE: &#39;\u232B&#39;,
+            TAB: &#39;\u21E5&#39;,
+            ENTER: &#39;\u23CE&#39;,
+            RETURN: &#39;\u23CE&#39;,
+            SPACE: &#39;\u2423&#39;,
+            PAGE_UP: &#39;\u21DE&#39;,
+            PAGE_DOWN: &#39;\u21DF&#39;,
+            END: &#39;\u21F2&#39;,
+            HOME: &#39;\u2302&#39;,
+            LEFT: &#39;\u2190&#39;,
+            UP: &#39;\u2191&#39;,
+            RIGHT: &#39;\u2192&#39;,
+            DOWN: &#39;\u2193&#39;,
+            PRINT_SCREEN: &#39;\u2399&#39;,
+            INSERT: &#39;\u2380&#39;,
+            DELETE: &#39;\u2326&#39;,
+            CONTEXT_MENU: &#39;\u2630&#39;
+        },
 
-            for (i = 0; i &lt; count; i++) {
-                listener = listeners[i];
-                
-                // Listener may be undefined if one of the previous listeners
-                // destroyed the observable that was listening to these events.
-                // We&#39;d be still in the middle of the loop here, unawares.
-                if (!listener) {
-                    continue;
-                }
-                
-                options = listener.o;
+<span id='Ext-event-Event-static-method-getKeyId'>        /**
+</span>         * Convert a key specification in the form eg: &quot;CTRL+ALT+DELETE&quot; to the glyph sequence
+         * for use in menu items, eg &quot;⌃⌥⌦&quot;.
+         * @private
+         */
+        getKeyId: function(keyName) {
+            keyName = keyName.toUpperCase();
 
-                if (isElement) {
-                    if (currentTarget) {
-                        // restore the previous currentTarget if we changed it last time
-                        // around the loop while processing the delegate option.
-                        e.setCurrentTarget(currentTarget);
-                    }
+            var me = this,
+                parts = keyName.split(&#39;+&#39;),
+                numModifiers = parts.length - 1,
+                rawKey = parts[numModifiers],
+                result = [],
+                eventFlag, i;
 
-                    // For events that have been translated to provide device compatibility,
-                    // e.g. mousedown -&gt; touchstart, we want the event object to reflect the
-                    // type that was originally listened for, not the type of the actual event
-                    // that fired. The listener&#39;s &quot;type&quot; property reflects the original type.
-                    type = listener.type;
-
-                    if (type) {
-                        // chain a new object to the event object before changing the type.
-                        // This is more efficient than creating a new event object, and we
-                        // don&#39;t want to change the type of the original event because it may
-                        // be used asynchronously by other handlers
-                        chained = e;
-                        e = args[0] = chained.chain({ type: type });
-                    }
-
-                    // In Ext4 Ext.EventObject was a singleton event object that was reused as events
-                    // were fired.  Set Ext.EventObject to the last fired event for compatibility.
-                    Ext.EventObject = e;
-                }
-
-                firingArgs = args;
-
-                if (options) {
-                    delegate = options.delegate;
-                    if (delegate) {
-                        if (isElement) {
-                            // prepending the currentTarget.id to the delegate selector
-                            // allows us to match selectors such as &quot;&gt; div&quot;
-                            delegateEl = e.getTarget(&#39;#&#39; + e.currentTarget.id + &#39; &#39; + delegate);
-                            if (delegateEl) {
-                                args[1] = delegateEl;
-                                // save the current target before changing it to the delegateEl
-                                // so that we can restore it next time around
-                                currentTarget = e.currentTarget;
-                                e.setCurrentTarget(delegateEl);
-                            } else {
-                                continue;
-                            }
-                        } else if (isComponent &amp;&amp; !CQ.is(firingObservable, delegate, observable)) {
-                            continue;
-                        }
-                    }
-                    
-                    if (isElement) {
-                        if (options.preventDefault) {
-                            e.preventDefault();
-                        }
-    
-                        if (options.stopPropagation) {
-                            e.stopPropagation();
-                        }
-    
-                        if (options.stopEvent) {
-                            e.stopEvent();
-                        }
-                    }
-
-                    args[len] = options;
-
-                    if (options.args) {
-                        firingArgs = options.args.concat(args);
-                    }
-                }
-
-                fireInfo = me.getFireInfo(listener);
-                fireFn = fireInfo.fn;
-                fireScope = fireInfo.scope;
-                
-                // We don&#39;t want to keep closure and scope on the Event prototype!
-                fireInfo.fn = fireInfo.scope = null;
-                
-                // If the scope is already destroyed, we absolutely cannot deliver events to it.
-                // We also need to clean up the listener to avoid it hanging around forever
-                // like a zombie. Scope can be null/undefined, that&#39;s normal.
-                if (fireScope &amp;&amp; fireScope.destroyed) {
-                    //&lt;debug&gt;
-                    // DON&#39;T raise errors if the destroyed scope is an Ext.container.Monitor!
-                    // It is to be deprecated and removed shortly.
-                    if (fireScope.$className !== &#39;Ext.container.Monitor&#39;) {
-                        Ext.raise({
-                            msg: &#39;Attempting to fire &quot;&#39; + me.name + &#39;&quot; event on destroyed &#39; +
-                                  (fireScope.$className || &#39;object&#39;) + &#39; instance with id: &#39; +
-                                  (fireScope.id || &#39;unknown&#39;),
-                            instance: fireScope
-                        });
-                    }
-                    //&lt;/debug&gt;
-                    
-                    me.removeListener(fireFn, fireScope, i);
-                    
-                    fireFn = null;
-                }
-                
-                // N.B. This is where actual listener code is called. Step boldly into!
-                if (fireFn &amp;&amp; fireFn.apply(fireScope, firingArgs) === false) {
-                    Ext.EventObject = null;
-                    
-                    return (me.firing = false);
-                }
-
-                // We should remove the last item here to avoid future listeners
-                // in the Array to inherit these options by mistake
-                if (options) {
-                    args.length--;
-                }
-
-                if (chained) {
-                    // if we chained the event object for type translation we need to
-                    // un-chain it before proceeding to process the next listener, which
-                    // may not be a translated event.
-                    e = args[0] = chained;
-                    chained = null;
-                }
-                
-                // We don&#39;t guarantee Ext.EventObject existence outside of the immediate
-                // event propagation scope
-                Ext.EventObject = null;
-            }
-        }
-        
-        me.firing = false;
-        
-        return true;
-    },
-
-    getFireInfo: function(listener, fromWrapped) {
-        var observable = this.observable,
-            fireFn = listener.fireFn,
-            scope = listener.scope,
-            namedScope = listener.namedScope,
-            fn;
-
-        // If we are called with a wrapped listener, only attempt to do scope
-        // resolution if we are explicitly called by the last wrapped function
-        if (!fromWrapped &amp;&amp; listener.wrapped) {
-            fireArgs.fn = fireFn;
-            return fireArgs;
-        }
-            
-        fn = fromWrapped ? listener.fn : fireFn;
-        //&lt;debug&gt;
-        var name = fn;
-
-        //&lt;/debug&gt;
-        if (listener.lateBound) {
-            // handler is a function name - need to resolve it to a function reference
-            if (!scope || namedScope) {
-                // Only invoke resolveListenerScope if the user did not specify a scope,
-                // or if the user specified a named scope.  Named function handlers that
-                // use an arbitrary object as the scope just skip this part, and just
-                // use the given scope object to resolve the method.
-                scope = (listener.caller || observable).resolveListenerScope(listener.defaultScope);
-            }
             //&lt;debug&gt;
-            if (!scope) {
-                Ext.raise(&#39;Unable to dynamically resolve scope for &quot;&#39; + listener.ev.name + &#39;&quot; listener on &#39; + this.observable.id);
-            }
-
-            if (!Ext.isFunction(scope[fn])) {
-                Ext.raise(&#39;No method named &quot;&#39; + fn + &#39;&quot; on &#39; +
-                    (scope.$className || &#39;scope object.&#39;));
+            if (!Ext.event.Event[rawKey]) {
+                Ext.raise(&#39;Invalid key name: &quot;&#39; + rawKey + &#39;&quot;&#39;);
             }
             //&lt;/debug&gt;
 
-            fn = scope[fn];
-        } else if (namedScope &amp;&amp; namedScope.isController) {
-            // If handler is a function reference and scope:&#39;controller&#39; was requested
-            // we&#39;ll do our best to look up a controller.
-            scope = (listener.caller || observable).resolveListenerScope(listener.defaultScope);
-            //&lt;debug&gt;
-            if (!scope) {
-                Ext.raise(&#39;Unable to dynamically resolve scope for &quot;&#39; + listener.ev.name + &#39;&quot; listener on &#39; + this.observable.id);
-            }
-            //&lt;/debug&gt;
-        } else if (!scope || namedScope) {
-            // If handler is a function reference we use the observable instance as
-            // the default scope
-            scope = observable;
-        }
-
-        // We can only ever be firing one event at a time, so just keep
-        // overwriting tghe object we&#39;ve got in our closure, otherwise we&#39;ll be
-        // creating a whole bunch of garbage objects
-        fireArgs.fn = fn;
-        fireArgs.scope = scope;
-        //&lt;debug&gt;
-        if (!fn) {
-            Ext.raise(&#39;Unable to dynamically resolve method &quot;&#39; + name + &#39;&quot; on &#39; + this.observable.$className);
-        }
-        //&lt;/debug&gt;
-        return fireArgs;
-    },
-
-    createAnimFrame: function (handler, listener, o, scope, wrapped) {
-        var fireInfo;
-
-        if (!wrapped) {
-            fireInfo = listener.ev.getFireInfo(listener, true);
-            handler = fireInfo.fn;
-            scope = fireInfo.scope;
-
-            // We don&#39;t want to keep closure and scope references on the Event prototype!
-            fireInfo.fn = fireInfo.scope = null;
-        }
-
-        return Ext.Function.createAnimationFrame(handler, scope, o.args);
-    },
-
-    createTargeted: function (handler, listener, o, scope, wrapped) {
-        return function(){
-            if (o.target === arguments[0]) {
-                var fireInfo;
-
-                if (!wrapped) {
-                    fireInfo = listener.ev.getFireInfo(listener, true);
-                    handler = fireInfo.fn;
-                    scope = fireInfo.scope;
-                    
-                    // We don&#39;t want to keep closure and scope references on the Event prototype!
-                    fireInfo.fn = fireInfo.scope = null;
+            for (i = 0; i &lt; numModifiers; i++) {
+                eventFlag = me.keyFlags[parts[i]];
+                //&lt;debug&gt;
+                if (!eventFlag) {
+                    Ext.raise(&#39;Invalid key modifier: &quot;&#39; + parts[i] + &#39;&quot;&#39;);
                 }
-
-                return handler.apply(scope, arguments);
+                //&lt;/debug&gt;
+                result[eventFlag] = true;
             }
-        };
+            if (result.ctrlKey) {
+                result.push(me.modifierGlyphs.ctrlKey)
+            }
+            if (result.altKey) {
+                result.push(me.modifierGlyphs.altKey)
+            }
+            if (result.shiftKey) {
+                result.push(me.modifierGlyphs.shiftKey)
+            }
+            if (result.metaKey) {
+                result.push(me.modifierGlyphs.metaKey)
+            }
+            result.push(this.specialKeyGlyphs[rawKey] || rawKey);
+            return result.join(&#39;&#39;);
+        }
     },
 
-    createBuffered: function (handler, listener, o, scope, wrapped) {
-        listener.task = new Ext.util.DelayedTask();
-        return function() {
-            // If the listener is removed during the event call, the listener stays in the
-            // list of listeners to be invoked in the fire method, but the task is deleted
-            // So if we get here with no task, it&#39;s because the listener has been removed.
-            if (listener.task) {
-                var fireInfo;
+<span id='Ext-event-Event-method-constructor'>    constructor: function(event) {
+</span>        var me = this,
+            self = me.self,
+            resolveTextNode = me.self.resolveTextNode,
+            changedTouches = event.changedTouches,
+            // The target object from which to obtain the coordinates (pageX, pageY). For
+            // mouse and pointer events this is simply the event object itself, but touch
+            // events have their coordinates on the &quot;Touch&quot; object(s) instead.
+            coordinateOwner = changedTouches ? changedTouches[0] : event,
+            type = event.type,
+            pointerType, relatedTarget;
 
-                if (!wrapped) {
-                    fireInfo = listener.ev.getFireInfo(listener, true);
-                    handler = fireInfo.fn;
-                    scope = fireInfo.scope;
+        // Do not use event.timeStamp as it is not consistent cross browser (some browsers
+        // use high resolution time stamps, while others use milliseconds)
+        me.timeStamp = me.time = Ext.now();
 
-                    // We don&#39;t want to keep closure and scope references on the Event prototype!
-                    fireInfo.fn = fireInfo.scope = null;
+        me.pageX = coordinateOwner.pageX;
+        me.pageY = coordinateOwner.pageY;
+        me.clientX = coordinateOwner.clientX;
+        me.clientY = coordinateOwner.clientY;
+
+        me.target = me.delegatedTarget = resolveTextNode(event.target);
+        relatedTarget = event.relatedTarget;
+        if (relatedTarget) {
+            // When leaving the document, the relatedTarget can be incorrect in Gecko
+            if (Ext.isGecko &amp;&amp; type === &#39;dragenter&#39; || type === &#39;dragleave&#39;) {
+                try {
+                    me.relatedTarget = resolveTextNode(relatedTarget);
+                } catch(e) {
+                    me.relatedTarget = null;
                 }
-
-                listener.task.delay(o.buffer, handler, scope, toArray(arguments));
-            }
-        };
-    },
-
-    createDelayed: function (handler, listener, o, scope, wrapped) {
-        return function() {
-            var task = new Ext.util.DelayedTask(),
-                fireInfo;
-
-            if (!wrapped) {
-                fireInfo = listener.ev.getFireInfo(listener, true);
-                handler = fireInfo.fn;
-                scope = fireInfo.scope;
-                
-                // We don&#39;t want to keep closure and scope references on the Event prototype!
-                fireInfo.fn = fireInfo.scope = null;
-            }
-                
-            if (!listener.tasks) {
-                listener.tasks = [];
-            }
-            listener.tasks.push(task);
-            task.delay(o.delay || 10, handler, scope, toArray(arguments));
-        };
-    },
-
-    createSingle: function (handler, listener, o, scope, wrapped) {
-        return function() {
-            var event = listener.ev,
-                observable = event.observable,
-                fn = listener.fn,
-                fireInfo;
-
-            // If we have an observable, use that to clean up because there
-            // can be special cases that need handling. For example element
-            // listeners may bind multiple events (mousemove+touchmove) and they
-            // need to act in tandem.
-            if (observable) {
-                observable.removeListener(event.name, fn, scope);
             } else {
-                event.removeListener(fn, scope);
+                me.relatedTarget = resolveTextNode(relatedTarget);
+            }
+        }
+
+        me.browserEvent = me.event = event;
+        me.type = type;
+        // set button to 0 if undefined so that touchstart, touchend, and tap will quack
+        // like left mouse button mousedown mouseup, and click
+        me.button = event.button || 0;
+        me.shiftKey = event.shiftKey;
+        // mac metaKey behaves like ctrlKey
+        me.ctrlKey = event.ctrlKey || event.metaKey || false;
+        me.altKey = event.altKey;
+        me.charCode = event.charCode;
+        me.keyCode = event.keyCode;
+
+        me.buttons = event.buttons;
+        // When invoking synthetic events, current APIs do not
+        // have the ability to specify the buttons config, which
+        // defaults to button. For buttons, 0 means no button
+        // is pressed, whereas for button, 0 means left click.
+        // Normalize that here
+        if (me.button === 0 &amp;&amp; me.buttons === 0) {
+            me.buttons = 1;
+        }
+        
+        if (self.focusEvents[type]) {
+            if (self.forwardTab !== undefined) {
+                me.forwardTab = self.forwardTab;
+            }
+        }
+        else if (type !== &#39;keydown&#39;) {
+            // Normally this property should be cleaned up in keyup handler;
+            // however that one might never come if something prevented default
+            // on the keydown. Make sure the property won&#39;t get stuck.
+            delete self.forwardTab;
+        }
+
+        if (self.mouseEvents[type]) {
+            pointerType = &#39;mouse&#39;;
+        } else if (self.clickEvents[type]) {
+            pointerType = self.pointerTypeMap[event.pointerType] || &#39;mouse&#39;;
+        } else if (self.pointerEvents[type]) {
+            pointerType = self.pointerTypeMap[event.pointerType];
+        } else if (self.touchEvents[type]) {
+            pointerType = &#39;touch&#39;;
+        }
+
+        if (pointerType) {
+            me.pointerType = pointerType;
+        }
+
+        // Is this is not the primary touch for PointerEvents (first touch)
+        // or there are multiples touches for Touch Events
+        me.isMultitouch = event.isPrimary === false || (event.touches &amp;&amp; event.touches.length &gt; 1);
+    },
+
+<span id='Ext-event-Event-method-chain'>    /**
+</span>     * Creates a new Event object that is prototype-chained to this event.  Useful for
+     * creating identical events so that certain properties can be changed without
+     * affecting the original event.  For example, translated events have their &quot;type&quot;
+     * corrected in this manner.
+     * @param {Object} props properties to set on the chained event
+     * @private
+     */
+    chain: function(props) {
+        var e = Ext.Object.chain(this);
+        e.parentEvent = this; // needed for stopPropagation
+        return Ext.apply(e, props);
+    },
+
+<span id='Ext-event-Event-method-correctWheelDelta'>    /**
+</span>     * Correctly scales a given wheel delta.
+     * @param {Number} delta The delta value.
+     * @private
+     */
+    correctWheelDelta: function (delta) {
+        var scale = this.WHEEL_SCALE,
+            ret = Math.round(delta / scale);
+
+        if (!ret &amp;&amp; delta) {
+            ret = (delta &lt; 0) ? -1 : 1; // don&#39;t allow non-zero deltas to go to zero!
+        }
+
+        return ret;
+    },
+
+<span id='Ext-event-Event-method-getCharCode'>    /**
+</span>     * Gets the character code for the event.
+     * @return {Number}
+     */
+    getCharCode: function(){
+        return this.charCode || this.keyCode;
+    },
+
+<span id='Ext-event-Event-method-getKey'>    /**
+</span>     * Returns a normalized keyCode for the event.
+     * @return {Number} The key code
+     */
+    getKey: function(){
+        return this.keyCode || this.charCode;
+    },
+    
+<span id='Ext-event-Event-method-getKeyName'>    /**
+</span>     * Returns the name of the keyCode for the event.
+     * @return {String} The key name
+     */
+    getKeyName: function() {
+        return this.keyCodes[this.keyCode];
+    },
+    
+<span id='Ext-event-Event-method-getPoint'>    /**
+</span>     * Returns a point object that consists of the object coordinates.
+     * @return {Ext.util.Point} point
+     */
+    getPoint: function(){
+        var me = this,
+            point = me.point,
+            xy;
+
+        if (!point) {
+            xy = me.getXY();
+            point = me.point = new Ext.util.Point(xy[0], xy[1]);
+        }
+
+        return point;
+    },
+
+<span id='Ext-event-Event-method-getRelatedTarget'>    /**
+</span>     * Gets the related target.
+     * @param {String} [selector] A simple selector to filter the target or look for an
+     * ancestor of the target. See {@link Ext.dom.Query} for information about simple
+     * selectors.
+     * @param {Number/HTMLElement} [maxDepth] The max depth to search as a number or
+     * element (defaults to 10 || document.body).
+     * @param {Boolean} [returnEl] `true` to return a Ext.Element object instead of DOM
+     * node.
+     * @return {HTMLElement}
+     */
+    getRelatedTarget: function(selector, maxDepth, returnEl){
+        var relatedTarget = this.relatedTarget,
+            target = null;
+
+        // In some cases in IE10/11, when the mouse is leaving the document over a scrollbar
+        // the relatedTarget will be an empty object literal. So just check we have an element
+        // looking object here before we proceed.
+        if (relatedTarget &amp;&amp; relatedTarget.nodeType) {
+            if (selector) {
+                target = Ext.fly(relatedTarget).findParent(selector, maxDepth, returnEl);
+            } else {
+                target = returnEl ? Ext.get(relatedTarget) : relatedTarget;
+            }
+        }
+        return target;
+    },
+
+<span id='Ext-event-Event-method-getTarget'>    /**
+</span>     * Gets the target for the event.
+     * @param {String} selector (optional) A simple selector to filter the target or look
+     * for an ancestor of the target
+     * @param {Number/Mixed} [maxDepth=10||document.body] (optional) The max depth to
+     * search as a number or element (defaults to 10 || document.body)
+     * @param {Boolean} returnEl (optional) `true` to return a Ext.Element object instead
+     * of DOM node.
+     * @return {HTMLElement}
+     */
+    getTarget: function(selector, maxDepth, returnEl) {
+        return selector ? Ext.fly(this.target).findParent(selector, maxDepth, returnEl) :
+            (returnEl ? Ext.get(this.target) : this.target);
+    },
+
+<span id='Ext-event-Event-method-getTime'>    /**
+</span>     * Returns the time of the event.
+     * @return {Date}
+     */
+    getTime: function() {
+        return this.time;
+    },
+
+<span id='Ext-event-Event-method-getWheelDelta'>    /**
+</span>     * Normalizes mouse wheel y-delta across browsers. To get x-delta information, use
+     * {@link #getWheelDeltas} instead.
+     * @return {Number} The mouse wheel y-delta
+     */
+    getWheelDelta: function(){
+        var deltas = this.getWheelDeltas();
+
+        return deltas.y;
+    },
+
+<span id='Ext-event-Event-method-getWheelDeltas'>    /**
+</span>     * Returns the mouse wheel deltas for this event.
+     * @return {Object} An object with &quot;x&quot; and &quot;y&quot; properties holding the mouse wheel deltas.
+     */
+    getWheelDeltas: function () {
+        var me = this,
+            event = me.browserEvent,
+            dx = 0, dy = 0; // the deltas
+
+        if (Ext.isDefined(event.wheelDeltaX)) { // WebKit and Edge have both dimensions
+            dx = event.wheelDeltaX;
+            dy = event.wheelDeltaY;
+        } else if (event.wheelDelta) { // old WebKit and IE
+            dy = event.wheelDelta;
+        } else if (&#39;deltaX&#39; in event) { // IE11
+            dx = event.deltaX;
+            dy = -event.deltaY; // backwards
+        } else if (event.detail) { // Gecko
+            dy = -event.detail; // gecko is backwards
+
+            // Gecko sometimes returns really big values if the user changes settings to
+            // scroll a whole page per scroll
+            if (dy &gt; 100) {
+                dy = 3;
+            } else if (dy &lt; -100) {
+                dy = -3;
             }
 
-            if (!wrapped) {
-                fireInfo = event.getFireInfo(listener, true);
-                handler = fireInfo.fn;
-                scope = fireInfo.scope;
-                
-                // We don&#39;t want to keep closure and scope references on the Event prototype!
-                fireInfo.fn = fireInfo.scope = null;
+            // Firefox 3.1 adds an axis field to the event to indicate direction of
+            // scroll.  See https://developer.mozilla.org/en/Gecko-Specific_DOM_Events
+            if (Ext.isDefined(event.axis) &amp;&amp; event.axis === event.HORIZONTAL_AXIS) {
+                dx = dy;
+                dy = 0;
             }
-            
-            return handler.apply(scope, arguments);
+        }
+
+        return {
+            x: me.correctWheelDelta(dx),
+            y: me.correctWheelDelta(dy)
         };
+    },
+
+<span id='Ext-event-Event-method-getX'>    /**
+</span>     * Gets the x coordinate of the event.
+     * @return {Number}
+     */
+    getX: function() {
+        return this.getXY()[0];
+    },
+
+<span id='Ext-event-Event-method-getXY'>    /**
+</span>     * Gets the X and Y coordinates of the event.
+     * @return {Number[]} The xy values like [x, y]
+     */
+    getXY: function() {
+        var me = this,
+            xy = me.xy;
+
+        if (!xy) {
+            xy = me.xy = [me.pageX, me.pageY];
+            //&lt;feature legacyBrowser&gt;
+            var x = xy[0],
+                browserEvent, doc, docEl, body;
+
+            // pageX/pageY not available (undefined, not null), use clientX/clientY instead
+            if (!x &amp;&amp; x !== 0) {
+                browserEvent = me.browserEvent;
+                doc = document;
+                docEl = doc.documentElement;
+                body = doc.body;
+                xy[0] = browserEvent.clientX +
+                    (docEl &amp;&amp; docEl.scrollLeft || body &amp;&amp; body.scrollLeft || 0) -
+                    (docEl &amp;&amp; docEl.clientLeft || body &amp;&amp; body.clientLeft || 0);
+                xy[1] = browserEvent.clientY +
+                    (docEl &amp;&amp; docEl.scrollTop  || body &amp;&amp; body.scrollTop  || 0) -
+                    (docEl &amp;&amp; docEl.clientTop  || body &amp;&amp; body.clientTop  || 0);
+            }
+            //&lt;/feature&gt;
+        }
+
+        return xy;
+    },
+
+<span id='Ext-event-Event-method-getY'>    /**
+</span>     * Gets the y coordinate of the event.
+     * @return {Number}
+     */
+    getY: function() {
+        return this.getXY()[1];
+    },
+
+<span id='Ext-event-Event-method-hasModifier'>   /**
+</span>    * Returns true if the control, meta, shift or alt key was pressed during this event.
+    * @return {Boolean}
+    */
+    hasModifier: function() {
+        var me = this;
+        return !!(me.ctrlKey || me.altKey || me.shiftKey || me.metaKey);
+    },
+
+<span id='Ext-event-Event-method-isNavKeyPress'>    /**
+</span>     * Checks if the key pressed was a &quot;navigation&quot; key. A navigation key is defined by
+     * these keys:
+     *
+     *  - Page Up
+     *  - Page Down
+     *  - End
+     *  - Home
+     *  - Left
+     *  - Up
+     *  - Right
+     *  - Down
+     *  - Return
+     *  - Tab
+     *  - Esc
+     *
+     * @param {Boolean} [scrollableOnly] Only check navigation keys that can cause
+     * element scrolling by their default action.
+     *
+     * @return {Boolean} `true` if the press is a navigation keypress
+     */
+    isNavKeyPress: function(scrollableOnly) {
+        var me = this,
+            k = me.keyCode,
+            isKeyPress = me.type === &#39;keypress&#39;;
+
+        // See specs for description of behaviour
+        return ((!isKeyPress || Ext.isGecko) &amp;&amp; k &gt;= 33 &amp;&amp; k &lt;= 40) ||  // Page Up/Down, End, Home, Left, Up, Right, Down
+               (!scrollableOnly &amp;&amp;
+               (k === me.RETURN ||
+                k === me.TAB ||
+                k === me.ESC));
+    },
+
+<span id='Ext-event-Event-method-isSpecialKey'>    /**
+</span>     * Checks if the key pressed was a &quot;special&quot; key. A special key is defined as one of
+     * these keys:
+     *
+     *  - Page Up
+     *  - Page Down
+     *  - End
+     *  - Home
+     *  - Left arrow
+     *  - Up arrow
+     *  - Right arrow
+     *  - Down arrow
+     *  - Return
+     *  - Tab
+     *  - Esc
+     *  - Backspace
+     *  - Delete
+     *  - Shift
+     *  - Ctrl
+     *  - Alt
+     *  - Pause
+     *  - Caps Lock
+     *  - Print Screen
+     *  - Insert
+     *
+     * @return {Boolean} `true` if the key for this event is special
+     */
+    isSpecialKey: function() {
+        var me = this,
+            k = me.keyCode,
+            isGecko = Ext.isGecko,
+            isKeyPress = me.type === &#39;keypress&#39;;
+        
+        // See specs for description of behaviour
+        return (isGecko &amp;&amp; isKeyPress &amp;&amp; me.charCode === 0) ||
+               (this.isNavKeyPress()) ||
+               (k === me.BACKSPACE) ||
+               (k === me.ENTER) ||
+               (k &gt;= 16 &amp;&amp; k &lt;= 20) ||              // Shift, Ctrl, Alt, Pause, Caps Lock
+               ((!isKeyPress || isGecko) &amp;&amp; k &gt;= 44 &amp;&amp; k &lt;= 46); // Print Screen, Insert, Delete
+    },
+
+<span id='Ext-event-Event-method-makeUnpreventable'>    makeUnpreventable: function() {
+</span>        this.browserEvent.preventDefault = Ext.emptyFn;
+    },
+
+<span id='Ext-event-Event-method-preventDefault'>    /**
+</span>     * Prevents the browsers default handling of the event.
+     * @chainable
+     */
+    preventDefault: function() {
+        var me = this,
+            parentEvent = me.parentEvent;
+
+        me.defaultPrevented = true;
+
+        // if the event was created by prototype-chaining a new object to an existing event
+        // instance, we need to make sure the parent event is defaultPrevented as well.
+        if (parentEvent) {
+            parentEvent.defaultPrevented = true;
+        }
+
+        me.browserEvent.preventDefault();
+
+        return me;
+    },
+
+<span id='Ext-event-Event-method-setCurrentTarget'>    setCurrentTarget: function(target) {
+</span>        this.currentTarget = this.delegatedTarget = target;
+    },
+
+<span id='Ext-event-Event-method-stopEvent'>    /**
+</span>     * Stop the event (`{@link #preventDefault}` and `{@link #stopPropagation}`).
+     * @chainable
+     */
+    stopEvent: function() {
+        return this.preventDefault().stopPropagation();
+    },
+
+<span id='Ext-event-Event-method-stopPropagation'>    /**
+</span>     * Cancels bubbling of the event.
+     * @chainable
+     */
+    stopPropagation: function() {
+        var me = this,
+            browserEvent = me.browserEvent,
+            parentEvent = me.parentEvent;
+
+        // Set stopped for delegated event listeners.  Dom publisher will check this
+        // property during its emulated propagation phase (see doPublish)
+        me.stopped = true;
+
+        // if the event was created by prototype-chaining a new object to an existing event
+        // instance, we need to make sure the parent event is stopped.  This feature most
+        // likely comes into play when dealing with event translation.  For example on touch
+        // browsers addListener(&#39;mousedown&#39;) actually attaches a &#39;touchstart&#39; listener behind
+        // the scenes.  When the &#39;touchstart&#39; event is dispatched, the event system will
+        // create a &quot;chained&quot; copy of the event object before correcting its type back to
+        // &#39;mousedown&#39; and calling the handler.  When propagating the event we look at the
+        // original event, not the chained one to determine if propagation should continue,
+        // so the stopped property must be set on the parentEvent or stopPropagation
+        // will not work.
+        if (parentEvent &amp;&amp; !me.isGesture) {
+            parentEvent.stopped = true;
+        }
+
+        //&lt;feature legacyBrowser&gt;
+        if (!browserEvent.stopPropagation) {
+            // IE &lt; 10 does not have stopPropagation()
+            browserEvent.cancelBubble = true;
+            return me;
+        }
+        //&lt;/feature&gt;
+
+        // For non-delegated event listeners (those that are directly attached to the
+        // DOM element) we need to call the browserEvent&#39;s stopPropagation() method.
+        browserEvent.stopPropagation();
+
+        return me;
+    },
+
+<span id='Ext-event-Event-method-claimGesture'>    /**
+</span>     * Claims this event as the currently active gesture.  Once a gesture is claimed
+     * no other gestures will fire events until after the current gesture has completed.
+     * For example, if `claimGesture()` is invoked on a dragstart or drag event, no
+     * swipestart or swipe events will be fired until the drag gesture completes, even if
+     * the gesture also meets the required duration and distance requirements to be recognized
+     * as a swipe.
+     *
+     * If `claimGesture()` is invoked on a mouse, touch, or pointer event, it will disable
+     * all gesture events until termination of the current gesture is indicated by a
+     * mouseup, touchend, or pointerup event.
+     *
+     * @return {Ext.event.Event}
+     */
+    claimGesture: function() {
+        var me = this,
+            parentEvent = me.parentEvent;
+
+        me.claimed = true;
+
+        if (parentEvent &amp;&amp; !me.hasOwnProperty(&#39;isGesture&#39;)) {
+            parentEvent.claimGesture();
+        } else {
+            // Claiming a gesture should also prevent default browser actions like pan/zoom
+            // if possible (only works on browsers that support touch events - browsers that
+            // use pointer events must declare a CSS touch-action on elements to prevent the
+            // default touch action from occurring.
+            me.preventDefault();
+        }
+
+        return me;
+    },
+
+<span id='Ext-event-Event-method-within'>    /**
+</span>     * Returns true if the target of this event is a child of `el`.  Unless the allowEl
+     * parameter is set, it will return false if if the target is `el`.
+     * Example usage:
+     * 
+     *     // Handle click on any child of an element
+     *     Ext.getBody().on(&#39;click&#39;, function(e){
+     *         if(e.within(&#39;some-el&#39;)){
+     *             alert(&#39;Clicked on a child of some-el!&#39;);
+     *         }
+     *     });
+     * 
+     *     // Handle click directly on an element, ignoring clicks on child nodes
+     *     Ext.getBody().on(&#39;click&#39;, function(e,t){
+     *         if((t.id == &#39;some-el&#39;) &amp;&amp; !e.within(t, true)){
+     *             alert(&#39;Clicked directly on some-el!&#39;);
+     *         }
+     *     });
+     * 
+     * @param {String/HTMLElement/Ext.dom.Element} el The id, DOM element or Ext.Element to check
+     * @param {Boolean} [related] `true` to test if the related target is within el instead
+     * of the target
+     * @param {Boolean} [allowEl] `true` to also check if the passed element is the target
+     * or related target
+     * @return {Boolean}
+     */
+    within: function(el, related, allowEl){
+        var t;
+        if (el) {
+            t = related ? this.getRelatedTarget() : this.getTarget();
+        }
+
+        return t ? Ext.fly(el).contains(t) || !!(allowEl &amp;&amp; t === Ext.getDom(el)) : false;
+    },
+
+<span id='Ext-event-Event-property-deprecated'>    deprecated: {
+</span>        &#39;4.0&#39;: {
+            methods: {
+
+<span id='Ext-event-Event-method-getPageX'>                /**
+</span>                 * Gets the x coordinate of the event.
+                 * @return {Number}
+                 * @deprecated 4.0 use {@link #getX} instead
+                 */
+                getPageX: &#39;getX&#39;,
+                
+<span id='Ext-event-Event-method-getPageY'>                /**
+</span>                 * Gets the y coordinate of the event.
+                 * @return {Number}
+                 * @deprecated 4.0 use {@link #getY} instead
+                 */
+                getPageY: &#39;getY&#39;
+            }
+        }
     }
-  };
+}, function(Event) {
+    var prototype = Event.prototype,
+        constants = {
+<span id='Ext-event-Event-property-BACKSPACE'>        /** Key constant @type Number */
+</span>        BACKSPACE: 8,
+<span id='Ext-event-Event-property-TAB'>        /** Key constant @type Number */
+</span>        TAB: 9,
+<span id='Ext-event-Event-property-NUM_CENTER'>        /** Key constant @type Number */
+</span>        NUM_CENTER: 12,
+<span id='Ext-event-Event-property-ENTER'>        /** Key constant @type Number */
+</span>        ENTER: 13,
+<span id='Ext-event-Event-property-RETURN'>        /** Key constant @type Number */
+</span>        RETURN: 13,
+<span id='Ext-event-Event-property-SHIFT'>        /** Key constant @type Number */
+</span>        SHIFT: 16,
+<span id='Ext-event-Event-property-CTRL'>        /** Key constant @type Number */
+</span>        CTRL: 17,
+<span id='Ext-event-Event-property-ALT'>        /** Key constant @type Number */
+</span>        ALT: 18,
+<span id='Ext-event-Event-property-PAUSE'>        /** Key constant @type Number */
+</span>        PAUSE: 19,
+<span id='Ext-event-Event-property-CAPS_LOCK'>        /** Key constant @type Number */
+</span>        CAPS_LOCK: 20,
+<span id='Ext-event-Event-property-ESC'>        /** Key constant @type Number */
+</span>        ESC: 27,
+<span id='Ext-event-Event-property-SPACE'>        /** Key constant @type Number */
+</span>        SPACE: 32,
+<span id='Ext-event-Event-property-PAGE_UP'>        /** Key constant @type Number */
+</span>        PAGE_UP: 33,
+<span id='Ext-event-Event-property-PAGE_DOWN'>        /** Key constant @type Number */
+</span>        PAGE_DOWN: 34,
+<span id='Ext-event-Event-property-END'>        /** Key constant @type Number */
+</span>        END: 35,
+<span id='Ext-event-Event-property-HOME'>        /** Key constant @type Number */
+</span>        HOME: 36,
+<span id='Ext-event-Event-property-LEFT'>        /** Key constant @type Number */
+</span>        LEFT: 37,
+<span id='Ext-event-Event-property-UP'>        /** Key constant @type Number */
+</span>        UP: 38,
+<span id='Ext-event-Event-property-RIGHT'>        /** Key constant @type Number */
+</span>        RIGHT: 39,
+<span id='Ext-event-Event-property-DOWN'>        /** Key constant @type Number */
+</span>        DOWN: 40,
+<span id='Ext-event-Event-property-PRINT_SCREEN'>        /** Key constant @type Number */
+</span>        PRINT_SCREEN: 44,
+<span id='Ext-event-Event-property-INSERT'>        /** Key constant @type Number */
+</span>        INSERT: 45,
+<span id='Ext-event-Event-property-DELETE'>        /** Key constant @type Number */
+</span>        DELETE: 46,
+<span id='Ext-event-Event-property-ZERO'>        /** Key constant @type Number */
+</span>        ZERO: 48,
+<span id='Ext-event-Event-property-ONE'>        /** Key constant @type Number */
+</span>        ONE: 49,
+<span id='Ext-event-Event-property-TWO'>        /** Key constant @type Number */
+</span>        TWO: 50,
+<span id='Ext-event-Event-property-THREE'>        /** Key constant @type Number */
+</span>        THREE: 51,
+<span id='Ext-event-Event-property-FOUR'>        /** Key constant @type Number */
+</span>        FOUR: 52,
+<span id='Ext-event-Event-property-FIVE'>        /** Key constant @type Number */
+</span>        FIVE: 53,
+<span id='Ext-event-Event-property-SIX'>        /** Key constant @type Number */
+</span>        SIX: 54,
+<span id='Ext-event-Event-property-SEVEN'>        /** Key constant @type Number */
+</span>        SEVEN: 55,
+<span id='Ext-event-Event-property-EIGHT'>        /** Key constant @type Number */
+</span>        EIGHT: 56,
+<span id='Ext-event-Event-property-NINE'>        /** Key constant @type Number */
+</span>        NINE: 57,
+<span id='Ext-event-Event-property-A'>        /** Key constant @type Number */
+</span>        A: 65,
+<span id='Ext-event-Event-property-B'>        /** Key constant @type Number */
+</span>        B: 66,
+<span id='Ext-event-Event-property-C'>        /** Key constant @type Number */
+</span>        C: 67,
+<span id='Ext-event-Event-property-D'>        /** Key constant @type Number */
+</span>        D: 68,
+<span id='Ext-event-Event-property-E'>        /** Key constant @type Number */
+</span>        E: 69,
+<span id='Ext-event-Event-property-F'>        /** Key constant @type Number */
+</span>        F: 70,
+<span id='Ext-event-Event-property-G'>        /** Key constant @type Number */
+</span>        G: 71,
+<span id='Ext-event-Event-property-H'>        /** Key constant @type Number */
+</span>        H: 72,
+<span id='Ext-event-Event-property-I'>        /** Key constant @type Number */
+</span>        I: 73,
+<span id='Ext-event-Event-property-J'>        /** Key constant @type Number */
+</span>        J: 74,
+<span id='Ext-event-Event-property-K'>        /** Key constant @type Number */
+</span>        K: 75,
+<span id='Ext-event-Event-property-L'>        /** Key constant @type Number */
+</span>        L: 76,
+<span id='Ext-event-Event-property-M'>        /** Key constant @type Number */
+</span>        M: 77,
+<span id='Ext-event-Event-property-N'>        /** Key constant @type Number */
+</span>        N: 78,
+<span id='Ext-event-Event-property-O'>        /** Key constant @type Number */
+</span>        O: 79,
+<span id='Ext-event-Event-property-P'>        /** Key constant @type Number */
+</span>        P: 80,
+<span id='Ext-event-Event-property-Q'>        /** Key constant @type Number */
+</span>        Q: 81,
+<span id='Ext-event-Event-property-R'>        /** Key constant @type Number */
+</span>        R: 82,
+<span id='Ext-event-Event-property-S'>        /** Key constant @type Number */
+</span>        S: 83,
+<span id='Ext-event-Event-property-T'>        /** Key constant @type Number */
+</span>        T: 84,
+<span id='Ext-event-Event-property-U'>        /** Key constant @type Number */
+</span>        U: 85,
+<span id='Ext-event-Event-property-V'>        /** Key constant @type Number */
+</span>        V: 86,
+<span id='Ext-event-Event-property-W'>        /** Key constant @type Number */
+</span>        W: 87,
+<span id='Ext-event-Event-property-X'>        /** Key constant @type Number */
+</span>        X: 88,
+<span id='Ext-event-Event-property-Y'>        /** Key constant @type Number */
+</span>        Y: 89,
+<span id='Ext-event-Event-property-Z'>        /** Key constant @type Number */
+</span>        Z: 90,
+<span id='Ext-event-Event-property-CONTEXT_MENU'>        /** Key constant @type Number */
+</span>        CONTEXT_MENU: 93,
+<span id='Ext-event-Event-property-NUM_ZERO'>        /** Key constant @type Number */
+</span>        NUM_ZERO: 96,
+<span id='Ext-event-Event-property-NUM_ONE'>        /** Key constant @type Number */
+</span>        NUM_ONE: 97,
+<span id='Ext-event-Event-property-NUM_TWO'>        /** Key constant @type Number */
+</span>        NUM_TWO: 98,
+<span id='Ext-event-Event-property-NUM_THREE'>        /** Key constant @type Number */
+</span>        NUM_THREE: 99,
+<span id='Ext-event-Event-property-NUM_FOUR'>        /** Key constant @type Number */
+</span>        NUM_FOUR: 100,
+<span id='Ext-event-Event-property-NUM_FIVE'>        /** Key constant @type Number */
+</span>        NUM_FIVE: 101,
+<span id='Ext-event-Event-property-NUM_SIX'>        /** Key constant @type Number */
+</span>        NUM_SIX: 102,
+<span id='Ext-event-Event-property-NUM_SEVEN'>        /** Key constant @type Number */
+</span>        NUM_SEVEN: 103,
+<span id='Ext-event-Event-property-NUM_EIGHT'>        /** Key constant @type Number */
+</span>        NUM_EIGHT: 104,
+<span id='Ext-event-Event-property-NUM_NINE'>        /** Key constant @type Number */
+</span>        NUM_NINE: 105,
+<span id='Ext-event-Event-property-NUM_MULTIPLY'>        /** Key constant @type Number */
+</span>        NUM_MULTIPLY: 106,
+<span id='Ext-event-Event-property-NUM_PLUS'>        /** Key constant @type Number */
+</span>        NUM_PLUS: 107,
+<span id='Ext-event-Event-property-NUM_MINUS'>        /** Key constant @type Number */
+</span>        NUM_MINUS: 109,
+<span id='Ext-event-Event-property-NUM_PERIOD'>        /** Key constant @type Number */
+</span>        NUM_PERIOD: 110,
+<span id='Ext-event-Event-property-NUM_DIVISION'>        /** Key constant @type Number */
+</span>        NUM_DIVISION: 111,
+<span id='Ext-event-Event-property-F1'>        /** Key constant @type Number */
+</span>        F1: 112,
+<span id='Ext-event-Event-property-F2'>        /** Key constant @type Number */
+</span>        F2: 113,
+<span id='Ext-event-Event-property-F3'>        /** Key constant @type Number */
+</span>        F3: 114,
+<span id='Ext-event-Event-property-F4'>        /** Key constant @type Number */
+</span>        F4: 115,
+<span id='Ext-event-Event-property-F5'>        /** Key constant @type Number */
+</span>        F5: 116,
+<span id='Ext-event-Event-property-F6'>        /** Key constant @type Number */
+</span>        F6: 117,
+<span id='Ext-event-Event-property-F7'>        /** Key constant @type Number */
+</span>        F7: 118,
+<span id='Ext-event-Event-property-F8'>        /** Key constant @type Number */
+</span>        F8: 119,
+<span id='Ext-event-Event-property-F9'>        /** Key constant @type Number */
+</span>        F9: 120,
+<span id='Ext-event-Event-property-F10'>        /** Key constant @type Number */
+</span>        F10: 121,
+<span id='Ext-event-Event-property-F11'>        /** Key constant @type Number */
+</span>        F11: 122,
+<span id='Ext-event-Event-property-F12'>        /** Key constant @type Number */
+</span>        F12: 123,
+
+<span id='Ext-event-Event-property-WHEEL_SCALE'>        /**
+</span>         * The mouse wheel delta scaling factor. This value depends on browser version and OS and
+         * attempts to produce a similar scrolling experience across all platforms and browsers.
+         *
+         * To change this value:
+         *
+         *      Ext.event.Event.prototype.WHEEL_SCALE = 72;
+         *
+         * @type Number
+         * @property
+         */
+        WHEEL_SCALE: (function () {
+            var scale;
+
+            if (Ext.isGecko) {
+                // Firefox uses 3 on all platforms
+                scale = 3;
+            } else if (Ext.isMac) {
+                // Continuous scrolling devices have momentum and produce much more scroll than
+                // discrete devices on the same OS and browser. To make things exciting, Safari
+                // (and not Chrome) changed from small values to 120 (like IE).
+
+                if (Ext.isSafari &amp;&amp; Ext.webKitVersion &gt;= 532.0) {
+                    // Safari changed the scrolling factor to match IE (for details see
+                    // https://bugs.webkit.org/show_bug.cgi?id=24368). The WebKit version where this
+                    // change was introduced was 532.0
+                    //      Detailed discussion:
+                    //      https://bugs.webkit.org/show_bug.cgi?id=29601
+                    //      http://trac.webkit.org/browser/trunk/WebKit/chromium/src/mac/WebInputEventFactory.mm#L1063
+                    scale = 120;
+                } else {
+                    // MS optical wheel mouse produces multiples of 12 which is close enough
+                    // to help tame the speed of the continuous mice...
+                    scale = 12;
+                }
+
+                // Momentum scrolling produces very fast scrolling, so increase the scale factor
+                // to help produce similar results cross platform. This could be even larger and
+                // it would help those mice, but other mice would become almost unusable as a
+                // result (since we cannot tell which device type is in use).
+                scale *= 3;
+            } else {
+                // IE, Opera and other Windows browsers use 120.
+                scale = 120;
+            }
+
+            return scale;
+        }())
+    },
+    keyCodes = {},
+    keyName, keyCode;
+
+    Ext.apply(Event, constants);
+    Ext.apply(prototype, constants);
+    
+    // Don&#39;t need that
+    delete constants.WHEEL_SCALE;
+    
+    // ENTER and RETURN has the same keyCode, but since RETURN
+    // comes later it will win over ENTER down there. However
+    // ENTER is used more often and feels more natural.
+    delete constants.RETURN;
+    
+    // We need this to do reverse lookup of key name by its code
+    for (keyName in constants) {
+        keyCode = constants[keyName];
+        keyCodes[keyCode] = keyName;
+    }
+    
+    prototype.keyCodes = keyCodes;
+    
+<span id='Ext-event-Event-property-getTrueXY'>    /**
+</span>     * @private
+     * Returns the X and Y coordinates of this event without regard to any RTL
+     * direction settings.
+     */
+    prototype.getTrueXY = prototype.getXY;
 });
 </pre>
 </body>

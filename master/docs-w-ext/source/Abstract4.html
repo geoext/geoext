@@ -15,149 +15,68 @@
   </script>
 </head>
 <body onload="prettyPrint(); highlight();">
-  <pre class="prettyprint lang-js"><span id='Ext-plugin-Abstract'>/**
-</span> * This is the base class from which all plugins should extend.
- *
- * This class defines the essential API of plugins as used by Components by defining the
- * following methods:
- *
- *  - `init` : The plugin initialization method which the host Component calls during
- *     Component initialization. The Component passes itself as the sole parameter.
- *     Subclasses should set up bidirectional links between the plugin and its host
- *     Component here.
- *
- *  - `destroy` : The plugin cleanup method which the host Component calls at Component
- *     destruction time. Use this method to break links between the plugin and the
- *     Component and to free any allocated resources.
+  <pre class="prettyprint lang-js"><span id='Ext-fx-layout-card-Abstract'>/**
+</span> * @private
  */
-Ext.define(&#39;Ext.plugin.Abstract&#39;, {
-    alternateClassName: &#39;Ext.AbstractPlugin&#39;,
+Ext.define(&#39;Ext.fx.layout.card.Abstract&#39;, {
+    extend: &#39;Ext.Evented&#39;,
+<span id='Ext-fx-layout-card-Abstract-property-isAnimation'>    isAnimation: true,
+</span>
+    config: {
+<span id='Ext-fx-layout-card-Abstract-cfg-direction'>        direction: &#39;left&#39;,
+</span>
+<span id='Ext-fx-layout-card-Abstract-cfg-duration'>        duration: null,
+</span>
+<span id='Ext-fx-layout-card-Abstract-cfg-reverse'>        reverse: null,
+</span>
+<span id='Ext-fx-layout-card-Abstract-cfg-layout'>        layout: null
+</span>    },
 
-<span id='Ext-plugin-Abstract-property-isPlugin'>    /**
-</span>     * @property {Boolean} isPlugin
-     * The value `true` to identify objects of this class or a subclass thereof.
-     * @readonly
-     */
-    isPlugin: true,
-
-<span id='Ext-plugin-Abstract-method-constructor'>    /**
-</span>     * Initializes the plugin.
-     * @param {Object} [config] Configuration object.
-     */
-    constructor: function (config) {
-        if (config) {
-            this.pluginConfig = config;
-            this.initConfig(config);
+<span id='Ext-fx-layout-card-Abstract-method-updateLayout'>    updateLayout: function(layout) {
+</span>        if (layout) {
+            this.enable();
         }
     },
 
-<span id='Ext-plugin-Abstract-method-clonePlugin'>    /**
-</span>     * Creates clone of the plugin.
-     * @param {Object} [overrideCfg] Additional config for the derived plugin.
-     */
-    clonePlugin: function (overrideCfg) {
-        return new this.self(Ext.apply({}, overrideCfg, this.pluginConfig));
-    },
+<span id='Ext-fx-layout-card-Abstract-method-enable'>    enable: function() {
+</span>        var layout = this.getLayout();
 
-<span id='Ext-plugin-Abstract-method-detachCmp'>    /**
-</span>     * @method detachCmp
-     * Plugins that can be disconnected from their host component should implement
-     * this method.
-     * @since 6.2.0
-     */
-
-<span id='Ext-plugin-Abstract-method-getCmp'>    /**
-</span>     * Returns the component to which this plugin is attached.
-     * @return {Ext.Component} The owning host component.
-     */
-    getCmp: function() {
-        return this.cmp;
-    },
-
-<span id='Ext-plugin-Abstract-method-setCmp'>    /**
-</span>     * Sets the host component to which this plugin is attached. For a plugin to be
-     * removable without being destroyed, this method should be provided and be prepared
-     * to receive `null` for the component.
-     * @param {Ext.Component} host The owning host component.
-     */
-    setCmp: function (host) {
-        this.cmp = host;
-    },
-
-<span id='Ext-plugin-Abstract-cfg-id'>    /**
-</span>     * @cfg {String} id
-     * An identifier for the plugin that can be set at creation time to later retrieve the
-     * plugin using the {@link #getPlugin getPlugin} method. For example:
-     *
-     *      var panel = Ext.create({
-     *          xtype: &#39;panel&#39;,
-     *
-     *          plugins: [{
-     *              id: &#39;foo&#39;,
-     *              ...
-     *          }]
-     *      });
-     *
-     *      // later on:
-     *      var plugin = panel.getPlugin(&#39;foo&#39;);
-     * @since 6.2.0
-     */
-
-<span id='Ext-plugin-Abstract-cfg-pluginId'>    /**
-</span>     * @cfg {String} pluginId
-     * @deprecated 6.2.0 Use `id` instead
-     */
-
-<span id='Ext-plugin-Abstract-method-init'>    /**
-</span>     * @method init
-     * The init method is invoked to formally associate the host component and the plugin.
-     *
-     * Subclasses should perform initialization and set up any requires links between the
-     * plugin and its host Component in their own implementation of this method.
-     * @param {Ext.Component} host The host Component which owns this plugin.
-     */
-    init: Ext.emptyFn,
-
-<span id='Ext-plugin-Abstract-method-destroy'>    /**
-</span>     * @method destroy
-     *
-     * The destroy method is invoked by the owning Component at the time the Component is
-     * being destroyed.
-     */
-    destroy: function() {
-        this.cmp = this.pluginConfig = null;
-        
-        this.callParent();
-    },
-
-<span id='Ext-plugin-Abstract-method-onClassExtended'>    onClassExtended: function (cls, data, hooks) {
-</span>        var alias = data.alias,
-            prototype = cls.prototype;
-
-        // Inject a ptype property so that findPlugin() works.
-        if (alias &amp;&amp; !data.ptype) {
-            if (Ext.isArray(alias)) {
-                alias = alias[0];
-            }
-            
-            prototype.ptype = alias.split(&#39;plugin.&#39;)[1];
+        if (layout) {
+            layout.on(&#39;beforeactiveitemchange&#39;, &#39;onActiveItemChange&#39;, this);
         }
     },
 
-<span id='Ext-plugin-Abstract-method-resolveListenerScope'>    resolveListenerScope: function (defaultScope) {
+<span id='Ext-fx-layout-card-Abstract-method-disable'>    disable: function() {
+</span>        var layout = this.getLayout();
+
+        if (this.isAnimating) {
+            this.stopAnimation();
+        }
+
+        if (layout) {
+            layout.un(&#39;beforeactiveitemchange&#39;, &#39;onActiveItemChange&#39;, this);
+        }
+    },
+
+<span id='Ext-fx-layout-card-Abstract-method-onActiveItemChange'>    onActiveItemChange: Ext.emptyFn,
+</span>
+<span id='Ext-fx-layout-card-Abstract-method-destroy'>    destroy: function() {
 </span>        var me = this,
-            cmp = me.getCmp(),
-            scope;
+            layout = me.getLayout();
 
-        if (cmp) {
-            scope = cmp.resolveSatelliteListenerScope(me, defaultScope);
+        if (me.isAnimating) {
+            me.stopAnimation();
         }
 
-        // If this method was called, it means the plugin subclass must
-        // have mixed in Observable, so we can rely on there being
-        // a &quot;this.mixins.observable&quot; even though Ext.plugin.Abstract
-        // does not mix it in directly
-        return scope || me.mixins.observable.resolveListenerScope.call(me, defaultScope);
+        if (layout) {
+            layout.un(&#39;beforeactiveitemchange&#39;, &#39;onActiveItemChange&#39;, this);
+        }
+        me.setLayout(null);
+
+        if (me.observableId) {
+            me.fireEvent(&#39;destroy&#39;, this);
+        }
+        me.callParent();
     }
 });
 </pre>

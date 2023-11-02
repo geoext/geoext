@@ -15,205 +15,250 @@
   </script>
 </head>
 <body onload="prettyPrint(); highlight();">
-  <pre class="prettyprint lang-js"><span id='Ext-rtl-Component'>/**
-</span> * This override adds RTL support and the `rtl` config option to AbstactComponent.
+  <pre class="prettyprint lang-js"><span id='Ext-flash-Component'>/**
+</span> * A simple Component for displaying an Adobe Flash SWF movie. The movie will be sized and can participate
+ * in layout like any other Component.
+ *
+ * This component requires the third-party SWFObject library version 2.2 or above. It is not included within
+ * the ExtJS distribution, so you will have to include it into your page manually in order to use this component.
+ * The SWFObject library can be downloaded from the [SWFObject project page](http://code.google.com/p/swfobject)
+ * and then simply import it into the head of your HTML document:
+ *
+ *     &lt;script type=&quot;text/javascript&quot; src=&quot;path/to/local/swfobject.js&quot;&gt;&lt;/script&gt;
+ *
+ * ## Configuration
+ *
+ * This component allows several options for configuring how the target Flash movie is embedded. The most
+ * important is the required {@link #url} which points to the location of the Flash movie to load. Other
+ * configurations include:
+ *
+ * - {@link #backgroundColor}
+ * - {@link #wmode}
+ * - {@link #flashVars}
+ * - {@link #flashParams}
+ * - {@link #flashAttributes}
+ *
+ * ## Example usage:
+ *
+ *     var win = Ext.widget(&#39;window&#39;, {
+ *         title: &quot;It&#39;s a tiger!&quot;,
+ *         layout: &#39;fit&#39;,
+ *         width: 300,
+ *         height: 300,
+ *         x: 20,
+ *         y: 20,
+ *         resizable: true,
+ *         items: {
+ *             xtype: &#39;flash&#39;,
+ *             url: &#39;tiger.swf&#39;
+ *         }
+ *     });
+ *     win.show();
+ *
+ * ## Express Install
+ *
+ * Adobe provides a tool called [Express Install](http://www.adobe.com/devnet/flashplayer/articles/express_install.html)
+ * that offers users an easy way to upgrade their Flash player. If you wish to make use of this, you should set
+ * the static EXPRESS\_INSTALL\_URL property to the location of your Express Install SWF file:
+ *
+ *     Ext.flash.Component.EXPRESS_INSTALL_URL = &#39;path/to/local/expressInstall.swf&#39;;
  */
-Ext.define(&#39;Ext.rtl.Component&#39;, {
-    override: &#39;Ext.Component&#39;,
+Ext.define(&#39;Ext.flash.Component&#39;, {
+    extend: &#39;Ext.Component&#39;,
+    alternateClassName: &#39;Ext.FlashComponent&#39;,
+    alias: &#39;widget.flash&#39;,
 
-<span id='Ext-Component-cfg-rtl'>    /**
-</span>     * @cfg {Boolean} rtl
-     * True to layout this component and its descendants in &quot;rtl&quot; (right-to-left) mode.
-     * Can be explicitly set to false to override a true value inherited from an ancestor.
+<span id='Ext-flash-Component-cfg-flashVersion'>    /**
+</span>     * @cfg {String} [flashVersion=&quot;9.0.115&quot;]
+     * Indicates the version the flash content was published for.
+     */
+    flashVersion : &#39;9.0.115&#39;,
+
+<span id='Ext-flash-Component-cfg-backgroundColor'>    /**
+</span>     * @cfg {String} [backgroundColor=&quot;#ffffff&quot;]
+     * The background color of the SWF movie.
+     */
+    backgroundColor: &#39;#ffffff&#39;,
+
+<span id='Ext-flash-Component-cfg-wmode'>    /**
+</span>     * @cfg {String} [wmode=&quot;opaque&quot;]
+     * The wmode of the flash object. This can be used to control layering.
+     * Set to &#39;transparent&#39; to ignore the {@link #backgroundColor} and make the background of the Flash
+     * movie transparent.
+     */
+    wmode: &#39;opaque&#39;,
+
+<span id='Ext-flash-Component-cfg-flashVars'>    /**
+</span>     * @cfg {Object} flashVars
+     * A set of key value pairs to be passed to the flash object as flash variables.
      */
 
-    applyScrollable: function(scrollable, oldScrollable) {
-        var ret = this.callParent([scrollable, oldScrollable]);
+<span id='Ext-flash-Component-cfg-flashParams'>    /**
+</span>     * @cfg {Object} flashParams
+     * A set of key value pairs to be passed to the flash object as parameters. Possible parameters can be found here:
+     * http://kb2.adobe.com/cps/127/tn_12701.html
+     */
 
-        if (ret &amp;&amp; this.getInherited().rtl) {
-            ret.setRtl(true);
+<span id='Ext-flash-Component-cfg-flashAttributes'>    /**
+</span>     * @cfg {Object} flashAttributes
+     * A set of key value pairs to be passed to the flash object as attributes.
+     */
+
+<span id='Ext-flash-Component-cfg-url'>    /**
+</span>     * @cfg {String} url (required)
+     * The URL of the SWF file to include.
+     */
+
+<span id='Ext-flash-Component-cfg-swfWidth'>    /**
+</span>     * @cfg {String/Number} [swfWidth=&quot;100%&quot;]
+     * The width of the embedded SWF movie inside the component.
+     *
+     * Defaults to &quot;100%&quot; so that the movie matches the width of the component.
+     */
+    swfWidth: &#39;100%&#39;,
+
+<span id='Ext-flash-Component-cfg-swfHeight'>    /**
+</span>     * @cfg {String/Number} [swfHeight=&quot;100%&quot;]
+     * The height of the embedded SWF movie inside the component.
+     *
+     * Defaults to &quot;100%&quot; so that the movie matches the height of the component.
+     */
+    swfHeight: &#39;100%&#39;,
+
+<span id='Ext-flash-Component-cfg-expressInstall'>    /**
+</span>     * @cfg {Boolean} [expressInstall=false]
+     * True to prompt the user to install flash if not installed. Note that this uses
+     * Ext.FlashComponent.EXPRESS_INSTALL_URL, which should be set to the local resource.
+     */
+    expressInstall: false,
+
+<span id='Ext-flash-Component-property-swf'>    /**
+</span>     * @property {Ext.dom.Element} swf
+     * A reference to the object or embed element into which the SWF file is loaded. Only
+     * populated after the component is rendered and the SWF has been successfully embedded.
+     */
+
+<span id='Ext-flash-Component-cfg-renderTpl'>    // Have to create a placeholder div with the swfId, which SWFObject will replace with the object/embed element.
+</span>    renderTpl: [&#39;&lt;div id=&quot;{swfId}&quot; role=&quot;application&quot;&gt;&lt;/div&gt;&#39;],
+
+<span id='Ext-flash-Component-event-success'>    /**
+</span>     * @event success
+     * Fired when the Flash movie has been successfully embedded
+     * @param {Ext.flash.Component} this
+     */
+
+<span id='Ext-flash-Component-event-failure'>    /**
+</span>     * @event failure
+     * Fired when the Flash movie embedding fails
+     * @param {Ext.flash.Component} this
+     */
+
+    initComponent: function() {
+        // &lt;debug&gt;
+        if (!(&#39;swfobject&#39; in window)) {
+            Ext.raise(&#39;The SWFObject library is not loaded. Ext.flash.Component requires SWFObject version 2.2 or later: http://code.google.com/p/swfobject/&#39;);
         }
-
-        return ret;
-    },
-
-<span id='Ext-Component-method-convertPositionSpec'>    convertPositionSpec: function(posSpec) {
-</span>        // Since anchoring is done based on page level coordinates, we need to invert
-        // left and right in the position spec when the direction of the compoent being
-        // aligned is not the same as the direction of the viewport/body
-        return Ext.util.Region.getAlignInfo(posSpec, (Ext.rootInheritedState.rtl || false) !== (this.getInherited().rtl || false));
-    },
-
-<span id='Ext-rtl-Component-method-getAnchorToXY'>    getAnchorToXY: function(el, anchor, local, mySize) {
-</span>        var doc = document,
-            pos, scroll, extraX, extraY;
-
-        if (el.dom === doc.body || el.dom === doc) {
-            // anchor the element using the same coordinate system as the viewport or body
-            scroll = Ext.rootInheritedState.rtl ? el.rtlGetScroll() : el.getScroll();
-            extraX = scroll.left;
-            extraY = scroll.top;
-        } else {
-            pos = el.getXY();
-            extraX = local ? 0 : pos[0];
-            extraY = local ? 0 : pos[1];
+        if (!this.url) {
+            Ext.raise(&#39;The &quot;url&quot; config is required for Ext.flash.Component&#39;);
         }
+        // &lt;/debug&gt;
 
-        return el.calculateAnchorXY(anchor, extraX, extraY, mySize);
-    },
-
-<span id='Ext-rtl-Component-method-getBorderPadding'>    getBorderPadding: function() {
-</span>        var borderPadding = this.el.getBorderPadding(),
-            xBegin;
-                
-        if (this.isParentRtl()) {
-            xBegin = borderPadding.xBegin;
-            borderPadding.xBegin = borderPadding.xEnd;
-            borderPadding.xEnd = xBegin;
-        }
-
-        return borderPadding;
-    },
-
-<span id='Ext-rtl-Component-method-getLocalX'>    getLocalX: function() {
-</span>        return this.isLocalRtl() ? this.el.rtlGetLocalX() : this.el.getLocalX();
-    },
-
-<span id='Ext-rtl-Component-method-getLocalXY'>    getLocalXY: function() {
-</span>        return this.isLocalRtl() ? this.el.rtlGetLocalXY() : this.el.getLocalXY();
+        this.callParent();
     },
     
-<span id='Ext-rtl-Component-method-unitizeBox'>    unitizeBox: function(box) {
-</span>        if (this.getInherited().rtl) {
-            return Ext.dom.Element.rtlUnitizeBox(box); 
-        } else {
-            return this.callParent(arguments);
-        } 
+<span id='Ext-flash-Component-method-beforeRender'>    beforeRender: function(){
+</span>        this.callParent();
+        
+        Ext.applyIf(this.renderData, {
+            swfId: this.getSwfId()
+        });
     },
 
-<span id='Ext-rtl-Component-method-initInheritedState'>    initInheritedState: function (inheritedState) {
-</span>        this.callParent(arguments);
+<span id='Ext-flash-Component-method-afterRender'>    afterRender: function() {
+</span>        var me = this,
+            flashParams = Ext.apply({}, me.flashParams), 
+            flashVars = Ext.apply({}, me.flashVars);
 
-        var rtl = this.rtl;
+        me.callParent();
 
-        if (rtl !== undefined) {
-            // unlike the other hierarchical properties which should always
-            // be inherited from the hierarchy unless true, rtl should only
-            // be inherited if undefined, that is if this component instance
-            // does not have rtl specified as true or false.
-            inheritedState.rtl = rtl;
-        }
+        flashParams = Ext.apply({
+            allowScriptAccess: &#39;always&#39;,
+            bgcolor: me.backgroundColor,
+            wmode: me.wmode
+        }, flashParams);
+
+        flashVars = Ext.apply({
+            allowedDomain: document.location.hostname
+        }, flashVars);
+
+        new swfobject.embedSWF( // jshint ignore:line
+            me.url,
+            me.getSwfId(),
+            me.swfWidth,
+            me.swfHeight,
+            me.flashVersion,
+            me.expressInstall ? me.statics.EXPRESS_INSTALL_URL : undefined,
+            flashVars,
+            flashParams,
+            me.flashAttributes,
+            me.swfCallback.bind(me)
+        );
     },
 
-<span id='Ext-Component-method-isLocalRtl'>    /**
-</span>     * Returns true if this component&#39;s local coordinate system is rtl. For normal
-     * components this equates to the value of isParentRtl().  Floaters are a bit different
-     * because a floater&#39;s element can be a childNode of something other than its
-     * parent component&#39;s element.  For floaters we have to read the dom to see if the
-     * component&#39;s element&#39;s parentNode has a css direction value of &quot;rtl&quot;.
-     * @return {Boolean}
-     * @private
+<span id='Ext-flash-Component-method-swfCallback'>    /**
+</span>     * @private
+     * The callback method for handling an embedding success or failure by SWFObject
+     * @param {Object} e The event object passed by SWFObject - see http://code.google.com/p/swfobject/wiki/api
      */
-    isLocalRtl: function() {
-        var me = this,
-            rtl, offsetParent;
-
-        if (me.floating) {
-            if (me._isOffsetParentRtl === undefined) {
-                
-                // position:fixed elements do not report an offsetParent, so fall back to parentNode
-                offsetParent = this.el.dom.offsetParent || this.el.dom.parentNode;
-                if (offsetParent) {
-                    me._isOffsetParentRtl =
-                        Ext.fly(offsetParent, &#39;_isLocalRtl&#39;).isStyle(&#39;direction&#39;, &#39;rtl&#39;);
-                }
-            }
-            rtl = !!me._isOffsetParentRtl;
+    swfCallback: function(e) {
+        var me = this;
+        if (e.success) {
+            me.swf = Ext.get(e.ref);
+            me.onSuccess();
+            me.fireEvent(&#39;success&#39;, me);
         } else {
-            rtl = this.isParentRtl();
+            me.onFailure();
+            me.fireEvent(&#39;failure&#39;, me);
         }
-
-        return rtl;
     },
 
-<span id='Ext-Component-method-isParentRtl'>    /**
-</span>     * Returns true if this component&#39;s parent container is rtl. Used by rtl positioning
-     * methods to determine if the component should be positioned using a right-to-left
-     * coordinate system.
-     * @return {Boolean}
-     * @private
+<span id='Ext-flash-Component-method-getSwfId'>    /**
+</span>     * Retrieves the id of the SWF object/embed element.
      */
-    isParentRtl: function() {
-        var me = this,
-            inheritedState = me.getInherited(),
-            isRtl = false,
-            myRtl;
-
-        if (inheritedState.hasOwnProperty(&#39;rtl&#39;)) {
-            // Temporarily remove this component&#39;s rtl property so we can see what the rtl
-            // value is on the prototype.  A component is only rtl positioned if it is
-            // inside of an rtl coordinate system (if one of it&#39;s ancestors is rtl). We
-            // can&#39;t just use ownerCt/floatParent inheritedState, because components may
-            // not have a container, but might still be part of a rtl coordinate system by
-            // virtue of the Viewport. These components will inherit the correct rtl
-            // value from the prototype because all hierarchy states inherit from
-            // Ext.rootInheritedState
-            myRtl = inheritedState.rtl;
-            delete inheritedState.rtl;
-        }
-
-        if (inheritedState.rtl) {
-            isRtl = true;
-        }
-
-        if (myRtl !== undefined) {
-            // restore this component&#39;s original inheritedState rtl property
-            inheritedState.rtl = myRtl;
-        }
-
-        return isRtl;
+    getSwfId: function() {
+        return this.swfId || (this.swfId = &quot;extswf&quot; + this.getAutoId());
     },
 
-<span id='Ext-rtl-Component-method-setLocalX'>    setLocalX: function(x) {
-</span>        return this.isLocalRtl() ? this.el.rtlSetLocalX(x) : this.el.setLocalX(x);
+<span id='Ext-flash-Component-method-onSuccess'>    onSuccess: function() {
+</span>        // swfobject forces visiblity:visible on the swf element, which prevents it 
+        // from getting hidden when an ancestor is given visibility:hidden.
+        this.swf.setStyle(&#39;visibility&#39;, &#39;inherit&#39;);
     },
 
-<span id='Ext-rtl-Component-method-setLocalXY'>    setLocalXY: function(x, y) {
-</span>        return this.isLocalRtl() ? this.el.rtlSetLocalXY(x, y) : this.el.setLocalXY(x, y);
-    },
-    
-<span id='Ext-Component-method-isOppositeRootDirection'>    isOppositeRootDirection: function(){
-</span>        return !this.getInherited().rtl !== !Ext.rootInheritedState.rtl; // jshint ignore:line
-    },
-
-<span id='Ext-rtl-Component-property-privates'>    privates: {
-</span>        initStyles: function(){
-            if (this.getInherited().rtl) {
-                this.horizontalPosProp = &#39;right&#39;;
-            }
-            this.callParent(arguments);
-        },
-
-        parseBox: function(box) {
-            if (this.getInherited().rtl) {
-                return Ext.dom.Element.rtlParseBox(box);
-            } else {
-                return this.callParent(arguments);
-            }
+<span id='Ext-flash-Component-method-onFailure'>    onFailure: Ext.emptyFn,
+</span>
+<span id='Ext-flash-Component-method-doDestroy'>    doDestroy: function() {
+</span>        var me = this,
+            swf = me.swf;
+        
+        if (swf) {
+            swfobject.removeSWF(me.getSwfId()); // jshint ignore:line
+            me.swf = Ext.destroy(swf);
         }
+        
+        me.callParent();
+    },
+
+    statics: {
+<span id='Ext-flash-Component-static-property-EXPRESS_INSTALL_URL'>        /**
+</span>         * @property {String}
+         * The url for installing flash if it doesn&#39;t exist. This should be set to a local resource.
+         * See [http://get.adobe.com/flashplayer/](http://get.adobe.com/flashplayer/) for details.
+         * @static
+         */
+        EXPRESS_INSTALL_URL: &#39;http:/&#39; + &#39;/swfobject.googlecode.com/svn/trunk/swfobject/expressInstall.swf&#39;
     }
-}, function() {
-    Ext.onInternalReady(function() {
-        // If the document or body has &quot;direction:rtl&quot; then we set the rtl flag in the
-        // root hierarchy state so that the page-level coordinate system will be
-        // right-based (similar to using a Viewport with &quot;rtl: true&quot;).
-        if ((Ext.fly(document.documentElement).isStyle(&#39;direction&#39;, &#39;rtl&#39;)) ||
-            (Ext.getBody().isStyle(&#39;direction&#39;, &#39;rtl&#39;))) {
-            Ext.rootInheritedState.rtl = true;
-        }
-    });
 });
-
 </pre>
 </body>
 </html>
