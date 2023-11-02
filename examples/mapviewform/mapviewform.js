@@ -13,14 +13,14 @@ Ext.application({
         });
 
         var layer = new ol.layer.Tile({
-            source: new ol.source.Stamen({
-                layer: 'watercolor'
+            source: new ol.source.StadiaMaps({
+                layer: 'stamen_watercolor'
             })
         });
 
         var labLayer = new ol.layer.Tile({
-            source: new ol.source.Stamen({
-                layer: 'terrain-labels'
+            source: new ol.source.StadiaMaps({
+                layer: 'stamen_terrain_labels'
             })
         });
 

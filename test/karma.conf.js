@@ -112,7 +112,7 @@ module.exports = function(config) {
                     '--no-sandbox',
                     '--headless',
                     '--disable-web-security',
-                    '--disable-gpu',
+                    // '--disable-gpu',
                     // Without a remote debugging port, Google Chrome exits
                     // immediately.
                     '--remote-debugging-port=9999',

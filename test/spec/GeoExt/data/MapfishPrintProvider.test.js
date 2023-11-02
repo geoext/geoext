@@ -198,15 +198,15 @@ describe('GeoExt.data.MapfishPrintProvider', function() {
 
             firstgrouplayer = new ol.layer.Tile({
                 name: '3',
-                source: new ol.source.Stamen({
-                    layer: 'watercolor'
+                source: new ol.source.StadiaMaps({
+                    layer: 'stamen_watercolor'
                 })
             });
 
             secondgrouplayer = new ol.layer.Tile({
                 name: '4',
-                source: new ol.source.Stamen({
-                    layer: 'terrain-labels'
+                source: new ol.source.StadiaMaps({
+                    layer: 'stamen_terrain_labels'
                 })
             });
 
