@@ -169,7 +169,7 @@ function render() {
 
   try {
     value = document.getElementById('symbolizers').value;
-    symbolizers = Ext.JSON.decode(value);
+    symbolizers = eval(value);
     if (!symbolizers) {
       throw 'Invalid symbolizers';
     }

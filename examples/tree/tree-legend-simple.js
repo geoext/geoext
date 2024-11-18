@@ -97,7 +97,7 @@ Ext.application({
     source1 = new ol.source.StadiaMaps({layer: 'stamen_watercolor'});
     layer1 = new ol.layer.Tile({
       legendUrl:
-        'https://stamen-tiles-d.a.ssl.fastly.net/' + 'watercolor/2/1/0.jpg',
+        'https://tiles.stadiamaps.com/tiles/stamen_watercolor/2/1/0.jpg',
       source: source1,
       name: 'Stamen Watercolor',
     });
@@ -105,7 +105,7 @@ Ext.application({
     source2 = new ol.source.StadiaMaps({layer: 'stamen_terrain_labels'});
     layer2 = new ol.layer.Tile({
       legendUrl:
-        'https://stamen-tiles-b.a.ssl.fastly.net/' + 'terrain-labels/4/4/6.png',
+        'https://tiles.stadiamaps.com/tiles/stamen_terrain_labels/4/4/6.png',
       source: source2,
       name: 'Stamen Terrain Labels',
     });
