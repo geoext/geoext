@@ -17,7 +17,7 @@
   ],
   "homepage": "https://geoext.github.io/geoext/",
   "license": "GPL-3.0",
-  "version": "6.0.0",
+  "version": "7.0.0",
   "repository": {
     "type": "git",
     "url": "https://github.com/geoext/geoext.git"
@@ -58,7 +58,7 @@
     "release": "npm run build && np --no-yarn --contents ./dist && git push https://github.com/geoext/geoext.git master --tags"
   },
   "devDependencies": {
-    "ol": "^8.1.0",
+    "ol": "^10.2.1",
     "browser-sync": "2.27.10",
     "copyfiles": "2.4.1",
     "coveralls": "3.1.1",
@@ -92,7 +92,7 @@
   "creator": "GeoExt Contributors",
   "summary": "GIS Package for ExtJS",
   "detailedDescription": "GeoExt is Open Source and enables building desktop-like GIS applications through the web. It is a JavaScript framework that combines the GIS functionality of OpenLayers with the user interface savvy of the ExtJS library provided by Sencha.",
-  "compatVersion": "3.0.0",
+  "compatVersion": "7.0.0",
   "format": "1",
   "slicer": {
     "js": [

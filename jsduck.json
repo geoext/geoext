@@ -6,7 +6,7 @@
     "--ignore-html": "debug",
     "--output": "docs",
     "--processes": 0,
-    "--title": "GeoExt v3.3.2 Documentation",
+    "--title": "GeoExt v7.0.0 Documentation",
     "--warnings": [
       "-extend",
       "-link",
