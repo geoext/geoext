@@ -171,7 +171,7 @@ describe('GeoExt.data.serializer.Vector', function() {
             style3 = new ol.style.Style({
                 text: new ol.style.Text({
                     font: 'normal 16px "sans serif"',
-                    text: 'GeoExt3',
+                    text: 'GeoExt',
                     textAlign: 'left',
                     offsetX: 42,
                     offsetY: -42
@@ -308,7 +308,7 @@ describe('GeoExt.data.serializer.Vector', function() {
                     fontSize: '16px',
                     fontStyle: 'normal',
                     fontFamily: '"sans serif"',
-                    label: 'GeoExt3',
+                    label: 'GeoExt',
                     labelAlign: 'left',
                     labelXOffset: 42,
                     labelYOffset: 42

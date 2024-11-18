@@ -1,12 +1,12 @@
-# GeoExt 3 Universal App
+# GeoExt Universal App
 
-Follow these instructions to build your first GeoExt 3 application, using Sencha `cmd`. Supported versions:
+Follow these instructions to build your first GeoExt application, using Sencha `cmd`. Supported versions:
 
 * Sencha Cmd v6.2.1.29
 * ExtJS GPL 6.2.0 (ext.version.number=6.2.0.981)
-* GeoExt 3 (2016-10-20)
+* GeoExt (2016-10-20)
 
-We will create a basic GeoExt 3 based universal app. A universal app should use both the classic and modern toolkit to work on desktop and mobile browsers. At the end of this exercise, you should have an application displaying a OpenLayers 4 map on a panel, both on the desktop and mobile browser.
+We will create a basic GeoExt based universal app. A universal app should use both the classic and modern toolkit to work on desktop and mobile browsers. At the end of this exercise, you should have an application displaying a OpenLayers 4 map on a panel, both on the desktop and mobile browser.
 
 ## ExtJS Universal App
 
@@ -39,9 +39,9 @@ When you see `Waiting for changes...`, open the browser using [http://localhost:
 
 Press `CONTROL-C` to end the local server.
 
-## GeoExt 3 Universal App
+## GeoExt Universal App
 
-Let's do it! Please make sure that you are able to create the ExtJS Universal App as described. The process to create our first GeoExt 3 is quite similar. The previous app was created to make sure you have all the ExtJS setup up and running.
+Let's do it! Please make sure that you are able to create the ExtJS Universal App as described. The process to create our first GeoExt is quite similar. The previous app was created to make sure you have all the ExtJS setup up and running.
 
 You already have Sencha cmd and ExtJS 6 working. Let's start with a basic ExtJS application.
 
@@ -56,15 +56,15 @@ When you see `Waiting for changes...`, open the browser using [http://localhost:
 
 If the application is running properly, you can stop the web server with `CONTROL-C` and move on.
 
-### Add GeoExt 3 to your app
+### Add GeoExt to your app
 
-Since [GeoExt v3.0.0](https://github.com/geoext/geoext/releases/tag/v3.0.0) it is strongly recommended that app devs use GeoExt 3 via git clone, especially if the latest (and greatest) version should be used.
+Since [GeoExt v3.0.0](https://github.com/geoext/geoext/releases/tag/v3.0.0) it is strongly recommended that app devs use GeoExt via git clone, especially if the latest (and greatest) version should be used.
 
 Alternatively the released versions are published as [ExtJS package](http://docs.sencha.com/cmd/6.x/cmd_packages/cmd_packages.html). They can be used as any other ExtJS package, taking advantage of Sencha cmd.
 
-#### Use GeoExt 3 from a git clone (recommended)
+#### Use GeoExt from a git clone (recommended)
 
-Clone the latest GeoExt 3 code from the official github repository:
+Clone the latest GeoExt code from the official github repository:
 ```
 mkdir lib
 cd lib
@@ -77,19 +77,19 @@ Adjust the `classpath` property in your ``app.json`` like below.
 "classpath": [
     "app",
     "${toolkit.name}/src",
-    "./lib/geoext3/src"
+    "./lib/geoext/src"
 ],
 ```
 
-#### Use GeoExt 3 as ExtJS package
+#### Use GeoExt as ExtJS package
 
-The released version of GeoExt 3 are available as a ExtJS package. We need to tell Sencha cmd where it can find the `GeoExt3` package.
+The released version of GeoExt are available as a ExtJS package. We need to tell Sencha cmd where it can find the `GeoExt3` package.
 
 ```
 sencha package repo add GeoExt http://geoext.github.io/geoext/cmd/pkgs
 ```
 
-Sencha cmd can be used to check that GeoExt repository is known. Later Sencha cmd will fetch the GeoExt 3 package from the repository to build our application.
+Sencha cmd can be used to check that GeoExt repository is known. Later Sencha cmd will fetch the GeoExt package from the repository to build our application.
 
 ```
 sencha repository list
@@ -105,7 +105,7 @@ Sencha Cmd v6.2.1.29
 [INF]     GeoExt - http://geoext.github.io/geoext/cmd/pkgs/
 [INF]     font-awesome - http://geoext.github.io/geoext/cmd/pkgs/
 ```
-Add the following GeoExt 3 path `"packages/remote/GeoExt/src"` to the `classpath`:
+Add the following GeoExt path `"packages/remote/GeoExt/src"` to the `classpath`:
 
 ```
   "classpath": [
@@ -230,7 +230,7 @@ Add a new tab to `classic/src/view/main/Main.js` to the `items` property, after 
             html: '{loremIpsum}'
         }
     }, {
-        title: 'GeoExt3 OL3 Map',
+        title: 'GeoExt OL Map',
         iconCls: 'fa-map-marker',
         layout: 'fit',
         items: [{
@@ -249,7 +249,7 @@ Add the same new tab to `modern/src/view/main/Main.js`. It will become:
                 html: '{loremIpsum}'
             }
         }, {
-            title: 'GeoExt3 OL3 Map',
+            title: 'GeoExt OL Map',
             iconCls: 'fa-map-marker',
             layout: 'fit',
             items: [{
@@ -324,9 +324,9 @@ To open the application on a mobile device connected to the same local network, 
 
 The following screenshots shows the result, for the classic (running on desktop browser) and modern toolkit (running on mobile).
 
-![GeoExt 3 Universal app on desktop](docresources/MyGeoExtApp-classic_x600.png "GeoExt 3 Universal app on desktop")
+![GeoExt Universal app on desktop](docresources/MyGeoExtApp-classic_x600.png "GeoExt Universal app on desktop")
 
-![GeoExt 3 Universal app on mobile](docresources/MyGeoExtApp-modern_x600.png "GeoExt 3 Universal app on mobile")
+![GeoExt Universal app on mobile](docresources/MyGeoExtApp-modern_x600.png "GeoExt Universal app on mobile")
 
 ### Celebrate and share
 
@@ -334,7 +334,7 @@ Congratulations! Celebrate and share your accomplishment!
 
 ### What Went Wrong?
 
-If you are unable to get this GeoExt 3 app up and running, check the Sencha cmd output for errors. Also check the browser inspector/development tools to find any errors if you don't see the map.
+If you are unable to get this GeoExt app up and running, check the Sencha cmd output for errors. Also check the browser inspector/development tools to find any errors if you don't see the map.
 
 Check the sources, which are also available on [Github](https://github.com/jgrocha/MyGeoExtApp).
 
