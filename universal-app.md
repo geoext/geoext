@@ -2,9 +2,9 @@
 
 Follow these instructions to build your first GeoExt application, using Sencha `cmd`. Supported versions:
 
-* Sencha Cmd v6.2.1.29
-* ExtJS GPL 6.2.0 (ext.version.number=6.2.0.981)
-* GeoExt (2016-10-20)
+* Sencha Cmd v7.2.0.84
+* ExtJS GPL 7.0.0 (ext.version.number=6.2.0.981)
+* GeoExt (2024-11-18)
 
 We will create a basic GeoExt based universal app. A universal app should use both the classic and modern toolkit to work on desktop and mobile browsers. At the end of this exercise, you should have an application displaying a OpenLayers 4 map on a panel, both on the desktop and mobile browser.
 
@@ -14,13 +14,13 @@ Let's review the Sencha `cmd` used to create a basic universal app.
 
 Install [Sencha Cmd](https://www.sencha.com/products/extjs/cmd-download/).
 
-Download ExtJS 6 GPL ([version ext-6.2.0](https://www.sencha.com/legal/gpl/)). Unzip it, and store it somewhere on your file system, like `/somewhere/ExtJS 6/ext-6.2.0/`.
+Download ExtJS 7 GPL ([version ext-7.0.0](https://www.sencha.com/legal/gpl/)). Unzip it, and store it somewhere on your file system, like `/somewhere/ExtJS/ext-7.0.0/`.
 
-To create a universal ExtJS 6 based app, do:
+To create a universal ExtJS based app, run the following. Note the `sencha` executable will need to be available on your system path.
 
 ```
 cd ~/WebstormProjects
-sencha -sdk "/somewhere/ExtJS 6/ext-6.2.0/" generate app MyApp MyApp
+sencha -sdk "/somewhere/ExtJS/ext-7.0.0/" generate app MyApp MyApp
 cd MyApp
 sencha app watch
 ```
@@ -47,7 +47,7 @@ You already have Sencha cmd and ExtJS 6 working. Let's start with a basic ExtJS 
 
 ```
 cd ~/WebstormProjects
-sencha -sdk "/somewhere/ExtJS 6/ext-6.2.0/" generate app MyGeoExtApp MyGeoExtApp
+sencha -sdk "/somewhere/ExtJS/ext-7.0.0/" generate app MyGeoExtApp MyGeoExtApp
 cd MyGeoExtApp/
 sencha app watch
 ```
@@ -60,7 +60,7 @@ If the application is running properly, you can stop the web server with `CONTRO
 
 Since [GeoExt v3.0.0](https://github.com/geoext/geoext/releases/tag/v3.0.0) it is strongly recommended that app devs use GeoExt via git clone, especially if the latest (and greatest) version should be used.
 
-Alternatively the released versions are published as [ExtJS package](http://docs.sencha.com/cmd/6.x/cmd_packages/cmd_packages.html). They can be used as any other ExtJS package, taking advantage of Sencha cmd.
+Alternatively the released versions are published as [ExtJS package](https://docs.sencha.com/cmd/7.8.0/guides/cmd_packages/cmd_packages.html). They can be used as any other ExtJS package, taking advantage of Sencha cmd.
 
 #### Use GeoExt from a git clone (recommended)
 
@@ -98,7 +98,7 @@ sencha repository list
 You should get something like:
 
 ```
-Sencha Cmd v6.2.1.29
+Sencha Cmd v7.2.0.84
 [INF] Remote repository connections (3):
 [INF]
 [INF]     sencha - http://cdn.sencha.com/cmd/packages/
@@ -267,13 +267,13 @@ The file `app.json` must be adjusted before we can build the application.
 
 Two small changes are necessary.
 
-#### Add the OpenLayers 4 library
+#### Add the OpenLayers library
 
 The application needs the OpenLayers library to work. Add this dependency to the `js` property.
 
 ```
   "js": [{
-      "path": "https://openlayers.org/en/v4.6.5/build/ol.js",
+      "path": "https://cdn.jsdelivr.net/npm/ol@v10.2.1/dist/ol.js",
       "remote": true
     }, {
       "path": "app.js",
@@ -285,7 +285,7 @@ and css file
 
 ```
     "css": [
-        {"path": "https://openlayers.org/en/v4.6.5/css/ol.css" , "remote": true},
+        {"path": "https://cdn.jsdelivr.net/npm/ol@v10.2.1/ol.css" , "remote": true},
         {
             // this entry uses an ant variable that is the calculated
             // value of the generated output css file for the app,
@@ -297,7 +297,8 @@ and css file
     ],
 ```
 
-This includes all OpenLayers 4 functionality. After this exercise, you can consider [creating a custom build](https://openlayers.org/en/v4.6.5/doc/tutorials/custom-builds.html) to create a smaller OpenLayers 4 library, adjusted to only what you need.
+This includes all OpenLayers functionality. After this exercise, you can consider [using the OpenLayer package](https://www.npmjs.com/package/ol) 
+which is the recommended way to use the OpenLayers library.
 
 ### Build and test the app
 
@@ -307,7 +308,7 @@ Start by doing:
 sencha app refresh
 ```
 
-Since we need the GeoExt package (added to the "requires" in `app.json`), the previous command will download the package and installs it under `packages/remote/GeoExt` (only in case you [installed GeoExt as ExtJS package](#use-geoext-3-as-extjs-package)).
+Since we need the GeoExt package (added to the "requires" in `app.json`), the previous command will download the package and installs it under `packages/remote/GeoExt` (only in case you [installed GeoExt as ExtJS package](#use-geoext-as-extjs-package)).
 Make sure you have this folder added to your local application.
 
 If you have some error reported, double check the changes you made. Confirm that you do not have syntax errors in `app.json`.
