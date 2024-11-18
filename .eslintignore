@@ -1,1 +1,4 @@
 examples/lib/ol/
+sass
+bin
+.sencha

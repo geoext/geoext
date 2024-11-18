@@ -19,107 +19,105 @@
  * @class GeoExt.data.store.OlObjects
  */
 Ext.define('GeoExt.data.store.OlObjects', {
-    extend: 'Ext.data.Store',
-    requires: [
-        'GeoExt.data.model.OlObject'
-    ],
+  extend: 'Ext.data.Store',
+  requires: ['GeoExt.data.model.OlObject'],
 
-    mixins: [
-        'GeoExt.mixin.SymbolCheck'
-    ],
+  mixins: ['GeoExt.mixin.SymbolCheck'],
 
-    // <debug>
-    symbols: [
-        'ol.Collection',
-        'ol.Collection#getArray',
-        'ol.Collection#insertAt',
-        'ol.Collection#removeAt'
-    ],
-    // </debug>
+  // <debug>
+  symbols: [
+    'ol.Collection',
+    'ol.Collection#getArray',
+    'ol.Collection#insertAt',
+    'ol.Collection#removeAt',
+  ],
+  // </debug>
 
+  /**
+   * The ol collection this store syncs with.
+   *
+   * @property {ol.Collection}
+   */
+  olCollection: null,
+
+  model: 'GeoExt.data.model.OlObject',
+
+  proxy: {
+    type: 'memory',
+    reader: 'json',
+  },
+
+  listeners: {
     /**
-     * The ol collection this store syncs with.
+     * Forwards changes on the Ext.data.Store to the ol.Collection.
      *
-     * @property {ol.Collection}
-     */
-    olCollection: null,
-
-    model: 'GeoExt.data.model.OlObject',
-
-    proxy: {
-        type: 'memory',
-        reader: 'json'
-    },
-
-    listeners: {
-        /**
-         * Forwards changes on the Ext.data.Store to the ol.Collection.
-         *
-         * @private
-         * @inheritdoc
-         */
-        add: function(store, records, index) {
-            var coll = store.olCollection;
-            var length = records.length;
-            var i;
-
-            store.__updating = true;
-            for (i = 0; i < length; i++) {
-                if (!Ext.Array.contains(
-                    store.olCollection.getArray(),
-                    records[i].olObject)
-                ) {
-                    coll.insertAt(index + i, records[i].olObject);
-                }
-            }
-            store.__updating = false;
-        },
-
-        /**
-         * Forwards changes on the Ext.data.Store to the ol.Collection.
-         *
-         * @private
-         * @inheritdoc
-         */
-        remove: function(store, records, index) {
-            var coll = store.olCollection;
-
-            store.__updating = true;
-            Ext.each(records, function(rec) {
-                coll.remove(rec.olObject);
-            });
-            store.__updating = false;
-        }
-    },
-
-    /**
-     * Constructs a new OlObjects store.
-     *
-     * @param {Object} config The configuration object.
-     */
-    constructor: function(config) {
-        config = config || {};
-
-        // cache ol.Collection on property
-        if (config.data instanceof ol.Collection) {
-            this.olCollection = config.data;
-        // init ol.Collection if array is provided
-        } else {
-            this.olCollection = new ol.Collection(config.data || []);
-        }
-        delete config.data;
-
-        config.data = this.olCollection.getArray();
-
-        this.callParent([config]);
-    },
-
-    /**
+     * @private
      * @inheritdoc
      */
-    destroy: function() {
-        delete this.olCollection;
+    add: function (store, records, index) {
+      const coll = store.olCollection;
+      const length = records.length;
+      let i;
 
-        this.callParent(arguments);
+      store.__updating = true;
+      for (i = 0; i < length; i++) {
+        if (
+          !Ext.Array.contains(
+            store.olCollection.getArray(),
+            records[i].olObject,
+          )
+        ) {
+          coll.insertAt(index + i, records[i].olObject);
+        }
+      }
+      store.__updating = false;
+    },
+
+    /**
+     * Forwards changes on the Ext.data.Store to the ol.Collection.
+     *
+     * @private
+     * @inheritdoc
+     */
+    remove: function (store, records, index) {
+      const coll = store.olCollection;
+
+      store.__updating = true;
+      Ext.each(records, function (rec) {
+        coll.remove(rec.olObject);
+      });
+      store.__updating = false;
+    },
+  },
+
+  /**
+   * Constructs a new OlObjects store.
+   *
+   * @param {Object} config The configuration object.
+   */
+  constructor: function (config) {
+    config = config || {};
+
+    // cache ol.Collection on property
+    if (config.data instanceof ol.Collection) {
+      this.olCollection = config.data;
+      // init ol.Collection if array is provided
+    } else {
+      this.olCollection = new ol.Collection(config.data || []);
     }
+    delete config.data;
+
+    config.data = this.olCollection.getArray();
+
+    this.callParent([config]);
+  },
+
+  /**
+   * @inheritdoc
+   */
+  destroy: function () {
+    delete this.olCollection;
+
+    this.callParent(arguments);
+  },
 });
