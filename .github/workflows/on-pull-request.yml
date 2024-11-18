@@ -8,19 +8,19 @@ jobs:
 
     strategy:
       matrix:
-        node-version: [16.x, 18.x]
+        node-version: [20.x, 22.x]
 
     steps:
     - name: Checkout sources
-      uses: actions/checkout@v2
+      uses: actions/checkout@v4
 
     - name: Use Node.js ${{ matrix.node-version }}
-      uses: actions/setup-node@v1
+      uses: actions/setup-node@v3
       with:
         node-version: ${{ matrix.node-version }}
 
     - name: Cache Node.js modules 💾
-      uses: actions/cache@v2
+      uses: actions/cache@v4
       with:
         path: node_modules
         key: ${{ runner.OS }}-node-${{ hashFiles('**/package-lock.json') }}
@@ -29,7 +29,7 @@ jobs:
           ${{ runner.OS }}-
 
     - name: Cache ext 💾
-      uses: actions/cache@v2
+      uses: actions/cache@v4
       with:
         path: |
           resources/external

@@ -11,12 +11,12 @@ jobs:
 
     steps:
     - name: Checkout sources
-      uses: actions/checkout@v2
+      uses: actions/checkout@v4
 
-    - name: Use Node.js 18.x
-      uses: actions/setup-node@v1
+    - name: Use Node.js 20.x
+      uses: actions/setup-node@v3
       with:
-        node-version: 18.x
+        node-version: 20.x
 
     - name: Install needed Java version
       uses: actions/setup-java@v1
@@ -32,7 +32,7 @@ jobs:
       run: gem install jsduck
 
     - name: Cache Node.js modules 💾
-      uses: actions/cache@v2
+      uses: actions/cache@v4
       with:
         path: |
           node_modules
@@ -42,7 +42,7 @@ jobs:
           ${{ runner.OS }}-
 
     - name: Cache ext 💾
-      uses: actions/cache@v2
+      uses: actions/cache@v4
       with:
         path: |
           resources/external
