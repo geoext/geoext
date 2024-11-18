@@ -46,8 +46,8 @@ jobs:
       with:
         path: |
           resources/external
-          ext-6.2.0
-          ext-6.2.0-gpl.zip
+          ext-7.0.0
+          ext-7.0.0-gpl.zip
           sencha-cmd-download
           sencha-cmd
         key: ${{ runner.OS }}-node-${{ hashFiles('resources/external/ext-all.js') }}
@@ -57,16 +57,16 @@ jobs:
 
     - name: Download ExtJS, install sencha cmd, create sencha workspace
       run: |
-        if (test ! -f ext-6.2.0-gpl.zip); then wget -q http://cdn.sencha.com/ext/gpl/ext-6.2.0-gpl.zip -O ext-6.2.0-gpl.zip; fi
-        if (test ! -d ext-6.2.0); then unzip -qo ext-6.2.0-gpl.zip; fi
+        if (test ! -f ext-7.0.0-gpl.zip); then wget -q http://cdn.sencha.com/ext/gpl/ext-7.0.0-gpl.zip -O ext-7.0.0-gpl.zip; fi
+        if (test ! -d ext-7.0.0); then unzip -qo ext-7.0.0-gpl.zip; fi
         mkdir -p sencha-cmd-download
-        if (test ! -f sencha-cmd-download/SenchaCmd-6.2.1-linux-amd64.sh.zip); then wget -q http://cdn.sencha.com/cmd/6.2.1/no-jre/SenchaCmd-6.2.1-linux-amd64.sh.zip -O sencha-cmd-download/SenchaCmd-6.2.1-linux-amd64.sh.zip; fi
-        if (test ! -f sencha-cmd-download/SenchaCmd-6.2.1.29-linux-amd64.sh); then unzip -q -d sencha-cmd-download sencha-cmd-download/SenchaCmd-6.2.1-linux-amd64.sh.zip; fi
+        if (test ! -f sencha-cmd-download/SenchaCmd-7.2.0.84-linux-amd64.sh.zip); then wget -q  https://cdn.sencha.com/cmd/7.2.0.84/no-jre/SenchaCmd-7.2.0.84-linux-amd64.sh.zip -O sencha-cmd-download/SenchaCmd-7.2.0.84-linux-amd64.sh.zip; fi
+        if (test ! -f sencha-cmd-download/SenchaCmd-7.2.0.84-linux-amd64.sh); then unzip -q -d sencha-cmd-download sencha-cmd-download/SenchaCmd-7.2.0.84-linux-amd64.sh.zip; fi
         mkdir -p sencha-cmd
-        if (test ! -f sencha-cmd/sencha); then ./sencha-cmd-download/SenchaCmd-6.2.1.29-linux-amd64.sh -q -dir "$PWD/sencha-cmd"; fi
+        if (test ! -f sencha-cmd/sencha); then ./sencha-cmd-download/SenchaCmd-7.2.0.84-linux-amd64.sh -q -dir "$PWD/sencha-cmd"; fi
         mkdir -p sencha-workspace
-        ./sencha-cmd/sencha -sdk ext-6.2.0 generate workspace /tmp/sencha-workspace
-        mkdir -p /tmp/sencha-workspace/packages/geoext3
+        ./sencha-cmd/sencha -sdk ext-7.0.0 generate workspace /tmp/sencha-workspace
+        mkdir -p /tmp/sencha-workspace/packages/geoext
 
     - name: Install dependencies ⏬
       run: npm install
@@ -86,9 +86,9 @@ jobs:
       run: |
         SENCHACMD="$PWD/sencha-cmd/sencha"
         COPY_RESOURCES=".sencha resources sass src package.json build.xml classic LICENSE"
-        rm -rf /tmp/sencha-workspace/packages/geoext3/*
-        for COPY_RESOURCE in $COPY_RESOURCES; do cp -r $PWD/$COPY_RESOURCE /tmp/sencha-workspace/packages/geoext3/; done
-        cd /tmp/sencha-workspace/packages/geoext3/
+        rm -rf /tmp/sencha-workspace/packages/geoext/*
+        for COPY_RESOURCE in $COPY_RESOURCES; do cp -r $PWD/$COPY_RESOURCE /tmp/sencha-workspace/packages/geoext/; done
+        cd /tmp/sencha-workspace/packages/geoext/
         sed -i 's|"@geoext/geoext"|"GeoExt"|' package.json
         $SENCHACMD package build
         ls build/*js
@@ -116,10 +116,10 @@ jobs:
         publish_dir: ./master
         destination_dir: ./master
 
-    - name: Deploy gh-pages to geoext3 path
+    - name: Deploy gh-pages to geoext path
       uses: peaceiris/actions-gh-pages@v3
       with:
         deploy_key: ${{ secrets.GEOEXT_GITHUB_IO_DEPLOY_KEY }}
         external_repository: geoext/geoext.github.io
         publish_dir: ./master
-        destination_dir: ./geoext3/master/
+        destination_dir: ./geoext/master/

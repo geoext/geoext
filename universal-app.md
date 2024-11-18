@@ -83,7 +83,7 @@ Adjust the `classpath` property in your ``app.json`` like below.
 
 #### Use GeoExt as ExtJS package
 
-The released version of GeoExt are available as a ExtJS package. We need to tell Sencha cmd where it can find the `GeoExt3` package.
+The released version of GeoExt are available as a ExtJS package. We need to tell Sencha cmd where it can find the `GeoExt` package.
 
 ```
 sencha package repo add GeoExt http://geoext.github.io/geoext/cmd/pkgs
