@@ -23,16 +23,16 @@
  * @class GeoExt.toolbar.WfsPaging
  */
 Ext.define('GeoExt.toolbar.WfsPaging', {
-    extend: 'Ext.toolbar.Paging',
-    xtype: 'gx_wfspaging_toolbar',
+  extend: 'Ext.toolbar.Paging',
+  xtype: 'gx_wfspaging_toolbar',
 
-    /**
-     * Ensures that the 'gx-wfsstoreload' event of the WFS store is bound to the
-     * onLoad function of this toolbar once we have the store bound.
-     */
-    onBindStore: function() {
-        var me = this;
-        me.callParent(arguments);
-        me.store.on('gx-wfsstoreload', me.onLoad, me);
-    }
+  /**
+   * Ensures that the 'gx-wfsstoreload' event of the WFS store is bound to the
+   * onLoad function of this toolbar once we have the store bound.
+   */
+  onBindStore: function () {
+    const me = this;
+    me.callParent(arguments);
+    me.store.on('gx-wfsstoreload', me.onLoad, me);
+  },
 });

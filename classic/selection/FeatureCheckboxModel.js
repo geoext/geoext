@@ -23,12 +23,8 @@
  * @class GeoExt.selection.FeatureCheckboxModel
  */
 Ext.define('GeoExt.selection.FeatureCheckboxModel', {
-    extend: 'Ext.selection.CheckboxModel',
-    alias: [
-        'selection.featurecheckboxmodel'
-    ],
+  extend: 'Ext.selection.CheckboxModel',
+  alias: ['selection.featurecheckboxmodel'],
 
-    mixins: [
-        'GeoExt.selection.FeatureModelMixin'
-    ]
+  mixins: ['GeoExt.selection.FeatureModelMixin'],
 });

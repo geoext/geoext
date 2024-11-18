@@ -20,20 +20,18 @@
  * @class GeoExt.data.model.print.Capability
  */
 Ext.define('GeoExt.data.model.print.Capability', {
-    extend: 'GeoExt.data.model.Base',
-    requires: [
-        'GeoExt.data.model.print.Layout'
-    ],
+  extend: 'GeoExt.data.model.Base',
+  requires: ['GeoExt.data.model.print.Layout'],
 
-    /**
-     * @method layouts
-     * Returns an Ext.data.Store of referenced
-     * {@link GeoExt.data.model.print.Layout}s.
-     * @return {Ext.data.Store} The store
-     */
+  /**
+   * @function layouts
+   * Returns an Ext.data.Store of referenced
+   * {@link GeoExt.data.model.print.Layout}s.
+   * @return {Ext.data.Store} The store
+   */
 
-    fields: [
-        {name: 'app', type: 'string'},
-        {name: 'formats', type: 'auto', defaultValue: []}
-    ]
+  fields: [
+    {name: 'app', type: 'string'},
+    {name: 'formats', type: 'auto', defaultValue: []},
+  ],
 });

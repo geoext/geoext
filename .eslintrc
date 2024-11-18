@@ -6,16 +6,28 @@
     "ol": false
   },
   "rules": {
-    "consistent-this": [1, "me"],
-    "indent": [1, 4, { "VariableDeclarator": 1 }],
-    "max-len": [2, 80, 4],
-    "one-var": [2, "never"],
-    "quote-props": [1, "consistent"],
-    "valid-jsdoc": [2, {
+    "consistent-this": [ 1, "me" ],
+    "no-var": "warn",
+    "prefer-const": "warn",
+    "max-len": [ 2, 100, 4 ],
+    "one-var": [ 2, "never" ],
+    "quote-props": [ 1, "consistent" ],
+    "jsdoc/check-tag-names": "warn",
+    "jsdoc/require-property-name": "warn",
+    "jsdoc/require-property-type": "warn",
+    "jsdoc/require-property-description": "warn",
+    "jsdoc/require-returns-check": "warn",
+    "jsdoc/check-param-names": "warn",
+    "jsdoc/empty-tags": "warn",
+    "no-multi-assign": "warn",
+    "valid-jsdoc": [
+      2,
+      {
         "prefer": {
-            "returns": "return"
+          "returns": "return"
         },
         "requireReturn": false
-    }]
+      }
+    ]
   }
 }

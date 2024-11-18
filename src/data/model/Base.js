@@ -17,41 +17,42 @@
  * @class GeoExt.data.model.Base
  */
 Ext.define('GeoExt.data.model.Base', {
-    extend: 'Ext.data.Model',
-    requires: [
-        'Ext.data.identifier.Uuid'
-    ],
+  extend: 'Ext.data.Model',
+  requires: ['Ext.data.identifier.Uuid'],
 
-    identifier: 'uuid',
+  identifier: 'uuid',
 
-    schema: {
-        id: 'geoext-schema',
-        namespace: 'GeoExt.data.model'
+  schema: {
+    id: 'geoext-schema',
+    namespace: 'GeoExt.data.model',
+  },
+
+  inheritableStatics: {
+    /**
+     * Loads a record from a provided data structure initializing the models
+     * associations. Simply calling Ext.create will not utilize the models
+     * configured reader and effectivly sidetrack associations configs.
+     * This static helper method makes sure associations are initialized
+     * properly and are available with the returned record.
+     *
+     * Be aware that the provided data may be modified by the models reader
+     * initializing associations.
+     *
+     * @param  {Object} data The data the record will be created with.
+     * @return {GeoExt.data.model.Base} The record.
+     */
+    loadRawData: function (data) {
+      const me = this;
+      const result = me
+        .getProxy()
+        .getReader()
+        .readRecords(data || {});
+      const records = result.getRecords();
+      const success = result.getSuccess();
+
+      if (success && records.length) {
+        return records[0];
+      }
     },
-
-    inheritableStatics: {
-        /**
-         * Loads a record from a provided data structure initializing the models
-         * associations. Simply calling Ext.create will not utilize the models
-         * configured reader and effectivly sidetrack associations configs.
-         * This static helper method makes sure associations are initialized
-         * properly and are available with the returned record.
-         *
-         * Be aware that the provided data may be modified by the models reader
-         * initializing associations.
-         *
-         * @param  {Object} data The data the record will be created with.
-         * @return {GeoExt.data.model.Base} The record.
-         */
-        loadRawData: function(data) {
-            var me = this;
-            var result = me.getProxy().getReader().readRecords(data || {});
-            var records = result.getRecords();
-            var success = result.getSuccess();
-
-            if (success && records.length) {
-                return records[0];
-            }
-        }
-    }
+  },
 });

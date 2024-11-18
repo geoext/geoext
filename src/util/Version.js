@@ -19,23 +19,22 @@
  * @class GeoExt.util.Version
  */
 Ext.define('GeoExt.util.Version', {
-    statics: {
+  statics: {
+    /**
+     * As OpenLayers itself doesn't has any version methods we check for
+     * functionality that is only supported in ol3.
+     * @return {boolean} true if ol version is 3.x.x false if 4.x.x
+     */
+    isOl3: function () {
+      return !!(ol.animation && ol.Map.prototype.beforeRender);
+    },
 
-        /**
-        * As OpenLayers itself doesn't has any version methods we check for
-        * functionality that is only supported in ol3.
-         * @return {boolean} true if ol version is 3.x.x false if 4.x.x
-         */
-        isOl3: function() {
-            return !!(ol.animation && ol.Map.prototype.beforeRender);
-        },
-
-        /**
-         * Determine if the loaded version of OpenLayers is v.4.x.x.
-         * @return {boolean} true if ol version is 4.x.x false if 3.x.x
-         */
-        isOl4: function() {
-            return !this.isOl3();
-        }
-    }
+    /**
+     * Determine if the loaded version of OpenLayers is v.4.x.x.
+     * @return {boolean} true if ol version is 4.x.x false if 3.x.x
+     */
+    isOl4: function () {
+      return !this.isOl3();
+    },
+  },
 });

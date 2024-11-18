@@ -18,70 +18,66 @@
  *
  * @class GeoExt.data.model.LayerTreeNode
  */
-Ext.define('GeoExt.data.model.LayerTreeNode', {
+Ext.define(
+  'GeoExt.data.model.LayerTreeNode',
+  {
     extend: 'GeoExt.data.model.Layer',
-    requires: [
-        'Ext.data.NodeInterface'
-    ],
-    mixins: [
-        'Ext.mixin.Queryable',
-        'GeoExt.mixin.SymbolCheck'
-    ],
+    requires: ['Ext.data.NodeInterface'],
+    mixins: ['Ext.mixin.Queryable', 'GeoExt.mixin.SymbolCheck'],
 
     // <debug>
-    symbols: [
-        'ol.layer.Base',
-        'ol.Object#get',
-        'ol.Object#set'
-    ],
+    symbols: ['ol.layer.Base', 'ol.Object#get', 'ol.Object#set'],
     // </debug>
 
-    fields: [{
+    fields: [
+      {
         name: 'leaf',
         type: 'boolean',
-        convert: function(v, record) {
-            var isGroup = record.get('isLayerGroup');
-            if (isGroup === undefined || isGroup) {
-                return false;
-            } else {
-                return true;
-            }
-        }
-    }, {
+        convert: function (v, record) {
+          const isGroup = record.get('isLayerGroup');
+          if (isGroup === undefined || isGroup) {
+            return false;
+          }
+          return true;
+        },
+      },
+      {
         /**
          * This should be set via tree panel.
          */
         name: '__toggleMode',
         type: 'string',
-        defaultValue: 'classic'
-    }, {
+        defaultValue: 'classic',
+      },
+      {
         name: 'iconCls',
         type: 'string',
-        convert: function(v, record) {
-            return record.getOlLayerProp('iconCls');
-        }
-    }],
+        convert: function (v, record) {
+          return record.getOlLayerProp('iconCls');
+        },
+      },
+    ],
 
     proxy: {
-        type: 'memory',
-        reader: {
-            type: 'json'
-        }
+      type: 'memory',
+      reader: {
+        type: 'json',
+      },
     },
 
     /**
      * @inheritDoc
      */
-    constructor: function() {
-        var layer;
+    constructor: function () {
+      let layer;
 
-        this.callParent(arguments);
+      this.callParent(arguments);
 
-        layer = this.getOlLayer();
-        if (layer instanceof ol.layer.Base) {
-            this.set('checked', layer.get('visible'));
-            layer.on('change:visible', this.onLayerVisibleChange.bind(this));
-        }
+      layer = this.getOlLayer();
+      if (layer instanceof ol.layer.Base) {
+        this.set('checked', layer.get('visible'));
+        layer.on('change:visible', this.onLayerVisibleChange.bind(this));
+      }
     },
 
     /**
@@ -89,12 +85,12 @@ Ext.define('GeoExt.data.model.LayerTreeNode', {
      *
      * @param {ol.ObjectEvent} evt The emitted `ol.Object` event.
      */
-    onLayerVisibleChange: function(evt) {
-        var target = evt.target;
+    onLayerVisibleChange: function (evt) {
+      const target = evt.target;
 
-        if (!this.__updating) {
-            this.set('checked', target.get('visible'));
-        }
+      if (!this.__updating) {
+        this.set('checked', target.get('visible'));
+      }
     },
 
     /**
@@ -102,41 +98,41 @@ Ext.define('GeoExt.data.model.LayerTreeNode', {
      * on the {Ext.data.Model} properties will be set on the `ol.Object` as
      * well.
      *
-     * @param {String} key The key to set.
+     * @param {string} key The key to set.
      * @param {Object} newValue The value to set.
      *
      * @inheritdoc
      */
-    set: function(key, newValue) {
-        var me = this;
-        var classicMode = (me.get('__toggleMode') === 'classic');
+    set: function (key, newValue) {
+      const me = this;
+      const classicMode = me.get('__toggleMode') === 'classic';
 
-        me.callParent(arguments);
+      me.callParent(arguments);
 
-        // forward changes to ol object
-        if (key === 'checked') {
-            if (me.get('__toggleMode') === 'ol3') {
-                me.getOlLayer().set('visible', newValue);
-                return;
-            }
-
-            me.__updating = true;
-            if (me.get('isLayerGroup') && classicMode) {
-                me.getOlLayer().set('visible', newValue);
-                if (me.childNodes) {
-                    me.eachChild(function(child) {
-                        child.getOlLayer().set('visible', newValue);
-                    });
-                }
-            } else {
-                me.getOlLayer().set('visible', newValue);
-            }
-            me.__updating = false;
-
-            if (classicMode) {
-                me.toggleParentNodes(newValue);
-            }
+      // forward changes to ol object
+      if (key === 'checked') {
+        if (me.get('__toggleMode') === 'ol3') {
+          me.getOlLayer().set('visible', newValue);
+          return;
         }
+
+        me.__updating = true;
+        if (me.get('isLayerGroup') && classicMode) {
+          me.getOlLayer().set('visible', newValue);
+          if (me.childNodes) {
+            me.eachChild(function (child) {
+              child.getOlLayer().set('visible', newValue);
+            });
+          }
+        } else {
+          me.getOlLayer().set('visible', newValue);
+        }
+        me.__updating = false;
+
+        if (classicMode) {
+          me.toggleParentNodes(newValue);
+        }
+      }
     },
 
     /**
@@ -144,62 +140,63 @@ Ext.define('GeoExt.data.model.LayerTreeNode', {
      * is checked or unchecks parent nodes if the node is unchecked and no
      * sibling is checked.
      *
-     * @param {Boolean} newValue The newValue to pass through to the parent.
+     * @param {boolean} newValue The newValue to pass through to the parent.
      * @private
      */
-    toggleParentNodes: function(newValue) {
-        var me = this;
-        // Checks parent Nodes if node is checked.
-        if (newValue === true) {
-            me.__updating = true;
-            me.bubble(function(parent) {
-                if (!parent.isRoot()) {
-                    parent.set('__toggleMode', 'ol3'); // prevents recursion
-                    parent.set('checked', true);
-                    parent.set('__toggleMode', 'classic');
-                }
-            });
-            me.__updating = false;
-        }
+    toggleParentNodes: function (newValue) {
+      const me = this;
+      // Checks parent Nodes if node is checked.
+      if (newValue === true) {
+        me.__updating = true;
+        me.bubble(function (parent) {
+          if (!parent.isRoot()) {
+            parent.set('__toggleMode', 'ol3'); // prevents recursion
+            parent.set('checked', true);
+            parent.set('__toggleMode', 'classic');
+          }
+        });
+        me.__updating = false;
+      }
 
-        // Unchecks parent Nodes if the node is unchecked and no sibling is
-        // checked.
-        if (newValue === false) {
-            me.__updating = true;
-            me.bubble(function(parent) {
-                if (!parent.isRoot()) {
-                    var allUnchecked = true;
-                    parent.eachChild(function(child) {
-                        if (child.get('checked')) {
-                            allUnchecked = false;
-                        }
-                    });
-                    if (allUnchecked) {
-                        parent.set('__toggleMode', 'ol3'); // prevents recursion
-                        parent.set('checked', false);
-                        parent.set('__toggleMode', 'classic');
-                    }
-                }
+      // Unchecks parent Nodes if the node is unchecked and no sibling is
+      // checked.
+      if (newValue === false) {
+        me.__updating = true;
+        me.bubble(function (parent) {
+          if (!parent.isRoot()) {
+            let allUnchecked = true;
+            parent.eachChild(function (child) {
+              if (child.get('checked')) {
+                allUnchecked = false;
+              }
             });
-            me.__updating = false;
-        }
+            if (allUnchecked) {
+              parent.set('__toggleMode', 'ol3'); // prevents recursion
+              parent.set('checked', false);
+              parent.set('__toggleMode', 'classic');
+            }
+          }
+        });
+        me.__updating = false;
+      }
     },
 
     /**
      * @inheritdoc
      */
-    getRefItems: function() {
-        return this.childNodes;
+    getRefItems: function () {
+      return this.childNodes;
     },
 
     /**
      * @inheritdoc
      */
-    getRefOwner: function() {
-        return this.parentNode;
-    }
-
-}, function() {
+    getRefOwner: function () {
+      return this.parentNode;
+    },
+  },
+  function () {
     // make this an Ext.data.TreeModel
     Ext.data.NodeInterface.decorate(this);
-});
+  },
+);

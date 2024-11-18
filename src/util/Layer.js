@@ -19,91 +19,92 @@
  * @class GeoExt.util.Layer
  */
 Ext.define('GeoExt.util.Layer', {
-    inheritableStatics: {
-        /**
-         * Cascades down a given LayerGroup, calling the given function for
-         * each LayerGroup / Layer.
-         *
-         * @param  {ol.layer.Group} lyrGroup The layer group to cascade down
-         * @param  {Function} fn A function to call on every LayerGroup / Layer
-         * @return {void}
-         */
-        cascadeLayers: function(lyrGroup, fn) {
-            if (!(lyrGroup instanceof ol.layer.Group)) {
-                // skip on wrong input type
-                Ext.Logger.warn(
-                    'No ol.layer.Group given to ' +
-                    'BasiGX.util.Layer.cascadeLayers. It is unlikely that ' +
-                    'this will work properly. Skipping!');
-                return;
-            }
-            if (!Ext.isFunction(fn)) {
-                Ext.Logger.warn(
-                    'No function passed ' +
-                    'this will not work. Skipping!');
-                return;
-            }
+  inheritableStatics: {
+    /**
+     * Cascades down a given LayerGroup, calling the given function for
+     * each LayerGroup / Layer.
+     *
+     * @param  {ol.layer.Group} lyrGroup The layer group to cascade down
+     * @param  {Function} fn A function to call on every LayerGroup / Layer
+     * @return {void}
+     */
+    cascadeLayers: function (lyrGroup, fn) {
+      if (!(lyrGroup instanceof ol.layer.Group)) {
+        // skip on wrong input type
+        Ext.Logger.warn(
+          'No ol.layer.Group given to ' +
+            'BasiGX.util.Layer.cascadeLayers. It is unlikely that ' +
+            'this will work properly. Skipping!',
+        );
+        return;
+      }
+      if (!Ext.isFunction(fn)) {
+        Ext.Logger.warn(
+          'No function passed ' + 'this will not work. Skipping!',
+        );
+        return;
+      }
 
-            lyrGroup.getLayers().forEach(function(layerOrGroup) {
-                fn(layerOrGroup);
-                if (layerOrGroup instanceof ol.layer.Group) {
-                    GeoExt.util.Layer.cascadeLayers(layerOrGroup, fn);
-                }
-            });
-        },
-
-        /**
-         * A utility method to find the `ol.layer.Group` which is the direct
-         * parent of the passed layer. Searching starts at the passed
-         * startGroup. If `undefined` is returned, the layer is not a child of
-         * the `startGroup`.
-         *
-         * @param {ol.layer.Base} childLayer The layer whose group we want.
-         * @param {ol.layer.Group} startGroup The group layer that we will start
-         *     searching in.
-         * @return {ol.layer.Group} The direct parent group or undefined if the
-         *     group cannot be determined.
-         */
-        findParentGroup: function(childLayer, startGroup) {
-            var parentGroup;
-            var findParentGroup = GeoExt.util.Layer.findParentGroup;
-            var getLayerIndex = GeoExt.util.Layer.getLayerIndex;
-
-            if (getLayerIndex(childLayer, startGroup) !== -1) {
-                parentGroup = startGroup;
-            } else {
-                startGroup.getLayers().forEach(function(layer) {
-                    if (!parentGroup && layer instanceof ol.layer.Group) {
-                        parentGroup = findParentGroup(childLayer, layer);
-                        // sadly we cannot abort the forEach-iteration here
-                    }
-                });
-            }
-
-            return parentGroup;
-        },
-
-        /**
-         * A utility method to determine the zero based index of a layer in a
-         * layer group. Will return `-1` if the layer isn't a direct child of
-         * the group.
-         *
-         * @param {ol.layer.Base} layer The layer whose index we want.
-         * @param {ol.layer.Group} group The group to search in.
-         * @return {Number} The index or `-1` if the layer isn't a direct child
-         *     of the group.
-         */
-        getLayerIndex: function(layer, group) {
-            var index = -1;
-
-            group.getLayers().forEach(function(candidate, idx) {
-                if (index === -1 && candidate === layer) {
-                    index = idx;
-                    // sadly we cannot abort the forEach-iteration here
-                }
-            });
-
-            return index;
+      lyrGroup.getLayers().forEach(function (layerOrGroup) {
+        fn(layerOrGroup);
+        if (layerOrGroup instanceof ol.layer.Group) {
+          GeoExt.util.Layer.cascadeLayers(layerOrGroup, fn);
         }
-    }
+      });
+    },
+
+    /**
+     * A utility method to find the `ol.layer.Group` which is the direct
+     * parent of the passed layer. Searching starts at the passed
+     * startGroup. If `undefined` is returned, the layer is not a child of
+     * the `startGroup`.
+     *
+     * @param {ol.layer.Base} childLayer The layer whose group we want.
+     * @param {ol.layer.Group} startGroup The group layer that we will start
+     *     searching in.
+     * @return {ol.layer.Group} The direct parent group or undefined if the
+     *     group cannot be determined.
+     */
+    findParentGroup: function (childLayer, startGroup) {
+      let parentGroup;
+      const findParentGroup = GeoExt.util.Layer.findParentGroup;
+      const getLayerIndex = GeoExt.util.Layer.getLayerIndex;
+
+      if (getLayerIndex(childLayer, startGroup) !== -1) {
+        parentGroup = startGroup;
+      } else {
+        startGroup.getLayers().forEach(function (layer) {
+          if (!parentGroup && layer instanceof ol.layer.Group) {
+            parentGroup = findParentGroup(childLayer, layer);
+            // sadly we cannot abort the forEach-iteration here
+          }
+        });
+      }
+
+      return parentGroup;
+    },
+
+    /**
+     * A utility method to determine the zero based index of a layer in a
+     * layer group. Will return `-1` if the layer isn't a direct child of
+     * the group.
+     *
+     * @param {ol.layer.Base} layer The layer whose index we want.
+     * @param {ol.layer.Group} group The group to search in.
+     * @return {number} The index or `-1` if the layer isn't a direct child
+     *     of the group.
+     */
+    getLayerIndex: function (layer, group) {
+      let index = -1;
+
+      group.getLayers().forEach(function (candidate, idx) {
+        if (index === -1 && candidate === layer) {
+          index = idx;
+          // sadly we cannot abort the forEach-iteration here
+        }
+      });
+
+      return index;
+    },
+  },
 });
