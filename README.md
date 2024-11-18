@@ -20,6 +20,8 @@ The current state of GeoExt is compatible with ExtJS 6.2.0 and OpenLayers 7.1.0.
 
 | OpenLayers       | ExtJS | GeoExt         |
 | ---------------- | ----- | -------------- |
+| 10.1.0           | 7.0.0 | 7.0.x         |
+| 8.1.0            | 6.2.0 | 6.0.x          |
 | 7.1.0            | 6.2.0 | 5.0.x          |
 | 6.5.0            | 6.2.0 | 4.0.x          |
 | 4.6.5            | 6.2.0 | 3.4.0 & 3.3.x & 3.2.0  |
@@ -40,9 +42,9 @@ You can use GeoExt either via an `npm install @geoext/geoext` in your applicatio
 
 ### Configuring your apps classpath
 
-You will have to adjust the `classpath` in you `app.json` to include geoext3, like below.
+You will have to adjust the `classpath` in you `app.json` to include geoext, like below.
 Depending on how you retrieved the code from the step before, you will have to adapt the path.
-When you installed geoext3 via npm, the path needs to look like `./node_modules/@geoext/geoext/src`.
+When you installed geoext via npm, the path needs to look like `./node_modules/@geoext/geoext/src`.
 Else it will be the folder where you cloned the repository into.
 
 ```javascript
@@ -101,7 +103,11 @@ to your contributions!
 
 ## Initial Codesprint
 
-To kickstart the new GeoExt 3 project a code sprint has been done in Bonn from 17th to 19th of June 2015. For more informations check the following links:  [Code sprint WIKI page](https://github.com/geoext/geoext/wiki/GeoExt-3-Codesprint), [Official blog post of code sprint day 1](http://geoext.blogspot.de/2015/06/geoext-is-getting-3.html), [Official blog post of the code sprint days 2 and 3](http://geoext.blogspot.de/2015/06/geoext-3-codesprint-day-2-and-3.html)
+The GeoExt 3 project was kickstarted during a code sprint in Bonn from 17th to 19th of June 2015. 
+For more informations check the following links:
+[Code sprint WIKI page](https://github.com/geoext/geoext/wiki/GeoExt-3-Codesprint), 
+[Official blog post of code sprint day 1](http://geoext.blogspot.de/2015/06/geoext-is-getting-3.html), 
+[Official blog post of the code sprint days 2 and 3](http://geoext.blogspot.de/2015/06/geoext-3-codesprint-day-2-and-3.html)
 
 ---------
 
