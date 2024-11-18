@@ -1,6 +1,6 @@
-# Hints for working on GeoExt 3
+# Hints for working on GeoExt
 
-> We really want that people participate in the development of GeoExt 3.
+> We really want that people participate in the development of GeoExt.
 >
 > Please follow these instructions to ensure that development makes fun and your
 > contributions can easily be merged into the `master`-branch.
@@ -8,19 +8,19 @@
 
 ## Development setup
 
-In order to develop GeoExt 3 you'll need certain things on your machine:
+In order to develop GeoExt you'll need certain things on your machine:
 
 * [`git`](https://git-scm.com)
 * [Node.js & `npm`](https://nodejs.org/en/)
 * [`jsduck`](https://github.com/senchalabs/jsduck)
 
-Additionally, if you want to reuse the GeoExt 3 library in your Sencha
+Additionally, if you want to reuse the GeoExt library in your Sencha
 applications, you'll need the Sencha CMD tool. See the
 [top-level README](README.md) for more information regarding `sencha`.
 
 ## Install required development dependencies
 
-GeoExt3 comes prepared with some scripts and a testing environment. To use it,
+GeoExt comes prepared with some scripts and a testing environment. To use it,
 you'll need to install some dependencies that are declared in the `package.json`
 file of the project folder. With `npm` installed (see information above) simply
 run `npm install` in the project root once after checking out from GitHub.
@@ -48,7 +48,7 @@ to the source code are detected, the browser page is reloaded (end via
 [Travis CI](https://travis-ci.org/geoext/geoext) to upload coverage info to
 [Coveralls.io](https://coveralls.io/github/geoext/geoext)
 * `generate:example`generates a sample application in the examples folder. Use
-this to start a new feature example for GeoExt3.
+this to start a new feature example for GeoExt.
 * `generate:docs` generates an API documentation that you can access in the
 browser via `/apidocs/index.html`. (requires the external `jsduck` command)
 
@@ -91,7 +91,7 @@ problems out together.
 
 ## Running a local development server
 
-To start working on GeoExt3, checking out the example applications and running
+To start working on GeoExt, checking out the example applications and running
 the test suite in your browser, you can use the `npm start` command. This will
 fire up a local development server with it's content root set to the projects
 root folder. The browser page is reloaded if changes in the source or test

@@ -1,9 +1,9 @@
 # License FAQ
 
-## What is the GeoExt3 license?
+## What is the GeoExt license?
 
-GeoExt3 is dual licensed. You will normally use it under GPLv3. If you own a
-Sencha ExtJS Commercial License, you have the right to use GeoExt3 under the
+GeoExt is dual licensed. You will normally use it under GPLv3. If you own a
+Sencha ExtJS Commercial License, you have the right to use GeoExt under the
 BSD License.
 
 Details: https://www.sencha.com/legal/#Sencha_Ext_JS
@@ -14,7 +14,7 @@ See the Sencha official link for details: https://www.sencha.com/legal/open-sour
 
 ## I still don't know which license applies, can you repeat?
 
-GeoExt3 is GPLv3, but you have the right to use it and extend it with a
+GeoExt is GPLv3, but you have the right to use it and extend it with a
 Sencha ExtJS Commercial License under BSD.
 
 The license you choose depends on the license of the framework ExtJS you use
