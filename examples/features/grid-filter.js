@@ -210,11 +210,27 @@ Ext.application({
     });
   },
 
+  getRandomDateFromPastYear: function () {
+    const now = new Date();
+    const startDate = new Date();
+    startDate.setFullYear(now.getFullYear() - 5);
+
+    const startTimestamp = startDate.getTime();
+    const endTimestamp = now.getTime();
+
+    // Generate a random timestamp
+    const randomTimestamp =
+      Math.floor(Math.random() * (endTimestamp - startTimestamp)) +
+      startTimestamp;
+    return new Date(randomTimestamp);
+  },
+
   /**
    * Loads the data for the initial fill of vectorlayer / grid
    * @param {ol.source.Vector} source The vector source
    */
   getData: function (source) {
+    const me = this;
     Ext.Ajax.request({
       method: 'POST',
       url: 'https://maps.dwd.de/geoserver/dwd/ows?',
@@ -233,7 +249,7 @@ Ext.application({
         const features = gjFormat.readFeatures(geojson);
         // mockup some real dates
         features.forEach(function (f) {
-          f.set('PROCESSTIME', new Date(f.get('PROCESSTIME')));
+          f.set('PROCESSTIME', me.getRandomDateFromPastYear());
         });
         source.addFeatures(features);
       },

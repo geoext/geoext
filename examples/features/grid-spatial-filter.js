@@ -217,17 +217,6 @@ Ext.application({
             type: 'number',
           },
         },
-        {
-          text: 'Date',
-          xtype: 'datecolumn',
-          formatter: 'date("Y-m-d")',
-          dataIndex: 'PROCESSTIME',
-          flex: 2,
-          filter: {
-            type: 'date',
-            dateFormat: 'Y-m-d',
-          },
-        },
       ],
       width: 600,
       listeners: {

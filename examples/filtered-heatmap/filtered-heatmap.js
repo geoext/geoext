@@ -46,7 +46,7 @@ Ext.application({
 
     const bgLayer = new ol.layer.Tile({
       source: new ol.source.StadiaMaps({
-        layer: 'toner',
+        layer: 'stamen_toner',
       }),
     });
 

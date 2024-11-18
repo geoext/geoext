@@ -1,7 +1,7 @@
 Ext.require([
   'GeoExt.component.Map',
   'GeoExt.data.store.Layers',
-  'Ext.panel.Panel',
+  'Ext.Panel',
   'Ext.grid.Grid',
   'Ext.Toolbar',
   'Ext.Button',
@@ -13,7 +13,6 @@ let mapComponent;
 let mapPanel;
 let layerStore;
 let layerList;
-let description;
 
 Ext.application({
   name: 'modern-layerlist',
@@ -67,16 +66,16 @@ Ext.application({
     });
 
     // handler for showing / hiding of layers via layer list
-    const onSelect = function (grid, record) {
-      const layer = record.getOlLayer();
-      layer.setVisible(true);
-    };
-    const onDeselect = function (grid, record) {
-      const layer = record.getOlLayer();
-      layer.setVisible(false);
+    const onSelectionChanged = function (grid, selected) {
+      const selection = grid.getSelections();
+      layerList.getStore().each(function (rec) {
+        const layer = rec.getOlLayer();
+        const isVisible = Ext.Array.contains(selection, rec);
+        layer.setVisible(isVisible);
+      });
     };
 
-    // use a grid with 1 colum as layer list
+    // use a grid with 1 column as layer list
     layerList = Ext.create('Ext.grid.Grid', {
       title: 'Layer List',
       columns: [{text: 'Name', dataIndex: 'text', flex: 1}],
@@ -84,8 +83,7 @@ Ext.application({
       mode: 'MULTI',
       striped: false,
       listeners: {
-        select: onSelect,
-        deselect: onDeselect,
+        selectionchange: onSelectionChanged,
       },
     });
 
@@ -107,23 +105,22 @@ Ext.application({
       {single: true},
     );
 
-    description = Ext.create('Ext.panel.Panel', {
-      contentEl: 'description',
-      title: 'Description',
-      modal: true,
-      centered: true,
-      scrollable: true,
-      width: 400,
-      height: 400,
-      bodyPadding: 5,
-      hidden: true,
-      closeAction: 'hide',
-    });
-    Ext.Viewport.add(description);
+    const htmlString = `
+    <p>
+        This example shows how to use an <code>Ext.grid.Grid</code> component
+        with a <code>GeoExt.data.store.Layers</code>
+        to let the user change the visibility of the map layers in a GeoExt app
+        with the modern toolkit.
+    </p>
+    <p>
+        Have a look at <a href="modern-layerlist.js">modern-layerlist.js</a>
+        to see how this is done.
+    </p>
+`;
 
     // Create viewport and also add a button showing a description with the
     // link to this source code
-    const viewport = Ext.create('Ext.TabPanel', {
+    Ext.create('Ext.TabPanel', {
       fullscreen: true,
       ui: 'dark',
       tabBar: {
@@ -142,23 +139,26 @@ Ext.application({
             {
               text: 'Description',
               handler: function () {
-                description.show();
+                var dialog = Ext.create({
+                  xtype: 'dialog',
+                  title: 'Description',
+
+                  maximizable: true,
+                  html: htmlString,
+
+                  buttons: {
+                    ok: function () {
+                      dialog.destroy();
+                    },
+                  },
+                });
+
+                dialog.show();
               },
             },
           ],
         },
       ],
     });
-
-    // close the modal description when clicking mask
-    viewport.mon(
-      Ext.getBody(),
-      'click',
-      function (el, e) {
-        description.close(description.closeAction);
-      },
-      viewport,
-      {delegate: '.x-mask'},
-    );
   },
 });

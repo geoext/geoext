@@ -32,6 +32,7 @@ executed via `npm run-script TARGET` from the base directory of the repository:
 
 * `clean` removes generated files and folders.
 * `lint` checks code for linting errors.
+* `lint:fix` attempts to reformat and fix linting errors.
 * `test` runs the headless test suite. This will also download some external
 resources if needed. If you do not want a progress bar being rendered during
 the download phase, just set the environment variable `NO_DOWNLOAD_PROGRESS`

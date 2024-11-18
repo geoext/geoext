@@ -38,7 +38,6 @@
     "build": "npm run test && npm run clean:dist && copyfiles -V --exclude 'resources/external/**' -a 'bin/**' 'classic/**' 'src/**' 'sass/**' 'resources/**' README.md LICENSE LICENSE-FAQ.md COMMERCIAL-LICENCE.md package.json dist/",
     "clean": "rimraf coverage docs docs-w-ext",
     "clean:dist": "rimraf ./dist/*",
-    "format": "prettier --write src/ examples/ classic/",
     "lint": "eslint src/ examples/ classic/ && eslint -c test/.eslintrc test/",
     "lint:fix": "eslint --fix src/ examples/ classic/ && eslint --fix -c test/.eslintrc test/",
     "test": "npm run lint && npm run test:spec",
