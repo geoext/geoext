@@ -6,16 +6,16 @@
     "--ignore-html": "debug",
     "--output": "docs-w-ext",
     "--processes": 0,
-    "--title": "GeoExt v3.3.2 Documentation (incl. ExtJS classes)",
+    "--title": "GeoExt v7.0.0 Documentation (incl. ExtJS classes)",
     "--warnings": [
       "-extend",
       "-link",
-      "-all:resources/external/ext-6.2.0"
+      "-all:resources/external/ext-7.0.0"
     ],
     "--": [
         "src/",
         "classic/",
-        "ext-6.2.0/packages/core/src/",
-        "ext-6.2.0/classic/classic/src/"
+        "ext-7.0.0/packages/core/src/",
+        "ext-7.0.0/classic/classic/src/"
     ]
 }

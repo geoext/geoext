@@ -1,6 +1,20 @@
 Next Version
 ------------
 
+v7.0.0
+------
+
+BREAKING CHANGES:
+
+Updates openlayers to vX.1.0
+
+v6.0.0
+------
+
+BREAKING CHANGES:
+
+Updates openlayers to v8.1.0
+
 v5.0.0
 ------
 
