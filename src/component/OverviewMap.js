@@ -362,7 +362,7 @@ Ext.define('GeoExt.component.OverviewMap', {
 
         // Set the OverviewMaps center or resolution, on property changed
         // in parentMap.
-        parentMap.getView().on('propertychange', me.onParentViewPropChange, me);
+        parentMap.getView().on('propertychange', me.onParentViewPropChange.bind(me));
 
         // Update the box after rendering a new frame of the parentMap.
         me.enableBoxUpdate();
@@ -391,10 +391,10 @@ Ext.define('GeoExt.component.OverviewMap', {
         dragInteraction.setActive(true);
         // disable the box update during the translation
         // because it interferes when dragging the feature
-        dragInteraction.on('translatestart', me.disableBoxUpdate, me);
-        dragInteraction.on('translating', me.repositionAnchorFeature, me);
-        dragInteraction.on('translateend', me.recenterParentFromBox, me);
-        dragInteraction.on('translateend', me.enableBoxUpdate, me);
+        dragInteraction.on('translatestart', me.disableBoxUpdate.bind(me));
+        dragInteraction.on('translating', me.repositionAnchorFeature.bind(me));
+        dragInteraction.on('translateend', me.recenterParentFromBox.bind(me));
+        dragInteraction.on('translateend', me.enableBoxUpdate.bind(me));
         me.dragInteraction = dragInteraction;
     },
 
@@ -406,7 +406,7 @@ Ext.define('GeoExt.component.OverviewMap', {
         var me = this;
         var parentMap = me.getParentMap();
         if (parentMap) {
-            parentMap.un('postrender', me.updateBox, me);
+            parentMap.un('postrender', me.updateBox.bind(me));
         }
     },
 
@@ -418,7 +418,7 @@ Ext.define('GeoExt.component.OverviewMap', {
         var me = this;
         var parentMap = me.getParentMap();
         if (parentMap) {
-            parentMap.on('postrender', me.updateBox, me);
+            parentMap.on('postrender', me.updateBox.bind(me));
         }
     },
 
@@ -435,10 +435,10 @@ Ext.define('GeoExt.component.OverviewMap', {
         }
         dragInteraction.setActive(false);
         me.getMap().removeInteraction(dragInteraction);
-        dragInteraction.un('translatestart', me.disableBoxUpdate, me);
-        dragInteraction.un('translating', me.repositionAnchorFeature, me);
-        dragInteraction.un('translateend', me.recenterParentFromBox, me);
-        dragInteraction.un('translateend', me.enableBoxUpdate, me);
+        dragInteraction.un('translatestart', me.disableBoxUpdate.bind(me));
+        dragInteraction.un('translating', me.repositionAnchorFeature.bind(me));
+        dragInteraction.un('translateend', me.recenterParentFromBox.bind(me));
+        dragInteraction.un('translateend', me.enableBoxUpdate.bind(me));
         me.dragInteraction = null;
     },
 
@@ -656,9 +656,9 @@ Ext.define('GeoExt.component.OverviewMap', {
             return shallRecenter;
         }
         if (shallRecenter) {
-            map.on('click', me.overviewMapClicked, me);
+            map.on('click', me.overviewMapClicked.bind(me));
         } else {
-            map.un('click', me.overviewMapClicked, me);
+            map.un('click', me.overviewMapClicked.bind(me));
         }
         return shallRecenter;
     },
@@ -702,7 +702,7 @@ Ext.define('GeoExt.component.OverviewMap', {
 
         if (map) {
             // unbind recenter listener, if any
-            map.un('click', me.overviewMapClicked, me);
+            map.un('click', me.overviewMapClicked.bind(me));
         }
 
         me.destroyDragBehaviour();
@@ -710,7 +710,7 @@ Ext.define('GeoExt.component.OverviewMap', {
         if (parentMap) {
             // unbind parent listeners
             me.disableBoxUpdate();
-            parentView.un('propertychange', me.onParentViewPropChange, me);
+            parentView.un('propertychange', me.onParentViewPropChange.bind(me));
         }
     },
 

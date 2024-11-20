@@ -136,14 +136,14 @@ Ext.define('GeoExt.selection.FeatureModel', {
         var me = this;
 
         // change style of selected feature
-        me.selectedFeatures.on('add', me.onSelectFeatAdd, me);
+        me.selectedFeatures.on('add', me.onSelectFeatAdd.bind(me));
 
         // reset style of no more selected feature
-        me.selectedFeatures.on('remove', me.onSelectFeatRemove, me);
+        me.selectedFeatures.on('remove', me.onSelectFeatRemove.bind(me));
 
         // create a map click listener for connected vector layer
         if (me.mapSelection && me.layer && me.map) {
-            me.map.on('singleclick', me.onFeatureClick, me);
+            me.map.on('singleclick', me.onFeatureClick.bind(me));
             me.mapClickRegistered = true;
         }
     },
@@ -159,13 +159,13 @@ Ext.define('GeoExt.selection.FeatureModel', {
 
         // remove 'add' / 'remove' listener from selected feature collection
         if (me.selectedFeatures) {
-            me.selectedFeatures.un('add', me.onSelectFeatAdd, me);
-            me.selectedFeatures.un('remove', me.onSelectFeatRemove, me);
+            me.selectedFeatures.un('add', me.onSelectFeatAdd.bind(me));
+            me.selectedFeatures.un('remove', me.onSelectFeatRemove.bind(me));
         }
 
         // remove 'singleclick' listener for connected vector layer
         if (me.mapClickRegistered) {
-            me.map.un('singleclick', me.onFeatureClick, me);
+            me.map.un('singleclick', me.onFeatureClick.bind(me));
             me.mapClickRegistered = false;
         }
     },

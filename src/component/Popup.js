@@ -161,7 +161,7 @@ Ext.define('GeoExt.component.Popup', {
 
         me.getMap().addOverlay(overlay);
         // fix layout of popup when its position changes
-        overlay.on('change:position', me.updateLayout, me);
+        overlay.on('change:position', me.updateLayout.bind(me));
 
         // make accessible as member
         me.setOverlay(overlay);
@@ -195,6 +195,6 @@ Ext.define('GeoExt.component.Popup', {
             var parent = me.overlayElement.parentNode;
             parent.removeChild(me.overlayElement);
         }
-        me.getOverlay().un('change:position', me.doLayout, me);
+        me.getOverlay().un('change:position', me.doLayout.bind(me));
     }
 });

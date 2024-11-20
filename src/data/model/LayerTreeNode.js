@@ -80,7 +80,7 @@ Ext.define('GeoExt.data.model.LayerTreeNode', {
         layer = this.getOlLayer();
         if (layer instanceof ol.layer.Base) {
             this.set('checked', layer.get('visible'));
-            layer.on('change:visible', this.onLayerVisibleChange, this);
+            layer.on('change:visible', this.onLayerVisibleChange.bind(this));
         }
     },
 

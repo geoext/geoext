@@ -379,9 +379,9 @@ Ext.define('GeoExt.data.store.LayersTree', {
         var me = this;
         if (layerOrGroup instanceof ol.layer.Group) {
             var collection = layerOrGroup.getLayers();
-            collection.on('remove', me.onLayerCollectionRemove, me);
-            collection.on('add', me.onLayerCollectionAdd, me);
-            collection.forEach(me.bindGroupLayerCollectionEvents, me);
+            collection.on('remove', me.onLayerCollectionRemove.bind(me));
+            collection.on('add', me.onLayerCollectionAdd.bind(me));
+            collection.forEach(me.bindGroupLayerCollectionEvents.bind(me));
         }
     },
 
@@ -397,9 +397,9 @@ Ext.define('GeoExt.data.store.LayersTree', {
         var me = this;
         if (layerOrGroup instanceof ol.layer.Group) {
             var collection = layerOrGroup.getLayers();
-            collection.un('remove', me.onLayerCollectionRemove, me);
-            collection.un('add', me.onLayerCollectionAdd, me);
-            collection.forEach(me.unbindGroupLayerCollectionEvents, me);
+            collection.un('remove', me.onLayerCollectionRemove.bind(me));
+            collection.un('add', me.onLayerCollectionAdd.bind(me));
+            collection.forEach(me.unbindGroupLayerCollectionEvents.bind(me));
         }
     },
 

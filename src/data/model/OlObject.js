@@ -101,7 +101,7 @@ Ext.define('GeoExt.data.model.OlObject', {
         // init record with properties of underlying ol object
         me.callParent([this.olObject.getProperties()]);
 
-        me.olObject.on('propertychange', me.onPropertychange, me);
+        me.olObject.on('propertychange', me.onPropertychange.bind(me));
     },
 
     /**
@@ -158,7 +158,7 @@ Ext.define('GeoExt.data.model.OlObject', {
      * @inheritdoc
      */
     destroy: function() {
-        this.olObject.un('propertychange', this.onPropertychange, this);
+        this.olObject.un('propertychange', this.onPropertychange.bind(me));
 
         this.callParent(arguments);
     }

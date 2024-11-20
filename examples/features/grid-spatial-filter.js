@@ -91,7 +91,7 @@ Ext.application({
             type: 'Polygon'
         });
         drawQueryInteraction.setActive(false);
-        drawQueryInteraction.on('drawend', this.onDrawEnd, this);
+        drawQueryInteraction.on('drawend', this.onDrawEnd.bind(this));
         olMap.addInteraction(drawQueryInteraction);
 
         // create feature store
