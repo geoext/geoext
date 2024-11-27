@@ -37,6 +37,8 @@ describe('GeoExt.mixin.SymbolCheck', function () {
         'ol.layer.Base.prototype.setOpacity',
         // A instance method using the shortcut
         'ol.layer.Base#setVisible',
+        // A method added during class initialization
+        'ol.Collection#once',
         // A static method using the shortcut
         'GeoExt.mixin.SymbolCheck::check',
       ],
@@ -76,6 +78,9 @@ describe('GeoExt.mixin.SymbolCheck', function () {
           undefined,
         );
         expect(cache['ol.layer.Base.prototype.setVisible']).to.be(true);
+
+        expect(cache['ol.Collection.prototype.once']).to.not.be(undefined);
+        expect(cache['ol.Collection.prototype.once']).to.be(true);
 
         expect(cache['GeoExt.mixin.SymbolCheck.check']).to.not.be(undefined);
         expect(cache['GeoExt.mixin.SymbolCheck.check']).to.be(true);

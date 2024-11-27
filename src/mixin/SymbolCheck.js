@@ -181,13 +181,32 @@ Ext.define('GeoExt.mixin.SymbolCheck', {
           intermediateSymb += '.';
         }
         intermediateSymb += part;
+        // Check the current symbol's property or method
         if (curSymbol[part]) {
           checkedCache[intermediateSymb] = true;
           curSymbol = curSymbol[part];
           if (lastIdx === idx) {
             isDefined = true;
           }
+        } else if (lastIdx === idx) {
+          // Special handling for instance-bound methods
+          try {
+            const parentObj = Ext.Object.chain(curSymbol);
+            const instance = new parentObj.constructor();
+            if (typeof instance[part] === 'function') {
+              checkedCache[intermediateSymb] = true;
+              isDefined = true;
+            }
+          } catch (e) {
+            // Handle errors such as constructors requiring arguments
+            Ext.log.warn(
+              `Unable to create instance or access method: ${intermediateSymb}`,
+              e,
+            );
+            checkedCache[intermediateSymb] = false;
+          }
         } else {
+          // Method or property is not defined
           checkedCache[intermediateSymb] = false;
           return false; // break early
         }
