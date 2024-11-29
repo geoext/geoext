@@ -82,4 +82,4 @@ jobs:
         deploy_key: ${{ secrets.GEOEXT_GITHUB_IO_DEPLOY_KEY }}
         external_repository: geoext/geoext.github.io
         publish_dir: ./${GITHUB_REF##*/}
-        destination_dir: ./geoext/${GITHUB_REF##*/}
+        destination_dir: ./geoext3/${GITHUB_REF##*/}
