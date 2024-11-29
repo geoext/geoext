@@ -31,7 +31,6 @@ There are a number of preconfigured scripts, listed in package.json, that can be
 executed via `npm run-script TARGET` from the base directory of the repository:
 
 * `clean` removes generated files and folders.
-* `format` reformats the source files using ``prettier`.
 * `lint` checks code for linting errors.
 * `lint:fix` attempts to reformat and fix linting errors.
 * `test` runs the headless test suite. This will also download some external
