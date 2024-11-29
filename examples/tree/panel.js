@@ -37,7 +37,7 @@ Ext.application({
       source: source3,
       name: 'terrestris OSM WMS',
       description:
-        'This is a layer description that will be visible ' + 'as a tooltip.',
+        'This is a layer description that will be visible as a tooltip.',
       visible: false,
     });
 
