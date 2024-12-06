@@ -105,7 +105,7 @@ jobs:
         cp -r node_modules/ol/dist master/resources/
         cp node_modules/ol/ol.css master/resources/
         find master/examples -type f -name "*.html" -exec sed -i 's|../../node_modules/ol|../../resources|g' {} +
-        cp /tmp/sencha-workspace/packages/geoext3/build/*js master/
+        cp /tmp/sencha-workspace/packages/geoext/build/*js master/
         npm run generate:docs:master
         npm run generate:docs-w-ext:master
 
