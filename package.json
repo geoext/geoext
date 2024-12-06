@@ -67,6 +67,7 @@
     "eslint-plugin-prettier": "^5.2.1",
     "expect.js": "0.3.1",
     "global-tunnel-ng": "2.7.1",
+    "jsdoc": "^4.0.4",
     "karma": "6.4.4",
     "karma-chrome-launcher": "3.2.0",
     "karma-coverage": "2.2.1",
