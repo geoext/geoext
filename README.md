@@ -2,6 +2,8 @@
 
 JavaScript Toolkit for Rich Web Mapping Applications.
 
+[![Build Status](https://github.com/geoext/geoext/actions/workflows/on-push-master.yml/badge.svg)](https://github.com/geoext/geoext/actions/workflows/on-push-master.yml?query=branch%3Amaster)
+
 [![Build Status](https://travis-ci.org/geoext/geoext.svg?branch=master)](https://travis-ci.org/geoext/geoext)
 [![Coverage Status](https://coveralls.io/repos/geoext/geoext/badge.svg?branch=master&service=github)](https://coveralls.io/github/geoext/geoext?branch=master)
 
@@ -14,7 +16,7 @@ Version 3 of GeoExt was the successor to the GeoExt 2.x-series and has been buil
 With version 4 GeoExt supports the newest official installment v6.x of OpenLayers and ExtJS 6.2.
 
 We are trying hard to keep up with developments on both our parent libraries.
-The current state of GeoExt is compatible with ExtJS 6.2.0 and OpenLayers 7.1.0. This state is released as GeoExt v4.0.0.
+The current state of GeoExt is compatible with ExtJS 7.0.0 and OpenLayers 10.1.0. This state is released as GeoExt v7.0.0.
 
 | OpenLayers       | ExtJS | GeoExt         |
 | ---------------- | ----- | -------------- |
@@ -30,7 +32,7 @@ The current state of GeoExt is compatible with ExtJS 6.2.0 and OpenLayers 7.1.0.
 
 Have a look at the official homepage: https://geoext.github.io/geoext/
 
-You will find examples, API documentation (with and without inherited functionality from ExtJS), links to mailinglists and more over there.
+You will find examples, API documentation (with and without inherited functionality from ExtJS), links to mailing lists and more over there.
 
 > What you see on https://geoext.github.io/geoext/ are the contents of the `gh-pages`-branch. If you encounter anything that should be fixed, please issue a pull request against that branch and we will merge it as soon as possible.
 
@@ -74,8 +76,6 @@ To help with your first GeoExt project, follow the instructions provided to buil
 ## Examples
 
 ### Classic Toolkit
-
-https://geoext.github.io/geoext/master/examples/component/map.html
 
 * [Basic map component](https://geoext.github.io/geoext/master/examples/component/map.html)
 * [Overview component](https://geoext.github.io/geoext/master/examples/component/overviewMap.html)
