@@ -490,11 +490,11 @@ Ext.define('GeoExt.data.store.Layers', {
   },
 
   /**
-   * @inheritdoc
-   *
    * The event firing behaviour of Ext.4.1 is reestablished here. See also:
    * [This discussion on the Sencha forum](http://www.sencha.com/forum/
    * showthread.php?253596-beforeload-is-not-fired-by-loadRawData).
+   *
+   * @inheritdoc
    */
   loadRawData: function (data, append) {
     const me = this;

@@ -12,7 +12,12 @@
     "max-len": [ 2, 100, 4 ],
     "one-var": [ 2, "never" ],
     "quote-props": [ 1, "consistent" ],
-    "jsdoc/check-tag-names": "warn",
+    "jsdoc/check-tag-names": [
+      "warn",
+      {
+        "definedTags": [ "cfg" ]
+      }
+    ],
     "jsdoc/require-property-name": "warn",
     "jsdoc/require-property-type": "warn",
     "jsdoc/require-property-description": "warn",
