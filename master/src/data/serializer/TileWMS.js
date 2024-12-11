@@ -18,53 +18,53 @@
  *
  * @class GeoExt.data.serializer.TileWMS
  */
-Ext.define('GeoExt.data.serializer.TileWMS', {
+Ext.define(
+  'GeoExt.data.serializer.TileWMS',
+  {
     extend: 'GeoExt.data.serializer.Base',
-    mixins: [
-        'GeoExt.mixin.SymbolCheck'
-    ],
+    mixins: ['GeoExt.mixin.SymbolCheck'],
 
     // <debug>
     symbols: [
-        'ol.layer.Layer#getOpacity',
-        'ol.source.TileWMS',
-        'ol.source.TileWMS#getUrls',
-        'ol.source.TileWMS#getParams'
+      'ol.layer.Layer#getOpacity',
+      'ol.source.TileWMS',
+      'ol.source.TileWMS#getUrls',
+      'ol.source.TileWMS#getParams',
     ],
     // </debug>
 
     inheritableStatics: {
-        /**
-         * @inheritdoc
-         */
-        sourceCls: ol.source.TileWMS,
+      /**
+       * @inheritdoc
+       */
+      sourceCls: ol.source.TileWMS,
 
-        /**
-         * @inheritdoc
-         */
-        serialize: function(layer, source) {
-            this.validateSource(source);
-            var styles = source.getParams().STYLES;
-            var stylesArray;
-            if (Ext.isArray(styles)) {
-                stylesArray = styles;
-            } else {
-                stylesArray = styles ? styles.split(',') : [''];
-            }
-            var serialized = {
-                baseURL: source.getUrls()[0],
-                customParams: source.getParams(),
-                layers: [
-                    source.getParams().LAYERS
-                ],
-                opacity: layer.getOpacity(),
-                styles: stylesArray,
-                type: 'WMS'
-            };
-            return serialized;
+      /**
+       * @inheritdoc
+       */
+      serialize: function (layer, source) {
+        this.validateSource(source);
+        const styles = source.getParams().STYLES;
+        let stylesArray;
+        if (Ext.isArray(styles)) {
+          stylesArray = styles;
+        } else {
+          stylesArray = styles ? styles.split(',') : [''];
         }
-    }
-}, function(cls) {
+        const serialized = {
+          baseURL: source.getUrls()[0],
+          customParams: source.getParams(),
+          layers: [source.getParams().LAYERS],
+          opacity: layer.getOpacity(),
+          styles: stylesArray,
+          type: 'WMS',
+        };
+        return serialized;
+      },
+    },
+  },
+  function (cls) {
     // Register this serializer via the inherited method `register`.
     cls.register(cls);
-});
+  },
+);

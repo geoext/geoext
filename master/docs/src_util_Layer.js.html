@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Source: src/util/Layer.js</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+</head>
+
+<body>
+
+<div id="main">
+
+    <h1 class="page-title">Source: src/util/Layer.js</h1>
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>/* Copyright (c) 2015-present The Open Source Geospatial Foundation
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see &lt;http://www.gnu.org/licenses/>.
+ */
+/**
+ * A utility class for working with OpenLayers layers.
+ *
+ * @class GeoExt.util.Layer
+ */
+Ext.define('GeoExt.util.Layer', {
+  inheritableStatics: {
+    /**
+     * Cascades down a given LayerGroup, calling the given function for
+     * each LayerGroup / Layer.
+     *
+     * @param  {ol.layer.Group} lyrGroup The layer group to cascade down
+     * @param  {Function} fn A function to call on every LayerGroup / Layer
+     * @return {void}
+     */
+    cascadeLayers: function (lyrGroup, fn) {
+      if (!(lyrGroup instanceof ol.layer.Group)) {
+        // skip on wrong input type
+        Ext.Logger.warn(
+          'No ol.layer.Group given to ' +
+            'BasiGX.util.Layer.cascadeLayers. It is unlikely that ' +
+            'this will work properly. Skipping!',
+        );
+        return;
+      }
+      if (!Ext.isFunction(fn)) {
+        Ext.Logger.warn(
+          'No function passed ' + 'this will not work. Skipping!',
+        );
+        return;
+      }
+
+      lyrGroup.getLayers().forEach(function (layerOrGroup) {
+        fn(layerOrGroup);
+        if (layerOrGroup instanceof ol.layer.Group) {
+          GeoExt.util.Layer.cascadeLayers(layerOrGroup, fn);
+        }
+      });
+    },
+
+    /**
+     * A utility method to find the `ol.layer.Group` which is the direct
+     * parent of the passed layer. Searching starts at the passed
+     * startGroup. If `undefined` is returned, the layer is not a child of
+     * the `startGroup`.
+     *
+     * @param {ol.layer.Base} childLayer The layer whose group we want.
+     * @param {ol.layer.Group} startGroup The group layer that we will start
+     *     searching in.
+     * @return {ol.layer.Group} The direct parent group or undefined if the
+     *     group cannot be determined.
+     */
+    findParentGroup: function (childLayer, startGroup) {
+      let parentGroup;
+      const findParentGroup = GeoExt.util.Layer.findParentGroup;
+      const getLayerIndex = GeoExt.util.Layer.getLayerIndex;
+
+      if (getLayerIndex(childLayer, startGroup) !== -1) {
+        parentGroup = startGroup;
+      } else {
+        startGroup.getLayers().forEach(function (layer) {
+          if (!parentGroup &amp;&amp; layer instanceof ol.layer.Group) {
+            parentGroup = findParentGroup(childLayer, layer);
+            // sadly we cannot abort the forEach-iteration here
+          }
+        });
+      }
+
+      return parentGroup;
+    },
+
+    /**
+     * A utility method to determine the zero based index of a layer in a
+     * layer group. Will return `-1` if the layer isn't a direct child of
+     * the group.
+     *
+     * @param {ol.layer.Base} layer The layer whose index we want.
+     * @param {ol.layer.Group} group The group to search in.
+     * @return {number} The index or `-1` if the layer isn't a direct child
+     *     of the group.
+     */
+    getLayerIndex: function (layer, group) {
+      let index = -1;
+
+      group.getLayers().forEach(function (candidate, idx) {
+        if (index === -1 &amp;&amp; candidate === layer) {
+          index = idx;
+          // sadly we cannot abort the forEach-iteration here
+        }
+      });
+
+      return index;
+    },
+  },
+});
+</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<nav>
+    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="GeoExt.component.FeatureRenderer.html">FeatureRenderer</a></li><li><a href="GeoExt.component.Map.html">Map</a></li><li><a href="GeoExt.component.OverviewMap.html">OverviewMap</a></li><li><a href="GeoExt.component.Popup.html">Popup</a></li><li><a href="GeoExt.data.MapfishPrintProvider.html">MapfishPrintProvider</a></li><li><a href="GeoExt.data.model.ArcGISRestServiceLayer.html">ArcGISRestServiceLayer</a></li><li><a href="GeoExt.data.model.Base.html">Base</a></li><li><a href="GeoExt.data.model.Feature.html">Feature</a></li><li><a href="GeoExt.data.model.Layer.html">Layer</a></li><li><a href="GeoExt.data.model.LayerTreeNode.html">LayerTreeNode</a></li><li><a href="GeoExt.data.model.OlObject.html">OlObject</a></li><li><a href="GeoExt.data.model.print.Capability.html">Capability</a></li><li><a href="GeoExt.data.model.print.Layout.html">Layout</a></li><li><a href="GeoExt.data.model.print.LayoutAttribute.html">LayoutAttribute</a></li><li><a href="GeoExt.data.serializer.Base.html">Base</a></li><li><a href="GeoExt.data.serializer.ImageWMS.html">ImageWMS</a></li><li><a href="GeoExt.data.serializer.TileWMS.html">TileWMS</a></li><li><a href="GeoExt.data.serializer.Vector.html">Vector</a></li><li><a href="GeoExt.data.serializer.WMTS.html">WMTS</a></li><li><a href="GeoExt.data.serializer.XYZ.html">XYZ</a></li><li><a href="GeoExt.data.store.ArcGISRestServiceLayer.html">ArcGISRestServiceLayer</a></li><li><a href="GeoExt.data.store.Features.html">Features</a></li><li><a href="GeoExt.data.store.Layers.html">Layers</a></li><li><a href="GeoExt.data.store.LayersTree.html">LayersTree</a></li><li><a href="GeoExt.data.store.OlObjects.html">OlObjects</a></li><li><a href="GeoExt.data.store.WfsFeatures.html">WfsFeatures</a></li><li><a href="GeoExt.form.field.GeocoderComboBox.html">GeocoderComboBox</a></li><li><a href="GeoExt.mixin.SymbolCheck.html">SymbolCheck</a></li><li><a href="GeoExt.plugin.layertreenode.ContextMenu.html">ContextMenu</a></li><li><a href="GeoExt.selection.FeatureCheckboxModel.html">FeatureCheckboxModel</a></li><li><a href="GeoExt.selection.FeatureModel.html">FeatureModel</a></li><li><a href="GeoExt.selection.FeatureModelMixin.html">FeatureModelMixin</a></li><li><a href="GeoExt.state.PermalinkProvider.html">PermalinkProvider</a></li><li><a href="GeoExt.toolbar.WfsPaging.html">WfsPaging</a></li><li><a href="GeoExt.util.Layer.html">Layer</a></li><li><a href="GeoExt.util.OGCFilter.html">OGCFilter</a></li><li><a href="GeoExt.util.Version.html">Version</a></li></ul><h3>Events</h3><ul><li><a href="global.html#event:aftermapmoveTriggeredwhenthe'moveend'eventoftheunderlyingOpenLayersmapisfired.">aftermapmove
+
+Triggered when the 'moveend' event of the underlying OpenLayers map is
+fired.</a></li><li><a href="global.html#event:click">click</a></li><li><a href="global.html#event:pointerrestFiresiftheuserhasleftthepointerforanamountof#pointerRestIntervalmillisecondsatthe*samelocation*.Usetheconfiguration#pointerRestPixelTolerancetoconfigurehowlongapixelisconsideredtobeonthe*samelocation*.Pleasenotethatthiseventwillonlyfireifthemaphas#pointerRestconfiguredwith%2560true%2560.">pointerrest
+
+Fires if the user has left the pointer for an amount
+of #pointerRestInterval milliseconds at the *same location*. Use the
+configuration #pointerRestPixelTolerance to configure how long a pixel is
+considered to be on the *same location*.
+
+Please note that this event will only fire if the map has #pointerRest
+configured with `true`.</a></li><li><a href="global.html#event:pointerrestoutFiresiftheuserfirstwasrestinghispointeronthemapelement,butthenmovedthepointeroutofthemapcompletely.Pleasenotethatthiseventwillonlyfireifthemaphas#pointerRestconfiguredwith%2560true%2560.">pointerrestout
+
+Fires if the user first was resting his pointer on the map element, but
+then moved the pointer out of the map completely.
+
+Please note that this event will only fire if the map has #pointerRest
+configured with `true`.</a></li><li><a href="global.html#event:readyFiresafterthePrintCapabilitystoreisloaded.">ready
+Fires after the PrintCapability store is loaded.</a></li></ul><h3>Global</h3><ul><li><a href="global.html#attributesReturnsanExt.data.Storeofreferenced%257B@linkGeoExt.data.model.print.LayoutAttribute%257Ds.">attributes
+Returns an Ext.data.Store of referenced
+{@link GeoExt.data.model.print.LayoutAttribute}s.</a></li><li><a href="global.html#constructor">constructor</a></li><li><a href="global.html#getCapabilityReturnsthelayoutsparentprintcapabilities.MaybenullifLayoutisinstantiateddirectly.">getCapability
+Returns the layouts parent print capabilities. May be null if Layout is
+instantiated directly.</a></li><li><a href="global.html#getLayoutReturnstheattributeparentlayoutmodel.MaybenullifLayoutAttributeisinstantiateddirectly.">getLayout
+Returns the attribute parent layout model. May be null if
+LayoutAttribute is instantiated directly.</a></li><li><a href="global.html#getRefItems">getRefItems</a></li><li><a href="global.html#getRefOwner">getRefOwner</a></li><li><a href="global.html#layoutsReturnsanExt.data.Storeofreferenced%257B@linkGeoExt.data.model.print.Layout%257Ds.">layouts
+Returns an Ext.data.Store of referenced
+{@link GeoExt.data.model.print.Layout}s.</a></li><li><a href="global.html#name">name</a></li><li><a href="global.html#onLayerVisibleChange">onLayerVisibleChange</a></li><li><a href="global.html#set">set</a></li></ul>
+</nav>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 4.0.4</a> on Wed Dec 11 2024 16:22:56 GMT+0000 (Coordinated Universal Time)
+</footer>
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>

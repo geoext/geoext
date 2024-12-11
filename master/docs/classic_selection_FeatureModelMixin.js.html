@@ -1,0 +1,420 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Source: classic/selection/FeatureModelMixin.js</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+</head>
+
+<body>
+
+<div id="main">
+
+    <h1 class="page-title">Source: classic/selection/FeatureModelMixin.js</h1>
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>/* Copyright (c) 2015-present The Open Source Geospatial Foundation
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see &lt;http://www.gnu.org/licenses/>.
+ */
+/**
+ * A mixin for selection model which enables automatic selection of features
+ * in the map when rows are selected in the grid and vice-versa.
+ *
+ * **CAUTION: This class is only usable in applications using the classic
+ * toolkit of ExtJS 6.**
+ *
+ * @class GeoExt.selection.FeatureModelMixin
+ */
+
+Ext.define('GeoExt.selection.FeatureModelMixin', {
+  extend: 'Ext.Mixin',
+
+  mixinConfig: {
+    after: {
+      bindComponent: 'bindFeatureModel',
+    },
+    before: {
+      destroy: 'unbindOlEvents',
+      constructor: 'onConstruct',
+      onSelectChange: 'beforeSelectChange',
+    },
+  },
+
+  config: {
+    /**
+     * The connected vector layer.
+     * @cfg {ol.layer.Vector} layer The connected vector layer.
+     * @property {ol.layer.Vector} layer The connected vector layer.
+     */
+    layer: null,
+
+    /**
+     * The OpenLayers map we work with
+     * @cfg {ol.Map}
+     * @type {ol.Map}
+     */
+    map: null,
+
+    /**
+     * Set to true to create a click handler on the map selecting a clicked
+     * object in the #layer.
+     * @cfg {boolean}
+     */
+    mapSelection: false,
+
+    /**
+     * Set a pixel tolerance for the map selection. Defaults to 12.
+     */
+    selectionTolerance: 12,
+
+    /**
+     * The default style for the selected features.
+     * @cfg {ol.style.Style}
+     */
+    selectStyle: new ol.style.Style({
+      image: new ol.style.Circle({
+        radius: 6,
+        fill: new ol.style.Fill({
+          color: 'rgba(255,255,255,0.8)',
+        }),
+        stroke: new ol.style.Stroke({
+          color: 'darkblue',
+          width: 2,
+        }),
+      }),
+      fill: new ol.style.Fill({
+        color: 'rgba(255,255,255,0.8)',
+      }),
+      stroke: new ol.style.Stroke({
+        color: 'darkblue',
+        width: 2,
+      }),
+    }),
+  },
+
+  /**
+   * Lookup to preserve existing feature styles. Used to restore feature style
+   * when select style is removed.
+   * @private
+   * @property {Object} existingFeatStyles Lookup to preserve existing feature styles
+   */
+  existingFeatStyles: {},
+
+  /**
+   * Indicates if a map click handler has been registered on init.
+   * @private
+   * @property {boolean} mapClickRegistered Indicates if a map click handler has been registered
+   */
+  mapClickRegistered: false,
+
+  /**
+   * The attribute key to mark an OL feature as selected.
+   * @cfg {string}
+   * @property  {string} selectedFeatureAttr The attribute key to mark as selected
+   * @readonly
+   */
+  selectedFeatureAttr: 'gx_selected',
+
+  /**
+   * The currently selected features (`ol.Collection` containing `ol.Feature`
+   * instances).
+   * @property {ol.Collection} selectedFeatures Currently selected features
+   */
+  selectedFeatures: null,
+
+  onConstruct: function () {
+    const me = this;
+
+    me.onSelectFeatAdd = me.onSelectFeatAdd.bind(me);
+    me.onSelectFeatRemove = me.onSelectFeatRemove.bind(me);
+    me.onFeatureClick = me.onFeatureClick.bind(me);
+  },
+
+  /**
+   * Prepare several connected objects once the selection model is ready.
+   *
+   * @private
+   */
+  bindFeatureModel: function () {
+    const me = this;
+
+    // detect a layer from the store if not passed in
+    if (!me.layer || !(me.layer instanceof ol.layer.Vector)) {
+      const store = me.getStore();
+      if (
+        store &amp;&amp;
+        store.getLayer &amp;&amp;
+        store.getLayer() &amp;&amp;
+        store.getLayer() instanceof ol.layer.Vector
+      ) {
+        me.layer = store.getLayer();
+      }
+    }
+
+    // bind several OL events since this is not called while destroying
+    me.bindOlEvents();
+  },
+
+  /**
+   * Binds several events on the OL objects used in this class.
+   *
+   * @private
+   */
+  bindOlEvents: function () {
+    if (!this.bound_) {
+      const me = this;
+
+      me.selectedFeatures = new ol.Collection();
+
+      // change style of selected feature
+      me.selectedFeatures.on('add', me.onSelectFeatAdd);
+
+      // reset style of no more selected feature
+      me.selectedFeatures.on('remove', me.onSelectFeatRemove);
+
+      // create a map click listener for connected vector layer
+      if (me.mapSelection &amp;&amp; me.layer &amp;&amp; me.map) {
+        me.map.on('singleclick', me.onFeatureClick);
+        me.mapClickRegistered = true;
+      }
+      this.bound_ = true;
+    }
+  },
+
+  /**
+   * Unbinds several events that were registered on the OL objects in this
+   * class (see #bindOlEvents).
+   *
+   * @private
+   */
+  unbindOlEvents: function () {
+    const me = this;
+
+    // remove 'add' / 'remove' listener from selected feature collection
+    if (me.selectedFeatures) {
+      me.selectedFeatures.un('add', me.onSelectFeatAdd);
+      me.selectedFeatures.un('remove', me.onSelectFeatRemove);
+    }
+
+    // remove 'singleclick' listener for connected vector layer
+    if (me.mapClickRegistered) {
+      me.map.un('singleclick', me.onFeatureClick);
+      me.mapClickRegistered = false;
+    }
+  },
+
+  /**
+   * Handles 'add' event of #selectedFeatures.
+   * Ensures that added feature gets the #selectStyle and preserves an
+   * possibly existing feature style.
+   *
+   * @private
+   * @param  {ol.Collection.Event} evt OL event object
+   */
+  onSelectFeatAdd: function (evt) {
+    const me = this;
+    const feat = evt.element;
+    if (feat) {
+      if (feat.getStyle()) {
+        // we have to preserve the existing feature style
+        const fid = feat.getId() || me.getRandomFid();
+        me.existingFeatStyles[fid] = feat.getStyle();
+        feat.setId(fid);
+      }
+      // apply select style
+      feat.setStyle(me.selectStyle);
+    }
+  },
+
+  /**
+   * Handles 'remove' event of #selectedFeatures.
+   * Ensures that the #selectStyle is reset on the removed feature.
+   *
+   * @private
+   * @param  {ol.Collection.Event} evt OL event object
+   */
+  onSelectFeatRemove: function (evt) {
+    const me = this;
+    const feat = evt.element;
+    if (feat) {
+      const fid = feat.getId();
+      if (fid &amp;&amp; me.existingFeatStyles[fid]) {
+        // restore existing feature style
+        feat.setStyle(me.existingFeatStyles[fid]);
+        delete me.existingFeatStyles[fid];
+      } else {
+        // reset feature style, so layer style gets active
+        feat.setStyle();
+      }
+    }
+  },
+
+  /**
+   * Handles the 'singleclick' event of the #map.
+   * Detects if a feature of the connected #layer has been clicked and selects
+   * this feature by selecting its corresponding grid row.
+   *
+   * @private
+   * @param  {ol.MapBrowserEvent} evt OL event object
+   */
+  onFeatureClick: function (evt) {
+    const me = this;
+    const feat = me.map.forEachFeatureAtPixel(
+      evt.pixel,
+      function (feature) {
+        return feature;
+      },
+      {
+        layerFilter: function (layer) {
+          return layer === me.layer;
+        },
+        hitTolerance: me.selectionTolerance,
+      },
+    );
+
+    if (feat) {
+      // select clicked feature in grid
+      me.selectMapFeature(feat);
+    }
+  },
+
+  /**
+   * Selects / deselects a feature by triggering the corresponding actions in
+   * the grid (e.g. selecting / deselecting a grid row).
+   *
+   * @private
+   * @param  {ol.Feature} feature The feature to select
+   */
+  selectMapFeature: function (feature) {
+    const me = this;
+    const row = me.store.findBy(function (record, id) {
+      return record.getFeature() === feature;
+    });
+
+    // deselect all if only one can be selected at a time
+    if (me.getSelectionMode() === 'SINGLE') {
+      me.deselectAll();
+    }
+
+    if (feature.get(me.selectedFeatureAttr)) {
+      // deselect feature by deselecting grid row
+      me.deselect(row);
+    } else {
+      // select the feature by selecting grid row
+      if (row !== -1 &amp;&amp; !me.isSelected(row)) {
+        me.select(row, !this.singleSelect);
+        // focus the row in the grid to ensure it is visible
+        me.view.focusRow(row);
+      }
+    }
+  },
+
+  /**
+   * Is called before the onSelectChange function of the parent class.
+   * Ensures that the selected feature is added / removed to / from
+   * #selectedFeatures lookup object.
+   *
+   * @private
+   * @param  {GeoExt.data.model.Feature} record Selected / deselected record
+   * @param  {boolean} isSelected Record is selected or deselected
+   */
+  beforeSelectChange: function (record, isSelected) {
+    const me = this;
+    const selFeature = record.getFeature();
+
+    // toggle feature's selection state
+    const silent = true;
+    selFeature.set(me.selectedFeatureAttr, isSelected, silent);
+
+    if (isSelected) {
+      me.selectedFeatures.push(selFeature);
+    } else {
+      me.selectedFeatures.remove(selFeature);
+    }
+  },
+
+  /**
+   * Returns a random feature ID.
+   *
+   * @private
+   * @return {string} Random feature ID
+   */
+  getRandomFid: function () {
+    // current timestamp plus a random int between 0 and 10
+    return new Date().getTime() + '' + Math.floor(Math.random() * 11);
+  },
+});
+</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<nav>
+    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="GeoExt.component.FeatureRenderer.html">FeatureRenderer</a></li><li><a href="GeoExt.component.Map.html">Map</a></li><li><a href="GeoExt.component.OverviewMap.html">OverviewMap</a></li><li><a href="GeoExt.component.Popup.html">Popup</a></li><li><a href="GeoExt.data.MapfishPrintProvider.html">MapfishPrintProvider</a></li><li><a href="GeoExt.data.model.ArcGISRestServiceLayer.html">ArcGISRestServiceLayer</a></li><li><a href="GeoExt.data.model.Base.html">Base</a></li><li><a href="GeoExt.data.model.Feature.html">Feature</a></li><li><a href="GeoExt.data.model.Layer.html">Layer</a></li><li><a href="GeoExt.data.model.LayerTreeNode.html">LayerTreeNode</a></li><li><a href="GeoExt.data.model.OlObject.html">OlObject</a></li><li><a href="GeoExt.data.model.print.Capability.html">Capability</a></li><li><a href="GeoExt.data.model.print.Layout.html">Layout</a></li><li><a href="GeoExt.data.model.print.LayoutAttribute.html">LayoutAttribute</a></li><li><a href="GeoExt.data.serializer.Base.html">Base</a></li><li><a href="GeoExt.data.serializer.ImageWMS.html">ImageWMS</a></li><li><a href="GeoExt.data.serializer.TileWMS.html">TileWMS</a></li><li><a href="GeoExt.data.serializer.Vector.html">Vector</a></li><li><a href="GeoExt.data.serializer.WMTS.html">WMTS</a></li><li><a href="GeoExt.data.serializer.XYZ.html">XYZ</a></li><li><a href="GeoExt.data.store.ArcGISRestServiceLayer.html">ArcGISRestServiceLayer</a></li><li><a href="GeoExt.data.store.Features.html">Features</a></li><li><a href="GeoExt.data.store.Layers.html">Layers</a></li><li><a href="GeoExt.data.store.LayersTree.html">LayersTree</a></li><li><a href="GeoExt.data.store.OlObjects.html">OlObjects</a></li><li><a href="GeoExt.data.store.WfsFeatures.html">WfsFeatures</a></li><li><a href="GeoExt.form.field.GeocoderComboBox.html">GeocoderComboBox</a></li><li><a href="GeoExt.mixin.SymbolCheck.html">SymbolCheck</a></li><li><a href="GeoExt.plugin.layertreenode.ContextMenu.html">ContextMenu</a></li><li><a href="GeoExt.selection.FeatureCheckboxModel.html">FeatureCheckboxModel</a></li><li><a href="GeoExt.selection.FeatureModel.html">FeatureModel</a></li><li><a href="GeoExt.selection.FeatureModelMixin.html">FeatureModelMixin</a></li><li><a href="GeoExt.state.PermalinkProvider.html">PermalinkProvider</a></li><li><a href="GeoExt.toolbar.WfsPaging.html">WfsPaging</a></li><li><a href="GeoExt.util.Layer.html">Layer</a></li><li><a href="GeoExt.util.OGCFilter.html">OGCFilter</a></li><li><a href="GeoExt.util.Version.html">Version</a></li></ul><h3>Events</h3><ul><li><a href="global.html#event:aftermapmoveTriggeredwhenthe'moveend'eventoftheunderlyingOpenLayersmapisfired.">aftermapmove
+
+Triggered when the 'moveend' event of the underlying OpenLayers map is
+fired.</a></li><li><a href="global.html#event:click">click</a></li><li><a href="global.html#event:pointerrestFiresiftheuserhasleftthepointerforanamountof#pointerRestIntervalmillisecondsatthe*samelocation*.Usetheconfiguration#pointerRestPixelTolerancetoconfigurehowlongapixelisconsideredtobeonthe*samelocation*.Pleasenotethatthiseventwillonlyfireifthemaphas#pointerRestconfiguredwith%2560true%2560.">pointerrest
+
+Fires if the user has left the pointer for an amount
+of #pointerRestInterval milliseconds at the *same location*. Use the
+configuration #pointerRestPixelTolerance to configure how long a pixel is
+considered to be on the *same location*.
+
+Please note that this event will only fire if the map has #pointerRest
+configured with `true`.</a></li><li><a href="global.html#event:pointerrestoutFiresiftheuserfirstwasrestinghispointeronthemapelement,butthenmovedthepointeroutofthemapcompletely.Pleasenotethatthiseventwillonlyfireifthemaphas#pointerRestconfiguredwith%2560true%2560.">pointerrestout
+
+Fires if the user first was resting his pointer on the map element, but
+then moved the pointer out of the map completely.
+
+Please note that this event will only fire if the map has #pointerRest
+configured with `true`.</a></li><li><a href="global.html#event:readyFiresafterthePrintCapabilitystoreisloaded.">ready
+Fires after the PrintCapability store is loaded.</a></li></ul><h3>Global</h3><ul><li><a href="global.html#attributesReturnsanExt.data.Storeofreferenced%257B@linkGeoExt.data.model.print.LayoutAttribute%257Ds.">attributes
+Returns an Ext.data.Store of referenced
+{@link GeoExt.data.model.print.LayoutAttribute}s.</a></li><li><a href="global.html#constructor">constructor</a></li><li><a href="global.html#getCapabilityReturnsthelayoutsparentprintcapabilities.MaybenullifLayoutisinstantiateddirectly.">getCapability
+Returns the layouts parent print capabilities. May be null if Layout is
+instantiated directly.</a></li><li><a href="global.html#getLayoutReturnstheattributeparentlayoutmodel.MaybenullifLayoutAttributeisinstantiateddirectly.">getLayout
+Returns the attribute parent layout model. May be null if
+LayoutAttribute is instantiated directly.</a></li><li><a href="global.html#getRefItems">getRefItems</a></li><li><a href="global.html#getRefOwner">getRefOwner</a></li><li><a href="global.html#layoutsReturnsanExt.data.Storeofreferenced%257B@linkGeoExt.data.model.print.Layout%257Ds.">layouts
+Returns an Ext.data.Store of referenced
+{@link GeoExt.data.model.print.Layout}s.</a></li><li><a href="global.html#name">name</a></li><li><a href="global.html#onLayerVisibleChange">onLayerVisibleChange</a></li><li><a href="global.html#set">set</a></li></ul>
+</nav>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 4.0.4</a> on Wed Dec 11 2024 16:22:56 GMT+0000 (Coordinated Universal Time)
+</footer>
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>

@@ -19,10 +19,8 @@
  * @class GeoExt.data.store.ArcGISRestServiceLayer
  */
 Ext.define('GeoExt.data.store.ArcGISRestServiceLayer', {
-    extend: 'Ext.data.Store',
-    requires: [
-        'GeoExt.data.model.ArcGISRestServiceLayer'
-    ],
+  extend: 'Ext.data.Store',
+  requires: ['GeoExt.data.model.ArcGISRestServiceLayer'],
 
-    model: 'GeoExt.data.model.ArcGISRestServiceLayer'
+  model: 'GeoExt.data.model.ArcGISRestServiceLayer',
 });

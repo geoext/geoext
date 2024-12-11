@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Source: src/mixin/SymbolCheck.js</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+</head>
+
+<body>
+
+<div id="main">
+
+    <h1 class="page-title">Source: src/mixin/SymbolCheck.js</h1>
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>/* Copyright (c) 2015-present The Open Source Geospatial Foundation
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see &lt;http://www.gnu.org/licenses/>.
+ */
+/**
+ * A utility class providing methods to check for symbols of OpenLayers we
+ * depend upon.
+ *
+ * This class can be mixed into classes to check if the dependencies to external
+ * symbols are fulfilled. An example:
+ *
+ *     Ext.define('MyNewClass.DependingOnOpenLayersClasses', {
+ *         mixins: ['GeoExt.mixin.SymbolCheck'],
+ *         // the contents of the `symbols` property will be checked
+ *         symbols: [
+ *             'ol.Map', // checking a class
+ *             'ol.View.prototype.constrainResolution', // an instance method
+ *             'ol.control.ScaleLine#getUnits', // other way for instance method
+ *             'ol.color.asArray', // one way to reference a static method
+ *             'ol.color::asString' // other way to reference a static method
+ *         ]
+ *         // … your configuration and methods …
+ *     });
+ *
+ * Since this sort of checking usually only makes sense in debug mode, you can
+ * additionally wrap the `symbols`-configuration in these `&lt;debug>`-line
+ * comments:
+ *
+ *     Ext.define('MyNewClass.DependingOnOpenLayersClasses', {
+ *         mixins: ['GeoExt.mixin.SymbolCheck'],
+ *         // &lt;debug>
+ *         symbols: []
+ *         // &lt;/debug>
+ *     });
+ *
+ * This means that the array of symbols is not defined in production builds
+ * as the wrapped lines are simply removed from the final JavaScript.
+ *
+ * If one of the symbols cannot be found, a warning will be printed to the
+ * developer console (via `Ext.log.warn`, which will only print in a debug
+ * build):
+ *
+ *     [W] The class "MyNewClass.DependingOnOpenLayersClasses" depends on the
+ *     external symbol "ol.color.notExisting", which does not seem to exist.
+ *
+ * @class GeoExt.mixin.SymbolCheck
+ */
+Ext.define('GeoExt.mixin.SymbolCheck', {
+  extend: 'Ext.Mixin',
+  inheritableStatics: {
+    /**
+     * An object that we will use to store already looked up references in.
+     *
+     * The key will be a symbol (after it has been normalized by the
+     * method #normalizeSymbol), and the value will be a boolean indicating
+     * if the symbol was found to be defined when it was checked.
+     *
+     * @private
+     */
+    _checked: {
+      // will be filled while we are checking stuff for existence
+    },
+
+    /**
+     * Checks whether the required symbols of the given class are defined
+     * in the global context. Will log to the console if a symbol cannot be
+     * found.
+     *
+     * @param {Ext.Base} cls An ext class defining a property `symbols` that
+     *     that this method will check.
+     */
+    check: function (cls) {
+      // &lt;debug>
+      const me = this;
+      const proto = cls.prototype;
+      const olSymbols = proto &amp;&amp; proto.symbols;
+      const clsName = proto &amp;&amp; proto['$className'];
+      if (!olSymbols) {
+        return;
+      }
+      Ext.each(olSymbols, function (olSymbol) {
+        olSymbol = me.normalizeSymbol(olSymbol);
+        me.checkSymbol(olSymbol, clsName);
+      });
+      // &lt;/debug>
+    },
+
+    /**
+     * Normalizes a short form of a symbol to a canonical one we use to
+     * store the results of the #isDefinedSymbol method. The following two
+     * normalizations take place:
+     *
+     * * A `#` in the symbol is being replaced with `.prototype.` so that
+     *   e.g. the symbol `'ol.Class#methodName'` turns into the symbol
+     *   `'ol.Class.prototype.methodName'`
+     * * A `::` in the symbol is being replaced with `.` so that
+     *   e.g. the symbol `'ol.Class::staticMethodName'` turns into the
+     *   symbol `'ol.Class.staticMethodName'`
+     *
+     * @param {string} symbolStr A string to normalize.
+     * @return {string} The normalized string.
+     * @private
+     */
+    normalizeSymbol: (function () {
+      // &lt;debug>
+      const hashRegEx = /#/;
+      const colonRegEx = /::/;
+      // &lt;/debug>
+      const normalizeFunction = function (symbolStr) {
+        // &lt;debug>
+        if (hashRegEx.test(symbolStr)) {
+          symbolStr = symbolStr.replace(hashRegEx, '.prototype.');
+        } else if (colonRegEx.test(symbolStr)) {
+          symbolStr = symbolStr.replace(colonRegEx, '.');
+        }
+        return symbolStr;
+        // &lt;/debug>
+      };
+      return normalizeFunction;
+    })(),
+
+    /**
+     * Checks the passed symbolStr and raises a warning if it cannot be
+     * found.
+     *
+     * @param {string} symbolStr A string to check. Usually this string has
+     *     been {@link #normalizeSymbol normalized} already.
+     * @param {string} [clsName] The optional name of the class that
+     *     requires the passed openlayers symbol.
+     * @private
+     */
+    checkSymbol: function (symbolStr, clsName) {
+      // &lt;debug>
+      const isDefined = this.isDefinedSymbol(symbolStr);
+      if (!isDefined) {
+        Ext.log.warn(
+          'The class "' +
+            (clsName || 'unknown') +
+            '" ' +
+            'depends on the external symbol "' +
+            symbolStr +
+            '", ' +
+            'which does not seem to exist.',
+        );
+      }
+      // &lt;/debug>
+    },
+
+    /**
+     * Checks if the passed symbolStr is defined.
+     *
+     * @param {string} symbolStr A string to check. Usually this string has
+     *     been {@link #normalizeSymbol normalized} already.
+     * @return {boolean} Whether the symbol is defined or not.
+     * @private
+     */
+    isDefinedSymbol: function (symbolStr) {
+      // &lt;debug>
+      const checkedCache = this._checked;
+      if (Ext.isDefined(checkedCache[symbolStr])) {
+        return checkedCache[symbolStr];
+      }
+      const parts = symbolStr.split('.');
+      const lastIdx = parts.length - 1;
+      let curSymbol = Ext.getWin().dom;
+      let isDefined = false;
+      let intermediateSymb = '';
+      Ext.each(parts, function (part, idx) {
+        if (intermediateSymb !== '') {
+          intermediateSymb += '.';
+        }
+        intermediateSymb += part;
+        // Check the current symbol's property or method
+        if (curSymbol[part]) {
+          checkedCache[intermediateSymb] = true;
+          curSymbol = curSymbol[part];
+          if (lastIdx === idx) {
+            isDefined = true;
+          }
+        } else if (lastIdx === idx) {
+          // Special handling for instance-bound methods
+          try {
+            const parentObj = Ext.Object.chain(curSymbol);
+            const instance = new parentObj.constructor();
+            if (typeof instance[part] === 'function') {
+              checkedCache[intermediateSymb] = true;
+              isDefined = true;
+            }
+          } catch (e) {
+            // Handle errors such as constructors requiring arguments
+            Ext.log.warn(
+              `Unable to create instance or access method: ${intermediateSymb}`,
+              e,
+            );
+            checkedCache[intermediateSymb] = false;
+          }
+        } else {
+          // Method or property is not defined
+          checkedCache[intermediateSymb] = false;
+          return false; // break early
+        }
+      });
+      checkedCache[symbolStr] = isDefined;
+      return isDefined;
+      // &lt;/debug>
+    },
+  },
+
+  /**
+   * @property {Array&lt;string>} symbols The symbols to check.
+   */
+
+  /**
+   * Whenever a class mixes in GeoExt.mixin.SymbolCheck, this method will be
+   * called and it actually runs the checks for all the defined #symbols.
+   *
+   * @param {Ext.Class} cls The class that this mixin is mixed into.
+   * @private
+   */
+  onClassMixedIn: function (cls) {
+    // &lt;debug>
+    GeoExt.mixin.SymbolCheck.check(cls);
+    // &lt;/debug>
+  },
+});
+</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<nav>
+    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="GeoExt.component.FeatureRenderer.html">FeatureRenderer</a></li><li><a href="GeoExt.component.Map.html">Map</a></li><li><a href="GeoExt.component.OverviewMap.html">OverviewMap</a></li><li><a href="GeoExt.component.Popup.html">Popup</a></li><li><a href="GeoExt.data.MapfishPrintProvider.html">MapfishPrintProvider</a></li><li><a href="GeoExt.data.model.ArcGISRestServiceLayer.html">ArcGISRestServiceLayer</a></li><li><a href="GeoExt.data.model.Base.html">Base</a></li><li><a href="GeoExt.data.model.Feature.html">Feature</a></li><li><a href="GeoExt.data.model.Layer.html">Layer</a></li><li><a href="GeoExt.data.model.LayerTreeNode.html">LayerTreeNode</a></li><li><a href="GeoExt.data.model.OlObject.html">OlObject</a></li><li><a href="GeoExt.data.model.print.Capability.html">Capability</a></li><li><a href="GeoExt.data.model.print.Layout.html">Layout</a></li><li><a href="GeoExt.data.model.print.LayoutAttribute.html">LayoutAttribute</a></li><li><a href="GeoExt.data.serializer.Base.html">Base</a></li><li><a href="GeoExt.data.serializer.ImageWMS.html">ImageWMS</a></li><li><a href="GeoExt.data.serializer.TileWMS.html">TileWMS</a></li><li><a href="GeoExt.data.serializer.Vector.html">Vector</a></li><li><a href="GeoExt.data.serializer.WMTS.html">WMTS</a></li><li><a href="GeoExt.data.serializer.XYZ.html">XYZ</a></li><li><a href="GeoExt.data.store.ArcGISRestServiceLayer.html">ArcGISRestServiceLayer</a></li><li><a href="GeoExt.data.store.Features.html">Features</a></li><li><a href="GeoExt.data.store.Layers.html">Layers</a></li><li><a href="GeoExt.data.store.LayersTree.html">LayersTree</a></li><li><a href="GeoExt.data.store.OlObjects.html">OlObjects</a></li><li><a href="GeoExt.data.store.WfsFeatures.html">WfsFeatures</a></li><li><a href="GeoExt.form.field.GeocoderComboBox.html">GeocoderComboBox</a></li><li><a href="GeoExt.mixin.SymbolCheck.html">SymbolCheck</a></li><li><a href="GeoExt.plugin.layertreenode.ContextMenu.html">ContextMenu</a></li><li><a href="GeoExt.selection.FeatureCheckboxModel.html">FeatureCheckboxModel</a></li><li><a href="GeoExt.selection.FeatureModel.html">FeatureModel</a></li><li><a href="GeoExt.selection.FeatureModelMixin.html">FeatureModelMixin</a></li><li><a href="GeoExt.state.PermalinkProvider.html">PermalinkProvider</a></li><li><a href="GeoExt.toolbar.WfsPaging.html">WfsPaging</a></li><li><a href="GeoExt.util.Layer.html">Layer</a></li><li><a href="GeoExt.util.OGCFilter.html">OGCFilter</a></li><li><a href="GeoExt.util.Version.html">Version</a></li></ul><h3>Events</h3><ul><li><a href="global.html#event:aftermapmoveTriggeredwhenthe'moveend'eventoftheunderlyingOpenLayersmapisfired.">aftermapmove
+
+Triggered when the 'moveend' event of the underlying OpenLayers map is
+fired.</a></li><li><a href="global.html#event:click">click</a></li><li><a href="global.html#event:pointerrestFiresiftheuserhasleftthepointerforanamountof#pointerRestIntervalmillisecondsatthe*samelocation*.Usetheconfiguration#pointerRestPixelTolerancetoconfigurehowlongapixelisconsideredtobeonthe*samelocation*.Pleasenotethatthiseventwillonlyfireifthemaphas#pointerRestconfiguredwith%2560true%2560.">pointerrest
+
+Fires if the user has left the pointer for an amount
+of #pointerRestInterval milliseconds at the *same location*. Use the
+configuration #pointerRestPixelTolerance to configure how long a pixel is
+considered to be on the *same location*.
+
+Please note that this event will only fire if the map has #pointerRest
+configured with `true`.</a></li><li><a href="global.html#event:pointerrestoutFiresiftheuserfirstwasrestinghispointeronthemapelement,butthenmovedthepointeroutofthemapcompletely.Pleasenotethatthiseventwillonlyfireifthemaphas#pointerRestconfiguredwith%2560true%2560.">pointerrestout
+
+Fires if the user first was resting his pointer on the map element, but
+then moved the pointer out of the map completely.
+
+Please note that this event will only fire if the map has #pointerRest
+configured with `true`.</a></li><li><a href="global.html#event:readyFiresafterthePrintCapabilitystoreisloaded.">ready
+Fires after the PrintCapability store is loaded.</a></li></ul><h3>Global</h3><ul><li><a href="global.html#attributesReturnsanExt.data.Storeofreferenced%257B@linkGeoExt.data.model.print.LayoutAttribute%257Ds.">attributes
+Returns an Ext.data.Store of referenced
+{@link GeoExt.data.model.print.LayoutAttribute}s.</a></li><li><a href="global.html#constructor">constructor</a></li><li><a href="global.html#getCapabilityReturnsthelayoutsparentprintcapabilities.MaybenullifLayoutisinstantiateddirectly.">getCapability
+Returns the layouts parent print capabilities. May be null if Layout is
+instantiated directly.</a></li><li><a href="global.html#getLayoutReturnstheattributeparentlayoutmodel.MaybenullifLayoutAttributeisinstantiateddirectly.">getLayout
+Returns the attribute parent layout model. May be null if
+LayoutAttribute is instantiated directly.</a></li><li><a href="global.html#getRefItems">getRefItems</a></li><li><a href="global.html#getRefOwner">getRefOwner</a></li><li><a href="global.html#layoutsReturnsanExt.data.Storeofreferenced%257B@linkGeoExt.data.model.print.Layout%257Ds.">layouts
+Returns an Ext.data.Store of referenced
+{@link GeoExt.data.model.print.Layout}s.</a></li><li><a href="global.html#name">name</a></li><li><a href="global.html#onLayerVisibleChange">onLayerVisibleChange</a></li><li><a href="global.html#set">set</a></li></ul>
+</nav>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 4.0.4</a> on Wed Dec 11 2024 16:22:56 GMT+0000 (Coordinated Universal Time)
+</footer>
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>

@@ -1,116 +1,99 @@
-Ext.require([
-    'GeoExt.component.Map',
-    'GeoExt.data.store.LayersTree'
-]);
+Ext.require(['GeoExt.component.Map', 'GeoExt.data.store.LayersTree']);
 
-var mapComponent;
-var mapPanel;
-var treePanel;
+let mapComponent;
+let mapPanel;
+let treePanel;
 
 Ext.application({
-    name: 'BasicTree',
-    launch: function() {
-        var source1;
-        var source2;
-        var source3;
-        var layer1;
-        var layer2;
-        var layer3;
-        var group;
-        var olMap;
-        var treeStore;
+  name: 'BasicTree',
+  launch: function () {
+    const source1 = new ol.source.StadiaMaps({layer: 'stamen_watercolor'});
+    const layer1 = new ol.layer.Tile({
+      source: source1,
+      name: 'Stamen Watercolor',
+    });
 
-        source1 = new ol.source.StadiaMaps({layer: 'stamen_watercolor'});
-        layer1 = new ol.layer.Tile({
-            source: source1,
-            name: 'Stamen Watercolor'
-        });
+    const source2 = new ol.source.StadiaMaps({layer: 'stamen_terrain_labels'});
+    const layer2 = new ol.layer.Tile({
+      source: source2,
+      name: 'Stamen Terrain Labels',
+    });
 
-        source2 = new ol.source.StadiaMaps({layer: 'stamen_terrain_labels'});
-        layer2 = new ol.layer.Tile({
-            source: source2,
-            name: 'Stamen Terrain Labels'
-        });
+    const source3 = new ol.source.TileWMS({
+      url: 'https://ows.terrestris.de/osm-gray/service',
+      params: {LAYERS: 'OSM-WMS', TILED: true},
+    });
+    const layer3 = new ol.layer.Tile({
+      source: source3,
+      name: 'terrestris OSM WMS',
+      description:
+        'This is a layer description that will be visible as a tooltip.',
+      visible: false,
+    });
 
-        source3 = new ol.source.TileWMS({
-            url: 'https://ows.terrestris.de/osm-gray/service',
-            params: {'LAYERS': 'OSM-WMS', 'TILED': true}
-        });
-        layer3 = new ol.layer.Tile({
-            source: source3,
-            name: 'terrestris OSM WMS',
-            description: 'This is a layer description that will be visible ' +
-                'as a tooltip.',
-            visible: false
-        });
+    const group = new ol.layer.Group({
+      name: 'Some Stamen Layers',
+      layers: [layer1, layer2],
+      visible: true,
+    });
 
-        group = new ol.layer.Group({
-            name: 'Some Stamen Layers',
-            layers: [layer1, layer2],
-            visible: true
-        });
+    const olMap = new ol.Map({
+      layers: [group, layer3],
+      view: new ol.View({
+        center: [0, 0],
+        zoom: 2,
+      }),
+    });
 
+    mapComponent = Ext.create('GeoExt.component.Map', {
+      map: olMap,
+    });
 
-        olMap = new ol.Map({
-            layers: [group, layer3],
-            view: new ol.View({
-                center: [0, 0],
-                zoom: 2
-            })
-        });
+    mapPanel = Ext.create('Ext.panel.Panel', {
+      region: 'center',
+      border: false,
+      layout: 'fit',
+      items: [mapComponent],
+    });
 
-        mapComponent = Ext.create('GeoExt.component.Map', {
-            map: olMap
-        });
+    const treeStore = Ext.create('GeoExt.data.store.LayersTree', {
+      layerGroup: olMap.getLayerGroup(),
+    });
 
-        mapPanel = Ext.create('Ext.panel.Panel', {
-            region: 'center',
-            border: false,
-            layout: 'fit',
-            items: [mapComponent]
-        });
+    treePanel = Ext.create('Ext.tree.Panel', {
+      title: 'Tree Example',
+      viewConfig: {
+        plugins: {ptype: 'treeviewdragdrop'},
+      },
+      store: treeStore,
+      rootVisible: false,
+      flex: 1,
+      border: false,
+    });
 
-        treeStore = Ext.create('GeoExt.data.store.LayersTree', {
-            layerGroup: olMap.getLayerGroup()
-        });
+    const description = Ext.create('Ext.panel.Panel', {
+      contentEl: 'description',
+      title: 'Description',
+      height: 200,
+      border: false,
+      bodyPadding: 5,
+    });
 
-        treePanel = Ext.create('Ext.tree.Panel', {
-            title: 'Tree Example',
-            viewConfig: {
-                plugins: {ptype: 'treeviewdragdrop'}
-            },
-            store: treeStore,
-            rootVisible: false,
-            flex: 1,
-            border: false
-        });
-
-        var description = Ext.create('Ext.panel.Panel', {
-            contentEl: 'description',
-            title: 'Description',
-            height: 200,
-            border: false,
-            bodyPadding: 5
-        });
-
-        Ext.create('Ext.Viewport', {
-            layout: 'border',
-            items: [
-                mapPanel,
-                {
-                    xtype: 'panel',
-                    region: 'west',
-                    width: 400,
-                    layout: {
-                        type: 'vbox',
-                        align: 'stretch'
-                    },
-                    items: [
-                        treePanel,
-                        description
-                    ]
-                }
-            ]
-        });
-    }
+    Ext.create('Ext.Viewport', {
+      layout: 'border',
+      items: [
+        mapPanel,
+        {
+          xtype: 'panel',
+          region: 'west',
+          width: 400,
+          layout: {
+            type: 'vbox',
+            align: 'stretch',
+          },
+          items: [treePanel, description],
+        },
+      ],
+    });
+  },
 });

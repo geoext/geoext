@@ -19,15 +19,14 @@
  * @class GeoExt.data.model.Feature
  */
 Ext.define('GeoExt.data.model.Feature', {
-    extend: 'GeoExt.data.model.OlObject',
+  extend: 'GeoExt.data.model.OlObject',
 
-    /**
-     * Returns the underlying `ol.Feature` of this record.
-     *
-     * @return {ol.Feature} The underlying `ol.Feature`.
-     */
-    getFeature: function() {
-        return this.olObject;
-    }
-
+  /**
+   * Returns the underlying `ol.Feature` of this record.
+   *
+   * @return {ol.Feature} The underlying `ol.Feature`.
+   */
+  getFeature: function () {
+    return this.olObject;
+  },
 });

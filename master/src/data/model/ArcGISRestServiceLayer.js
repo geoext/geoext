@@ -19,24 +19,24 @@
  * @class GeoExt.data.model.ArcGISRestServiceLayer
  */
 Ext.define('GeoExt.data.model.ArcGISRestServiceLayer', {
-    extend: 'GeoExt.data.model.Base',
+  extend: 'GeoExt.data.model.Base',
 
-    fields: [
-        {
-            name: 'layerId',
-            type: 'int'
-        },
-        {
-            name: 'name',
-            type: 'string'
-        },
-        {
-            name: 'defaultVisibility',
-            type: 'boolean'
-        },
-        {
-            name: 'visibility',
-            type: 'boolean'
-        }
-    ]
+  fields: [
+    {
+      name: 'layerId',
+      type: 'int',
+    },
+    {
+      name: 'name',
+      type: 'string',
+    },
+    {
+      name: 'defaultVisibility',
+      type: 'boolean',
+    },
+    {
+      name: 'visibility',
+      type: 'boolean',
+    },
+  ],
 });

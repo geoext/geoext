@@ -21,84 +21,85 @@
  *
  * @class GeoExt.data.serializer.WMTS
  */
-Ext.define('GeoExt.data.serializer.WMTS', {
+Ext.define(
+  'GeoExt.data.serializer.WMTS',
+  {
     extend: 'GeoExt.data.serializer.Base',
-    mixins: [
-        'GeoExt.mixin.SymbolCheck'
-    ],
+    mixins: ['GeoExt.mixin.SymbolCheck'],
 
     // <debug>
     symbols: [
-        'ol.proj.Projection#getMetersPerUnit',
-        'ol.size.toSize',
-        'ol.source.WMTS',
-        'ol.source.WMTS#getDimensions',
-        'ol.source.WMTS#getFormat',
-        'ol.source.WMTS#getLayer',
-        'ol.source.WMTS#getMatrixSet',
-        'ol.source.WMTS#getProjection',
-        'ol.source.WMTS#getRequestEncoding',
-        'ol.source.WMTS#getStyle',
-        'ol.source.WMTS#getTileGrid',
-        'ol.source.WMTS#getUrls',
-        'ol.source.WMTS#getVersion',
-        'ol.tilegrid.WMTS#getMatrixIds',
-        'ol.tilegrid.WMTS#getOrigin',
-        'ol.tilegrid.WMTS#getResolution'
+      'ol.proj.Projection#getMetersPerUnit',
+      'ol.size.toSize',
+      'ol.source.WMTS',
+      'ol.source.WMTS#getDimensions',
+      'ol.source.WMTS#getFormat',
+      'ol.source.WMTS#getLayer',
+      'ol.source.WMTS#getMatrixSet',
+      'ol.source.WMTS#getProjection',
+      'ol.source.WMTS#getRequestEncoding',
+      'ol.source.WMTS#getStyle',
+      'ol.source.WMTS#getTileGrid',
+      'ol.source.WMTS#getUrls',
+      'ol.source.WMTS#getVersion',
+      'ol.tilegrid.WMTS#getMatrixIds',
+      'ol.tilegrid.WMTS#getOrigin',
+      'ol.tilegrid.WMTS#getResolution',
     ],
     // </debug>
 
     inheritableStatics: {
-        /**
-         * @inheritdoc
-         */
-        sourceCls: ol.source.WMTS,
+      /**
+       * @inheritdoc
+       */
+      sourceCls: ol.source.WMTS,
 
-        /**
-         * @inheritdoc
-         */
-        serialize: function(layer, source) {
-            this.validateSource(source);
+      /**
+       * @inheritdoc
+       */
+      serialize: function (layer, source) {
+        this.validateSource(source);
 
-            var projection = source.getProjection();
-            var tileGrid = source.getTileGrid();
-            var dimensions = source.getDimensions();
-            var dimensionKeys = Ext.Object.getKeys(dimensions);
-            var matrixIds = tileGrid.getMatrixIds();
-            var matrices = [];
+        const projection = source.getProjection();
+        const tileGrid = source.getTileGrid();
+        const dimensions = source.getDimensions();
+        const dimensionKeys = Ext.Object.getKeys(dimensions);
+        const matrixIds = tileGrid.getMatrixIds();
+        const matrices = [];
 
-            Ext.each(matrixIds, function(matrix, idx) {
-                var sqrZ = Math.pow(2, idx);
-                matrices.push(
-                    {
-                        identifier: matrix,
-                        scaleDenominator: tileGrid.getResolution(idx) *
-                            projection.getMetersPerUnit() / 0.28E-3,
-                        tileSize: ol.size.toSize(tileGrid.getTileSize(idx)),
-                        topLeftCorner: tileGrid.getOrigin(idx),
-                        matrixSize: [sqrZ, sqrZ]
-                    }
-                );
-            });
+        Ext.each(matrixIds, function (matrix, idx) {
+          const sqrZ = Math.pow(2, idx);
+          matrices.push({
+            identifier: matrix,
+            scaleDenominator:
+              (tileGrid.getResolution(idx) * projection.getMetersPerUnit()) /
+              0.28e-3,
+            tileSize: ol.size.toSize(tileGrid.getTileSize(idx)),
+            topLeftCorner: tileGrid.getOrigin(idx),
+            matrixSize: [sqrZ, sqrZ],
+          });
+        });
 
-            var serialized = {
-                baseURL: source.getUrls()[0],
-                dimensions: dimensionKeys,
-                dimensionParams: dimensions,
-                imageFormat: source.getFormat(),
-                layer: source.getLayer(),
-                matrices: matrices,
-                matrixSet: source.getMatrixSet(),
-                opacity: layer.getOpacity(),
-                requestEncoding: source.getRequestEncoding(),
-                style: source.getStyle(),
-                type: 'WMTS',
-                version: source.getVersion()
-            };
-            return serialized;
-        }
-    }
-}, function(cls) {
+        const serialized = {
+          baseURL: source.getUrls()[0],
+          dimensions: dimensionKeys,
+          dimensionParams: dimensions,
+          imageFormat: source.getFormat(),
+          layer: source.getLayer(),
+          matrices: matrices,
+          matrixSet: source.getMatrixSet(),
+          opacity: layer.getOpacity(),
+          requestEncoding: source.getRequestEncoding(),
+          style: source.getStyle(),
+          type: 'WMTS',
+          version: source.getVersion(),
+        };
+        return serialized;
+      },
+    },
+  },
+  function (cls) {
     // Register this serializer via the inherited method `register`.
     cls.register(cls);
-});
+  },
+);

@@ -9,7 +9,7 @@ In case you want to use them you also have to add the `classic` folder to the
     "classpath": [
         "app",
         "${toolkit.name}/src",
-        "./lib/geoext3/src",
-        "./lib/geoext3/classic"
+        "./lib/geoext/src",
+        "./lib/geoext/classic"
     ]
 ```

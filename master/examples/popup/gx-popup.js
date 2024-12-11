@@ -1,85 +1,80 @@
-Ext.require([
-    'GeoExt.component.Map'
-]);
+Ext.require(['GeoExt.component.Map']);
 
-var olMap;
-var mapComp;
-var popup;
+let olMap;
+let mapComp;
+let popup;
 
 Ext.application({
-    name: 'Popup',
-    launch: function() {
+  name: 'Popup',
+  launch: function () {
+    olMap = new ol.Map({
+      layers: [
+        new ol.layer.Tile({
+          source: new ol.source.StadiaMaps({
+            layer: 'stamen_watercolor',
+          }),
+        }),
+        new ol.layer.Tile({
+          source: new ol.source.StadiaMaps({
+            layer: 'stamen_terrain_labels',
+          }),
+        }),
+      ],
+      view: new ol.View({
+        center: ol.proj.fromLonLat([-122.416667, 37.783333]),
+        zoom: 12,
+      }),
+    });
 
-        var description;
+    popup = Ext.create('GeoExt.component.Popup', {
+      map: olMap,
+      width: 140,
+    });
 
-        olMap = new ol.Map({
-            layers: [
-                new ol.layer.Tile({
-                    source: new ol.source.StadiaMaps({
-                        layer: 'stamen_watercolor'
-                    })
-                }),
-                new ol.layer.Tile({
-                    source: new ol.source.StadiaMaps({
-                        layer: 'stamen_terrain_labels'
-                    })
-                })
-            ],
-            view: new ol.View({
-                center: ol.proj.fromLonLat([-122.416667, 37.783333]),
-                zoom: 12
-            })
-        });
+    mapComp = Ext.create('GeoExt.component.Map', {
+      title: 'GeoExt.component.Map Example',
+      map: olMap,
+      region: 'center',
+      pointerRest: true,
+      pointerRestInterval: 750,
+      pointerRestPixelTolerance: 5,
+    });
 
-        popup = Ext.create('GeoExt.component.Popup', {
-            map: olMap,
-            width: 140
-        });
+    // Add a pointerrest handler to the map component to render the popup.
+    mapComp.on('pointerrest', function (evt) {
+      const coordinate = evt.coordinate;
+      let hdms = ol.coordinate.toStringHDMS(
+        ol.proj.transform(coordinate, 'EPSG:3857', 'EPSG:4326'),
+      );
+      // Insert a linebreak after either N or S in hdms
+      hdms = hdms.replace(/([NS])/, '$1<br>');
 
-        mapComp = Ext.create('GeoExt.component.Map', {
-            title: 'GeoExt.component.Map Example',
-            map: olMap,
-            region: 'center',
-            pointerRest: true,
-            pointerRestInterval: 750,
-            pointerRestPixelTolerance: 5
-        });
+      // set content and position popup
+      popup.setHtml(
+        '<p><strong>Pointer rested on</strong>' +
+          '<br /><code>' +
+          hdms +
+          '</code></p>',
+      );
+      popup.position(coordinate);
+      popup.show();
+    });
 
-        // Add a pointerrest handler to the map component to render the popup.
-        mapComp.on('pointerrest', function(evt) {
-            var coordinate = evt.coordinate;
-            var hdms = ol.coordinate.toStringHDMS(ol.proj.transform(
-                coordinate, 'EPSG:3857', 'EPSG:4326')
-            );
-            // Insert a linebreak after either N or S in hdms
-            hdms = hdms.replace(/([NS])/, '$1<br>');
+    // hide the popup once it isn't on the map any longer
+    mapComp.on('pointerrestout', popup.hide, popup);
 
-            // set content and position popup
-            popup.setHtml('<p><strong>Pointer rested on</strong>' +
-                '<br /><code>' + hdms + '</code></p>');
-            popup.position(coordinate);
-            popup.show();
-        });
+    const description = Ext.create('Ext.panel.Panel', {
+      contentEl: 'description',
+      title: 'Description',
+      region: 'east',
+      width: 300,
+      border: false,
+      bodyPadding: 5,
+    });
 
-        // hide the popup once it isn't on the map any longer
-        mapComp.on('pointerrestout', popup.hide, popup);
-
-        description = Ext.create('Ext.panel.Panel', {
-            contentEl: 'description',
-            title: 'Description',
-            region: 'east',
-            width: 300,
-            border: false,
-            bodyPadding: 5
-        });
-
-        Ext.create('Ext.Viewport', {
-            layout: 'border',
-            items: [
-                mapComp,
-                description
-            ]
-        });
-
-    }
+    Ext.create('Ext.Viewport', {
+      layout: 'border',
+      items: [mapComp, description],
+    });
+  },
 });
