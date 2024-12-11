@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <title>The source code</title>
+  <link href="../resources/prettify/prettify.css" type="text/css" rel="stylesheet" />
+  <script type="text/javascript" src="../resources/prettify/prettify.js"></script>
+  <style type="text/css">
+    .highlight { display: block; background-color: #ddd; }
+  </style>
+  <script type="text/javascript">
+    function highlight() {
+      document.getElementById(location.hash.replace(/#/, "")).className = "highlight";
+    }
+  </script>
+</head>
+<body onload="prettyPrint(); highlight();">
+  <pre class="prettyprint lang-js"><span id='Ext-data-validator-Format'>/**
+</span> * Validates that the passed value matches a specific format specified by a regex.
+ * The format is provided by the {@link #matcher} config.
+ */
+Ext.define(&#39;Ext.data.validator.Format&#39;, {
+    extend: &#39;Ext.data.validator.Validator&#39;,
+    alias: &#39;data.validator.format&#39;,
+    
+<span id='Ext-data-validator-Format-property-type'>    type: &#39;format&#39;,
+</span>    
+    config: {
+<span id='Ext-data-validator-Format-cfg-message'>        /**
+</span>         * @cfg {String} message
+         * The error message to return when the value does not match the format.
+         */
+        message: &#39;Is in the wrong format&#39;,
+    
+<span id='Ext-data-validator-Format-cfg-matcher'>        /**
+</span>         * @cfg {RegExp} matcher (required) The matcher regex to test against the value.
+         */
+        matcher: undefined
+    },
+    
+<span id='Ext-data-validator-Format-method-constructor'>    //&lt;debug&gt;
+</span>    constructor: function() {
+        this.callParent(arguments);
+        if (!this.getMatcher()) {
+            Ext.raise(&#39;validator.Format must be configured with a matcher&#39;);
+        }
+    },
+<span id='Ext-data-validator-Format-method-validate'>    //&lt;/debug&gt;
+</span>    
+    validate: function(value) {
+        var matcher = this.getMatcher(),
+            result = matcher &amp;&amp; matcher.test(value);
+
+        return result ? result : this.getMessage();
+    }
+});
+</pre>
+</body>
+</html>

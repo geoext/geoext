@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <title>The source code</title>
+  <link href="../resources/prettify/prettify.css" type="text/css" rel="stylesheet" />
+  <script type="text/javascript" src="../resources/prettify/prettify.js"></script>
+  <style type="text/css">
+    .highlight { display: block; background-color: #ddd; }
+  </style>
+  <script type="text/javascript">
+    function highlight() {
+      document.getElementById(location.hash.replace(/#/, "")).className = "highlight";
+    }
+  </script>
+</head>
+<body onload="prettyPrint(); highlight();">
+  <pre class="prettyprint lang-js">Ext.define(&#39;Ext.rtl.util.Renderable&#39;, {
+    override: &#39;Ext.util.Renderable&#39;,
+
+    _rtlCls: Ext.baseCSSPrefix + &#39;rtl&#39;,
+    _ltrCls: Ext.baseCSSPrefix + &#39;ltr&#39;,
+
+    // this template should be exactly the same as frameTableTpl, except with the order
+    // of right and left TD elements switched.
+    rtlFrameTableTpl: [
+        &#39;&lt;tpl if=&quot;hasTabGuard&quot;&gt;{% this.renderTabGuard(out, values, \&#39;before\&#39;); %}&lt;/tpl&gt;&#39;,
+        &#39;&lt;table id=&quot;{fgid}Table&quot; data-ref=&quot;frameTable&quot; class=&quot;{frameCls} &#39;, Ext.baseCSSPrefix + &#39;table-plain&quot; cellpadding=&quot;0&quot; role=&quot;presentation&quot;&gt;&#39;,
+            &#39;&lt;tpl if=&quot;top&quot;&gt;&#39;,
+                &#39;&lt;tr role=&quot;presentation&quot;&gt;&#39;,
+                    &#39;&lt;tpl if=&quot;right&quot;&gt;&lt;td id=&quot;{fgid}TR&quot; data-ref=&quot;frameTR&quot; class=&quot;{frameCls}-tr {baseCls}-tr {baseCls}-{ui}-tr&lt;tpl for=&quot;uiCls&quot;&gt; {parent.baseCls}-{parent.ui}-{.}-tr&lt;/tpl&gt;{frameElCls}&quot; role=&quot;presentation&quot;&gt;&lt;/td&gt;&lt;/tpl&gt;&#39;,
+                    &#39;&lt;td id=&quot;{fgid}TC&quot; data-ref=&quot;frameTC&quot; class=&quot;{frameCls}-tc {baseCls}-tc {baseCls}-{ui}-tc&lt;tpl for=&quot;uiCls&quot;&gt; {parent.baseCls}-{parent.ui}-{.}-tc&lt;/tpl&gt;{frameElCls}&quot; role=&quot;presentation&quot;&gt;&lt;/td&gt;&#39;,
+                    &#39;&lt;tpl if=&quot;left&quot;&gt;&lt;td id=&quot;{fgid}TL&quot; data-ref=&quot;frameTL&quot; class=&quot;{frameCls}-tl {baseCls}-tl {baseCls}-{ui}-tl&lt;tpl for=&quot;uiCls&quot;&gt; {parent.baseCls}-{parent.ui}-{.}-tl&lt;/tpl&gt;{frameElCls}&quot; role=&quot;presentation&quot;&gt;&lt;/td&gt;&lt;/tpl&gt;&#39;,
+                &#39;&lt;/tr&gt;&#39;,
+            &#39;&lt;/tpl&gt;&#39;,
+            &#39;&lt;tr role=&quot;presentation&quot;&gt;&#39;,
+                &#39;&lt;tpl if=&quot;right&quot;&gt;&lt;td id=&quot;{fgid}MR&quot; data-ref=&quot;frameMR&quot; class=&quot;{frameCls}-mr {baseCls}-mr {baseCls}-{ui}-mr&lt;tpl for=&quot;uiCls&quot;&gt; {parent.baseCls}-{parent.ui}-{.}-mr&lt;/tpl&gt;{frameElCls}&quot; role=&quot;presentation&quot;&gt;&lt;/td&gt;&lt;/tpl&gt;&#39;,
+                &#39;&lt;td id=&quot;{fgid}Body&quot; data-ref=&quot;frameBody&quot; class=&quot;{frameBodyCls} {frameCls}-mc {baseCls}-mc {baseCls}-{ui}-mc&lt;tpl for=&quot;uiCls&quot;&gt; {parent.baseCls}-{parent.ui}-{.}-mc&lt;/tpl&gt;{frameElCls}&quot; style=&quot;{mcStyle}&quot; role=&quot;presentation&quot;&gt;&#39;,
+                    &#39;{%this.applyRenderTpl(out, values)%}&#39;,
+                &#39;&lt;/td&gt;&#39;,
+                &#39;&lt;tpl if=&quot;left&quot;&gt;&lt;td id=&quot;{fgid}ML&quot; data-ref=&quot;frameML&quot; class=&quot;{frameCls}-ml {baseCls}-ml {baseCls}-{ui}-ml&lt;tpl for=&quot;uiCls&quot;&gt; {parent.baseCls}-{parent.ui}-{.}-ml&lt;/tpl&gt;{frameElCls}&quot; role=&quot;presentation&quot;&gt;&lt;/td&gt;&lt;/tpl&gt;&#39;,
+            &#39;&lt;/tr&gt;&#39;,
+            &#39;&lt;tpl if=&quot;bottom&quot;&gt;&#39;,
+                &#39;&lt;tr role=&quot;presentation&quot;&gt;&#39;,
+                    &#39;&lt;tpl if=&quot;right&quot;&gt;&lt;td id=&quot;{fgid}BR&quot; data-ref=&quot;frameBR&quot; class=&quot;{frameCls}-br {baseCls}-br {baseCls}-{ui}-br&lt;tpl for=&quot;uiCls&quot;&gt; {parent.baseCls}-{parent.ui}-{.}-br&lt;/tpl&gt;{frameElCls}&quot; role=&quot;presentation&quot;&gt;&lt;/td&gt;&lt;/tpl&gt;&#39;,
+                    &#39;&lt;td id=&quot;{fgid}BC&quot; data-ref=&quot;frameBC&quot; class=&quot;{frameCls}-bc {baseCls}-bc {baseCls}-{ui}-bc&lt;tpl for=&quot;uiCls&quot;&gt; {parent.baseCls}-{parent.ui}-{.}-bc&lt;/tpl&gt;{frameElCls}&quot; role=&quot;presentation&quot;&gt;&lt;/td&gt;&#39;,
+                    &#39;&lt;tpl if=&quot;left&quot;&gt;&lt;td id=&quot;{fgid}BL&quot; data-ref=&quot;frameBL&quot; class=&quot;{frameCls}-bl {baseCls}-bl {baseCls}-{ui}-bl&lt;tpl for=&quot;uiCls&quot;&gt; {parent.baseCls}-{parent.ui}-{.}-bl&lt;/tpl&gt;{frameElCls}&quot; role=&quot;presentation&quot;&gt;&lt;/td&gt;&lt;/tpl&gt;&#39;,
+                &#39;&lt;/tr&gt;&#39;,
+            &#39;&lt;/tpl&gt;&#39;,
+        &#39;&lt;/table&gt;&#39;,
+        &#39;&lt;tpl if=&quot;hasTabGuard&quot;&gt;{% this.renderTabGuard(out, values, \&#39;after\&#39;); %}&lt;/tpl&gt;&#39;
+    ],
+
+    beforeRender: function() {
+        var rtl = this.getInherited().rtl;
+        if (rtl) {
+            this.addCls(this._rtlCls);
+        } else if (rtl === false) {
+            this.addCls(this._ltrCls);
+        }
+
+        this.callParent();
+    },
+
+    initRenderData: function() {
+        var me = this,
+            renderData = me.callParent(),
+            rtlCls = me._rtlCls;
+
+        if (rtlCls &amp;&amp; me.getInherited().rtl) {
+            renderData.childElCls = &#39; &#39; + rtlCls;
+        }
+
+        return renderData;
+    },
+
+    privates: {
+        getFrameTpl: function(table) {
+            return (table &amp;&amp; this.getInherited().rtl) ?
+                this.lookupTpl(&#39;rtlFrameTableTpl&#39;) : this.callParent(arguments);
+        },
+
+        getFrameRenderData: function () {
+            var me = this,
+                data = me.callParent(),
+                rtlCls = me._rtlCls;
+
+            if (rtlCls &amp;&amp; me.getInherited().rtl) {
+                data.frameElCls = &#39; &#39; + rtlCls;
+            }
+
+            return data;
+        }
+    }
+});
+</pre>
+</body>
+</html>

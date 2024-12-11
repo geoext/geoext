@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <title>The source code</title>
+  <link href="../resources/prettify/prettify.css" type="text/css" rel="stylesheet" />
+  <script type="text/javascript" src="../resources/prettify/prettify.js"></script>
+  <style type="text/css">
+    .highlight { display: block; background-color: #ddd; }
+  </style>
+  <script type="text/javascript">
+    function highlight() {
+      document.getElementById(location.hash.replace(/#/, "")).className = "highlight";
+    }
+  </script>
+</head>
+<body onload="prettyPrint(); highlight();">
+  <pre class="prettyprint lang-js"><span id='Ext-layout-container-Absolute'>/**
+</span> * This is a layout that inherits the anchoring of {@link Ext.layout.container.Anchor} and adds the
+ * ability for x/y positioning using the standard x and y component config options.
+ *
+ * This class is intended to be extended or created via the {@link Ext.container.Container#layout layout}
+ * configuration property.  See {@link Ext.container.Container#layout} for additional details.
+ *
+ *     @example
+ *     Ext.create(&#39;Ext.form.Panel&#39;, {
+ *         title: &#39;Absolute Layout&#39;,
+ *         width: 300,
+ *         height: 275,
+ *         layout: {
+ *             type: &#39;absolute&#39;
+ *             // layout-specific configs go here
+ *             //itemCls: &#39;x-abs-layout-item&#39;,
+ *         },
+ *         url:&#39;save-form.php&#39;,
+ *         defaultType: &#39;textfield&#39;,
+ *         items: [{
+ *             x: 10,
+ *             y: 10,
+ *             xtype:&#39;label&#39;,
+ *             text: &#39;Send To:&#39;
+ *         },{
+ *             x: 80,
+ *             y: 10,
+ *             name: &#39;to&#39;,
+ *             anchor:&#39;90%&#39;  // anchor width by percentage
+ *         },{
+ *             x: 10,
+ *             y: 40,
+ *             xtype:&#39;label&#39;,
+ *             text: &#39;Subject:&#39;
+ *         },{
+ *             x: 80,
+ *             y: 40,
+ *             name: &#39;subject&#39;,
+ *             anchor: &#39;90%&#39;  // anchor width by percentage
+ *         },{
+ *             x:0,
+ *             y: 80,
+ *             xtype: &#39;textareafield&#39;,
+ *             name: &#39;msg&#39;,
+ *             anchor: &#39;100% 100%&#39;  // anchor width and height
+ *         }],
+ *         renderTo: Ext.getBody()
+ *     });
+ */
+Ext.define(&#39;Ext.layout.container.Absolute&#39;, {
+
+    /* Begin Definitions */
+
+    alias: &#39;layout.absolute&#39;,
+    extend: &#39;Ext.layout.container.Anchor&#39;,
+    alternateClassName: &#39;Ext.layout.AbsoluteLayout&#39;,
+
+<span id='Ext-layout-container-Absolute-property-targetCls'>    /* End Definitions */
+</span>
+    targetCls: Ext.baseCSSPrefix + &#39;abs-layout-ct&#39;,
+<span id='Ext-layout-container-Absolute-cfg-itemCls'>    itemCls: Ext.baseCSSPrefix + &#39;abs-layout-item&#39;,
+</span>
+<span id='Ext-layout-container-Absolute-property-type'>    type: &#39;absolute&#39;,
+</span>
+<span id='Ext-layout-container-Absolute-method-adjustWidthAnchor'>    /**
+</span>     * @private
+     */
+    adjustWidthAnchor: function(width, childContext) {
+        var padding = this.targetPadding,
+            x = childContext.getStyle(&#39;left&#39;);
+
+        return width - x + padding.left;
+    },
+
+<span id='Ext-layout-container-Absolute-method-adjustHeightAnchor'>    /**
+</span>     * @private
+     */
+    adjustHeightAnchor: function(height, childContext) {
+        var padding = this.targetPadding,
+            y = childContext.getStyle(&#39;top&#39;);
+
+        return height - y + padding.top;
+    },
+
+<span id='Ext-layout-container-Absolute-method-isItemShrinkWrap'>    isItemShrinkWrap: function (item) {
+</span>        return true;
+    },
+
+<span id='Ext-layout-container-Absolute-method-onContentChange'>    onContentChange: function (comp, context) {
+</span>        var ret = false;
+        // In a vast majority of cases we don&#39;t need to run the layout
+        // when the content changes.
+        if (comp.anchor &amp;&amp; context &amp;&amp; context.show) {
+            ret = this.callParent([comp, context]);
+        }
+        return ret;
+    },
+
+<span id='Ext-layout-container-Absolute-method-beginLayout'>    beginLayout: function (ownerContext) {
+</span>        var me = this,
+            target = me.getTarget();
+
+        me.callParent([ownerContext]);
+
+        // Do not set position: relative; when the absolute layout target is the body
+        if (target.dom !== document.body) {
+            target.position();
+        }
+
+        me.targetPadding = ownerContext.targetContext.getPaddingInfo();
+    },
+
+<span id='Ext-layout-container-Absolute-method-isItemBoxParent'>    isItemBoxParent: function (itemContext) {
+</span>        return true;
+    },
+
+<span id='Ext-layout-container-Absolute-method-calculateContentSize'>    calculateContentSize: function (ownerContext, dimensions) {
+</span>        var me = this,
+            containerDimensions = (dimensions || 0) | // jshint ignore:line
+                   ((ownerContext.widthModel.shrinkWrap ? 1 : 0) | // jshint ignore:line
+                    (ownerContext.heightModel.shrinkWrap ? 2 : 0)),
+            calcWidth = (containerDimensions &amp; 1) || undefined,// jshint ignore:line
+            calcHeight = (containerDimensions &amp; 2) || undefined,// jshint ignore:line
+            childItems = ownerContext.childItems,
+            length = childItems.length,
+            contentHeight = 0,
+            contentWidth = 0,
+            needed = 0,
+            props = ownerContext.props,
+            targetPadding, child, childContext, height, i, margins, width;
+
+        if (calcWidth) {
+            if (isNaN(props.contentWidth)) {
+                ++needed;
+            } else {
+                calcWidth = undefined;
+            }
+        }
+        if (calcHeight) {
+            if (isNaN(props.contentHeight)) {
+                ++needed;
+            } else {
+                calcHeight = undefined;
+            }
+        }
+
+        if (needed) {
+            for (i = 0; i &lt; length; ++i) {
+                childContext = childItems[i];
+                child = childContext.target;
+                height = calcHeight &amp;&amp; childContext.getProp(&#39;height&#39;);
+                width = calcWidth &amp;&amp; childContext.getProp(&#39;width&#39;);
+                margins = childContext.getMarginInfo();
+
+                height += margins.bottom;
+                width  += margins.right;
+
+                contentHeight = Math.max(contentHeight, (child.y || 0) + height);
+                contentWidth = Math.max(contentWidth, (child.x || 0) + width);
+
+                if (isNaN(contentHeight) &amp;&amp; isNaN(contentWidth)) {
+                    me.done = false;
+                    return;
+                }
+            }
+
+            if (calcWidth || calcHeight) {
+                targetPadding = ownerContext.targetContext.getPaddingInfo();
+            }
+            if (calcWidth &amp;&amp; !ownerContext.setContentWidth(contentWidth + targetPadding.width)) {
+                me.done = false;
+            }
+            if (calcHeight &amp;&amp; !ownerContext.setContentHeight(contentHeight + targetPadding.height)) {
+                me.done = false;
+            }
+        }
+    }
+});</pre>
+</body>
+</html>

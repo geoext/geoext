@@ -1,0 +1,734 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <title>The source code</title>
+  <link href="../resources/prettify/prettify.css" type="text/css" rel="stylesheet" />
+  <script type="text/javascript" src="../resources/prettify/prettify.js"></script>
+  <style type="text/css">
+    .highlight { display: block; background-color: #ddd; }
+  </style>
+  <script type="text/javascript">
+    function highlight() {
+      document.getElementById(location.hash.replace(/#/, "")).className = "highlight";
+    }
+  </script>
+</head>
+<body onload="prettyPrint(); highlight();">
+  <pre class="prettyprint lang-js">/* Copyright (c) 2015-present The Open Source Geospatial Foundation
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see &lt;http://www.gnu.org/licenses/&gt;.
+ */
+<span id='GeoExt-util-OGCFilter'>/**
+</span> * A utility class for converting ExtJS filters to OGC compliant filters
+ *
+ * @class GeoExt.util.OGCFilter
+ */
+Ext.define(&#39;GeoExt.util.OGCFilter&#39;, {
+    statics: {
+
+<span id='GeoExt-util-OGCFilter-static-property-wfs100GetFeatureXmlTpl'>        /**
+</span>         * The WFS 1.0.0 GetFeature XML body template
+         */
+        wfs100GetFeatureXmlTpl:
+            &#39;&lt;wfs:GetFeature service=&quot;WFS&quot; version=&quot;1.0.0&quot;&#39; +
+                &#39; outputFormat=&quot;JSON&quot;&#39; +
+                &#39; xmlns:wfs=&quot;http://www.opengis.net/wfs&quot;&#39; +
+                &#39; xmlns=&quot;http://www.opengis.net/ogc&quot;&#39; +
+                &#39; xmlns:gml=&quot;http://www.opengis.net/gml&quot;&#39; +
+                &#39; xmlns:xsi=&quot;http://www.w3.org/2001/XMLSchema-instance&quot;&#39; +
+                &#39; xsi:schemaLocation=&quot;http://www.opengis.net/wfs&#39; +
+                &#39; http://schemas.opengis.net/wfs/1.0.0/WFS-basic.xsd&quot;&gt;&#39; +
+                &#39;&lt;wfs:Query typeName=&quot;{0}&quot;&gt;{1}&#39; +
+                &#39;&lt;/wfs:Query&gt;&#39; +
+            &#39;&lt;/wfs:GetFeature&gt;&#39;,
+
+<span id='GeoExt-util-OGCFilter-static-property-wfs110GetFeatureXmlTpl'>        /**
+</span>         * The WFS 1.1.0 GetFeature XML body template
+         */
+        wfs110GetFeatureXmlTpl:
+            &#39;&lt;wfs:GetFeature service=&quot;WFS&quot; version=&quot;1.1.0&quot;&#39; +
+                &#39; outputFormat=&quot;JSON&quot;&#39; +
+                &#39; xmlns:wfs=&quot;http://www.opengis.net/wfs&quot;&#39; +
+                &#39; xmlns=&quot;http://www.opengis.net/ogc&quot;&#39; +
+                &#39; xmlns:gml=&quot;http://www.opengis.net/gml&quot;&#39; +
+                &#39; xmlns:xsi=&quot;http://www.w3.org/2001/XMLSchema-instance&quot;&#39; +
+                &#39; xsi:schemaLocation=&quot;http://www.opengis.net/wfs&#39; +
+                &#39; http://schemas.opengis.net/wfs/1.0.0/WFS-basic.xsd&quot;&gt;&#39; +
+                &#39;&lt;wfs:Query typeName=&quot;{0}&quot;&gt;{1}&#39; +
+                &#39;&lt;/wfs:Query&gt;&#39; +
+            &#39;&lt;/wfs:GetFeature&gt;&#39;,
+
+<span id='GeoExt-util-OGCFilter-static-property-wfs200GetFeatureXmlTpl'>        /**
+</span>         * The WFS 2.0.0 GetFeature XML body template
+         */
+        wfs200GetFeatureXmlTpl:
+            &#39;&lt;wfs:GetFeature service=&quot;WFS&quot; version=&quot;2.0.0&quot; &#39; +
+                &#39;xmlns:wfs=&quot;http://www.opengis.net/wfs/2.0&quot; &#39; +
+                &#39;xmlns:fes=&quot;http://www.opengis.net/fes/2.0&quot; &#39; +
+                &#39;xmlns:gml=&quot;http://www.opengis.net/gml/3.2&quot; &#39; +
+                &#39;xmlns:sf=&quot;http://www.openplans.org/spearfish&quot; &#39; +
+                &#39;xmlns:xsi=&quot;http://www.w3.org/2001/XMLSchema-instance&quot; &#39; +
+                &#39;xsi:schemaLocation=&quot;http://www.opengis.net/wfs/2.0 &#39; +
+                &#39;http://schemas.opengis.net/wfs/2.0/wfs.xsd &#39; +
+                &#39;http://www.opengis.net/gml/3.2 &#39; +
+                &#39;http://schemas.opengis.net/gml/3.2.1/gml.xsd&quot;&gt;&#39; +
+                &#39;&lt;wfs:Query typeName=&quot;{0}&quot;&gt;{1}&#39; +
+                &#39;&lt;/wfs:Query&gt;&#39; +
+            &#39;&lt;/wfs:GetFeature&gt;&#39;,
+
+<span id='GeoExt-util-OGCFilter-static-property-spatialFilterWfs1xXmlTpl'>        /**
+</span>         * The template for spatial filters used in WFS 1.x.0 queries
+         */
+        spatialFilterWfs1xXmlTpl: &#39;&lt;{0}&gt;&#39; +
+            &#39;&lt;PropertyName&gt;{1}&lt;/PropertyName&gt;&#39; +
+            &#39;{2}&#39; +
+            &#39;&lt;/{0}&gt;&#39;,
+
+<span id='GeoExt-util-OGCFilter-static-property-spatialFilterWfs2xXmlTpl'>        /**
+</span>         * The template for spatial filters used in WFS 2.0.0 queries
+         */
+        spatialFilterWfs2xXmlTpl: &#39;&lt;fes:{0}&gt;&#39; +
+            &#39;&lt;fes:ValueReference&gt;{1}&lt;/fes:ValueReference&gt;&#39; +
+            &#39;{2}&#39; +
+            &#39;&lt;/fes:{0}&gt;&#39;,
+
+<span id='GeoExt-util-OGCFilter-static-property-spatialFilterBBoxTpl'>        /**
+</span>         * The template for spatial bbox filters used in WFS 1.x.0 queries
+         */
+        spatialFilterBBoxTpl: &#39;&lt;BBOX&gt;&#39; +
+        &#39;    &lt;PropertyName&gt;{0}&lt;/PropertyName&gt;&#39; +
+        &#39;    &lt;gml:Envelope&#39; +
+        &#39;        xmlns:gml=&quot;http://www.opengis.net/gml&quot; srsName=&quot;{1}&quot;&gt;&#39; +
+        &#39;        &lt;gml:lowerCorner&gt;{2} {3}&lt;/gml:lowerCorner&gt;&#39; +
+        &#39;        &lt;gml:upperCorner&gt;{4} {5}&lt;/gml:upperCorner&gt;&#39; +
+        &#39;    &lt;/gml:Envelope&gt;&#39; +
+        &#39;&lt;/BBOX&gt;&#39;,
+
+<span id='GeoExt-util-OGCFilter-static-property-gml32PolygonTpl'>        /**
+</span>         * Template string for GML 3.2.1 polygon
+         */
+        gml32PolygonTpl: &#39;&lt;gml:Polygon gml:id=&quot;P1&quot; &#39; +
+            &#39;srsName=&quot;urn:ogc:def:crs:{0}&quot; srsDimension=&quot;2&quot;&gt;&#39; +
+            &#39;&lt;gml:exterior&gt;&#39; +
+                &#39;&lt;gml:LinearRing&gt;&#39; +
+                    &#39;&lt;gml:posList&gt;{1}&lt;/gml:posList&gt;&#39; +
+                &#39;&lt;/gml:LinearRing&gt;&#39; +
+            &#39;&lt;/gml:exterior&gt;&#39; +
+        &#39;&lt;/gml:Polygon&gt;&#39;,
+
+<span id='GeoExt-util-OGCFilter-static-property-gml32LineStringTpl'>        /**
+</span>         * Template string for GML 3.2.1 linestring
+         */
+        gml32LineStringTpl: &#39;&lt;gml:LineString gml:id=&quot;L1&quot; &#39; +
+            &#39;srsName=&quot;urn:ogc:def:crs:{0}&quot; srsDimension=&quot;2&quot;&gt;&#39; +
+            &#39;&lt;gml:posList&gt;{1}&lt;/gml:posList&gt;&#39; +
+        &#39;&lt;/gml:LineString&gt;&#39;,
+
+<span id='GeoExt-util-OGCFilter-static-property-gml32PointTpl'>        /**
+</span>         * Template string for GML 3.2.1 point
+         */
+        gml32PointTpl: &#39;&lt;gml:Point gml:id=&quot;Pt1&quot; &#39; +
+        &#39;srsName=&quot;urn:ogc:def:crs:{0}&quot; srsDimension=&quot;2&quot;&gt;&#39; +
+            &#39;&lt;gml:pos&gt;{1}&lt;/gml:pos&gt;&#39; +
+        &#39;&lt;/gml:Point&gt;&#39;,
+
+<span id='GeoExt-util-OGCFilter-static-property-filter20StartElementStr'>        /**
+</span>         * The start element for a FE filter instance in version 2.0
+         * as string value
+         */
+        filter20StartElementStr: &#39;&lt;fes:Filter &#39; +
+            &#39;xsi:schemaLocation=&quot;http://www.opengis.net/fes/2.0 &#39; +
+            &#39;http://schemas.opengis.net/filter/2.0/filterAll.xsd &#39; +
+            &#39;http://www.opengis.net/gml/3.2 &#39; +
+            &#39;http://schemas.opengis.net/gml/3.2.1/gml.xsd&quot; &#39; +
+            &#39;xmlns:fes=&quot;http://www.opengis.net/fes/2.0&quot; &#39; +
+            &#39;xmlns:gml=&quot;http://www.opengis.net/gml/3.2&quot; &#39; +
+            &#39;xmlns:xsi=&quot;http://www.w3.org/2001/XMLSchema-instance&quot;&gt;&#39;,
+
+<span id='GeoExt-util-OGCFilter-static-property-topologicalOrSpatialFilterOperators'>        /**
+</span>         * The list of supported topological and spatial filter operators
+         */
+        topologicalOrSpatialFilterOperators: [
+            &#39;intersect&#39;,
+            &#39;within&#39;,
+            &#39;contains&#39;,
+            &#39;equals&#39;,
+            &#39;disjoint&#39;,
+            &#39;crosses&#39;,
+            &#39;touches&#39;,
+            &#39;overlaps&#39;,
+            &#39;bbox&#39;
+        ],
+
+<span id='GeoExt-util-OGCFilter-static-method-getOgcWmsFilterFromExtJsFilter'>        /**
+</span>         * Given an array of ExtJS grid-filters, this method will return an OGC
+         * compliant filter which can be used for WMS requests
+         * @param {Ext.util.Filter[]} filters array containing all
+         *   `Ext.util.Filter` that should be converted
+         * @param {string} combinator The combinator used for combining multiple
+         *   filters. Can be &#39;and&#39; or &#39;or&#39;
+         * @return {string} The OGC Filter XML
+         */
+        getOgcWmsFilterFromExtJsFilter: function(filters, combinator) {
+            return GeoExt.util.OGCFilter.getOgcFilterFromExtJsFilter(
+                filters, &#39;wms&#39;, combinator);
+        },
+
+<span id='GeoExt-util-OGCFilter-static-method-getOgcWfsFilterFromExtJsFilter'>        /**
+</span>         * Given an array of ExtJS grid-filters, this method will return an OGC
+         * compliant filter which can be used for WFS requests
+         * @param {Ext.util.Filter[]} filters array containing all
+         *   `Ext.util.Filter` that should be converted
+         * @param {string} combinator The combinator used for combining multiple
+         *   filters. Can be &#39;and&#39; or &#39;or&#39;
+         * @param {string} wfsVersion The WFS version to use, either `1.0.0`,
+         *   `1.1.0` or `2.0.0`
+         * @return {string} The OGC Filter XML
+         */
+        getOgcWfsFilterFromExtJsFilter: function(filters, combinator,
+            wfsVersion) {
+            return GeoExt.util.OGCFilter.getOgcFilterFromExtJsFilter(
+                filters, &#39;wfs&#39;, combinator, wfsVersion);
+        },
+
+<span id='GeoExt-util-OGCFilter-static-method-getOgcFilterFromExtJsFilter'>        /**
+</span>         * Given an ExtJS grid-filter, this method will return an OGC compliant
+         * filter which can be used for WMS or WFS queries
+         * @param {Ext.util.Filter[]} filters array containing all
+         *   `Ext.util.Filter` that should be converted
+         * @param {string} type The OGC type we will be using, can be
+         *   `wms` or `wfs`
+         * @param {string} combinator The combinator used for combining multiple
+         *   filters. Can be &#39;and&#39; or &#39;or&#39;
+         * @param {string} wfsVersion The WFS version to use, either `1.0.0`,
+         *   `1.1.0` or `2.0.0`
+         * @return {string} The OGC Filter as XML String
+         */
+        getOgcFilterFromExtJsFilter: function(filters, type, combinator,
+            wfsVersion) {
+            if (!Ext.isDefined(filters) || !Ext.isArray(filters)) {
+                Ext.Logger.error(&#39;Invalid filter argument given to &#39; +
+                  &#39;GeoExt.util.OGCFilter. You need to pass an array of &#39; +
+                  &#39;&quot;Ext.util.Filter&quot;&#39;);
+                return;
+            }
+            if (Ext.isEmpty(filters)) {
+                return null;
+            }
+            var omitNamespaces = false;
+            // filters for WMS layers need to omit the namespaces
+            if (!Ext.isEmpty(type) &amp;&amp; type.toLowerCase() === &#39;wms&#39;) {
+                omitNamespaces = true;
+            }
+            var ogcFilters = [];
+            var ogcUtil = GeoExt.util.OGCFilter;
+            var filterBody;
+
+            Ext.each(filters, function(filter) {
+                filterBody = ogcUtil.getOgcFilterBodyFromExtJsFilterObject(
+                    filter, wfsVersion);
+                if (filterBody) {
+                    ogcFilters.push(filterBody);
+                }
+            });
+            return ogcUtil.combineFilters(
+                ogcFilters, combinator, omitNamespaces, wfsVersion);
+        },
+
+<span id='GeoExt-util-OGCFilter-static-method-getOgcFilterBodyFromExtJsFilterObject'>        /**
+</span>         * Converts given ExtJS grid-filter to an OGC compliant filter
+         * body content.
+         * @param {Ext.util.Filter} filter Instance of
+         *   `Ext.util.Filter` which should be converted to OGC filter
+         * @param {string} wfsVersion The WFS version to use, either `1.0.0`,
+         *   `1.1.0` or `2.0.0`
+         * @return {string} The OGC Filter body as XML String
+         */
+        getOgcFilterBodyFromExtJsFilterObject: function(filter, wfsVersion) {
+            if (!Ext.isDefined(filter)) {
+                Ext.Logger.error(&#39;Invalid filter argument given to &#39; +
+                    &#39;GeoExt.util.OGCFilter. You need to pass an instance of &#39; +
+                    &#39;&quot;Ext.util.Filter&quot;&#39;);
+                return;
+            }
+
+            var property = filter.getProperty();
+            var operator = filter.getOperator();
+            var value = filter.getValue();
+            var srsName;
+            if (filter.type === &#39;spatial&#39;) {
+                srsName = filter.srsName;
+            }
+
+            if (Ext.isEmpty(property) || Ext.isEmpty(operator) ||
+                Ext.isEmpty(value)) {
+                Ext.Logger.warn(&#39;Skipping a filter as some values &#39; +
+                    &#39;seem to be undefined&#39;);
+                return;
+            }
+
+            if (filter.isDateValue) {
+                if (filter.getDateFormat) {
+                    value = Ext.Date.format(
+                        filter.getValue(),
+                        filter.getDateFormat()
+                    );
+                } else {
+                    value = Ext.Date.format(filter.getValue(), &#39;Y-m-d&#39;);
+                }
+            }
+
+            return GeoExt.util.OGCFilter.getOgcFilter(
+                property, operator, value, wfsVersion, srsName);
+        },
+
+<span id='GeoExt-util-OGCFilter-static-method-buildWfsGetFeatureWithFilter'>        /**
+</span>         * Returns a GetFeature XML body containing the filters
+         * which can be used to directly request the features
+         * @param {Ext.util.Filter[]} filters array containing all
+         *   `Ext.util.Filter` that should be converted
+         * @param {string} combinator The combinator used for combining multiple
+         *   filters. Can be &#39;and&#39; or &#39;or&#39;
+         * @param {string} wfsVersion The WFS version to use, either `1.0.0`,
+         *   `1.1.0` or `2.0.0`
+         * @param {string} typeName The featuretype name to be used
+         * @return {string} the GetFeature XML body as string
+         */
+        buildWfsGetFeatureWithFilter: function(filters, combinator, wfsVersion,
+            typeName) {
+            var filter = GeoExt.util.OGCFilter.getOgcWfsFilterFromExtJsFilter(
+                filters, combinator, wfsVersion);
+            var tpl = GeoExt.util.OGCFilter.wfs100GetFeatureXmlTpl;
+            if (wfsVersion &amp;&amp; wfsVersion === &#39;1.1.0&#39;) {
+                tpl = GeoExt.util.OGCFilter.wfs110GetFeatureXmlTpl;
+            } else if (wfsVersion &amp;&amp; wfsVersion === &#39;2.0.0&#39;) {
+                tpl = GeoExt.util.OGCFilter.wfs200GetFeatureXmlTpl;
+            }
+            return Ext.String.format(
+                tpl,
+                typeName,
+                filter
+            );
+        },
+
+<span id='GeoExt-util-OGCFilter-static-method-getOgcFilter'>        /**
+</span>         * Returns an OGC filter for the given parameters.
+         * @param {string} property The property to filter on
+         * @param {string} operator The operator to use
+         * @param {*} value The value for the filter
+         * @param {string} wfsVersion The WFS version to use, either `1.0.0`,
+         *   `1.1.0` or `2.0.0`
+         * @param {string} srsName The code for the projection
+         * @return {string} The OGC filter.
+         */
+        getOgcFilter: function(property, operator, value, wfsVersion, srsName) {
+            if (Ext.isEmpty(property) || Ext.isEmpty(operator) ||
+                Ext.isEmpty(value)) {
+                Ext.Logger.error(&#39;Invalid argument given to method &#39; +
+                    &#39;`getOgcFilter`. You need to supply property, &#39; +
+                    &#39;operator and value.&#39;);
+                return;
+            }
+            var ogcFilterType;
+            var closingTag;
+            var propName = &#39;PropertyName&#39;;
+            var isWfs20 = !Ext.isEmpty(wfsVersion) &amp;&amp; wfsVersion === &#39;2.0.0&#39;;
+            if (isWfs20) {
+                propName = &#39;fes:ValueReference&#39;;
+            }
+
+            // always replace surrounding quotes
+            if (!(value instanceof ol.geom.Geometry)) {
+                value = value.toString().replace(/(^[&#39;])/g, &#39;&#39;);
+                value = value.toString().replace(/([&#39;]$)/g, &#39;&#39;);
+            }
+
+            var wfsPrefix = (isWfs20 ? &#39;fes:&#39; : &#39;&#39;);
+
+            switch (operator) {
+            case &#39;==&#39;:
+            case &#39;=&#39;:
+            case &#39;eq&#39;:
+                ogcFilterType = wfsPrefix + &#39;PropertyIsEqualTo&#39;;
+                break;
+            case &#39;!==&#39;:
+            case &#39;!=&#39;:
+            case &#39;ne&#39;:
+                ogcFilterType = wfsPrefix + &#39;PropertyIsNotEqualTo&#39;;
+                break;
+            case &#39;lt&#39;:
+            case &#39;&lt;&#39;:
+                ogcFilterType = wfsPrefix + &#39;PropertyIsLessThan&#39;;
+                break;
+            case &#39;lte&#39;:
+            case &#39;&lt;=&#39;:
+                ogcFilterType = wfsPrefix + &#39;PropertyIsLessThanOrEqualTo&#39;;
+                break;
+            case &#39;gt&#39;:
+            case &#39;&gt;&#39;:
+                ogcFilterType = wfsPrefix + &#39;PropertyIsGreaterThan&#39;;
+                break;
+            case &#39;gte&#39;:
+            case &#39;&gt;=&#39;:
+                ogcFilterType = wfsPrefix + &#39;PropertyIsGreaterThanOrEqualTo&#39;;
+                break;
+            case &#39;like&#39;:
+                value = &#39;*&#39; + value + &#39;*&#39;;
+                var likeFilterTpl =
+                  &#39;&lt;{0}PropertyIsLike wildCard=&quot;*&quot; singleChar=&quot;.&quot;&#39; +
+                    &#39; escape=&quot;!&quot; matchCase=&quot;false&quot;&gt;&#39; +
+                    &#39;&lt;&#39; + propName + &#39;&gt;&#39; + property + &#39;&lt;/&#39; + propName + &#39;&gt;&#39; +
+                    &#39;&lt;{0}Literal&gt;&#39; + value + &#39;&lt;/{0}Literal&gt;&#39; +
+                  &#39;&lt;/{0}PropertyIsLike&gt;&#39;;
+                return Ext.String.format(likeFilterTpl, wfsPrefix);
+            case &#39;in&#39;:
+                ogcFilterType = wfsPrefix + &#39;Or&#39;;
+                var values = value;
+                if (!Ext.isArray(value)) {
+                    // cleanup brackets and quotes
+                    value = value.replace(/([()&#39;])/g, &#39;&#39;);
+                    values = value.split(&#39;,&#39;);
+                }
+                var filters = &#39;&#39;;
+                Ext.each(values || value, function(val) {
+                    filters +=
+                    &#39;&lt;&#39; + wfsPrefix + &#39;PropertyIsEqualTo&gt;&#39; +
+                      &#39;&lt;&#39; + propName + &#39;&gt;&#39; + property + &#39;&lt;/&#39; + propName + &#39;&gt;&#39; +
+                    &#39;&lt;&#39; + wfsPrefix + &#39;Literal&gt;&#39; + val + &#39;&lt;/&#39; +
+                        wfsPrefix + &#39;Literal&gt;&#39; +
+                    &#39;&lt;/&#39; + wfsPrefix + &#39;PropertyIsEqualTo&gt;&#39;;
+                });
+                ogcFilterType = &#39;&lt;&#39; + ogcFilterType + &#39;&gt;&#39;;
+
+                var inFilter;
+                closingTag = Ext.String.insert(ogcFilterType, &#39;/&#39;, 1);
+                // only use an Or filter when there are multiple values
+                if (values.length &gt; 1) {
+                    inFilter = ogcFilterType + filters + closingTag;
+                } else {
+                    inFilter = filters;
+                }
+                return inFilter;
+            case &#39;intersect&#39;:
+            case &#39;within&#39;:
+            case &#39;contains&#39;:
+            case &#39;equals&#39;:
+            case &#39;disjoint&#39;:
+            case &#39;crosses&#39;:
+            case &#39;touches&#39;:
+            case &#39;overlaps&#39;:
+                switch (operator) {
+                case &#39;equals&#39;:
+                    ogcFilterType = &#39;Equals&#39;;
+                    break;
+                case &#39;contains&#39;:
+                    ogcFilterType = &#39;Contains&#39;;
+                    break;
+                case &#39;within&#39;:
+                    ogcFilterType = &#39;Within&#39;;
+                    break;
+                case &#39;disjoint&#39;:
+                    ogcFilterType = &#39;Disjoint&#39;;
+                    break;
+                case &#39;touches&#39;:
+                    ogcFilterType = &#39;Touches&#39;;
+                    break;
+                case &#39;crosses&#39;:
+                    ogcFilterType = &#39;Crosses&#39;;
+                    break;
+                case &#39;overlaps&#39;:
+                    ogcFilterType = &#39;Overlaps&#39;;
+                    break;
+                case &#39;intersect&#39;:
+                    ogcFilterType = &#39;Intersects&#39;;
+                    break;
+                default:
+                    Ext.Logger.warn(&#39;Method `getOgcFilter` could not &#39; +
+                        &#39;handle the given topological operator: &#39; +
+                        operator);
+                    return;
+                }
+                var gmlElement = GeoExt.util.OGCFilter
+                    .getGmlElementForGeometry(value, srsName, wfsVersion);
+
+                var spatialTpl = wfsVersion !== &#39;2.0.0&#39; ?
+                    GeoExt.util.OGCFilter.spatialFilterWfs1xXmlTpl :
+                    GeoExt.util.OGCFilter.spatialFilterWfs2xXmlTpl;
+
+                return Ext.String.format(
+                    spatialTpl,
+                    ogcFilterType,
+                    property,
+                    gmlElement
+                );
+            case &#39;bbox&#39;:
+                var llx; var lly; var urx; var ury;
+                value = value.getExtent();
+                llx = value[0];
+                lly = value[1];
+                urx = value[2];
+                ury = value[3];
+
+                return Ext.String.format(
+                    GeoExt.util.OGCFilter.spatialFilterBBoxTpl,
+                    property,
+                    srsName,
+                    llx,
+                    lly,
+                    urx,
+                    ury
+                );
+            default:
+                Ext.Logger.warn(&#39;Method `getOgcFilter` could not &#39; +
+                    &#39;handle the given operator: &#39; + operator);
+                return;
+            }
+            ogcFilterType = &#39;&lt;&#39; + ogcFilterType + &#39;&gt;&#39;;
+            closingTag = Ext.String.insert(ogcFilterType, &#39;/&#39;, 1);
+            var literalStr = isWfs20 ?
+                &#39;&lt;fes:Literal&gt;{2}&lt;/fes:Literal&gt;&#39; :
+                &#39;&lt;Literal&gt;{2}&lt;/Literal&gt;&#39;;
+            var tpl = &#39;&#39; +
+                &#39;{0}&#39; +
+                  &#39;&lt;&#39; + propName + &#39;&gt;{1}&lt;/&#39; + propName + &#39;&gt;&#39; +
+                  literalStr +
+                &#39;{3}&#39;;
+
+            var filter = Ext.String.format(
+                tpl,
+                ogcFilterType,
+                property,
+                value,
+                closingTag
+            );
+            return filter;
+        },
+
+<span id='GeoExt-util-OGCFilter-static-method-getGmlElementForGeometry'>        /**
+</span>         * Returns a serialized geometry in GML3 format
+         * @param {ol.geometry.Geometry} geometry The geometry to serialize
+         * @param {String} srsName The epsg code to use to serialization
+         * @param {String} wfsVersion The WFS version to use (WFS 2.0.0
+         * requires gml prefix for geometries)
+         * @return {string} The serialized geometry in GML3 format
+         */
+        getGmlElementForGeometry: function(geometry, srsName, wfsVersion) {
+            if (wfsVersion === &#39;2.0.0&#39;) {
+                // supported geometries: Point, LineString and Polygon
+                // in case of multigeometries, the first one is used.
+                var geometryType = geometry.getType();
+                var staticMe = GeoExt.util.OGCFilter;
+                var isMulti = geometryType.indexOf(&#39;Multi&#39;) &gt; -1;
+                switch (geometryType) {
+                case &#39;Polygon&#39;:
+                case &#39;MultiPolygon&#39;:
+                    var coordsPoly = geometry.getCoordinates()[0];
+                    if (isMulti) {
+                        coordsPoly = coordsPoly[0];
+                    }
+                    return Ext.String.format(
+                        staticMe.gml32PolygonTpl,
+                        srsName,
+                        staticMe.flattenCoordinates(coordsPoly)
+                    );
+                case &#39;LineString&#39;:
+                case &#39;MultiLineString&#39;:
+                    var coordsLine = geometry.getCoordinates();
+                    if (isMulti) {
+                        coordsLine = coordsLine[0];
+                    }
+                    return Ext.String.format(
+                        staticMe.gml32LineStringTpl,
+                        srsName,
+                        staticMe.flattenCoordinates(coordsLine)
+                    );
+                case &#39;Point&#39;:
+                case &#39;MultiPoint&#39;:
+                    var coordsPt = geometry.getCoordinates();
+                    if (isMulti) {
+                        coordsPt = coordsPt[0];
+                    }
+                    return Ext.String.format(
+                        staticMe.gml32PointTpl,
+                        srsName,
+                        staticMe.flattenCoordinates(coordsPt)
+                    );
+                default:
+                    return &#39;&#39;;
+                }
+            } else {
+                var format = new ol.format.GML3({
+                    srsName: srsName
+                });
+                var geometryNode = format.writeGeometryNode(geometry, {
+                    dataProjection: srsName
+                });
+                if (!geometryNode) {
+                    Ext.Logger.warn(&#39;Could not serialize geometry&#39;);
+                    return null;
+                }
+                var childNodes = geometryNode.children ||
+                  geometryNode.childNodes;
+                var serializer = new XMLSerializer();
+                var geomNode = childNodes[0];
+                var serializedValue = serializer
+                    .serializeToString(geomNode);
+                return serializedValue;
+            }
+        },
+
+<span id='GeoExt-util-OGCFilter-static-method-flattenCoordinates'>        /**
+</span>         * Reduce an ol.Coordinate array to a string of whitespace
+         * separated coordinate values
+         * @param {ol.Coordinate []} coordArray An array of
+         * coordinates
+         * @return {string} Concatenated array of coordinates
+         */
+        flattenCoordinates: function(coordArray) {
+            return Ext.Array.map(coordArray,
+                function(cp) {
+                    return cp.join(&#39; &#39;);
+                }
+            ).join(&#39; &#39;);
+        },
+
+<span id='GeoExt-util-OGCFilter-static-method-combineFilterBodies'>        /**
+</span>         * Combines the passed filter bodies with an `&lt;And&gt;` or `&lt;Or&gt;` and
+         * returns them. E.g. created with
+         * GeoExt.util.OGCFilter.getOgcFilterBodyFromExtJsFilterObject
+         *
+         * @param {Array} filterBodies The filter bodies to join.
+         * @param {string} combinator The combinator to use, should be
+         *     either `And` (the default) or `Or`.
+         * @param {string} wfsVersion The WFS version to use, either `1.0.0`,
+         *   `1.1.0` or `2.0.0`
+         * @return {string} And/Or combined OGC filter bodies.
+         */
+        combineFilterBodies: function(filterBodies, combinator, wfsVersion) {
+            if (!Ext.isDefined(filterBodies) || !Ext.isArray(filterBodies) ||
+                filterBodies.length === 0) {
+                Ext.Logger.error(&#39;Invalid &quot;filterBodies&quot; argument given to &#39; +
+                    &#39;GeoExt.util.OGCFilter. You need to pass an array of &#39; +
+                    &#39;OGC filter bodies as XML string&#39;);
+                return;
+            }
+            var combineWith = combinator || &#39;And&#39;;
+            var isWfs20 = !Ext.isEmpty(wfsVersion) &amp;&amp; wfsVersion === &#39;2.0.0&#39;;
+            var wfsPrefix = (isWfs20 ? &#39;fes:&#39; : &#39;&#39;);
+
+            var ogcFilterType = wfsPrefix + combineWith;
+            var openingTag = ogcFilterType = &#39;&lt;&#39; + ogcFilterType + &#39;&gt;&#39;;
+
+            var closingTag = Ext.String.insert(openingTag, &#39;/&#39;, 1);
+            var combinedFilterBodies = &#39;&#39;;
+            // only use an And/Or filter when there are multiple filter bodies
+            if (filterBodies.length &gt; 1) {
+                Ext.each(filterBodies, function(filterBody) {
+                    combinedFilterBodies += filterBody;
+                });
+                combinedFilterBodies =
+                    openingTag + combinedFilterBodies + closingTag;
+            } else {
+                combinedFilterBodies = filterBodies[0];
+            }
+
+            return combinedFilterBodies;
+        },
+
+<span id='GeoExt-util-OGCFilter-static-method-combineFilters'>        /**
+</span>         * Combines the passed filters with an `&lt;And&gt;` or `&lt;Or&gt;` and
+         * returns them.
+         *
+         * @param {Array} filters The filters to join.
+         * @param {string} combinator The combinator to use, should be
+         *     either `And` (the default) or `Or`.
+         * @param {boolean} omitNamespaces Indicates if namespaces
+         *   should be omitted in filters, which is useful for WMS
+         * @param {string} wfsVersion The WFS version to use, either `1.0.0`,
+         *   `1.1.0` or `2.0.0`
+         * @return {string} An combined OGC filter with the passed filters.
+         */
+        combineFilters: function(filters, combinator, omitNamespaces,
+            wfsVersion) {
+            var staticMe = GeoExt.util.OGCFilter;
+            var defaultCombineWith = &#39;And&#39;;
+            var combineWith = combinator || defaultCombineWith;
+            var numFilters = filters.length;
+            var parts = [];
+            var ns = omitNamespaces ? &#39;&#39; : &#39;ogc&#39;;
+            var omitNamespaceFromWfsVersion = !wfsVersion ||
+                wfsVersion === &#39;1.0.0&#39;;
+            if (!Ext.isEmpty(wfsVersion) &amp;&amp; wfsVersion === &#39;2.0.0&#39;
+                &amp;&amp; !omitNamespaces) {
+                parts.push(staticMe.filter20StartElementStr);
+            } else {
+                parts.push(&#39;&lt;Filter&#39; + (omitNamespaces ? &#39;&#39; :
+                    &#39; xmlns=&quot;http://www.opengis.net/&#39; + ns + &#39;&quot;&#39; +
+                    &#39; xmlns:gml=&quot;http://www.opengis.net/gml&quot;&#39;) + &#39;&gt;&#39;);
+                omitNamespaceFromWfsVersion = true;
+            }
+            parts.push();
+
+            if (numFilters &gt; 1) {
+                parts.push(&#39;&lt;&#39; + (omitNamespaces || omitNamespaceFromWfsVersion
+                    ? &#39;&#39; : &#39;fes:&#39;) +
+                    combineWith + &#39;&gt;&#39;);
+            }
+
+            Ext.each(filters, function(filter) {
+                parts.push(filter);
+            });
+
+            if (numFilters &gt; 1) {
+                parts.push(&#39;&lt;/&#39; + (omitNamespaces || omitNamespaceFromWfsVersion
+                    ? &#39;&#39; : &#39;fes:&#39;) +
+                    combineWith + &#39;&gt;&#39;);
+            }
+
+            parts.push(&#39;&lt;/&#39; + (omitNamespaces || omitNamespaceFromWfsVersion ?
+                &#39;&#39; : &#39;fes:&#39;) + &#39;Filter&gt;&#39;);
+            return parts.join(&#39;&#39;);
+        },
+
+<span id='GeoExt-util-OGCFilter-static-method-createSpatialFilter'>        /**
+</span>         * Create an instance of {Ext.util.Filter} that contains the required
+         * information on spatial filter, e.g. operator and geometry
+         *
+         * @param {string} operator The spatial / toplogical operator
+         * @param {string} typeName The name of geometry field
+         * @param {ol.geom.Geometry} value The geometry to use for filtering
+         * @param {string} srsName The EPSG code of the geometry
+         *
+         * @return {Ext.util.Filter} A &#39;spatial&#39; {Ext.util.Filter}
+         */
+        createSpatialFilter: function(operator, typeName, value, srsName) {
+            if (!Ext.Array.contains(GeoExt.util.OGCFilter.
+                topologicalOrSpatialFilterOperators, operator)) {
+                return null;
+            }
+            // construct an instance of Filter
+            return new Ext.util.Filter({
+                type: &#39;spatial&#39;,
+                srsName: srsName,
+                operator: operator,
+                property: typeName,
+                value: value
+            });
+        }
+    }
+});
+</pre>
+</body>
+</html>

@@ -1,0 +1,10 @@
+.gx-popup {
+    position: absolute;
+    background-color: transparent;
+    padding: 0 0 15px 0;
+    bottom: 0;
+    left: -50px;
+    background-image: url(../../resources/images/anchor.png);
+    background-repeat: no-repeat;
+    background-position: 34px 100%;
+}

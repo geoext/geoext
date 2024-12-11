@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <title>The source code</title>
+  <link href="../resources/prettify/prettify.css" type="text/css" rel="stylesheet" />
+  <script type="text/javascript" src="../resources/prettify/prettify.js"></script>
+  <style type="text/css">
+    .highlight { display: block; background-color: #ddd; }
+  </style>
+  <script type="text/javascript">
+    function highlight() {
+      document.getElementById(location.hash.replace(/#/, "")).className = "highlight";
+    }
+  </script>
+</head>
+<body onload="prettyPrint(); highlight();">
+  <pre class="prettyprint lang-js"><span id='Ext-dashboard-DropZone'>/**
+</span> * Internal class that manages drag/drop for the `Dashboard`.
+ * @private
+ */
+Ext.define(&#39;Ext.dashboard.DropZone&#39;, {
+    extend: &#39;Ext.dd.DropTarget&#39;,
+
+<span id='Ext-dashboard-DropZone-property-ddScrollConfig'>    ddScrollConfig: {
+</span>        vthresh: 75,
+        hthresh: -1,
+        animate: true,
+        increment: 200
+    },
+
+<span id='Ext-dashboard-DropZone-cfg-containerScroll'>    containerScroll: true,
+</span>
+<span id='Ext-dashboard-DropZone-cfg-overClass'>    // This causes overflow to go hidden during the drag so that we don&#39;t cause panels to
+</span>    // wrap by triggering overflow.
+    overClass: Ext.baseCSSPrefix + &#39;dashboard-dd-over&#39;,
+
+<span id='Ext-dashboard-DropZone-method-constructor'>    constructor: function (dashboard, cfg) {
+</span>        this.dashboard = dashboard;
+        dashboard.body.ddScrollConfig = this.ddScrollConfig;
+
+        this.callParent([dashboard.body, cfg]);
+    },
+
+<span id='Ext-dashboard-DropZone-method-getOverEvent'>    getOverEvent: function (dd, e, data) {
+</span>        var dashboard = this.dashboard,
+            dbody = dashboard.body,
+            items = dashboard.items.items,
+            bodyBox = dbody.getBox(),
+            count = items.length,
+            xy = e.getXY(),
+            x = xy[0] - bodyBox.x + dbody.getScrollLeft(),
+            y = xy[1] - bodyBox.y + dbody.getScrollTop(),
+            over = {
+                columnIndex: 0,
+                column: null,
+                dashboard: dashboard,
+                above: null,
+                extensible : false,
+                beforeAfter : 0,
+                data: data,
+                panel: data.panel,
+                rawEvent: e,
+                source: dd,
+                status: this.dropAllowed
+            },
+            t, ht, i, k, item, w, childCount, childItems, childItem;
+
+        for (i = 0; i &lt; count; i += 2) {
+            item = items[i];
+            w = item.lastBox.width;
+            if (items[i+1]) {
+                w += items[i+1].lastBox.width;
+            }
+
+            //if (x &lt; w) {
+            if (e.within(item.el)) {
+                over.columnIndex = i;
+                over.column = item;
+                over.extensible = this.isRowExtensible(item.rowIndex);
+
+                t = Math.min(80, w * 0.2);
+                over.beforeAfter = t = (over.extensible &amp;&amp; ((x &lt; t) ? -1 : ((x &gt; w - t) ? 1 : 0)));
+
+                if (!t || !over.extensible) {
+                    childItems = item.items.items;
+                    // if we are not on an edge OR reached maxColumns (which means &quot;insert the panel in
+                    // between the columns&quot;), we need to dig one more level down
+                    //console.log(&#39;inside of column &#39; + i + &#39;: x=&#39; + x + &#39;, y=&#39; + y);
+                    for (k = 0, childCount = childItems.length; k &lt; childCount; ++k) {
+                        childItem = childItems[k];
+                        ht = childItem.el.getHeight();
+                        //console.log(childItem.id + &#39;.ht = &#39; + ht);
+                        if (y &lt; ht / 2) {
+                            //console.log(&#39;above child &#39; + k);
+                            // if mouse is above the current child&#39;s top, Y coord, it
+                            // is considered as &quot;above&quot; the previous child
+                            over.above = childItem;
+                            break;
+                        }
+                        //console.log(&#39;below child &#39; + k);
+                        y -= ht;
+                    }
+
+                }
+
+                break;
+            }
+
+            x -= w;
+        }
+
+        return over;
+    },
+
+<span id='Ext-dashboard-DropZone-method-notifyOver'>    notifyOver: function (dd, e, data) {
+</span>        var me = this,
+            dashboard = me.dashboard,
+            over = me.getOverEvent(dd, e, data),
+            colEl = over.column &amp;&amp; over.column.el,
+            proxy = dd.proxy,
+            proxyProxy,
+            aboveItem = over.above,
+            colWidth, width = 0,
+            padding,
+            hasListeners = dashboard.hasListeners;
+
+        data.lastOver = over;
+
+        if ((!hasListeners.validatedrop || dashboard.fireEvent(&#39;validatedrop&#39;, over) !== false) &amp;&amp;
+            (!hasListeners.beforedragover || dashboard.fireEvent(&#39;beforedragover&#39;, over) !== false ))
+            {
+
+            proxyProxy = dd.panelProxy.getProxy();
+
+            // make sure proxy width is fluid in different width columns
+            proxy.getProxy().setWidth(&#39;auto&#39;);
+
+            if ( colEl) {
+
+                width = colWidth = colEl.getWidth();
+                // A floating column was targeted
+                if (over.beforeAfter) {
+
+                    dd.panelProxy.moveProxy(colEl.dom, colEl.dom.firstChild);
+
+                    width = colWidth / 2;
+                    proxyProxy.setWidth(width);
+
+                } else {
+                    if (aboveItem) {
+                        dd.panelProxy.moveProxy(aboveItem.el.dom.parentNode, aboveItem.el.dom);
+                    } else {
+                        dd.panelProxy.moveProxy(colEl.dom, null);
+                    }
+                    proxyProxy.setWidth(&#39;auto&#39;);
+
+                }
+                if (width) {
+                    //proxy.getProxy().setWidth(width);
+                }
+                proxyProxy.setStyle({
+                    &#39;float&#39;: &#39;none&#39;,
+                    &#39;clear&#39; : &#39;none&#39;,
+                    &#39;margin-left&#39;: (over.beforeAfter &gt; 0) ? (colWidth - width - colEl.getPadding(&#39;lr&#39;)) + &#39;px&#39; : &#39;&#39;,
+                    &#39;margin-top&#39; : &#39;7px&#39;
+                });
+
+            } else {
+                padding = dashboard.body.getPadding(&#39;lr&#39;);
+                proxyProxy.setStyle({
+                    &#39;float&#39; : &#39;left&#39;,
+                    &#39;clear&#39; : &#39;left&#39;,
+                    &#39;margin&#39;: &#39;0 7px 0 7px&#39;
+                });
+                proxyProxy.setWidth(dashboard.body.getWidth() - padding);
+
+                // Target the innerCt for the move
+                dd.panelProxy.moveProxy(dashboard.body.dom.firstChild.firstChild, null);
+            }
+
+            this.scrollPos = dashboard.body.getScroll();
+
+            if (hasListeners.dragover) {
+                dashboard.fireEvent(&#39;dragover&#39;, over);
+            }
+        }
+
+        return over.status;
+    },
+
+<span id='Ext-dashboard-DropZone-method-isRowExtensible'>    isRowExtensible : function(rowIndex) {
+</span>      var me = this,
+          dashboard = me.dashboard,
+          maxColumns = dashboard.getMaxColumns() || 1;
+
+      return Ext.Array.from(dashboard.query(&#39;&gt;dashboard-column[rowIndex=&#39; + rowIndex + &#39;]&#39;)).length &lt; maxColumns;
+    },
+
+<span id='Ext-dashboard-DropZone-method-notifyDrop'>    notifyDrop: function (dd, e, data) {
+</span>        this.callParent(arguments);
+
+        var dashboard = this.dashboard,
+            over = data.lastOver,
+            panel = over.panel,
+            fromCt = panel.ownerCt,
+            toCt = over.column,
+            side = toCt ? over.beforeAfter : 1,
+            currentIndex = fromCt.items.indexOf(panel),
+            newIndex = toCt ? (over.above ? toCt.items.indexOf(over.above) : toCt.items.getCount()) : 0,
+            colIndex, newCol,
+            hasListeners = dashboard.hasListeners;
+
+//        console.log(&#39;DROP: &#39; + panel.id + &#39;@&#39; + currentIndex +
+//                // &#39; from &#39; + fromCt.id +
+//                (side ? ((side &lt; 0) ? &#39; BEFORE &#39; : &#39; AFTER &#39;)
+//                      : (&#39; AT &#39; + newIndex + &#39; IN &#39;)) + toCt.id +
+//                (over.above ? &#39; ABOVE &#39; + over.above.id : &#39; AT END&#39;));
+
+        //Same column tests
+        if (fromCt === toCt) {
+            if (fromCt.items.getCount() === 1) {
+                //console.log(&#39;Null op&#39;);
+                return;
+            }
+            if (!side) {
+                if (currentIndex &lt; newIndex) {
+                    --newIndex;
+                    //console.log(&#39;Adjusted newIndex=&#39; + newIndex);
+                }
+                if (currentIndex === newIndex) {
+                    //console.log(&#39;No change&#39;);
+                    return;
+                }
+            }
+        }
+
+        if ((hasListeners.validatedrop &amp;&amp; dashboard.fireEvent(&#39;validatedrop&#39;, over) === false) ||
+            (hasListeners.beforedrop &amp;&amp; dashboard.fireEvent(&#39;beforedrop&#39;, over) === false)) {
+            return;
+        }
+
+        Ext.suspendLayouts();
+
+        panel.isMoving = true;
+        if (side) {
+            colIndex = dashboard.items.indexOf(toCt);
+
+            // inserting into new Row ?
+            if (colIndex &lt; 0) {
+                colIndex = dashboard.items.getCount();
+            } else if (side &gt; 0) {
+                ++colIndex;
+            }
+
+            newCol = dashboard.createColumn();
+
+            if (toCt) {
+                newCol.columnWidth = toCt.columnWidth = toCt.columnWidth / 2;
+                delete toCt.width;
+            } else {
+                newCol.columnWidth = 1;  //full row
+            }
+
+            toCt = dashboard.insert(colIndex, newCol);
+            newIndex = 0;
+        }
+
+        // make sure panel is visible prior to inserting so the layout doesn&#39;t ignore it
+        panel.el.dom.style.display = &#39;&#39;;
+
+        toCt.insert(newIndex, panel);
+
+        panel.isMoving = false;
+
+        toCt.updateLayout();
+        Ext.resumeLayouts(true);
+
+        if (hasListeners.drop) {
+            dashboard.fireEvent(&#39;drop&#39;, over);
+        }
+    }
+});
+</pre>
+</body>
+</html>

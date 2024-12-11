@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <title>The source code</title>
+  <link href="../resources/prettify/prettify.css" type="text/css" rel="stylesheet" />
+  <script type="text/javascript" src="../resources/prettify/prettify.js"></script>
+  <style type="text/css">
+    .highlight { display: block; background-color: #ddd; }
+  </style>
+  <script type="text/javascript">
+    function highlight() {
+      document.getElementById(location.hash.replace(/#/, "")).className = "highlight";
+    }
+  </script>
+</head>
+<body onload="prettyPrint(); highlight();">
+  <pre class="prettyprint lang-js"><span id='Ext-data-Validation'>/**
+</span> * This class is used to hold validation errors for a record. The results of the record&#39;s
+ * `{@link Ext.data.Model#validators validators}` are stored as the field values of this
+ * record. The first failed validation is all that is stored per field unless the Model
+ * class has defined a `validationSeparator` config.
+ *
+ * Application code will not need to interact with this class specifically but rather just
+ * view the validation as a record.
+ * @private
+ * @since 5.0.0
+ */
+Ext.define(&#39;Ext.data.Validation&#39;, {
+    extend: &#39;Ext.data.Model&#39;,
+
+<span id='Ext-data-Validation-property-isValidation'>    isValidation: true,
+</span>
+<span id='Ext-data-Validation-property-syncGeneration'>    /**
+</span>     * @property {Number} syncGeneration
+     * This is a capture of the `{@link Ext.data.Model#generation}` value from the last
+     * time the validation state was refreshed. This is used to determine if this object
+     * is potentially out-of-date with its associated `record`.
+     * @private
+     * @readonly
+     * @since 5.0.0
+     */
+    syncGeneration: 0,  // Model generation starts at 1 so we start out-of-sync
+
+<span id='Ext-data-Validation-method-attach'>    /**
+</span>     * Attaches this instance to its associated `record`.
+     * @param {Ext.data.Model} record The associated record.
+     * @private
+     * @since 5.0.0
+     */
+    attach: function (record) {
+<span id='Ext-data-Validation-property-record'>        /**
+</span>         * @property {Ext.data.Model} record
+         * The associated record for this validation instance.
+         * @readonly
+         * @since 5.0.0
+         */
+        this.record = record;
+        this.isBase = record.self === Ext.data.Model;
+
+        // We need to remove the id property from our data as that is not meaningful for
+        // a Validation pseudo-record.
+        delete this.data.id;
+    },
+
+<span id='Ext-data-Validation-method-getValidation'>    getValidation: function () {
+</span>        return null;
+    },
+
+<span id='Ext-data-Validation-method-isValid'>    /**
+</span>     * Returns true if the associated record (not this one) is valid.
+     * @return {Boolean}
+     */
+    isValid: function () {
+        var me = this;
+
+        if (me.syncGeneration !== me.record.generation) {
+            me.refresh();
+        }
+
+        return !me.dirty;
+    },
+
+<span id='Ext-data-Validation-method-refresh'>    /**
+</span>     * This method updates the state of this record against its associated `record`. This
+     * method should not need to be called directly as it is internally called when this
+     * record is returned by `{@link Ext.data.Model#getValidation}`.
+     * @param {Boolean} [force=false] Pass `true` to force an update of validation state.
+     * @private
+     * @since 5.0.0
+     */
+    refresh: function (force) {
+        // If it&#39;s an Ext.data.Model instance directly, we can&#39;t
+        // validate it because there can be no fields/validators.
+        if (this.isBase) {
+            return;
+        }
+
+        var me = this,
+            data = me.data,
+            record = me.record,
+            fields = record.fields,
+            generation = record.generation,
+            recordData = record.data,
+            sep = record.validationSeparator,
+            values = null,
+            defaultMessage, currentValue, error, field, 
+            item, i, j, jLen, len, msg, val, name;
+
+        if (force || me.syncGeneration !== generation) {
+            me.syncGeneration = generation;
+
+            for (i = 0, len = fields.length; i &lt; len; ++i) {
+                field = fields[i];
+                name = field.name;
+                val = recordData[name];
+                defaultMessage = field.defaultInvalidMessage;
+                error = 0;
+
+                if (!(name in data)) {
+                    // Now is the cheapest time to populate our data object with &quot;true&quot;
+                    // for all validated fields. This ensures that our non-dirty state
+                    // equates to isValid.
+                    data[name] = currentValue = true; // true === valid
+                } else {
+                    currentValue = data[name];
+                }
+
+                if (field.validate !== Ext.emptyFn) {
+                    msg = field.validate(val, sep, null, record);
+                    if (msg !== true) {
+                        error = msg || defaultMessage;
+                    }
+                }
+
+                if (!error) {
+                    error = true; // valid state is stored as true
+                }
+                if (error !== currentValue) {
+                    (values || (values = {}))[name] = error;
+                }
+            }
+
+            if (values) {
+                // only need to do this if something changed...
+                me.set(values);
+            }
+        }
+    }
+});
+</pre>
+</body>
+</html>

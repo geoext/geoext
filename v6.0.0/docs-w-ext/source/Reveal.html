@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <title>The source code</title>
+  <link href="../resources/prettify/prettify.css" type="text/css" rel="stylesheet" />
+  <script type="text/javascript" src="../resources/prettify/prettify.js"></script>
+  <style type="text/css">
+    .highlight { display: block; background-color: #ddd; }
+  </style>
+  <script type="text/javascript">
+    function highlight() {
+      document.getElementById(location.hash.replace(/#/, "")).className = "highlight";
+    }
+  </script>
+</head>
+<body onload="prettyPrint(); highlight();">
+  <pre class="prettyprint lang-js"><span id='Ext-fx-layout-card-Reveal'>/**
+</span> * @private
+ */
+Ext.define(&#39;Ext.fx.layout.card.Reveal&#39;, {
+    extend: &#39;Ext.fx.layout.card.Style&#39;,
+
+    alias: &#39;fx.layout.card.reveal&#39;,
+
+    config: {
+<span id='Ext-fx-layout-card-Reveal-cfg-inAnimation'>        inAnimation: {
+</span>            easing: &#39;ease-out&#39;,
+            from: {
+                opacity: 0.99
+            },
+            to: {
+                opacity: 1
+            }
+        },
+<span id='Ext-fx-layout-card-Reveal-cfg-outAnimation'>        outAnimation: {
+</span>            before: {
+                &#39;z-index&#39;: 100
+            },
+            after: {
+                &#39;z-index&#39;: 0
+            },
+            type: &#39;slide&#39;,
+            easing: &#39;ease-out&#39;,
+            out: true
+        }
+    },
+
+<span id='Ext-fx-layout-card-Reveal-method-updateReverse'>    updateReverse: function(reverse) {
+</span>        this.getInAnimation().setReverse(reverse);
+        this.getOutAnimation().setReverse(reverse);
+    }
+});
+</pre>
+</body>
+</html>

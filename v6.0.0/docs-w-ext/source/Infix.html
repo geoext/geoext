@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <title>The source code</title>
+  <link href="../resources/prettify/prettify.css" type="text/css" rel="stylesheet" />
+  <script type="text/javascript" src="../resources/prettify/prettify.js"></script>
+  <style type="text/css">
+    .highlight { display: block; background-color: #ddd; }
+  </style>
+  <script type="text/javascript">
+    function highlight() {
+      document.getElementById(location.hash.replace(/#/, "")).className = "highlight";
+    }
+  </script>
+</head>
+<body onload="prettyPrint(); highlight();">
+  <pre class="prettyprint lang-js"><span id='Ext-parse-symbol-Infix'>/**
+</span> * This class represents an infix (binary) operator.
+ * @private
+ */
+Ext.define(&#39;Ext.parse.symbol.Infix&#39;, {
+    extend: &#39;Ext.parse.Symbol&#39;,
+
+<span id='Ext-parse-symbol-Infix-property-arity'>    arity: &#39;binary&#39;,
+</span><span id='Ext-parse-symbol-Infix-property-isBinary'>    isBinary: true,
+</span>
+<span id='Ext-parse-symbol-Infix-property-defaultProperty'>    defaultProperty: &#39;priority&#39;,
+</span>
+<span id='Ext-parse-symbol-Infix-method-led'>    led: function (left) {
+</span>        var me = this;
+
+        me.lhs = left;
+        me.rhs = me.parser.parseExpression(me.priority);
+        // the next line is here in case this symbol already exists in the symbols table
+        // and this function overrides that symbol
+        me.arity = &#39;binary&#39;;
+        me.isBinary = true;
+
+        return me;
+    }
+});
+</pre>
+</body>
+</html>
