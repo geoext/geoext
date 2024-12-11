@@ -23,14 +23,6 @@ jobs:
       with:
         java-version: '8'
 
-    - name: Install ruby
-      uses: ruby/setup-ruby@v1
-      with:
-        ruby-version: '2.6'
-
-    - name: Install jsduck
-      run: gem install jsduck
-
     - name: Cache Node.js modules 💾
       uses: actions/cache@v4
       with:
@@ -97,7 +89,6 @@ jobs:
       run: |
         rm -rf master
         mkdir -p master/docs
-        mkdir -p master/docs-w-ext
         cp -r examples master/
         cp -r resources master/
         cp -r src master/
@@ -107,7 +98,6 @@ jobs:
         find master/examples -type f -name "*.html" -exec sed -i 's|../../node_modules/ol|../../resources|g' {} +
         cp /tmp/sencha-workspace/packages/geoext/build/*js master/
         npm run generate:docs:master
-        npm run generate:docs-w-ext:master
 
     - name: Deploy gh-pages
       uses: peaceiris/actions-gh-pages@v3
