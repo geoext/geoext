@@ -51,7 +51,7 @@
     "coveralls": "cat coverage/lcov.info | coveralls",
     "generate:example": "node bin/example-generator/index.js",
     "generate:docs:master": "jsdoc -c .jsdoc.json -d master/docs",
-    "generate:docs:tag": "jsdoc -c .jsdoc.json -d $npm_package_version/docs",
+    "generate:docs:tag": "jsdoc -c .jsdoc.json -d v$npm_package_version/docs",
     "postversion": "cp package.json dist/",
     "release": "npm run build && np --no-yarn --contents ./dist && git push https://github.com/geoext/geoext.git master --tags"
   },
