@@ -96,7 +96,7 @@ Ext.define('GeoExt.data.store.LayersTree', {
    * Whether the treestore currently shall handle openlayers collection
    * change events. See #suspendCollectionEvents and #resumeCollectionEvents.
    *
-   * @property
+   * @property {boolean}
    * @private
    */
   collectionEventsSuspended: false,

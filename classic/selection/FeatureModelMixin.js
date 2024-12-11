@@ -105,7 +105,7 @@ Ext.define('GeoExt.selection.FeatureModelMixin', {
   /**
    * The attribute key to mark an OL feature as selected.
    * @cfg {string}
-   * @property
+   * @property  {string}
    * @readonly
    */
   selectedFeatureAttr: 'gx_selected',
