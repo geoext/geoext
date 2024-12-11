@@ -12,8 +12,6 @@ let mapPanel;
 Ext.application({
   name: 'MapPanel',
   launch: function () {
-    let description;
-
     const extentLayer = new ol.layer.Vector({
       source: new ol.source.Vector(),
     });
@@ -61,7 +59,7 @@ Ext.application({
       items: [mapComponent],
     });
 
-    description = Ext.create('Ext.panel.Panel', {
+    const description = Ext.create('Ext.panel.Panel', {
       contentEl: 'description',
       title: 'Description',
       region: 'east',

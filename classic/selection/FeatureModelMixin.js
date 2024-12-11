@@ -22,6 +22,7 @@
  *
  * @class GeoExt.selection.FeatureModelMixin
  */
+
 Ext.define('GeoExt.selection.FeatureModelMixin', {
   extend: 'Ext.Mixin',
 
@@ -39,14 +40,15 @@ Ext.define('GeoExt.selection.FeatureModelMixin', {
   config: {
     /**
      * The connected vector layer.
-     * @cfg {ol.layer.Vector}
-     * @property {ol.layer.Vector}
+     * @cfg {ol.layer.Vector} layer The connected vector layer.
+     * @property {ol.layer.Vector} layer The connected vector layer.
      */
     layer: null,
 
     /**
      * The OpenLayers map we work with
      * @cfg {ol.Map}
+     * @type {ol.Map}
      */
     map: null,
 

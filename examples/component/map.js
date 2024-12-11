@@ -7,8 +7,6 @@ let mapPanel;
 Ext.application({
   name: 'MapComponent',
   launch: function () {
-    let description;
-
     olMap = new ol.Map({
       layers: [
         new ol.layer.Tile({
@@ -39,7 +37,7 @@ Ext.application({
       items: [mapComponent],
     });
 
-    description = Ext.create('Ext.panel.Panel', {
+    const description = Ext.create('Ext.panel.Panel', {
       contentEl: 'description',
       title: 'Description',
       region: 'east',

@@ -7,33 +7,23 @@ let treePanel;
 Ext.application({
   name: 'BasicTree',
   launch: function () {
-    let source1;
-    let source2;
-    let source3;
-    let layer1;
-    let layer2;
-    let layer3;
-    let group;
-    let olMap;
-    let treeStore;
-
-    source1 = new ol.source.StadiaMaps({layer: 'stamen_watercolor'});
-    layer1 = new ol.layer.Tile({
+    const source1 = new ol.source.StadiaMaps({layer: 'stamen_watercolor'});
+    const layer1 = new ol.layer.Tile({
       source: source1,
       name: 'Stamen Watercolor',
     });
 
-    source2 = new ol.source.StadiaMaps({layer: 'stamen_terrain_labels'});
-    layer2 = new ol.layer.Tile({
+    const source2 = new ol.source.StadiaMaps({layer: 'stamen_terrain_labels'});
+    const layer2 = new ol.layer.Tile({
       source: source2,
       name: 'Stamen Terrain Labels',
     });
 
-    source3 = new ol.source.TileWMS({
+    const source3 = new ol.source.TileWMS({
       url: 'https://ows.terrestris.de/osm-gray/service',
       params: {LAYERS: 'OSM-WMS', TILED: true},
     });
-    layer3 = new ol.layer.Tile({
+    const layer3 = new ol.layer.Tile({
       source: source3,
       name: 'terrestris OSM WMS',
       description:
@@ -41,13 +31,13 @@ Ext.application({
       visible: false,
     });
 
-    group = new ol.layer.Group({
+    const group = new ol.layer.Group({
       name: 'Some Stamen Layers',
       layers: [layer1, layer2],
       visible: true,
     });
 
-    olMap = new ol.Map({
+    const olMap = new ol.Map({
       layers: [group, layer3],
       view: new ol.View({
         center: [0, 0],
@@ -66,7 +56,7 @@ Ext.application({
       items: [mapComponent],
     });
 
-    treeStore = Ext.create('GeoExt.data.store.LayersTree', {
+    const treeStore = Ext.create('GeoExt.data.store.LayersTree', {
       layerGroup: olMap.getLayerGroup(),
     });
 

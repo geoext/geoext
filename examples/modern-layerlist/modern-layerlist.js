@@ -139,7 +139,7 @@ Ext.application({
             {
               text: 'Description',
               handler: function () {
-                var dialog = Ext.create({
+                const dialog = Ext.create({
                   xtype: 'dialog',
                   title: 'Description',
 

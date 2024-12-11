@@ -7,8 +7,8 @@
   },
   "rules": {
     "consistent-this": [ 1, "me" ],
-    "no-var": "warn",
-    "prefer-const": "warn",
+    "no-var": "error",
+    "prefer-const": "error",
     "max-len": [ 2, 100, 4 ],
     "one-var": [ 2, "never" ],
     "quote-props": [ 1, "consistent" ],

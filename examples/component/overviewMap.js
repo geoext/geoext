@@ -8,30 +8,22 @@ let overviewMap2;
 Ext.application({
   name: 'OverviewMaps',
   launch: function () {
-    let layer1;
-    let layer2;
-    let layer3;
-    let olMap;
-    let description;
-    let ovMapPanel1;
-    let ovMapPanel2;
-
-    layer1 = new ol.layer.Tile({
+    const layer1 = new ol.layer.Tile({
       source: new ol.source.OSM(),
     });
 
-    layer2 = new ol.layer.Tile({
+    const layer2 = new ol.layer.Tile({
       source: new ol.source.OSM(),
     });
 
-    layer3 = new ol.layer.Tile({
+    const layer3 = new ol.layer.Tile({
       source: new ol.source.TileWMS({
         url: 'https://ows.terrestris.de/osm-gray/service',
         params: {LAYERS: 'OSM-WMS', TILED: true},
       }),
     });
 
-    olMap = new ol.Map({
+    const olMap = new ol.Map({
       layers: [layer1],
       interactions: ol.interaction.defaults
         .defaults()
@@ -83,7 +75,7 @@ Ext.application({
       }),
     });
 
-    description = Ext.create('Ext.panel.Panel', {
+    const description = Ext.create('Ext.panel.Panel', {
       contentEl: 'description',
       title: 'Description',
       flex: 1,
@@ -92,14 +84,14 @@ Ext.application({
       autoScroll: true,
     });
 
-    ovMapPanel1 = Ext.create('Ext.panel.Panel', {
+    const ovMapPanel1 = Ext.create('Ext.panel.Panel', {
       title: 'OverviewMap (default)',
       flex: 1,
       layout: 'fit',
       items: overviewMap1,
     });
 
-    ovMapPanel2 = Ext.create('Ext.panel.Panel', {
+    const ovMapPanel2 = Ext.create('Ext.panel.Panel', {
       title: 'OverviewMap (configured)',
       flex: 1,
       layout: 'fit',
