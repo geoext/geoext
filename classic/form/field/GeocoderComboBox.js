@@ -52,8 +52,8 @@ Ext.define('GeoExt.form.field.GeocoderComboBox', {
    * Vector layer to visualize the selected address.
    * Will be created if not provided.
    *
-   * @cfg {ol.layer.Vector}
-   * @property {ol.layer.Vector}
+   * @cfg {ol.layer.Vector} locationLayer The layer used for displaying the selected address.
+   * @property {ol.layer.Vector} locationLayer The layer used for displaying the selected address.
    */
   locationLayer: null,
 
@@ -67,11 +67,11 @@ Ext.define('GeoExt.form.field.GeocoderComboBox', {
 
   /**
    * The store used for this combo box. Default is a
-   * store with  the url configured as #url
+   * store with the url configured as #url
    * config.
    *
-   * @cfg {Ext.data.JsonStore}
-   * @property {Ext.data.JsonStore}
+   * @cfg {Ext.data.JsonStore} store The store used for this combo box.
+   * @property {Ext.data.JsonStore} store The store used for this combo box.
    */
   store: null,
 

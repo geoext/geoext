@@ -406,7 +406,7 @@ Ext.define('GeoExt.util.OGCFilter', {
           break;
         case 'like':
           value = '*' + value + '*';
-          var likeFilterTpl =
+          const likeFilterTpl =
             '<{0}PropertyIsLike wildCard="*" singleChar="."' +
             ' escape="!" matchCase="false">' +
             '<' +
@@ -423,13 +423,13 @@ Ext.define('GeoExt.util.OGCFilter', {
           return Ext.String.format(likeFilterTpl, wfsPrefix);
         case 'in':
           ogcFilterType = wfsPrefix + 'Or';
-          var values = value;
+          let values = value;
           if (!Ext.isArray(value)) {
             // cleanup brackets and quotes
             value = value.replace(/([()'])/g, '');
             values = value.split(',');
           }
-          var filters = '';
+          let filters = '';
           Ext.each(values || value, function (val) {
             filters +=
               '<' +
@@ -455,7 +455,7 @@ Ext.define('GeoExt.util.OGCFilter', {
           });
           ogcFilterType = '<' + ogcFilterType + '>';
 
-          var inFilter;
+          let inFilter;
           closingTag = Ext.String.insert(ogcFilterType, '/', 1);
           // only use an Or filter when there are multiple values
           if (values.length > 1) {
@@ -505,13 +505,13 @@ Ext.define('GeoExt.util.OGCFilter', {
               );
               return;
           }
-          var gmlElement = GeoExt.util.OGCFilter.getGmlElementForGeometry(
+          const gmlElement = GeoExt.util.OGCFilter.getGmlElementForGeometry(
             value,
             srsName,
             wfsVersion,
           );
 
-          var spatialTpl =
+          const spatialTpl =
             wfsVersion !== '2.0.0'
               ? GeoExt.util.OGCFilter.spatialFilterWfs1xXmlTpl
               : GeoExt.util.OGCFilter.spatialFilterWfs2xXmlTpl;
@@ -523,15 +523,11 @@ Ext.define('GeoExt.util.OGCFilter', {
             gmlElement,
           );
         case 'bbox':
-          var llx;
-          var lly;
-          var urx;
-          var ury;
           value = value.getExtent();
-          llx = value[0];
-          lly = value[1];
-          urx = value[2];
-          ury = value[3];
+          const llx = value[0];
+          const lly = value[1];
+          const urx = value[2];
+          const ury = value[3];
 
           return Ext.String.format(
             GeoExt.util.OGCFilter.spatialFilterBBoxTpl,
@@ -594,7 +590,7 @@ Ext.define('GeoExt.util.OGCFilter', {
         switch (geometryType) {
           case 'Polygon':
           case 'MultiPolygon':
-            var coordsPoly = geometry.getCoordinates()[0];
+            let coordsPoly = geometry.getCoordinates()[0];
             if (isMulti) {
               coordsPoly = coordsPoly[0];
             }
@@ -605,7 +601,7 @@ Ext.define('GeoExt.util.OGCFilter', {
             );
           case 'LineString':
           case 'MultiLineString':
-            var coordsLine = geometry.getCoordinates();
+            let coordsLine = geometry.getCoordinates();
             if (isMulti) {
               coordsLine = coordsLine[0];
             }
@@ -616,7 +612,7 @@ Ext.define('GeoExt.util.OGCFilter', {
             );
           case 'Point':
           case 'MultiPoint':
-            var coordsPt = geometry.getCoordinates();
+            let coordsPt = geometry.getCoordinates();
             if (isMulti) {
               coordsPt = coordsPt[0];
             }

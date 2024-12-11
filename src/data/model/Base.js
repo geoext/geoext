@@ -31,15 +31,17 @@ Ext.define('GeoExt.data.model.Base', {
     /**
      * Loads a record from a provided data structure initializing the models
      * associations. Simply calling Ext.create will not utilize the models
-     * configured reader and effectivly sidetrack associations configs.
+     * configured reader and effectively sidetrack associations configs.
      * This static helper method makes sure associations are initialized
      * properly and are available with the returned record.
      *
      * Be aware that the provided data may be modified by the models reader
      * initializing associations.
      *
-     * @param  {Object} data The data the record will be created with.
-     * @return {GeoExt.data.model.Base} The record.
+     * @param {Object} data The data to create the record with.
+     * @return {GeoExt.data.model.Base|undefined} The created record, or undefined if unsuccessful.
+     * @memberof GeoExt.data.model.Base
+     * @static
      */
     loadRawData: function (data) {
       const me = this;
