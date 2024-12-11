@@ -36,7 +36,7 @@ Ext.define('GeoExt.data.store.OlObjects', {
   /**
    * The ol collection this store syncs with.
    *
-   * @property {ol.Collection}
+   * @property {ol.Collection} olCollection olCollection to sync with store
    */
   olCollection: null,
 

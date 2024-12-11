@@ -63,14 +63,14 @@ Ext.define('GeoExt.data.model.OlObject', {
   /**
    * String description of the reference path to the wrapped ol class.
    *
-   * @property {string}
+   * @property {string} olClass Reference path to wrapped ol class
    */
   olClass: 'ol.Object',
 
   /**
    * The underlying ol.Object.
    *
-   * @property {ol.Object}
+   * @property {ol.Object} olObject Underlying ol.Object
    */
   olObject: null,
 

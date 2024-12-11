@@ -105,21 +105,18 @@ describe('A GeoExt.data.model.print.Capability model', function () {
       expect(record.layouts()).to.be.an(Ext.data.Store);
     });
 
-    it('and allows access to deeply nested assosciations data', function () {
+    it('and allows access to deeply nested associations data', function () {
       const layouts = record.layouts();
-      let layout;
-      let attributes;
-      let attribute;
 
       expect(layouts.getAt(0)).to.be.a(GeoExt.data.model.print.Layout);
-      layout = layouts.getAt(0);
+      const layout = layouts.getAt(0);
       expect(layout.get('name')).to.be('A4 portrait');
       expect(layout.attributes()).to.be.an(Ext.data.Store);
-      attributes = layout.attributes();
+      const attributes = layout.attributes();
       expect(attributes.getAt(0)).to.be.a(
         GeoExt.data.model.print.LayoutAttribute,
       );
-      attribute = attributes.getAt(0);
+      const attribute = attributes.getAt(0);
       expect(attribute.get('name')).to.be('map');
     });
   });
@@ -148,19 +145,16 @@ describe('A GeoExt.data.model.print.Capability model', function () {
 
     it('and allows access to deeply nested assosciations data', function () {
       const layouts = record.layouts();
-      let layout;
-      let attributes;
-      let attribute;
 
       expect(layouts.getAt(0)).to.be.a(GeoExt.data.model.print.Layout);
-      layout = layouts.getAt(0);
+      const layout = layouts.getAt(0);
       expect(layout.get('name')).to.be('A4 portrait');
       expect(layout.attributes()).to.be.an(Ext.data.Store);
-      attributes = layout.attributes();
+      const attributes = layout.attributes();
       expect(attributes.getAt(0)).to.be.a(
         GeoExt.data.model.print.LayoutAttribute,
       );
-      attribute = attributes.getAt(0);
+      const attribute = attributes.getAt(0);
       expect(attribute.get('name')).to.be('map');
     });
   });

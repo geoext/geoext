@@ -271,7 +271,7 @@ Ext.define('GeoExt.component.OverviewMap', {
    * Whether we already rendered an ol.Map in this component. Will be
    * updated in #onResize, after the first rendering happened.
    *
-   * @property {boolean} mapRendered
+   * @property {boolean} mapRendered Map already rendered flag
    * @private
    */
   mapRendered: false,

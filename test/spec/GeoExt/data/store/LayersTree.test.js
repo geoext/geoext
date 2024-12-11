@@ -756,8 +756,6 @@ describe('GeoExt.data.store.LayersTree', function () {
 describe('A GeoExt.data.store.LayersTree', function () {
   it('can be extended with custom LayerTreeNodes', function () {
     const layer = new ol.layer.Group({name: 'any'});
-    let store;
-    let record;
 
     // custom LayerTreeNode
     Ext.define('GeoExt.CustomTreeNode', {
@@ -781,12 +779,12 @@ describe('A GeoExt.data.store.LayersTree', function () {
     });
     expect(GeoExt.CustomLayersTree).to.not.be(undefined);
 
-    store = Ext.create('GeoExt.CustomLayersTree', {
+    const store = Ext.create('GeoExt.CustomLayersTree', {
       layerGroup: new ol.layer.Group({
         layers: [layer],
       }),
     });
-    record = store.getRootNode().getChildAt(0);
+    const record = store.getRootNode().getChildAt(0);
 
     expect(store.getTotalCount()).to.be(1);
     expect(record).to.be.a(GeoExt.CustomTreeNode);

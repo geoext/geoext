@@ -124,12 +124,10 @@ describe('A GeoExt.data.model.print.Layout', function () {
     });
 
     it('reading nested associations data', function () {
-      let attribute;
-
       expect(record.getCapability()).to.be(null); // no parent defined
       expect(record.attributes()).to.be.an(Ext.data.Store);
       expect(record.attributes().getCount()).to.be(1);
-      attribute = record.attributes().getAt(0);
+      const attribute = record.attributes().getAt(0);
       expect(attribute).to.be.a(GeoExt.data.model.print.LayoutAttribute);
       expect(attribute.get('name')).to.be('attributeName');
       expect(attribute.get('type')).to.be('anAttribute');
