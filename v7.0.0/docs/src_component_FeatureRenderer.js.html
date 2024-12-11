@@ -1,0 +1,540 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Source: src/component/FeatureRenderer.js</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+</head>
+
+<body>
+
+<div id="main">
+
+    <h1 class="page-title">Source: src/component/FeatureRenderer.js</h1>
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>/* Copyright (c) 2015-2017 The Open Source Geospatial Foundation
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see &lt;http://www.gnu.org/licenses/>.
+ */
+/**
+ * A component that renders a `ol.style.Style` with an optional `ol.Feature`.
+ *
+ *     @example preview
+ *     var poly = Ext.create('GeoExt.component.FeatureRenderer', {
+ *         symbolizers: new ol.style.Style({
+ *             fill: new ol.style.Fill({color: 'red'})
+ *         })
+ *     });
+ *     var line = Ext.create('GeoExt.component.FeatureRenderer', {
+ *         symbolizers: new ol.style.Style({
+ *             stroke: new ol.style.Stroke({color: 'orange', width: 3}),
+ *         }),
+ *         symbolType: 'Line'
+ *     });
+ *     var point = Ext.create('GeoExt.component.FeatureRenderer', {
+ *         symbolizers: new ol.style.Style({
+ *             image: new ol.style.Circle({
+ *                 radius: 7,
+ *                 fill: new ol.style.Fill({color: 'gray'}),
+ *                 stroke: new ol.style.Stroke({color: 'black', width: 3}),
+ *             })
+ *         }),
+ *         symbolType: 'Point'
+ *     });
+ *     var star = Ext.create('GeoExt.component.FeatureRenderer', {
+ *         symbolizers: new ol.style.Style({
+ *             image: new ol.style.RegularShape({
+ *                 fill: new ol.style.Fill({color: 'blue'}),
+ *                 stroke: new ol.style.Stroke({color: 'green', width: 3}),
+ *                 points: 7,
+ *                 radius: 15,
+ *                 radius2: 7,
+ *                 angle: 0
+ *             })
+ *         }),
+ *         minWidth: 40,
+ *         minHeight: 40,
+ *         symbolType: 'Point'
+ *     });
+ *     Ext.create('Ext.panel.Panel', {
+ *         title: 'Rendering of ol.Features in a panel',
+ *         items: [poly, line, point, star],
+ *         border: false,
+ *         renderTo: Ext.getBody()
+ *     });
+ *
+ * @class GeoExt.component.FeatureRenderer
+ */
+Ext.define('GeoExt.component.FeatureRenderer', {
+  extend: 'Ext.Component',
+  alias: 'widget.gx_renderer',
+  requires: ['GeoExt.util.Version'],
+  mixins: ['GeoExt.mixin.SymbolCheck'],
+
+  // &lt;debug>
+  symbols: [
+    'ol.extent.getCenter',
+    'ol.extent.getWidth',
+    'ol.extent.getHeight',
+    'ol.Feature',
+    'ol.Feature#getGeometry',
+    'ol.Feature#setStyle',
+    'ol.geom.Geometry#getExtent',
+    'ol.geom.Point',
+    'ol.geom.LineString',
+    'ol.geom.Polygon',
+    'ol.layer.Vector',
+    'ol.layer.Vector#getSource',
+    'ol.Map#getSize',
+    'ol.Map#getView',
+    'ol.Map#setView',
+    'ol.Map#updateSize',
+    'ol.proj.Projection',
+    'ol.source.Vector',
+    'ol.source.Vector#addFeature',
+    'ol.View',
+    'ol.View#fit',
+  ],
+  // &lt;/debug>
+
+  /**
+   * Fires when the feature is clicked on.
+   *
+   * @event click
+   * @param {GeoExt.component.FeatureRenderer} renderer The feature renderer.
+   */
+
+  config: {
+    /**
+     * Optional class to set on the feature renderer div.
+     *
+     * @cfg {string}
+     */
+    imgCls: '',
+
+    /**
+     * The minimum width.
+     *
+     * @cfg {number}
+     */
+    minWidth: 20,
+
+    /**
+     * The minimum height.
+     *
+     * @cfg {number}
+     */
+    minHeight: 20,
+
+    /**
+     * The resolution for the renderer.
+     *
+     * @cfg {number}
+     */
+    resolution: 1,
+
+    /**
+     * Optional vector to be drawn.
+     *
+     * @cfg {ol.Feature}
+     */
+    feature: undefined,
+
+    /**
+     * Feature to use for point swatches. Optional.
+     *
+     * @cfg {ol.Feature}
+     */
+    pointFeature: undefined,
+
+    /**
+     * Feature to use for line swatches. Optional.
+     *
+     * @cfg {ol.Feature}
+     */
+    lineFeature: undefined,
+
+    /**
+     * Feature to use for polygon swatches. Optional.
+     *
+     * @cfg {ol.Feature}
+     */
+    polygonFeature: undefined,
+
+    /**
+     * Feature to use for text label swatches. Optional.
+     *
+     * @cfg {ol.Feature}
+     */
+    textFeature: undefined,
+
+    /**
+     * An `ol.style.Style` instance or an array of `ol.style.Style`
+     * instances for rendering a  feature.  If no symbolizers are
+     * provided, the default style from OpenLayers will be used.
+     *
+     * @cfg {Array&lt;ol.style.Style> | ol.style.Style}
+     */
+    symbolizers: undefined,
+
+    /**
+     * One of `"Point"`, `"Line"`, `"Polygon"` or `"Text"`.  Only relevant
+     * if `feature` is not provided.
+     *
+     * @cfg {string}
+     */
+    symbolType: 'Polygon',
+  },
+
+  inheritableStatics: {
+    /**
+     * Determines the style for the given feature record.
+     *
+     * @param {GeoExt.data.model.Feature} record A feature record to get the
+     *     styler for.
+     * @return {Array&lt;ol.style.Style> | ol.style.Style} The style(s) applied to the
+     *     given feature record.
+     */
+    determineStyle: function (record) {
+      const feature = record.getFeature();
+      return (
+        feature.getStyle() ||
+        feature.getStyleFunction() ||
+        (record.store ? record.store.layer.getStyle() : null)
+      );
+    },
+  },
+
+  /**
+   * Initialize the GeoExt.component.FeatureRenderer.
+   */
+  initComponent: function () {
+    const me = this;
+    const id = me.getId();
+    me.autoEl = {
+      id: id,
+      tag: 'div',
+      class: this.getImgCls(),
+    };
+    if (!me.getLineFeature()) {
+      me.setLineFeature(
+        new ol.Feature({
+          geometry: new ol.geom.LineString([
+            [-8, -3],
+            [-3, 3],
+            [3, -3],
+            [8, 3],
+          ]),
+        }),
+      );
+    }
+    if (!me.getPointFeature()) {
+      me.setPointFeature(
+        new ol.Feature({
+          geometry: new ol.geom.Point([0, 0]),
+        }),
+      );
+    }
+    if (!me.getPolygonFeature()) {
+      me.setPolygonFeature(
+        new ol.Feature({
+          geometry: new ol.geom.Polygon([
+            [
+              [-8, -4],
+              [-6, -6],
+              [6, -6],
+              [8, -4],
+              [8, 4],
+              [6, 6],
+              [-6, 6],
+              [-8, 4],
+            ],
+          ]),
+        }),
+      );
+    }
+    if (!me.getTextFeature()) {
+      me.setTextFeature(
+        new ol.Feature({
+          geometry: new ol.geom.Point([0, 0]),
+        }),
+      );
+    }
+    me.map = new ol.Map({
+      controls: [],
+      interactions: [],
+      layers: [
+        new ol.layer.Vector({
+          source: new ol.source.Vector(),
+        }),
+      ],
+    });
+    const feature = me.getFeature();
+    if (!feature) {
+      me.setFeature(me['get' + me.getSymbolType() + 'Feature']());
+    } else {
+      me.applyFeature(feature);
+    }
+    me.callParent();
+  },
+  /**
+   * Draw the feature when we are rendered.
+   *
+   * @private
+   */
+  onRender: function () {
+    this.callParent(arguments);
+    this.drawFeature();
+  },
+  /**
+   * After rendering we setup our own custom events using #initCustomEvents.
+   *
+   * @private
+   */
+  afterRender: function () {
+    this.callParent(arguments);
+    this.initCustomEvents();
+  },
+  /**
+   * (Re-)Initializes our custom event listeners, mainly #onClick.
+   *
+   * @private
+   */
+  initCustomEvents: function () {
+    const me = this;
+    me.clearCustomEvents();
+    me.el.on('click', me.onClick, me);
+  },
+  /**
+   * Unbinds previously bound listeners on #el.
+   *
+   * @private
+   */
+  clearCustomEvents: function () {
+    const el = this.el;
+    if (el &amp;&amp; el.clearListeners) {
+      el.clearListeners();
+    }
+  },
+  /**
+   * Bound to the click event on the #el, this fires the click event.
+   *
+   * @private
+   */
+  onClick: function () {
+    this.fireEvent('click', this);
+  },
+  /**
+   * Private method called during the destroy sequence.
+   *
+   * @private
+   */
+  beforeDestroy: function () {
+    const me = this;
+    me.clearCustomEvents();
+    if (me.map) {
+      me.map.setTarget(null);
+    }
+  },
+  /**
+   * When resizing has happened, we might need to re-set the renderer's
+   * dimensions via #setRendererDimensions.
+   *
+   * @private
+   */
+  onResize: function () {
+    this.setRendererDimensions();
+    this.callParent(arguments);
+  },
+  /**
+   * Draw the feature in the map.
+   *
+   * @private
+   */
+  drawFeature: function () {
+    const me = this;
+    me.map.setTarget(me.el.id); // TODO why not me.el?
+    me.setRendererDimensions();
+  },
+  /**
+   * Set the dimension of our renderer, i.e. map and view.
+   *
+   * @private
+   */
+  setRendererDimensions: function () {
+    const me = this;
+    const gb = me.feature.getGeometry().getExtent();
+    const gw = ol.extent.getWidth(gb);
+    const gh = ol.extent.getHeight(gb);
+    /*
+     * Determine resolution based on the following rules:
+     * 1) always use value specified in config
+     * 2) if not specified, use max res based on width or height of element
+     * 3) if no width or height, assume a resolution of 1
+     */
+    let resolution = me.initialConfig.resolution;
+    if (!resolution) {
+      resolution = Math.max(gw / me.width || 0, gh / me.height || 0) || 1;
+    }
+    me.map.setView(
+      new ol.View({
+        minResolution: resolution,
+        maxResolution: resolution,
+        projection: new ol.proj.Projection({
+          code: '',
+          units: 'pixels',
+        }),
+      }),
+    );
+    // determine height and width of element
+    const width = Math.max(me.width || me.getMinWidth(), gw / resolution);
+    const height = Math.max(me.height || me.getMinHeight(), gh / resolution);
+    // determine bounds of renderer
+    const center = ol.extent.getCenter(gb);
+    const bhalfw = (width * resolution) / 2;
+    const bhalfh = (height * resolution) / 2;
+    const bounds = [
+      center[0] - bhalfw,
+      center[1] - bhalfh,
+      center[0] + bhalfw,
+      center[1] + bhalfh,
+    ];
+    me.el.setSize(Math.round(width), Math.round(height));
+    me.map.updateSize();
+    // Check for backwards compatibility
+    if (GeoExt.util.Version.isOl3()) {
+      me.map.getView().fit(bounds, me.map.getSize());
+    } else {
+      me.map.getView().fit(bounds);
+    }
+  },
+  /**
+   * We're setting the symbolizers on the feature.
+   *
+   * @param {Array&lt;ol.style.Style> | ol.style.Style} symbolizers The style (or
+   *     array of styles) that have been set.
+   * @return {Array&lt;ol.style.Style> | ol.style.Style} The style (or
+   *     array of styles) that have been set.
+   * @private
+   */
+  applySymbolizers: function (symbolizers) {
+    const feature = this.getFeature();
+    if (feature &amp;&amp; symbolizers) {
+      feature.setStyle(symbolizers);
+    }
+    return symbolizers;
+  },
+
+  /**
+   * We're setting the feature and add it to the source.
+   *
+   * @param {ol.Feature} feature The feature that has been set.
+   * @return {ol.Feature} feature The feature that has been set.
+   * @private
+   */
+  applyFeature: function (feature) {
+    const symbolizers = this.getSymbolizers();
+    if (feature &amp;&amp; symbolizers) {
+      feature.setStyle(symbolizers);
+    }
+    if (this.map) {
+      const source = this.map.getLayers().item(0).getSource();
+      source.clear();
+      source.addFeature(feature);
+    }
+    return feature;
+  },
+
+  /**
+   * Update the `feature` or `symbolizers` and redraw the feature.
+   *
+   * Valid options:
+   *
+   * @param {Object} options Object with properties to be updated.
+   * @param {ol.Feature} options.feature The new or updated feature.
+   * @param {Array&lt;ol.style.Style> | ol.style.Style} options.symbolizers The
+   *     symbolizers.
+   */
+  update: function (options) {
+    if (options.feature) {
+      this.setFeature(options.feature);
+    }
+    if (options.symbolizers) {
+      this.setSymbolizers(options.symbolizers);
+    }
+  },
+});
+</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<nav>
+    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="GeoExt.component.FeatureRenderer.html">FeatureRenderer</a></li><li><a href="GeoExt.component.Map.html">Map</a></li><li><a href="GeoExt.component.OverviewMap.html">OverviewMap</a></li><li><a href="GeoExt.component.Popup.html">Popup</a></li><li><a href="GeoExt.data.MapfishPrintProvider.html">MapfishPrintProvider</a></li><li><a href="GeoExt.data.model.ArcGISRestServiceLayer.html">ArcGISRestServiceLayer</a></li><li><a href="GeoExt.data.model.Base.html">Base</a></li><li><a href="GeoExt.data.model.Feature.html">Feature</a></li><li><a href="GeoExt.data.model.Layer.html">Layer</a></li><li><a href="GeoExt.data.model.LayerTreeNode.html">LayerTreeNode</a></li><li><a href="GeoExt.data.model.OlObject.html">OlObject</a></li><li><a href="GeoExt.data.model.print.Capability.html">Capability</a></li><li><a href="GeoExt.data.model.print.Layout.html">Layout</a></li><li><a href="GeoExt.data.model.print.LayoutAttribute.html">LayoutAttribute</a></li><li><a href="GeoExt.data.serializer.Base.html">Base</a></li><li><a href="GeoExt.data.serializer.ImageWMS.html">ImageWMS</a></li><li><a href="GeoExt.data.serializer.TileWMS.html">TileWMS</a></li><li><a href="GeoExt.data.serializer.Vector.html">Vector</a></li><li><a href="GeoExt.data.serializer.WMTS.html">WMTS</a></li><li><a href="GeoExt.data.serializer.XYZ.html">XYZ</a></li><li><a href="GeoExt.data.store.ArcGISRestServiceLayer.html">ArcGISRestServiceLayer</a></li><li><a href="GeoExt.data.store.Features.html">Features</a></li><li><a href="GeoExt.data.store.Layers.html">Layers</a></li><li><a href="GeoExt.data.store.LayersTree.html">LayersTree</a></li><li><a href="GeoExt.data.store.OlObjects.html">OlObjects</a></li><li><a href="GeoExt.data.store.WfsFeatures.html">WfsFeatures</a></li><li><a href="GeoExt.form.field.GeocoderComboBox.html">GeocoderComboBox</a></li><li><a href="GeoExt.mixin.SymbolCheck.html">SymbolCheck</a></li><li><a href="GeoExt.plugin.layertreenode.ContextMenu.html">ContextMenu</a></li><li><a href="GeoExt.selection.FeatureCheckboxModel.html">FeatureCheckboxModel</a></li><li><a href="GeoExt.selection.FeatureModel.html">FeatureModel</a></li><li><a href="GeoExt.selection.FeatureModelMixin.html">FeatureModelMixin</a></li><li><a href="GeoExt.state.PermalinkProvider.html">PermalinkProvider</a></li><li><a href="GeoExt.toolbar.WfsPaging.html">WfsPaging</a></li><li><a href="GeoExt.util.Layer.html">Layer</a></li><li><a href="GeoExt.util.OGCFilter.html">OGCFilter</a></li><li><a href="GeoExt.util.Version.html">Version</a></li></ul><h3>Events</h3><ul><li><a href="global.html#event:aftermapmoveTriggeredwhenthe'moveend'eventoftheunderlyingOpenLayersmapisfired.">aftermapmove
+
+Triggered when the 'moveend' event of the underlying OpenLayers map is
+fired.</a></li><li><a href="global.html#event:click">click</a></li><li><a href="global.html#event:pointerrestFiresiftheuserhasleftthepointerforanamountof#pointerRestIntervalmillisecondsatthe*samelocation*.Usetheconfiguration#pointerRestPixelTolerancetoconfigurehowlongapixelisconsideredtobeonthe*samelocation*.Pleasenotethatthiseventwillonlyfireifthemaphas#pointerRestconfiguredwith%2560true%2560.">pointerrest
+
+Fires if the user has left the pointer for an amount
+of #pointerRestInterval milliseconds at the *same location*. Use the
+configuration #pointerRestPixelTolerance to configure how long a pixel is
+considered to be on the *same location*.
+
+Please note that this event will only fire if the map has #pointerRest
+configured with `true`.</a></li><li><a href="global.html#event:pointerrestoutFiresiftheuserfirstwasrestinghispointeronthemapelement,butthenmovedthepointeroutofthemapcompletely.Pleasenotethatthiseventwillonlyfireifthemaphas#pointerRestconfiguredwith%2560true%2560.">pointerrestout
+
+Fires if the user first was resting his pointer on the map element, but
+then moved the pointer out of the map completely.
+
+Please note that this event will only fire if the map has #pointerRest
+configured with `true`.</a></li><li><a href="global.html#event:readyFiresafterthePrintCapabilitystoreisloaded.">ready
+Fires after the PrintCapability store is loaded.</a></li></ul><h3>Global</h3><ul><li><a href="global.html#attributesReturnsanExt.data.Storeofreferenced%257B@linkGeoExt.data.model.print.LayoutAttribute%257Ds.">attributes
+Returns an Ext.data.Store of referenced
+{@link GeoExt.data.model.print.LayoutAttribute}s.</a></li><li><a href="global.html#constructor">constructor</a></li><li><a href="global.html#getCapabilityReturnsthelayoutsparentprintcapabilities.MaybenullifLayoutisinstantiateddirectly.">getCapability
+Returns the layouts parent print capabilities. May be null if Layout is
+instantiated directly.</a></li><li><a href="global.html#getLayoutReturnstheattributeparentlayoutmodel.MaybenullifLayoutAttributeisinstantiateddirectly.">getLayout
+Returns the attribute parent layout model. May be null if
+LayoutAttribute is instantiated directly.</a></li><li><a href="global.html#getRefItems">getRefItems</a></li><li><a href="global.html#getRefOwner">getRefOwner</a></li><li><a href="global.html#layoutsReturnsanExt.data.Storeofreferenced%257B@linkGeoExt.data.model.print.Layout%257Ds.">layouts
+Returns an Ext.data.Store of referenced
+{@link GeoExt.data.model.print.Layout}s.</a></li><li><a href="global.html#name">name</a></li><li><a href="global.html#onLayerVisibleChange">onLayerVisibleChange</a></li><li><a href="global.html#set">set</a></li></ul>
+</nav>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 4.0.4</a> on Wed Dec 11 2024 17:48:26 GMT+0100 (Central European Standard Time)
+</footer>
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>

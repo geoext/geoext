@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Source: src/data/serializer/ImageWMS.js</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+</head>
+
+<body>
+
+<div id="main">
+
+    <h1 class="page-title">Source: src/data/serializer/ImageWMS.js</h1>
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>/* Copyright (c) 2015-present The Open Source Geospatial Foundation
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see &lt;http://www.gnu.org/licenses/>.
+ */
+/**
+ * A serializer for layers that have an `ol.source.ImageWMS` source.
+ *
+ * @class GeoExt.data.serializer.ImageWMS
+ */
+Ext.define(
+  'GeoExt.data.serializer.ImageWMS',
+  {
+    extend: 'GeoExt.data.serializer.Base',
+    mixins: ['GeoExt.mixin.SymbolCheck'],
+
+    // &lt;debug>
+    symbols: [
+      'ol.layer.Layer#getOpacity',
+      'ol.source.ImageWMS',
+      'ol.source.ImageWMS#getUrl',
+      'ol.source.ImageWMS#getParams',
+    ],
+    // &lt;/debug>
+
+    inheritableStatics: {
+      /**
+       * @inheritdoc
+       */
+      sourceCls: ol.source.ImageWMS,
+
+      /**
+       * @inheritdoc
+       */
+      serialize: function (layer, source) {
+        this.validateSource(source);
+        const styles = source.getParams().STYLES;
+        let stylesArray;
+        if (Ext.isArray(styles)) {
+          stylesArray = styles;
+        } else {
+          stylesArray = styles ? styles.split(',') : [''];
+        }
+        const serialized = {
+          baseURL: source.getUrl(),
+          customParams: source.getParams(),
+          layers: [source.getParams().LAYERS],
+          opacity: layer.getOpacity(),
+          styles: stylesArray,
+          type: 'WMS',
+        };
+        return serialized;
+      },
+    },
+  },
+  function (cls) {
+    // Register this serializer via the inherited method `register`.
+    cls.register(cls);
+  },
+);
+</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<nav>
+    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="GeoExt.component.FeatureRenderer.html">FeatureRenderer</a></li><li><a href="GeoExt.component.Map.html">Map</a></li><li><a href="GeoExt.component.OverviewMap.html">OverviewMap</a></li><li><a href="GeoExt.component.Popup.html">Popup</a></li><li><a href="GeoExt.data.MapfishPrintProvider.html">MapfishPrintProvider</a></li><li><a href="GeoExt.data.model.ArcGISRestServiceLayer.html">ArcGISRestServiceLayer</a></li><li><a href="GeoExt.data.model.Base.html">Base</a></li><li><a href="GeoExt.data.model.Feature.html">Feature</a></li><li><a href="GeoExt.data.model.Layer.html">Layer</a></li><li><a href="GeoExt.data.model.LayerTreeNode.html">LayerTreeNode</a></li><li><a href="GeoExt.data.model.OlObject.html">OlObject</a></li><li><a href="GeoExt.data.model.print.Capability.html">Capability</a></li><li><a href="GeoExt.data.model.print.Layout.html">Layout</a></li><li><a href="GeoExt.data.model.print.LayoutAttribute.html">LayoutAttribute</a></li><li><a href="GeoExt.data.serializer.Base.html">Base</a></li><li><a href="GeoExt.data.serializer.ImageWMS.html">ImageWMS</a></li><li><a href="GeoExt.data.serializer.TileWMS.html">TileWMS</a></li><li><a href="GeoExt.data.serializer.Vector.html">Vector</a></li><li><a href="GeoExt.data.serializer.WMTS.html">WMTS</a></li><li><a href="GeoExt.data.serializer.XYZ.html">XYZ</a></li><li><a href="GeoExt.data.store.ArcGISRestServiceLayer.html">ArcGISRestServiceLayer</a></li><li><a href="GeoExt.data.store.Features.html">Features</a></li><li><a href="GeoExt.data.store.Layers.html">Layers</a></li><li><a href="GeoExt.data.store.LayersTree.html">LayersTree</a></li><li><a href="GeoExt.data.store.OlObjects.html">OlObjects</a></li><li><a href="GeoExt.data.store.WfsFeatures.html">WfsFeatures</a></li><li><a href="GeoExt.form.field.GeocoderComboBox.html">GeocoderComboBox</a></li><li><a href="GeoExt.mixin.SymbolCheck.html">SymbolCheck</a></li><li><a href="GeoExt.plugin.layertreenode.ContextMenu.html">ContextMenu</a></li><li><a href="GeoExt.selection.FeatureCheckboxModel.html">FeatureCheckboxModel</a></li><li><a href="GeoExt.selection.FeatureModel.html">FeatureModel</a></li><li><a href="GeoExt.selection.FeatureModelMixin.html">FeatureModelMixin</a></li><li><a href="GeoExt.state.PermalinkProvider.html">PermalinkProvider</a></li><li><a href="GeoExt.toolbar.WfsPaging.html">WfsPaging</a></li><li><a href="GeoExt.util.Layer.html">Layer</a></li><li><a href="GeoExt.util.OGCFilter.html">OGCFilter</a></li><li><a href="GeoExt.util.Version.html">Version</a></li></ul><h3>Events</h3><ul><li><a href="global.html#event:aftermapmoveTriggeredwhenthe'moveend'eventoftheunderlyingOpenLayersmapisfired.">aftermapmove
+
+Triggered when the 'moveend' event of the underlying OpenLayers map is
+fired.</a></li><li><a href="global.html#event:click">click</a></li><li><a href="global.html#event:pointerrestFiresiftheuserhasleftthepointerforanamountof#pointerRestIntervalmillisecondsatthe*samelocation*.Usetheconfiguration#pointerRestPixelTolerancetoconfigurehowlongapixelisconsideredtobeonthe*samelocation*.Pleasenotethatthiseventwillonlyfireifthemaphas#pointerRestconfiguredwith%2560true%2560.">pointerrest
+
+Fires if the user has left the pointer for an amount
+of #pointerRestInterval milliseconds at the *same location*. Use the
+configuration #pointerRestPixelTolerance to configure how long a pixel is
+considered to be on the *same location*.
+
+Please note that this event will only fire if the map has #pointerRest
+configured with `true`.</a></li><li><a href="global.html#event:pointerrestoutFiresiftheuserfirstwasrestinghispointeronthemapelement,butthenmovedthepointeroutofthemapcompletely.Pleasenotethatthiseventwillonlyfireifthemaphas#pointerRestconfiguredwith%2560true%2560.">pointerrestout
+
+Fires if the user first was resting his pointer on the map element, but
+then moved the pointer out of the map completely.
+
+Please note that this event will only fire if the map has #pointerRest
+configured with `true`.</a></li><li><a href="global.html#event:readyFiresafterthePrintCapabilitystoreisloaded.">ready
+Fires after the PrintCapability store is loaded.</a></li></ul><h3>Global</h3><ul><li><a href="global.html#attributesReturnsanExt.data.Storeofreferenced%257B@linkGeoExt.data.model.print.LayoutAttribute%257Ds.">attributes
+Returns an Ext.data.Store of referenced
+{@link GeoExt.data.model.print.LayoutAttribute}s.</a></li><li><a href="global.html#constructor">constructor</a></li><li><a href="global.html#getCapabilityReturnsthelayoutsparentprintcapabilities.MaybenullifLayoutisinstantiateddirectly.">getCapability
+Returns the layouts parent print capabilities. May be null if Layout is
+instantiated directly.</a></li><li><a href="global.html#getLayoutReturnstheattributeparentlayoutmodel.MaybenullifLayoutAttributeisinstantiateddirectly.">getLayout
+Returns the attribute parent layout model. May be null if
+LayoutAttribute is instantiated directly.</a></li><li><a href="global.html#getRefItems">getRefItems</a></li><li><a href="global.html#getRefOwner">getRefOwner</a></li><li><a href="global.html#layoutsReturnsanExt.data.Storeofreferenced%257B@linkGeoExt.data.model.print.Layout%257Ds.">layouts
+Returns an Ext.data.Store of referenced
+{@link GeoExt.data.model.print.Layout}s.</a></li><li><a href="global.html#name">name</a></li><li><a href="global.html#onLayerVisibleChange">onLayerVisibleChange</a></li><li><a href="global.html#set">set</a></li></ul>
+</nav>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 4.0.4</a> on Wed Dec 11 2024 17:48:26 GMT+0100 (Central European Standard Time)
+</footer>
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>

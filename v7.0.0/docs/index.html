@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Home</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+</head>
+
+<body>
+
+<div id="main">
+
+    <h1 class="page-title">Home</h1>
+
+    
+
+
+
+    
+
+
+    <h3> </h3>
+
+
+
+
+
+
+
+
+
+
+    
+
+
+
+
+    <section>
+        <article><h1>GeoExt</h1>
+<p>JavaScript Toolkit for Rich Web Mapping Applications.</p>
+<p><a href="https://github.com/geoext/geoext/actions/workflows/on-push-master.yml?query=branch%3Amaster"><img src="https://github.com/geoext/geoext/actions/workflows/on-push-master.yml/badge.svg" alt="Build Status"></a></p>
+<p><a href="https://travis-ci.org/geoext/geoext"><img src="https://travis-ci.org/geoext/geoext.svg?branch=master" alt="Build Status"></a>
+<a href="https://coveralls.io/github/geoext/geoext?branch=master"><img src="https://coveralls.io/repos/geoext/geoext/badge.svg?branch=master&amp;service=github" alt="Coverage Status"></a></p>
+<p><a href="https://geoext.github.io/geoext/"><img src="https://geoext.github.io/geoext/website-resources/img/GeoExt-logo.png" alt="GeoExt logo"></a></p>
+<p>GeoExt is Open Source and enables building desktop-like GIS applications through the web. It is a JavaScript framework that combines the GIS functionality of OpenLayers with the user interface savvy of the ExtJS library provided by Sencha.</p>
+<p>Version 3 of GeoExt was the successor to the GeoExt 2.x-series and has been built atop the following versions of its base libraries: OpenLayers v3.x / v4.x and ExtJS 6.</p>
+<p>With version 4 GeoExt supports the newest official installment v6.x of OpenLayers and ExtJS 6.2.</p>
+<p>We are trying hard to keep up with developments on both our parent libraries.
+The current state of GeoExt is compatible with ExtJS 7.0.0 and OpenLayers 10.1.0. This state is released as GeoExt v7.0.0.</p>
+<table>
+<thead>
+<tr>
+<th>OpenLayers</th>
+<th>ExtJS</th>
+<th>GeoExt</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>10.1.0</td>
+<td>7.0.0</td>
+<td>7.0.x</td>
+</tr>
+<tr>
+<td>8.1.0</td>
+<td>6.2.0</td>
+<td>6.0.x</td>
+</tr>
+<tr>
+<td>7.1.0</td>
+<td>6.2.0</td>
+<td>5.0.x</td>
+</tr>
+<tr>
+<td>6.5.0</td>
+<td>6.2.0</td>
+<td>4.0.x</td>
+</tr>
+<tr>
+<td>4.6.5</td>
+<td>6.2.0</td>
+<td>3.4.0 &amp; 3.3.x &amp; 3.2.0</td>
+</tr>
+<tr>
+<td>3.20.1 / 4.3.x</td>
+<td>6.2.0</td>
+<td>3.1.0</td>
+</tr>
+<tr>
+<td>3.20.1</td>
+<td>6.2.0</td>
+<td>3.0.0</td>
+</tr>
+</tbody>
+</table>
+<h2>More information on GeoExt</h2>
+<p>Have a look at the official homepage: https://geoext.github.io/geoext/</p>
+<p>You will find examples, API documentation (with and without inherited functionality from ExtJS), links to mailing lists and more over there.</p>
+<blockquote>
+<p>What you see on https://geoext.github.io/geoext/ are the contents of the <code>gh-pages</code>-branch. If you encounter anything that should be fixed, please issue a pull request against that branch and we will merge it as soon as possible.</p>
+</blockquote>
+<h2>How to use GeoExt inside your Sencha app</h2>
+<p>You can use GeoExt either via an <code>npm install @geoext/geoext</code> in your application folder, or (if you want the latest and greatest), you can use it from a <code>git clone</code> of this repository.</p>
+<h3>Configuring your apps classpath</h3>
+<p>You will have to adjust the <code>classpath</code> in you <code>app.json</code> to include geoext, like below.
+Depending on how you retrieved the code from the step before, you will have to adapt the path.
+When you installed geoext via npm, the path needs to look like <code>./node_modules/@geoext/geoext/src</code>.
+Else it will be the folder where you cloned the repository into.</p>
+<pre class="prettyprint source lang-javascript"><code>    &quot;classpath&quot;: [
+        &quot;app&quot;,
+        &quot;${toolkit.name}/src&quot;,
+        &quot;./lib/geoext/src&quot;
+    ]
+</code></pre>
+<p>In the snippet above, <code>lib/geoext</code> is a <code>git clone</code> of the GeoExt repo.</p>
+<p>GeoExt also offers components, which are only compatible with the classic
+toolkit of ExtJS (e.g. <code>StateProvider</code> or <code>GeocoderCombo</code>).
+In case you want to use them you also have to add the <code>classic</code> folder to the
+<code>classpath</code>. So your complete <code>classpath</code> definition could look like below:</p>
+<pre class="prettyprint source lang-javascript"><code>    &quot;classpath&quot;: [
+        &quot;app&quot;,
+        &quot;${toolkit.name}/src&quot;,
+        &quot;./lib/geoext/src&quot;,
+        &quot;./lib/geoext/classic&quot;
+    ]
+</code></pre>
+<p>To help with your first GeoExt project, follow the instructions provided to build a <a href="universal-app.md">GeoExt Universal app</a>. This app runs on the desktop and on mobile.</p>
+<h2>Examples</h2>
+<h3>Classic Toolkit</h3>
+<ul>
+<li><a href="https://geoext.github.io/geoext/master/examples/component/map.html">Basic map component</a></li>
+<li><a href="https://geoext.github.io/geoext/master/examples/component/overviewMap.html">Overview component</a></li>
+<li><a href="https://geoext.github.io/geoext/master/examples/tree/panel.html">Basic TreePanel</a></li>
+<li><a href="https://geoext.github.io/geoext/master/examples/tree/tree-legend-simple.html">Legends in Treepanels</a></li>
+<li><a href="https://geoext.github.io/geoext/master/examples/print/basic-mapfish.html">Basic print with Mapfish v3</a></li>
+<li><a href="https://geoext.github.io/geoext/master/examples/popup/gx-popup.html">Popup on a map component</a></li>
+<li><a href="https://geoext.github.io/geoext/master/examples/features/grid.html">FeatureGrid component</a></li>
+<li><a href="https://geoext.github.io/geoext/master/examples/filtered-heatmap/filtered-heatmap.html">Interactively filtered heatmap</a></li>
+<li><a href="https://geoext.github.io/geoext/master/examples/renderer/renderer.html">FeatureRenderer component</a></li>
+<li><a href="https://geoext.github.io/geoext/master/examples/mapviewform/mapviewform.html">MapView form</a></li>
+</ul>
+<h3>Modern Toolkit</h3>
+<ul>
+<li><a href="https://geoext.github.io/geoext/master/examples/modern-map/modern-map.html">Basic map component </a></li>
+<li><a href="https://geoext.github.io/geoext/master/examples/modern-layerlist/modern-layerlist.html">LayerList component </a></li>
+</ul>
+<h2>Want to contribute? Yes, please 😀</h2>
+<p>Read the <a href="CONTRIBUTING.md">hints for developers</a> to get started. We look forward
+to your contributions!</p>
+<h2>Initial Codesprint</h2>
+<p>The GeoExt 3 project was kickstarted during a code sprint in Bonn from 17th to 19th of June 2015.
+For more informations check the following links:
+<a href="https://github.com/geoext/geoext/wiki/GeoExt-3-Codesprint">Code sprint WIKI page</a>,
+<a href="http://geoext.blogspot.de/2015/06/geoext-is-getting-3.html">Official blog post of code sprint day 1</a>,
+<a href="http://geoext.blogspot.de/2015/06/geoext-3-codesprint-day-2-and-3.html">Official blog post of the code sprint days 2 and 3</a></p>
+<hr>
+<a href="https://www.osgeo.org/projects/geoext/">
+<img src="https://geoext.github.io/geoext/website-resources/img/OSGeo_community.png" alt="OSGeo Community Project" width="200" />
+</a>
+<p>GeoExt is an OSGeo Community project</p></article>
+    </section>
+
+
+
+
+
+
+</div>
+
+<nav>
+    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="GeoExt.component.FeatureRenderer.html">FeatureRenderer</a></li><li><a href="GeoExt.component.Map.html">Map</a></li><li><a href="GeoExt.component.OverviewMap.html">OverviewMap</a></li><li><a href="GeoExt.component.Popup.html">Popup</a></li><li><a href="GeoExt.data.MapfishPrintProvider.html">MapfishPrintProvider</a></li><li><a href="GeoExt.data.model.ArcGISRestServiceLayer.html">ArcGISRestServiceLayer</a></li><li><a href="GeoExt.data.model.Base.html">Base</a></li><li><a href="GeoExt.data.model.Feature.html">Feature</a></li><li><a href="GeoExt.data.model.Layer.html">Layer</a></li><li><a href="GeoExt.data.model.LayerTreeNode.html">LayerTreeNode</a></li><li><a href="GeoExt.data.model.OlObject.html">OlObject</a></li><li><a href="GeoExt.data.model.print.Capability.html">Capability</a></li><li><a href="GeoExt.data.model.print.Layout.html">Layout</a></li><li><a href="GeoExt.data.model.print.LayoutAttribute.html">LayoutAttribute</a></li><li><a href="GeoExt.data.serializer.Base.html">Base</a></li><li><a href="GeoExt.data.serializer.ImageWMS.html">ImageWMS</a></li><li><a href="GeoExt.data.serializer.TileWMS.html">TileWMS</a></li><li><a href="GeoExt.data.serializer.Vector.html">Vector</a></li><li><a href="GeoExt.data.serializer.WMTS.html">WMTS</a></li><li><a href="GeoExt.data.serializer.XYZ.html">XYZ</a></li><li><a href="GeoExt.data.store.ArcGISRestServiceLayer.html">ArcGISRestServiceLayer</a></li><li><a href="GeoExt.data.store.Features.html">Features</a></li><li><a href="GeoExt.data.store.Layers.html">Layers</a></li><li><a href="GeoExt.data.store.LayersTree.html">LayersTree</a></li><li><a href="GeoExt.data.store.OlObjects.html">OlObjects</a></li><li><a href="GeoExt.data.store.WfsFeatures.html">WfsFeatures</a></li><li><a href="GeoExt.form.field.GeocoderComboBox.html">GeocoderComboBox</a></li><li><a href="GeoExt.mixin.SymbolCheck.html">SymbolCheck</a></li><li><a href="GeoExt.plugin.layertreenode.ContextMenu.html">ContextMenu</a></li><li><a href="GeoExt.selection.FeatureCheckboxModel.html">FeatureCheckboxModel</a></li><li><a href="GeoExt.selection.FeatureModel.html">FeatureModel</a></li><li><a href="GeoExt.selection.FeatureModelMixin.html">FeatureModelMixin</a></li><li><a href="GeoExt.state.PermalinkProvider.html">PermalinkProvider</a></li><li><a href="GeoExt.toolbar.WfsPaging.html">WfsPaging</a></li><li><a href="GeoExt.util.Layer.html">Layer</a></li><li><a href="GeoExt.util.OGCFilter.html">OGCFilter</a></li><li><a href="GeoExt.util.Version.html">Version</a></li></ul><h3>Events</h3><ul><li><a href="global.html#event:aftermapmoveTriggeredwhenthe'moveend'eventoftheunderlyingOpenLayersmapisfired.">aftermapmove
+
+Triggered when the 'moveend' event of the underlying OpenLayers map is
+fired.</a></li><li><a href="global.html#event:click">click</a></li><li><a href="global.html#event:pointerrestFiresiftheuserhasleftthepointerforanamountof#pointerRestIntervalmillisecondsatthe*samelocation*.Usetheconfiguration#pointerRestPixelTolerancetoconfigurehowlongapixelisconsideredtobeonthe*samelocation*.Pleasenotethatthiseventwillonlyfireifthemaphas#pointerRestconfiguredwith%2560true%2560.">pointerrest
+
+Fires if the user has left the pointer for an amount
+of #pointerRestInterval milliseconds at the *same location*. Use the
+configuration #pointerRestPixelTolerance to configure how long a pixel is
+considered to be on the *same location*.
+
+Please note that this event will only fire if the map has #pointerRest
+configured with `true`.</a></li><li><a href="global.html#event:pointerrestoutFiresiftheuserfirstwasrestinghispointeronthemapelement,butthenmovedthepointeroutofthemapcompletely.Pleasenotethatthiseventwillonlyfireifthemaphas#pointerRestconfiguredwith%2560true%2560.">pointerrestout
+
+Fires if the user first was resting his pointer on the map element, but
+then moved the pointer out of the map completely.
+
+Please note that this event will only fire if the map has #pointerRest
+configured with `true`.</a></li><li><a href="global.html#event:readyFiresafterthePrintCapabilitystoreisloaded.">ready
+Fires after the PrintCapability store is loaded.</a></li></ul><h3>Global</h3><ul><li><a href="global.html#attributesReturnsanExt.data.Storeofreferenced%257B@linkGeoExt.data.model.print.LayoutAttribute%257Ds.">attributes
+Returns an Ext.data.Store of referenced
+<a href="GeoExt.data.model.print.LayoutAttribute.html">GeoExt.data.model.print.LayoutAttribute</a>s.</a></li><li><a href="global.html#constructor">constructor</a></li><li><a href="global.html#getCapabilityReturnsthelayoutsparentprintcapabilities.MaybenullifLayoutisinstantiateddirectly.">getCapability
+Returns the layouts parent print capabilities. May be null if Layout is
+instantiated directly.</a></li><li><a href="global.html#getLayoutReturnstheattributeparentlayoutmodel.MaybenullifLayoutAttributeisinstantiateddirectly.">getLayout
+Returns the attribute parent layout model. May be null if
+LayoutAttribute is instantiated directly.</a></li><li><a href="global.html#getRefItems">getRefItems</a></li><li><a href="global.html#getRefOwner">getRefOwner</a></li><li><a href="global.html#layoutsReturnsanExt.data.Storeofreferenced%257B@linkGeoExt.data.model.print.Layout%257Ds.">layouts
+Returns an Ext.data.Store of referenced
+<a href="GeoExt.data.model.print.Layout.html">GeoExt.data.model.print.Layout</a>s.</a></li><li><a href="global.html#name">name</a></li><li><a href="global.html#onLayerVisibleChange">onLayerVisibleChange</a></li><li><a href="global.html#set">set</a></li></ul>
+</nav>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 4.0.4</a> on Wed Dec 11 2024 17:48:26 GMT+0100 (Central European Standard Time)
+</footer>
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>
