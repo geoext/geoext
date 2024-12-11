@@ -12,7 +12,6 @@ In order to develop GeoExt you'll need certain things on your machine:
 
 * [`git`](https://git-scm.com)
 * [Node.js & `npm`](https://nodejs.org/en/)
-* [`jsduck`](https://github.com/senchalabs/jsduck)
 
 Additionally, if you want to reuse the GeoExt library in your Sencha
 applications, you'll need the Sencha CMD tool. See the
@@ -51,7 +50,7 @@ to the source code are detected, the browser page is reloaded (end via
 * `generate:example`generates a sample application in the examples folder. Use
 this to start a new feature example for GeoExt.
 * `generate:docs` generates an API documentation that you can access in the
-browser via `/apidocs/index.html`. (requires the external `jsduck` command)
+browser via `/apidocs/index.html`.
 
 Make sure to run `npm install` before using these scripts as this will install
 required dependencies locally.
