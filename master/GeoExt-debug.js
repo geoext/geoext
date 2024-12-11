@@ -3128,8 +3128,6 @@ registerSerializer:function(olSourceCls, serializerCls) {
   var desiredPrintRatio = clientInfo.width / clientInfo.height;
   var targetWidth;
   var targetHeight;
-  var geomExtent;
-  var feat;
   if (desiredPrintRatio >= currentMapRatio) {
     targetWidth = mapComponentWidth * scaleFactor;
     targetHeight = targetWidth / desiredPrintRatio;
@@ -3137,8 +3135,8 @@ registerSerializer:function(olSourceCls, serializerCls) {
     targetHeight = mapComponentHeight * scaleFactor;
     targetWidth = targetHeight * desiredPrintRatio;
   }
-  geomExtent = mapComponent.getView().calculateExtent([targetWidth, targetHeight]);
-  feat = new ol.Feature(ol.geom.Polygon.fromExtent(geomExtent));
+  var geomExtent = mapComponent.getView().calculateExtent([targetWidth, targetHeight]);
+  var feat = new ol.Feature(ol.geom.Polygon.fromExtent(geomExtent));
   extentLayer.getSource().addFeature(feat);
   return feat;
 }}, capabilityRec:null, constructor:function(cfg) {
@@ -3240,9 +3238,8 @@ Ext.define('GeoExt.data.model.LayerTreeNode', {extend:'GeoExt.data.model.Layer',
 }}, {name:'__toggleMode', type:'string', defaultValue:'classic'}, {name:'iconCls', type:'string', convert:function(v, record) {
   return record.getOlLayerProp('iconCls');
 }}], proxy:{type:'memory', reader:{type:'json'}}, constructor:function() {
-  var layer;
   this.callParent(arguments);
-  layer = this.getOlLayer();
+  var layer = this.getOlLayer();
   if (layer instanceof ol.layer.Base) {
     this.set('checked', layer.get('visible'));
     layer.on('change:visible', this.onLayerVisibleChange.bind(this));
@@ -3316,7 +3313,7 @@ Ext.define('GeoExt.data.model.LayerTreeNode', {extend:'GeoExt.data.model.Layer',
 }}, function() {
   Ext.data.NodeInterface.decorate(this);
 });
-Ext.define('GeoExt.data.serializer.Base', {extend:'Ext.Base', requires:['GeoExt.data.MapfishPrintProvider'], mixins:['GeoExt.mixin.SymbolCheck'], symbols:['ol.layer.Layer', 'ol.source.Source'], inheritableStatics:{sourceCls:null, serialize:function() {
+Ext.define('GeoExt.data.serializer.Base', {extend:'Ext.Base', requires:['GeoExt.data.MapfishPrintProvider'], mixins:['GeoExt.mixin.SymbolCheck'], symbols:['ol.layer.Layer', 'ol.source.Source'], inheritableStatics:{sourceCls:null, serialize:function(layer, source, viewRes) {
   Ext.raise('This method must be overridden by subclasses.');
   return null;
 }, register:function(subCls) {
@@ -4142,15 +4139,11 @@ Ext.define('GeoExt.util.OGCFilter', {statics:{wfs100GetFeatureXmlTpl:'\x3cwfs:Ge
       var spatialTpl = wfsVersion !== '2.0.0' ? GeoExt.util.OGCFilter.spatialFilterWfs1xXmlTpl : GeoExt.util.OGCFilter.spatialFilterWfs2xXmlTpl;
       return Ext.String.format(spatialTpl, ogcFilterType, property, gmlElement);
     case 'bbox':
-      var llx;
-      var lly;
-      var urx;
-      var ury;
       value = value.getExtent();
-      llx = value[0];
-      lly = value[1];
-      urx = value[2];
-      ury = value[3];
+      var llx = value[0];
+      var lly = value[1];
+      var urx = value[2];
+      var ury = value[3];
       return Ext.String.format(GeoExt.util.OGCFilter.spatialFilterBBoxTpl, property, srsName, llx, lly, urx, ury);
     default:
       Ext.Logger.warn('Method `getOgcFilter` could not ' + 'handle the given operator: ' + operator);

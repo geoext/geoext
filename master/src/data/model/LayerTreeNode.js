@@ -69,11 +69,9 @@ Ext.define(
      * @inheritDoc
      */
     constructor: function () {
-      let layer;
-
       this.callParent(arguments);
 
-      layer = this.getOlLayer();
+      const layer = this.getOlLayer();
       if (layer instanceof ol.layer.Base) {
         this.set('checked', layer.get('visible'));
         layer.on('change:visible', this.onLayerVisibleChange.bind(this));

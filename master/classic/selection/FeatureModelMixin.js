@@ -22,6 +22,7 @@
  *
  * @class GeoExt.selection.FeatureModelMixin
  */
+
 Ext.define('GeoExt.selection.FeatureModelMixin', {
   extend: 'Ext.Mixin',
 
@@ -39,14 +40,15 @@ Ext.define('GeoExt.selection.FeatureModelMixin', {
   config: {
     /**
      * The connected vector layer.
-     * @cfg {ol.layer.Vector}
-     * @property {ol.layer.Vector}
+     * @cfg {ol.layer.Vector} layer The connected vector layer.
+     * @property {ol.layer.Vector} layer The connected vector layer.
      */
     layer: null,
 
     /**
      * The OpenLayers map we work with
      * @cfg {ol.Map}
+     * @type {ol.Map}
      */
     map: null,
 
@@ -91,21 +93,21 @@ Ext.define('GeoExt.selection.FeatureModelMixin', {
    * Lookup to preserve existing feature styles. Used to restore feature style
    * when select style is removed.
    * @private
-   * @property {Object}
+   * @property {Object} existingFeatStyles Lookup to preserve existing feature styles
    */
   existingFeatStyles: {},
 
   /**
    * Indicates if a map click handler has been registered on init.
    * @private
-   * @property {boolean}
+   * @property {boolean} mapClickRegistered Indicates if a map click handler has been registered
    */
   mapClickRegistered: false,
 
   /**
    * The attribute key to mark an OL feature as selected.
    * @cfg {string}
-   * @property  {string}
+   * @property  {string} selectedFeatureAttr The attribute key to mark as selected
    * @readonly
    */
   selectedFeatureAttr: 'gx_selected',
@@ -113,7 +115,7 @@ Ext.define('GeoExt.selection.FeatureModelMixin', {
   /**
    * The currently selected features (`ol.Collection` containing `ol.Feature`
    * instances).
-   * @property {ol.Collection}
+   * @property {ol.Collection} selectedFeatures Currently selected features
    */
   selectedFeatures: null,
 

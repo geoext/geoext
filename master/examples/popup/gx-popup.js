@@ -7,8 +7,6 @@ let popup;
 Ext.application({
   name: 'Popup',
   launch: function () {
-    let description;
-
     olMap = new ol.Map({
       layers: [
         new ol.layer.Tile({
@@ -65,7 +63,7 @@ Ext.application({
     // hide the popup once it isn't on the map any longer
     mapComp.on('pointerrestout', popup.hide, popup);
 
-    description = Ext.create('Ext.panel.Panel', {
+    const description = Ext.create('Ext.panel.Panel', {
       contentEl: 'description',
       title: 'Description',
       region: 'east',

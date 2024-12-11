@@ -250,8 +250,6 @@ Ext.define('GeoExt.data.MapfishPrintProvider', {
       const desiredPrintRatio = clientInfo.width / clientInfo.height;
       let targetWidth;
       let targetHeight;
-      let geomExtent;
-      let feat;
 
       if (desiredPrintRatio >= currentMapRatio) {
         targetWidth = mapComponentWidth * scaleFactor;
@@ -261,10 +259,10 @@ Ext.define('GeoExt.data.MapfishPrintProvider', {
         targetWidth = targetHeight * desiredPrintRatio;
       }
 
-      geomExtent = mapComponent
+      const geomExtent = mapComponent
         .getView()
         .calculateExtent([targetWidth, targetHeight]);
-      feat = new ol.Feature(ol.geom.Polygon.fromExtent(geomExtent));
+      const feat = new ol.Feature(ol.geom.Polygon.fromExtent(geomExtent));
       extentLayer.getSource().addFeature(feat);
       return feat;
     },
@@ -274,7 +272,7 @@ Ext.define('GeoExt.data.MapfishPrintProvider', {
    * The capabiltyRec is an instance of 'GeoExt.data.model.print.Capability'
    * and contains the PrintCapabilities of the Printprovider.
    *
-   * @property {GeoExt.data.model.print.Capability}
+   * @property {GeoExt.data.model.print.Capability} capabilityRec PrintCapabilities record
    * @readonly
    */
   capabilityRec: null,

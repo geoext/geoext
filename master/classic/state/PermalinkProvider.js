@@ -67,7 +67,7 @@ Ext.define('GeoExt.state.PermalinkProvider', {
   /**
    * Current map state object.
    *
-   * @property {Object}
+   * @property {Object} mapState Current map state object
    * @private
    */
   mapState: null,
