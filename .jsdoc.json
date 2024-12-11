@@ -1,0 +1,15 @@
+{
+  "tags": {
+    "allowUnknownTags": true,
+    "dictionaries": [ "jsdoc" ]
+  },
+  "source": {
+    "include": [ "./src", "./classic" ],
+    "includePattern": ".+\\.js(doc|x)?$",
+    "excludePattern": "(^|\\/|\\\\)_"
+  },
+  "opts": {
+    "recurse": true,
+    "readme": "README.md"
+  }
+}
