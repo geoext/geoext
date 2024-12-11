@@ -11,5 +11,6 @@
   "opts": {
     "recurse": true,
     "readme": "README.md"
-  }
+  },
+  "plugins": [ "./jsdoc-ext-plugin.js" ]
 }
