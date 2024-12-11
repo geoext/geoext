@@ -19,152 +19,154 @@
  * @class GeoExt.data.model.OlObject
  */
 Ext.define('GeoExt.data.model.OlObject', {
-    extend: 'GeoExt.data.model.Base',
-    mixins: [
-        'GeoExt.mixin.SymbolCheck'
-    ],
+  extend: 'GeoExt.data.model.Base',
+  mixins: ['GeoExt.mixin.SymbolCheck'],
 
-    // <debug>
-    symbols: [
-        'ol',
-        'ol.Object',
-        'ol.Object#on',
-        'ol.Object#get',
-        'ol.Object#set'
-    ],
-    // </debug>
+  // <debug>
+  symbols: [
+    'ol',
+    'ol.Object',
+    'ol.Object#on',
+    'ol.Object#get',
+    'ol.Object#set',
+  ],
+  // </debug>
 
-    inheritableStatics: {
-        /**
-         * Gets a reference to an ol constructor function.
-         *
-         * @param {String} str Description of the form `"ol.layer.Base"`.
-         * @return {Function} the ol constructor.
-         * @static
-         */
-        getOlCLassRef: function(str) {
-            var ref = ol;
-            var members;
+  inheritableStatics: {
+    /**
+     * Gets a reference to an ol constructor function.
+     *
+     * @param {string} str Description of the form `"ol.layer.Base"`.
+     * @return {Function} the ol constructor.
+     * @static
+     */
+    getOlCLassRef: function (str) {
+      let ref = ol;
+      let members;
 
-            if (Ext.isString(str)) {
-                members = str.split('.');
-                // shift if description contains namespace
-                if (Ext.Array.indexOf(members, 'ol') === 0) {
-                    members.shift();
-                }
-                // traverse namespace to ref
-                Ext.Array.each(members, function(member) {
-                    ref = ref[member];
-                });
-            }
-
-            return ref;
+      if (Ext.isString(str)) {
+        members = str.split('.');
+        // shift if description contains namespace
+        if (Ext.Array.indexOf(members, 'ol') === 0) {
+          members.shift();
         }
+        // traverse namespace to ref
+        Ext.Array.each(members, function (member) {
+          ref = ref[member];
+        });
+      }
+
+      return ref;
     },
+  },
 
-    /**
-     * String description of the reference path to the wrapped ol class.
-     *
-     * @property {String}
-     */
-    olClass: 'ol.Object',
+  /**
+   * String description of the reference path to the wrapped ol class.
+   *
+   * @property {string}
+   */
+  olClass: 'ol.Object',
 
-    /**
-     * The underlying ol.Object.
-     *
-     * @property {ol.Object}
-     */
-    olObject: null,
+  /**
+   * The underlying ol.Object.
+   *
+   * @property {ol.Object}
+   */
+  olObject: null,
 
-    proxy: {
-        type: 'memory',
-        reader: 'json'
-    },
+  proxy: {
+    type: 'memory',
+    reader: 'json',
+  },
 
-    /**
-     * @inheritdoc
-     */
-    constructor: function(data) {
-        var me = this;
-        var statics = this.statics();
-        var OlClass = statics.getOlCLassRef(this.olClass);
+  /**
+   * @inheritdoc
+   */
+  constructor: function (data) {
+    const me = this;
+    const statics = this.statics();
+    const OlClass = statics.getOlCLassRef(this.olClass);
 
-        data = data || {};
+    data = data || {};
 
-        // init ol object if plain data is handed over
-        if (!(data instanceof OlClass)) {
-            data = new OlClass(data);
-        }
-
-        me.olObject = data;
-
-        // init record with properties of underlying ol object
-        me.callParent([this.olObject.getProperties()]);
-
-        me.onPropertychange = me.onPropertychange.bind(me);
-
-        me.olObject.on('propertychange', me.onPropertychange);
-    },
-
-    /**
-     * Listener to propertychange events of the underlying `ol.Object`. All
-     * changes on the object will be forwarded to the Ext.data.Model.
-     *
-     * @param  {ol.ObjectEvent} evt The `ol.ObjectEvent` we receive as handler.
-     * @private
-     */
-    onPropertychange: function(evt) {
-        var target = evt.target;
-        var key = evt.key;
-
-        if (!this.__updating) {
-            this.set(key, target.get(key));
-        }
-    },
-
-    /**
-     * Overridden to forward changes to the underlying `ol.Object`. All changes
-     * on the `Ext.data.Model` properties will be set on the `ol.Object` as
-     * well.
-     *
-     * @param {String|Object} key The key to set.
-     * @param {Object} newValue The value to set.
-     *
-     * @inheritdoc
-     */
-    set: function(key, newValue) {
-        var o = {};
-
-        this.callParent(arguments);
-
-        // forward changes to ol object
-        this.__updating = true;
-
-        // wrap simple set operations into an object
-        if (Ext.isString(key)) {
-            o[key] = newValue;
-        } else {
-            o = key;
-        }
-
-        // iterate over object setting changes to ol.Object
-        Ext.Object.each(o, function(k, v) {
-            if (this.olObject.get(k) !== v) {
-                this.olObject.set(k, v);
-            }
-        }, this);
-
-        this.__updating = false;
-    },
-
-    /**
-     * Overridden to unregister all added event listeners on the ol.Object.
-     *
-     * @inheritdoc
-     */
-    destroy: function() {
-        this.olObject.un('propertychange', this.onPropertychange);
-
-        this.callParent(arguments);
+    // init ol object if plain data is handed over
+    if (!(data instanceof OlClass)) {
+      data = new OlClass(data);
     }
+
+    me.olObject = data;
+
+    // init record with properties of underlying ol object
+    me.callParent([this.olObject.getProperties()]);
+
+    me.onPropertychange = me.onPropertychange.bind(me);
+
+    me.olObject.on('propertychange', me.onPropertychange);
+  },
+
+  /**
+   * Listener to propertychange events of the underlying `ol.Object`. All
+   * changes on the object will be forwarded to the Ext.data.Model.
+   *
+   * @param  {ol.ObjectEvent} evt The `ol.ObjectEvent` we receive as handler.
+   * @private
+   */
+  onPropertychange: function (evt) {
+    const target = evt.target;
+    const key = evt.key;
+
+    if (!this.__updating) {
+      this.set(key, target.get(key));
+    }
+  },
+
+  /**
+   * Overridden to forward changes to the underlying `ol.Object`. All changes
+   * on the `Ext.data.Model` properties will be set on the `ol.Object` as
+   * well.
+   *
+   * @param {string | Object} key The key to set.
+   * @param {Object} newValue The value to set.
+   *
+   * @inheritdoc
+   */
+  set: function (key, newValue) {
+    let o = {};
+
+    this.callParent(arguments);
+
+    // forward changes to ol object
+    this.__updating = true;
+
+    // wrap simple set operations into an object
+    if (Ext.isString(key)) {
+      o[key] = newValue;
+    } else {
+      o = key;
+    }
+
+    // iterate over object setting changes to ol.Object
+    Ext.Object.each(
+      o,
+      function (k, v) {
+        if (this.olObject.get(k) !== v) {
+          this.olObject.set(k, v);
+        }
+      },
+      this,
+    );
+
+    this.__updating = false;
+  },
+
+  /**
+   * Overridden to unregister all added event listeners on the ol.Object.
+   *
+   * @inheritdoc
+   */
+  destroy: function () {
+    this.olObject.un('propertychange', this.onPropertychange);
+
+    this.callParent(arguments);
+  },
 });

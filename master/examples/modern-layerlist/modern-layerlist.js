@@ -1,157 +1,164 @@
 Ext.require([
-    'GeoExt.component.Map',
-    'GeoExt.data.store.Layers',
-    'Ext.panel.Panel',
-    'Ext.grid.Grid',
-    'Ext.Toolbar',
-    'Ext.Button',
-    'Ext.TabPanel'
+  'GeoExt.component.Map',
+  'GeoExt.data.store.Layers',
+  'Ext.Panel',
+  'Ext.grid.Grid',
+  'Ext.Toolbar',
+  'Ext.Button',
+  'Ext.TabPanel',
 ]);
 
-var olMap;
-var mapComponent;
-var mapPanel;
-var layerStore;
-var layerList;
-var description;
+let olMap;
+let mapComponent;
+let mapPanel;
+let layerStore;
+let layerList;
 
 Ext.application({
-    name: 'modern-layerlist',
-    launch: function() {
+  name: 'modern-layerlist',
+  launch: function () {
+    olMap = new ol.Map({
+      layers: [
+        new ol.layer.Tile({
+          name: 'OSM',
+          source: new ol.source.OSM(),
+        }),
+        new ol.layer.Tile({
+          name: 'Labels',
+          source: new ol.source.StadiaMaps({
+            layer: 'stamen_terrain_labels',
+          }),
+        }),
+        new ol.layer.Vector({
+          name: 'Earthquakes',
+          source: new ol.source.Vector({
+            url: '../data/1.0_week.geojson',
+            format: new ol.format.GeoJSON(),
+          }),
+          style: new ol.style.Style({
+            image: new ol.style.RegularShape({
+              fill: new ol.style.Fill({color: 'red'}),
+              stroke: new ol.style.Stroke({color: 'darkred'}),
+              points: 3,
+              radius: 6,
+            }),
+          }),
+        }),
+      ],
+      view: new ol.View({
+        center: [0, 0],
+        zoom: 2,
+      }),
+    });
 
-        olMap = new ol.Map({
-            layers: [
-                new ol.layer.Tile({
-                    name: 'OSM',
-                    source: new ol.source.OSM()
-                }),
-                new ol.layer.Tile({
-                    name: 'Labels',
-                    source: new ol.source.StadiaMaps({
-                        layer: 'stamen_terrain_labels'
-                    })
-                }),
-                new ol.layer.Vector({
-                    name: 'Earthquakes',
-                    source: new ol.source.Vector({
-                        url: '../data/1.0_week.geojson',
-                        format: new ol.format.GeoJSON()
-                    }),
-                    style: new ol.style.Style({
-                        image: new ol.style.RegularShape({
-                            fill: new ol.style.Fill({color: 'red'}),
-                            stroke: new ol.style.Stroke({color: 'darkred'}),
-                            points: 3,
-                            radius: 6
-                        })
-                    })
-                })
-            ],
-            view: new ol.View({
-                center: [0, 0],
-                zoom: 2
-            })
+    mapComponent = Ext.create('GeoExt.component.Map', {
+      map: olMap,
+    });
+
+    mapPanel = Ext.create('Ext.panel.Panel', {
+      title: 'Map Panel',
+      layout: 'fit',
+      items: [mapComponent],
+    });
+
+    layerStore = Ext.create('GeoExt.data.store.Layers', {
+      map: olMap,
+    });
+
+    // handler for showing / hiding of layers via layer list
+    const onSelectionChanged = function (grid, selected) {
+      const selection = grid.getSelections();
+      layerList.getStore().each(function (rec) {
+        const layer = rec.getOlLayer();
+        const isVisible = Ext.Array.contains(selection, rec);
+        layer.setVisible(isVisible);
+      });
+    };
+
+    // use a grid with 1 column as layer list
+    layerList = Ext.create('Ext.grid.Grid', {
+      title: 'Layer List',
+      columns: [{text: 'Name', dataIndex: 'text', flex: 1}],
+      store: layerStore,
+      mode: 'MULTI',
+      striped: false,
+      listeners: {
+        selectionchange: onSelectionChanged,
+      },
+    });
+
+    // synchronize the initial layer visibility and the list selection
+    layerList.on(
+      'show',
+      function () {
+        const selection = [];
+        layerList.getStore().each(function (rec) {
+          const layer = rec.getOlLayer();
+          if (layer.getVisible() === true) {
+            selection.push(rec);
+          }
         });
+        // set visible layer recs as initial selection
+        layerList.setSelection(selection);
+      },
+      layerList,
+      {single: true},
+    );
 
-        mapComponent = Ext.create('GeoExt.component.Map', {
-            map: olMap
-        });
+    const htmlString = `
+    <p>
+        This example shows how to use an <code>Ext.grid.Grid</code> component
+        with a <code>GeoExt.data.store.Layers</code>
+        to let the user change the visibility of the map layers in a GeoExt app
+        with the modern toolkit.
+    </p>
+    <p>
+        Have a look at <a href="modern-layerlist.js">modern-layerlist.js</a>
+        to see how this is done.
+    </p>
+`;
 
-        mapPanel = Ext.create('Ext.panel.Panel', {
-            title: 'Map Panel',
-            layout: 'fit',
-            items: [mapComponent]
-        });
+    // Create viewport and also add a button showing a description with the
+    // link to this source code
+    Ext.create('Ext.TabPanel', {
+      fullscreen: true,
+      ui: 'dark',
+      tabBar: {
+        docked: 'top',
+        layout: {
+          pack: 'center',
+        },
+      },
+      items: [
+        mapPanel,
+        layerList,
+        {
+          xtype: 'toolbar',
+          docked: 'bottom',
+          items: [
+            {
+              text: 'Description',
+              handler: function () {
+                var dialog = Ext.create({
+                  xtype: 'dialog',
+                  title: 'Description',
 
-        layerStore = Ext.create('GeoExt.data.store.Layers', {
-            map: olMap
-        });
+                  maximizable: true,
+                  html: htmlString,
 
-        // handler for showing / hiding of layers via layer list
-        var onSelect = function(grid, record) {
-            var layer = record.getOlLayer();
-            layer.setVisible(true);
-        };
-        var onDeselect = function(grid, record) {
-            var layer = record.getOlLayer();
-            layer.setVisible(false);
-        };
+                  buttons: {
+                    ok: function () {
+                      dialog.destroy();
+                    },
+                  },
+                });
 
-        // use a grid with 1 colum as layer list
-        layerList = Ext.create('Ext.grid.Grid', {
-            title: 'Layer List',
-            columns: [
-                {text: 'Name', dataIndex: 'text', flex: 1}
-            ],
-            store: layerStore,
-            mode: 'MULTI',
-            striped: false,
-            listeners: {
-                select: onSelect,
-                deselect: onDeselect
-            }
-        });
-
-        // synchronize the initial layer visibility and the list selection
-        layerList.on('show', function() {
-            var selection = [];
-            layerList.getStore().each(function(rec) {
-                var layer = rec.getOlLayer();
-                if (layer.getVisible() === true) {
-                    selection.push(rec);
-                }
-            });
-            // set visible layer recs as initial selection
-            layerList.setSelection(selection);
-
-        }, layerList, {single: true});
-
-        description = Ext.create('Ext.panel.Panel', {
-            contentEl: 'description',
-            title: 'Description',
-            modal: true,
-            centered: true,
-            scrollable: true,
-            width: 400,
-            height: 400,
-            bodyPadding: 5,
-            hidden: true,
-            closeAction: 'hide'
-        });
-        Ext.Viewport.add(description);
-
-        // Create viewport and also add a button showing a description with the
-        // link to this source code
-        var viewport = Ext.create('Ext.TabPanel', {
-            fullscreen: true,
-            ui: 'dark',
-            tabBar: {
-                docked: 'top',
-                layout: {
-                    pack: 'center'
-                }
+                dialog.show();
+              },
             },
-            items: [
-                mapPanel,
-                layerList,
-                {
-                    xtype: 'toolbar',
-                    docked: 'bottom',
-                    items: [
-                        {
-                            text: 'Description',
-                            handler: function() {
-                                description.show();
-                            }
-                        }
-                    ]
-                }
-            ]
-        });
-
-        // close the modal description when clicking mask
-        viewport.mon(Ext.getBody(), 'click', function(el, e) {
-            description.close(description.closeAction);
-        }, viewport, {delegate: '.x-mask'});
-    }
+          ],
+        },
+      ],
+    });
+  },
 });

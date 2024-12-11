@@ -59,96 +59,97 @@
  * @class GeoExt.state.PermalinkProvider
  */
 Ext.define('GeoExt.state.PermalinkProvider', {
-    extend: 'Ext.state.Provider',
-    requires: [],
+  extend: 'Ext.state.Provider',
+  requires: [],
 
-    alias: 'state.gx_permalinkprovider',
+  alias: 'state.gx_permalinkprovider',
 
-    /**
-     * Current map state object.
-     *
-     * @property {Object}
-     * @private
-     */
-    mapState: null,
+  /**
+   * Current map state object.
+   *
+   * @property {Object}
+   * @private
+   */
+  mapState: null,
 
-    constructor: function() {
-        var me = this;
+  constructor: function () {
+    const me = this;
 
-        me.callParent(arguments);
+    me.callParent(arguments);
 
-        if (window.location.hash !== '') {
-            me.mapState = me.readPermalinkHash(window.location.hash);
-        }
-    },
-
-    /**
-     * Create a state object from a URL hash.
-     * The hash to be in the form `#map=12/-1035528.44/7073659.19/0`
-     *
-     * @param {String} plHash The URL hash to get the state from
-     * @return {Object} The state object
-     * @private
-     */
-    readPermalinkHash: function(plHash) {
-        var mapState;
-        // try to restore center, zoom-level and rotation from the URL
-        var hash = plHash.replace('#map=', '');
-        var parts = hash.split('/');
-
-        if (parts.length === 4) {
-            mapState = {
-                zoom: parseInt(parts[0], 10),
-                center: [
-                    parseFloat(parts[1]),
-                    parseFloat(parts[2])
-                ],
-                rotation: parseFloat(parts[3])
-            };
-        }
-
-        return mapState;
-    },
-
-    /**
-     * Returns the URL hash part with current zoom-level, center and rotation
-     * corresponding to the current state.
-     *
-     * @param {Boolean} doRound Flag if coords should be rounded to 2
-     *     digits or not
-     * @return {String} The hash part of the permalink
-     */
-    getPermalinkHash: function(doRound) {
-        var me = this;
-        var mapState = me.mapState;
-
-        var centerX = mapState.center[0];
-        var centerY = mapState.center[1];
-        if (doRound) {
-            centerX = Math.round(centerX * 100) / 100;
-            centerY = Math.round(centerY * 100) / 100;
-        }
-
-        var hash = '#map=' +
-            mapState.zoom + '/' +
-            centerX + '/' +
-            centerY + '/' +
-            mapState.rotation;
-
-        return hash;
-    },
-
-    /**
-     * Sets the value for a key.
-     *
-     * @param {String} name The key name
-     * @param {Object} value The value to set
-     */
-    set: function(name, value) {
-        var me = this;
-        // keep our mapState object in sync with the state
-        me.mapState = value;
-        // call 'set' of super class
-        me.callParent(arguments);
+    if (window.location.hash !== '') {
+      me.mapState = me.readPermalinkHash(window.location.hash);
     }
+  },
+
+  /**
+   * Create a state object from a URL hash.
+   * The hash to be in the form `#map=12/-1035528.44/7073659.19/0`
+   *
+   * @param {string} plHash The URL hash to get the state from
+   * @return {Object} The state object
+   * @private
+   */
+  readPermalinkHash: function (plHash) {
+    let mapState;
+    // try to restore center, zoom-level and rotation from the URL
+    const hash = plHash.replace('#map=', '');
+    const parts = hash.split('/');
+
+    if (parts.length === 4) {
+      mapState = {
+        zoom: parseInt(parts[0], 10),
+        center: [parseFloat(parts[1]), parseFloat(parts[2])],
+        rotation: parseFloat(parts[3]),
+      };
+    }
+
+    return mapState;
+  },
+
+  /**
+   * Returns the URL hash part with current zoom-level, center and rotation
+   * corresponding to the current state.
+   *
+   * @param {boolean} doRound Flag if coords should be rounded to 2
+   *     digits or not
+   * @return {string} The hash part of the permalink
+   */
+  getPermalinkHash: function (doRound) {
+    const me = this;
+    const mapState = me.mapState;
+
+    let centerX = mapState.center[0];
+    let centerY = mapState.center[1];
+    if (doRound) {
+      centerX = Math.round(centerX * 100) / 100;
+      centerY = Math.round(centerY * 100) / 100;
+    }
+
+    const hash =
+      '#map=' +
+      mapState.zoom +
+      '/' +
+      centerX +
+      '/' +
+      centerY +
+      '/' +
+      mapState.rotation;
+
+    return hash;
+  },
+
+  /**
+   * Sets the value for a key.
+   *
+   * @param {string} name The key name
+   * @param {Object} value The value to set
+   */
+  set: function (name, value) {
+    const me = this;
+    // keep our mapState object in sync with the state
+    me.mapState = value;
+    // call 'set' of super class
+    me.callParent(arguments);
+  },
 });

@@ -69,133 +69,129 @@
  * @class GeoExt.component.Popup
  */
 Ext.define('GeoExt.component.Popup', {
-    requires: [],
-    extend: 'Ext.Component',
-    alias: [
-        'widget.gx_popup',
-        'widget.gx_component_popup'
-    ],
+  requires: [],
+  extend: 'Ext.Component',
+  alias: ['widget.gx_popup', 'widget.gx_component_popup'],
 
-    config: {
-
-        /**
-         *
-         */
-        overlay: null,
-
-        /**
-         *
-         */
-        map: null
-    },
-
+  config: {
     /**
-     * @private
-     */
-    overlayElement: null,
-
-    /**
-     * @private
-     */
-    overlayElementCreated: false,
-
-    /**
-     * The CSS class of the popup.
-     */
-    cls: 'gx-popup',
-
-    /**
-     * Construct a popup.
      *
-     * @param {Object} config The configuration object.
      */
-    constructor: function(config) {
-        var me = this;
-        var cfg = config || {};
-        var overlayElement;
-
-        if (!Ext.isDefined(cfg.map)) {
-            Ext.Error.raise('Required configuration \'map\' not passed');
-        }
-        if (Ext.isDefined(cfg.renderTo)) {
-            // use the passed element/string
-            overlayElement = Ext.get(cfg.renderTo).dom;
-        } else {
-            // create a div we can reference in
-            // order to bind this div to an ol overlay
-            overlayElement = Ext.dom.Helper.append(Ext.getBody(), '<div>');
-            // keep track of the fact that we created the element, we should
-            // also clean it up once we are being destroyed.
-            me.overlayElementCreated = true;
-        }
-        cfg.renderTo = overlayElement;
-        me.overlayElement = overlayElement;
-        me.callParent([cfg]);
-    },
+    overlay: null,
 
     /**
-     * @private
-     */
-    initComponent: function() {
-        var me = this;
-        me.updateLayout = me.updateLayout.bind(me);
-        me.on({
-            afterrender: me.setOverlayElement,
-            beforedestroy: me.onBeforeDestroy,
-            scope: me
-        });
-        me.callParent();
-        me.setupOverlay();
-    },
-
-    /**
-     * @private
-     */
-    setupOverlay: function() {
-        var me = this;
-        var overlay = new ol.Overlay({
-            autoPan: true,
-            autoPanAnimation: {
-                duration: 250
-            }
-        });
-
-        me.getMap().addOverlay(overlay);
-        // fix layout of popup when its position changes
-        overlay.on('change:position', me.updateLayout);
-
-        // make accessible as member
-        me.setOverlay(overlay);
-    },
-
-    /**
-     * @private
-     */
-    setOverlayElement: function() {
-        // bind our containing div to the ol overlay
-        this.getOverlay().set('element', this.overlayElement);
-    },
-
-    /**
-     * (Re-)Positions the popup to the given coordinates.
      *
-     * @param {ol.Coordinate} coordinate The new position of the popup as
-     *     `ol.Coordinate`.
      */
-    position: function(coordinate) {
-        var me = this;
-        me.getOverlay().setPosition(coordinate);
-    },
+    map: null,
+  },
 
-    /**
-     * @private
-     */
-    onBeforeDestroy: function() {
-        var me = this;
-        if (me.overlayElementCreated && me.overlayElement) {
-            var parent = me.overlayElement.parentNode;
-            parent.removeChild(me.overlayElement);
-        }
-        me.getOverlay().un('change:position', me.doLayout);
+  /**
+   * @private
+   */
+  overlayElement: null,
+
+  /**
+   * @private
+   */
+  overlayElementCreated: false,
+
+  /**
+   * The CSS class of the popup.
+   */
+  cls: 'gx-popup',
+
+  /**
+   * Construct a popup.
+   *
+   * @param {Object} config The configuration object.
+   */
+  constructor: function (config) {
+    const me = this;
+    const cfg = config || {};
+    let overlayElement;
+
+    if (!Ext.isDefined(cfg.map)) {
+      Ext.Error.raise("Required configuration 'map' not passed");
     }
+    if (Ext.isDefined(cfg.renderTo)) {
+      // use the passed element/string
+      overlayElement = Ext.get(cfg.renderTo).dom;
+    } else {
+      // create a div we can reference in
+      // order to bind this div to an ol overlay
+      overlayElement = Ext.dom.Helper.append(Ext.getBody(), '<div>');
+      // keep track of the fact that we created the element, we should
+      // also clean it up once we are being destroyed.
+      me.overlayElementCreated = true;
+    }
+    cfg.renderTo = overlayElement;
+    me.overlayElement = overlayElement;
+    me.callParent([cfg]);
+  },
+
+  /**
+   * @private
+   */
+  initComponent: function () {
+    const me = this;
+    me.updateLayout = me.updateLayout.bind(me);
+    me.on({
+      afterrender: me.setOverlayElement,
+      beforedestroy: me.onBeforeDestroy,
+      scope: me,
+    });
+    me.callParent();
+    me.setupOverlay();
+  },
+
+  /**
+   * @private
+   */
+  setupOverlay: function () {
+    const me = this;
+    const overlay = new ol.Overlay({
+      autoPan: true,
+      autoPanAnimation: {
+        duration: 250,
+      },
+    });
+
+    me.getMap().addOverlay(overlay);
+    // fix layout of popup when its position changes
+    overlay.on('change:position', me.updateLayout);
+
+    // make accessible as member
+    me.setOverlay(overlay);
+  },
+
+  /**
+   * @private
+   */
+  setOverlayElement: function () {
+    // bind our containing div to the ol overlay
+    this.getOverlay().set('element', this.overlayElement);
+  },
+
+  /**
+   * (Re-)Positions the popup to the given coordinates.
+   *
+   * @param {ol.Coordinate} coordinate The new position of the popup as
+   *     `ol.Coordinate`.
+   */
+  position: function (coordinate) {
+    const me = this;
+    me.getOverlay().setPosition(coordinate);
+  },
+
+  /**
+   * @private
+   */
+  onBeforeDestroy: function () {
+    const me = this;
+    if (me.overlayElementCreated && me.overlayElement) {
+      const parent = me.overlayElement.parentNode;
+      parent.removeChild(me.overlayElement);
+    }
+    me.getOverlay().un('change:position', me.doLayout);
+  },
 });

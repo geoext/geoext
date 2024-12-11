@@ -1,64 +1,56 @@
-Ext.require([
-    'GeoExt.component.Map',
-    'Ext.panel.Panel',
-    'Ext.Viewport'
-]);
+Ext.require(['GeoExt.component.Map', 'Ext.panel.Panel', 'Ext.Viewport']);
 
-var olMap;
-var mapComponent;
-var mapPanel;
+let olMap;
+let mapComponent;
+let mapPanel;
 
 Ext.application({
-    name: 'MapComponent',
-    launch: function() {
-        var description;
+  name: 'MapComponent',
+  launch: function () {
+    let description;
 
-        olMap = new ol.Map({
-            layers: [
-                new ol.layer.Tile({
-                    source: new ol.source.StadiaMaps({
-                        layer: 'stamen_watercolor'
-                    })
-                }),
-                new ol.layer.Tile({
-                    source: new ol.source.StadiaMaps({
-                        layer: 'stamen_terrain_labels'
-                    })
-                })
-            ],
-            view: new ol.View({
-                center: ol.proj.fromLonLat([-122.416667, 37.783333]),
-                zoom: 12
-            })
-        });
+    olMap = new ol.Map({
+      layers: [
+        new ol.layer.Tile({
+          source: new ol.source.StadiaMaps({
+            layer: 'stamen_watercolor',
+          }),
+        }),
+        new ol.layer.Tile({
+          source: new ol.source.StadiaMaps({
+            layer: 'stamen_terrain_labels',
+          }),
+        }),
+      ],
+      view: new ol.View({
+        center: ol.proj.fromLonLat([-122.416667, 37.783333]),
+        zoom: 12,
+      }),
+    });
 
-        mapComponent = Ext.create('GeoExt.component.Map', {
-            map: olMap
-        });
+    mapComponent = Ext.create('GeoExt.component.Map', {
+      map: olMap,
+    });
 
-        mapPanel = Ext.create('Ext.panel.Panel', {
-            title: 'GeoExt.component.Map Example',
-            region: 'center',
-            layout: 'fit',
-            items: [mapComponent]
-        });
+    mapPanel = Ext.create('Ext.panel.Panel', {
+      title: 'GeoExt.component.Map Example',
+      region: 'center',
+      layout: 'fit',
+      items: [mapComponent],
+    });
 
-        description = Ext.create('Ext.panel.Panel', {
-            contentEl: 'description',
-            title: 'Description',
-            region: 'east',
-            width: 300,
-            border: false,
-            bodyPadding: 5
-        });
+    description = Ext.create('Ext.panel.Panel', {
+      contentEl: 'description',
+      title: 'Description',
+      region: 'east',
+      width: 300,
+      border: false,
+      bodyPadding: 5,
+    });
 
-        Ext.create('Ext.Viewport', {
-            layout: 'border',
-            items: [
-                mapPanel,
-                description
-            ]
-        });
-
-    }
+    Ext.create('Ext.Viewport', {
+      layout: 'border',
+      items: [mapPanel, description],
+    });
+  },
 });

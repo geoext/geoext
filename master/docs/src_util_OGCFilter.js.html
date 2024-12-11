@@ -1,0 +1,889 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Source: src/util/OGCFilter.js</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+</head>
+
+<body>
+
+<div id="main">
+
+    <h1 class="page-title">Source: src/util/OGCFilter.js</h1>
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>/* Copyright (c) 2015-present The Open Source Geospatial Foundation
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see &lt;http://www.gnu.org/licenses/>.
+ */
+/**
+ * A utility class for converting ExtJS filters to OGC compliant filters
+ *
+ * @class GeoExt.util.OGCFilter
+ */
+Ext.define('GeoExt.util.OGCFilter', {
+  statics: {
+    /**
+     * The WFS 1.0.0 GetFeature XML body template
+     */
+    wfs100GetFeatureXmlTpl:
+      '&lt;wfs:GetFeature service="WFS" version="1.0.0"' +
+      ' outputFormat="JSON"' +
+      ' xmlns:wfs="http://www.opengis.net/wfs"' +
+      ' xmlns="http://www.opengis.net/ogc"' +
+      ' xmlns:gml="http://www.opengis.net/gml"' +
+      ' xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"' +
+      ' xsi:schemaLocation="http://www.opengis.net/wfs' +
+      ' http://schemas.opengis.net/wfs/1.0.0/WFS-basic.xsd">' +
+      '&lt;wfs:Query typeName="{0}">{1}' +
+      '&lt;/wfs:Query>' +
+      '&lt;/wfs:GetFeature>',
+
+    /**
+     * The WFS 1.1.0 GetFeature XML body template
+     */
+    wfs110GetFeatureXmlTpl:
+      '&lt;wfs:GetFeature service="WFS" version="1.1.0"' +
+      ' outputFormat="JSON"' +
+      ' xmlns:wfs="http://www.opengis.net/wfs"' +
+      ' xmlns="http://www.opengis.net/ogc"' +
+      ' xmlns:gml="http://www.opengis.net/gml"' +
+      ' xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"' +
+      ' xsi:schemaLocation="http://www.opengis.net/wfs' +
+      ' http://schemas.opengis.net/wfs/1.0.0/WFS-basic.xsd">' +
+      '&lt;wfs:Query typeName="{0}">{1}' +
+      '&lt;/wfs:Query>' +
+      '&lt;/wfs:GetFeature>',
+
+    /**
+     * The WFS 2.0.0 GetFeature XML body template
+     */
+    wfs200GetFeatureXmlTpl:
+      '&lt;wfs:GetFeature service="WFS" version="2.0.0" ' +
+      'xmlns:wfs="http://www.opengis.net/wfs/2.0" ' +
+      'xmlns:fes="http://www.opengis.net/fes/2.0" ' +
+      'xmlns:gml="http://www.opengis.net/gml/3.2" ' +
+      'xmlns:sf="http://www.openplans.org/spearfish" ' +
+      'xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" ' +
+      'xsi:schemaLocation="http://www.opengis.net/wfs/2.0 ' +
+      'http://schemas.opengis.net/wfs/2.0/wfs.xsd ' +
+      'http://www.opengis.net/gml/3.2 ' +
+      'http://schemas.opengis.net/gml/3.2.1/gml.xsd">' +
+      '&lt;wfs:Query typeName="{0}">{1}' +
+      '&lt;/wfs:Query>' +
+      '&lt;/wfs:GetFeature>',
+
+    /**
+     * The template for spatial filters used in WFS 1.x.0 queries
+     */
+    spatialFilterWfs1xXmlTpl:
+      '&lt;{0}>' + '&lt;PropertyName>{1}&lt;/PropertyName>' + '{2}' + '&lt;/{0}>',
+
+    /**
+     * The template for spatial filters used in WFS 2.0.0 queries
+     */
+    spatialFilterWfs2xXmlTpl:
+      '&lt;fes:{0}>' +
+      '&lt;fes:ValueReference>{1}&lt;/fes:ValueReference>' +
+      '{2}' +
+      '&lt;/fes:{0}>',
+
+    /**
+     * The template for spatial bbox filters used in WFS 1.x.0 queries
+     */
+    spatialFilterBBoxTpl:
+      '&lt;BBOX>' +
+      '    &lt;PropertyName>{0}&lt;/PropertyName>' +
+      '    &lt;gml:Envelope' +
+      '        xmlns:gml="http://www.opengis.net/gml" srsName="{1}">' +
+      '        &lt;gml:lowerCorner>{2} {3}&lt;/gml:lowerCorner>' +
+      '        &lt;gml:upperCorner>{4} {5}&lt;/gml:upperCorner>' +
+      '    &lt;/gml:Envelope>' +
+      '&lt;/BBOX>',
+
+    /**
+     * Template string for GML 3.2.1 polygon
+     */
+    gml32PolygonTpl:
+      '&lt;gml:Polygon gml:id="P1" ' +
+      'srsName="urn:ogc:def:crs:{0}" srsDimension="2">' +
+      '&lt;gml:exterior>' +
+      '&lt;gml:LinearRing>' +
+      '&lt;gml:posList>{1}&lt;/gml:posList>' +
+      '&lt;/gml:LinearRing>' +
+      '&lt;/gml:exterior>' +
+      '&lt;/gml:Polygon>',
+
+    /**
+     * Template string for GML 3.2.1 linestring
+     */
+    gml32LineStringTpl:
+      '&lt;gml:LineString gml:id="L1" ' +
+      'srsName="urn:ogc:def:crs:{0}" srsDimension="2">' +
+      '&lt;gml:posList>{1}&lt;/gml:posList>' +
+      '&lt;/gml:LineString>',
+
+    /**
+     * Template string for GML 3.2.1 point
+     */
+    gml32PointTpl:
+      '&lt;gml:Point gml:id="Pt1" ' +
+      'srsName="urn:ogc:def:crs:{0}" srsDimension="2">' +
+      '&lt;gml:pos>{1}&lt;/gml:pos>' +
+      '&lt;/gml:Point>',
+
+    /**
+     * The start element for a FE filter instance in version 2.0
+     * as string value
+     */
+    filter20StartElementStr:
+      '&lt;fes:Filter ' +
+      'xsi:schemaLocation="http://www.opengis.net/fes/2.0 ' +
+      'http://schemas.opengis.net/filter/2.0/filterAll.xsd ' +
+      'http://www.opengis.net/gml/3.2 ' +
+      'http://schemas.opengis.net/gml/3.2.1/gml.xsd" ' +
+      'xmlns:fes="http://www.opengis.net/fes/2.0" ' +
+      'xmlns:gml="http://www.opengis.net/gml/3.2" ' +
+      'xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">',
+
+    /**
+     * The list of supported topological and spatial filter operators
+     */
+    topologicalOrSpatialFilterOperators: [
+      'intersect',
+      'within',
+      'contains',
+      'equals',
+      'disjoint',
+      'crosses',
+      'touches',
+      'overlaps',
+      'bbox',
+    ],
+
+    /**
+     * Given an array of ExtJS grid-filters, this method will return an OGC
+     * compliant filter which can be used for WMS requests
+     * @param {Array&lt;Ext.util.Filter>} filters array containing all
+     *   `Ext.util.Filter` that should be converted
+     * @param {string} combinator The combinator used for combining multiple
+     *   filters. Can be 'and' or 'or'
+     * @return {string} The OGC Filter XML
+     */
+    getOgcWmsFilterFromExtJsFilter: function (filters, combinator) {
+      return GeoExt.util.OGCFilter.getOgcFilterFromExtJsFilter(
+        filters,
+        'wms',
+        combinator,
+      );
+    },
+
+    /**
+     * Given an array of ExtJS grid-filters, this method will return an OGC
+     * compliant filter which can be used for WFS requests
+     * @param {Array&lt;Ext.util.Filter>} filters array containing all
+     *   `Ext.util.Filter` that should be converted
+     * @param {string} combinator The combinator used for combining multiple
+     *   filters. Can be 'and' or 'or'
+     * @param {string} wfsVersion The WFS version to use, either `1.0.0`,
+     *   `1.1.0` or `2.0.0`
+     * @return {string} The OGC Filter XML
+     */
+    getOgcWfsFilterFromExtJsFilter: function (filters, combinator, wfsVersion) {
+      return GeoExt.util.OGCFilter.getOgcFilterFromExtJsFilter(
+        filters,
+        'wfs',
+        combinator,
+        wfsVersion,
+      );
+    },
+
+    /**
+     * Given an ExtJS grid-filter, this method will return an OGC compliant
+     * filter which can be used for WMS or WFS queries
+     * @param {Array&lt;Ext.util.Filter>} filters array containing all
+     *   `Ext.util.Filter` that should be converted
+     * @param {string} type The OGC type we will be using, can be
+     *   `wms` or `wfs`
+     * @param {string} combinator The combinator used for combining multiple
+     *   filters. Can be 'and' or 'or'
+     * @param {string} wfsVersion The WFS version to use, either `1.0.0`,
+     *   `1.1.0` or `2.0.0`
+     * @return {string} The OGC Filter as XML String
+     */
+    getOgcFilterFromExtJsFilter: function (
+      filters,
+      type,
+      combinator,
+      wfsVersion,
+    ) {
+      if (!Ext.isDefined(filters) || !Ext.isArray(filters)) {
+        Ext.Logger.error(
+          'Invalid filter argument given to ' +
+            'GeoExt.util.OGCFilter. You need to pass an array of ' +
+            '"Ext.util.Filter"',
+        );
+        return;
+      }
+      if (Ext.isEmpty(filters)) {
+        return null;
+      }
+      let omitNamespaces = false;
+      // filters for WMS layers need to omit the namespaces
+      if (!Ext.isEmpty(type) &amp;&amp; type.toLowerCase() === 'wms') {
+        omitNamespaces = true;
+      }
+      const ogcFilters = [];
+      const ogcUtil = GeoExt.util.OGCFilter;
+      let filterBody;
+
+      Ext.each(filters, function (filter) {
+        filterBody = ogcUtil.getOgcFilterBodyFromExtJsFilterObject(
+          filter,
+          wfsVersion,
+        );
+        if (filterBody) {
+          ogcFilters.push(filterBody);
+        }
+      });
+      return ogcUtil.combineFilters(
+        ogcFilters,
+        combinator,
+        omitNamespaces,
+        wfsVersion,
+      );
+    },
+
+    /**
+     * Converts given ExtJS grid-filter to an OGC compliant filter
+     * body content.
+     * @param {Ext.util.Filter} filter Instance of
+     *   `Ext.util.Filter` which should be converted to OGC filter
+     * @param {string} wfsVersion The WFS version to use, either `1.0.0`,
+     *   `1.1.0` or `2.0.0`
+     * @return {string} The OGC Filter body as XML String
+     */
+    getOgcFilterBodyFromExtJsFilterObject: function (filter, wfsVersion) {
+      if (!Ext.isDefined(filter)) {
+        Ext.Logger.error(
+          'Invalid filter argument given to ' +
+            'GeoExt.util.OGCFilter. You need to pass an instance of ' +
+            '"Ext.util.Filter"',
+        );
+        return;
+      }
+
+      const property = filter.getProperty();
+      const operator = filter.getOperator();
+      let value = filter.getValue();
+      let srsName;
+      if (filter.type === 'spatial') {
+        srsName = filter.srsName;
+      }
+
+      if (
+        Ext.isEmpty(property) ||
+        Ext.isEmpty(operator) ||
+        Ext.isEmpty(value)
+      ) {
+        Ext.Logger.warn(
+          'Skipping a filter as some values ' + 'seem to be undefined',
+        );
+        return;
+      }
+
+      if (filter.isDateValue) {
+        if (filter.getDateFormat) {
+          value = Ext.Date.format(filter.getValue(), filter.getDateFormat());
+        } else {
+          value = Ext.Date.format(filter.getValue(), 'Y-m-d');
+        }
+      }
+
+      return GeoExt.util.OGCFilter.getOgcFilter(
+        property,
+        operator,
+        value,
+        wfsVersion,
+        srsName,
+      );
+    },
+
+    /**
+     * Returns a GetFeature XML body containing the filters
+     * which can be used to directly request the features
+     * @param {Array&lt;Ext.util.Filter>} filters array containing all
+     *   `Ext.util.Filter` that should be converted
+     * @param {string} combinator The combinator used for combining multiple
+     *   filters. Can be 'and' or 'or'
+     * @param {string} wfsVersion The WFS version to use, either `1.0.0`,
+     *   `1.1.0` or `2.0.0`
+     * @param {string} typeName The featuretype name to be used
+     * @return {string} the GetFeature XML body as string
+     */
+    buildWfsGetFeatureWithFilter: function (
+      filters,
+      combinator,
+      wfsVersion,
+      typeName,
+    ) {
+      const filter = GeoExt.util.OGCFilter.getOgcWfsFilterFromExtJsFilter(
+        filters,
+        combinator,
+        wfsVersion,
+      );
+      let tpl = GeoExt.util.OGCFilter.wfs100GetFeatureXmlTpl;
+      if (wfsVersion &amp;&amp; wfsVersion === '1.1.0') {
+        tpl = GeoExt.util.OGCFilter.wfs110GetFeatureXmlTpl;
+      } else if (wfsVersion &amp;&amp; wfsVersion === '2.0.0') {
+        tpl = GeoExt.util.OGCFilter.wfs200GetFeatureXmlTpl;
+      }
+      return Ext.String.format(tpl, typeName, filter);
+    },
+
+    /**
+     * Returns an OGC filter for the given parameters.
+     * @param {string} property The property to filter on
+     * @param {string} operator The operator to use
+     * @param {*} value The value for the filter
+     * @param {string} wfsVersion The WFS version to use, either `1.0.0`,
+     *   `1.1.0` or `2.0.0`
+     * @param {string} srsName The code for the projection
+     * @return {string} The OGC filter.
+     */
+    getOgcFilter: function (property, operator, value, wfsVersion, srsName) {
+      if (
+        Ext.isEmpty(property) ||
+        Ext.isEmpty(operator) ||
+        Ext.isEmpty(value)
+      ) {
+        Ext.Logger.error(
+          'Invalid argument given to method ' +
+            '`getOgcFilter`. You need to supply property, ' +
+            'operator and value.',
+        );
+        return;
+      }
+      let ogcFilterType;
+      let closingTag;
+      let propName = 'PropertyName';
+      const isWfs20 = !Ext.isEmpty(wfsVersion) &amp;&amp; wfsVersion === '2.0.0';
+      if (isWfs20) {
+        propName = 'fes:ValueReference';
+      }
+
+      // always replace surrounding quotes
+      if (!(value instanceof ol.geom.Geometry)) {
+        value = value.toString().replace(/(^['])/g, '');
+        value = value.toString().replace(/([']$)/g, '');
+      }
+
+      const wfsPrefix = isWfs20 ? 'fes:' : '';
+
+      switch (operator) {
+        case '==':
+        case '=':
+        case 'eq':
+          ogcFilterType = wfsPrefix + 'PropertyIsEqualTo';
+          break;
+        case '!==':
+        case '!=':
+        case 'ne':
+          ogcFilterType = wfsPrefix + 'PropertyIsNotEqualTo';
+          break;
+        case 'lt':
+        case '&lt;':
+          ogcFilterType = wfsPrefix + 'PropertyIsLessThan';
+          break;
+        case 'lte':
+        case '&lt;=':
+          ogcFilterType = wfsPrefix + 'PropertyIsLessThanOrEqualTo';
+          break;
+        case 'gt':
+        case '>':
+          ogcFilterType = wfsPrefix + 'PropertyIsGreaterThan';
+          break;
+        case 'gte':
+        case '>=':
+          ogcFilterType = wfsPrefix + 'PropertyIsGreaterThanOrEqualTo';
+          break;
+        case 'like':
+          value = '*' + value + '*';
+          var likeFilterTpl =
+            '&lt;{0}PropertyIsLike wildCard="*" singleChar="."' +
+            ' escape="!" matchCase="false">' +
+            '&lt;' +
+            propName +
+            '>' +
+            property +
+            '&lt;/' +
+            propName +
+            '>' +
+            '&lt;{0}Literal>' +
+            value +
+            '&lt;/{0}Literal>' +
+            '&lt;/{0}PropertyIsLike>';
+          return Ext.String.format(likeFilterTpl, wfsPrefix);
+        case 'in':
+          ogcFilterType = wfsPrefix + 'Or';
+          var values = value;
+          if (!Ext.isArray(value)) {
+            // cleanup brackets and quotes
+            value = value.replace(/([()'])/g, '');
+            values = value.split(',');
+          }
+          var filters = '';
+          Ext.each(values || value, function (val) {
+            filters +=
+              '&lt;' +
+              wfsPrefix +
+              'PropertyIsEqualTo>' +
+              '&lt;' +
+              propName +
+              '>' +
+              property +
+              '&lt;/' +
+              propName +
+              '>' +
+              '&lt;' +
+              wfsPrefix +
+              'Literal>' +
+              val +
+              '&lt;/' +
+              wfsPrefix +
+              'Literal>' +
+              '&lt;/' +
+              wfsPrefix +
+              'PropertyIsEqualTo>';
+          });
+          ogcFilterType = '&lt;' + ogcFilterType + '>';
+
+          var inFilter;
+          closingTag = Ext.String.insert(ogcFilterType, '/', 1);
+          // only use an Or filter when there are multiple values
+          if (values.length > 1) {
+            inFilter = ogcFilterType + filters + closingTag;
+          } else {
+            inFilter = filters;
+          }
+          return inFilter;
+        case 'intersect':
+        case 'within':
+        case 'contains':
+        case 'equals':
+        case 'disjoint':
+        case 'crosses':
+        case 'touches':
+        case 'overlaps':
+          switch (operator) {
+            case 'equals':
+              ogcFilterType = 'Equals';
+              break;
+            case 'contains':
+              ogcFilterType = 'Contains';
+              break;
+            case 'within':
+              ogcFilterType = 'Within';
+              break;
+            case 'disjoint':
+              ogcFilterType = 'Disjoint';
+              break;
+            case 'touches':
+              ogcFilterType = 'Touches';
+              break;
+            case 'crosses':
+              ogcFilterType = 'Crosses';
+              break;
+            case 'overlaps':
+              ogcFilterType = 'Overlaps';
+              break;
+            case 'intersect':
+              ogcFilterType = 'Intersects';
+              break;
+            default:
+              Ext.Logger.warn(
+                'Method `getOgcFilter` could not ' +
+                  'handle the given topological operator: ' +
+                  operator,
+              );
+              return;
+          }
+          var gmlElement = GeoExt.util.OGCFilter.getGmlElementForGeometry(
+            value,
+            srsName,
+            wfsVersion,
+          );
+
+          var spatialTpl =
+            wfsVersion !== '2.0.0'
+              ? GeoExt.util.OGCFilter.spatialFilterWfs1xXmlTpl
+              : GeoExt.util.OGCFilter.spatialFilterWfs2xXmlTpl;
+
+          return Ext.String.format(
+            spatialTpl,
+            ogcFilterType,
+            property,
+            gmlElement,
+          );
+        case 'bbox':
+          var llx;
+          var lly;
+          var urx;
+          var ury;
+          value = value.getExtent();
+          llx = value[0];
+          lly = value[1];
+          urx = value[2];
+          ury = value[3];
+
+          return Ext.String.format(
+            GeoExt.util.OGCFilter.spatialFilterBBoxTpl,
+            property,
+            srsName,
+            llx,
+            lly,
+            urx,
+            ury,
+          );
+        default:
+          Ext.Logger.warn(
+            'Method `getOgcFilter` could not ' +
+              'handle the given operator: ' +
+              operator,
+          );
+          return;
+      }
+      ogcFilterType = '&lt;' + ogcFilterType + '>';
+      closingTag = Ext.String.insert(ogcFilterType, '/', 1);
+      const literalStr = isWfs20
+        ? '&lt;fes:Literal>{2}&lt;/fes:Literal>'
+        : '&lt;Literal>{2}&lt;/Literal>';
+      const tpl =
+        '' +
+        '{0}' +
+        '&lt;' +
+        propName +
+        '>{1}&lt;/' +
+        propName +
+        '>' +
+        literalStr +
+        '{3}';
+
+      const filter = Ext.String.format(
+        tpl,
+        ogcFilterType,
+        property,
+        value,
+        closingTag,
+      );
+      return filter;
+    },
+
+    /**
+     * Returns a serialized geometry in GML3 format
+     * @param {ol.geometry.Geometry} geometry The geometry to serialize
+     * @param {string} srsName The epsg code to use to serialization
+     * @param {string} wfsVersion The WFS version to use (WFS 2.0.0
+     * requires gml prefix for geometries)
+     * @return {string} The serialized geometry in GML3 format
+     */
+    getGmlElementForGeometry: function (geometry, srsName, wfsVersion) {
+      if (wfsVersion === '2.0.0') {
+        // supported geometries: Point, LineString and Polygon
+        // in case of multigeometries, the first one is used.
+        const geometryType = geometry.getType();
+        const staticMe = GeoExt.util.OGCFilter;
+        const isMulti = geometryType.indexOf('Multi') > -1;
+        switch (geometryType) {
+          case 'Polygon':
+          case 'MultiPolygon':
+            var coordsPoly = geometry.getCoordinates()[0];
+            if (isMulti) {
+              coordsPoly = coordsPoly[0];
+            }
+            return Ext.String.format(
+              staticMe.gml32PolygonTpl,
+              srsName,
+              staticMe.flattenCoordinates(coordsPoly),
+            );
+          case 'LineString':
+          case 'MultiLineString':
+            var coordsLine = geometry.getCoordinates();
+            if (isMulti) {
+              coordsLine = coordsLine[0];
+            }
+            return Ext.String.format(
+              staticMe.gml32LineStringTpl,
+              srsName,
+              staticMe.flattenCoordinates(coordsLine),
+            );
+          case 'Point':
+          case 'MultiPoint':
+            var coordsPt = geometry.getCoordinates();
+            if (isMulti) {
+              coordsPt = coordsPt[0];
+            }
+            return Ext.String.format(
+              staticMe.gml32PointTpl,
+              srsName,
+              staticMe.flattenCoordinates(coordsPt),
+            );
+          default:
+            return '';
+        }
+      } else {
+        const format = new ol.format.GML3({
+          srsName: srsName,
+        });
+        const geometryNode = format.writeGeometryNode(geometry, {
+          dataProjection: srsName,
+        });
+        if (!geometryNode) {
+          Ext.Logger.warn('Could not serialize geometry');
+          return null;
+        }
+        const childNodes = geometryNode.children || geometryNode.childNodes;
+        const serializer = new XMLSerializer();
+        const geomNode = childNodes[0];
+        const serializedValue = serializer.serializeToString(geomNode);
+        return serializedValue;
+      }
+    },
+
+    /**
+     * Reduce an ol.Coordinate array to a string of whitespace
+     * separated coordinate values
+     * @param {Array&lt;ol.Coordinate>} coordArray An array of
+     * coordinates
+     * @return {string} Concatenated array of coordinates
+     */
+    flattenCoordinates: function (coordArray) {
+      return Ext.Array.map(coordArray, function (cp) {
+        return cp.join(' ');
+      }).join(' ');
+    },
+
+    /**
+     * Combines the passed filter bodies with an `&lt;And>` or `&lt;Or>` and
+     * returns them. E.g. created with
+     * GeoExt.util.OGCFilter.getOgcFilterBodyFromExtJsFilterObject
+     *
+     * @param {Array} filterBodies The filter bodies to join.
+     * @param {string} combinator The combinator to use, should be
+     *     either `And` (the default) or `Or`.
+     * @param {string} wfsVersion The WFS version to use, either `1.0.0`,
+     *   `1.1.0` or `2.0.0`
+     * @return {string} And/Or combined OGC filter bodies.
+     */
+    combineFilterBodies: function (filterBodies, combinator, wfsVersion) {
+      if (
+        !Ext.isDefined(filterBodies) ||
+        !Ext.isArray(filterBodies) ||
+        filterBodies.length === 0
+      ) {
+        Ext.Logger.error(
+          'Invalid "filterBodies" argument given to ' +
+            'GeoExt.util.OGCFilter. You need to pass an array of ' +
+            'OGC filter bodies as XML string',
+        );
+        return;
+      }
+      const combineWith = combinator || 'And';
+      const isWfs20 = !Ext.isEmpty(wfsVersion) &amp;&amp; wfsVersion === '2.0.0';
+      const wfsPrefix = isWfs20 ? 'fes:' : '';
+
+      let ogcFilterType = wfsPrefix + combineWith;
+      const openingTag = (ogcFilterType = '&lt;' + ogcFilterType + '>');
+
+      const closingTag = Ext.String.insert(openingTag, '/', 1);
+      let combinedFilterBodies = '';
+      // only use an And/Or filter when there are multiple filter bodies
+      if (filterBodies.length > 1) {
+        Ext.each(filterBodies, function (filterBody) {
+          combinedFilterBodies += filterBody;
+        });
+        combinedFilterBodies = openingTag + combinedFilterBodies + closingTag;
+      } else {
+        combinedFilterBodies = filterBodies[0];
+      }
+
+      return combinedFilterBodies;
+    },
+
+    /**
+     * Combines the passed filters with an `&lt;And>` or `&lt;Or>` and
+     * returns them.
+     *
+     * @param {Array} filters The filters to join.
+     * @param {string} combinator The combinator to use, should be
+     *     either `And` (the default) or `Or`.
+     * @param {boolean} omitNamespaces Indicates if namespaces
+     *   should be omitted in filters, which is useful for WMS
+     * @param {string} wfsVersion The WFS version to use, either `1.0.0`,
+     *   `1.1.0` or `2.0.0`
+     * @return {string} An combined OGC filter with the passed filters.
+     */
+    combineFilters: function (filters, combinator, omitNamespaces, wfsVersion) {
+      const staticMe = GeoExt.util.OGCFilter;
+      const defaultCombineWith = 'And';
+      const combineWith = combinator || defaultCombineWith;
+      const numFilters = filters.length;
+      const parts = [];
+      const ns = omitNamespaces ? '' : 'ogc';
+      let omitNamespaceFromWfsVersion = !wfsVersion || wfsVersion === '1.0.0';
+      if (
+        !Ext.isEmpty(wfsVersion) &amp;&amp;
+        wfsVersion === '2.0.0' &amp;&amp;
+        !omitNamespaces
+      ) {
+        parts.push(staticMe.filter20StartElementStr);
+      } else {
+        parts.push(
+          '&lt;Filter' +
+            (omitNamespaces
+              ? ''
+              : ' xmlns="http://www.opengis.net/' +
+                ns +
+                '"' +
+                ' xmlns:gml="http://www.opengis.net/gml"') +
+            '>',
+        );
+        omitNamespaceFromWfsVersion = true;
+      }
+      parts.push();
+
+      if (numFilters > 1) {
+        parts.push(
+          '&lt;' +
+            (omitNamespaces || omitNamespaceFromWfsVersion ? '' : 'fes:') +
+            combineWith +
+            '>',
+        );
+      }
+
+      Ext.each(filters, function (filter) {
+        parts.push(filter);
+      });
+
+      if (numFilters > 1) {
+        parts.push(
+          '&lt;/' +
+            (omitNamespaces || omitNamespaceFromWfsVersion ? '' : 'fes:') +
+            combineWith +
+            '>',
+        );
+      }
+
+      parts.push(
+        '&lt;/' +
+          (omitNamespaces || omitNamespaceFromWfsVersion ? '' : 'fes:') +
+          'Filter>',
+      );
+      return parts.join('');
+    },
+
+    /**
+     * Create an instance of {Ext.util.Filter} that contains the required
+     * information on spatial filter, e.g. operator and geometry
+     *
+     * @param {string} operator The spatial / toplogical operator
+     * @param {string} typeName The name of geometry field
+     * @param {ol.geom.Geometry} value The geometry to use for filtering
+     * @param {string} srsName The EPSG code of the geometry
+     *
+     * @return {Ext.util.Filter} A 'spatial' {Ext.util.Filter}
+     */
+    createSpatialFilter: function (operator, typeName, value, srsName) {
+      if (
+        !Ext.Array.contains(
+          GeoExt.util.OGCFilter.topologicalOrSpatialFilterOperators,
+          operator,
+        )
+      ) {
+        return null;
+      }
+      // construct an instance of Filter
+      return new Ext.util.Filter({
+        type: 'spatial',
+        srsName: srsName,
+        operator: operator,
+        property: typeName,
+        value: value,
+      });
+    },
+  },
+});
+</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<nav>
+    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="GeoExt.component.FeatureRenderer.html">FeatureRenderer</a></li><li><a href="GeoExt.component.Map.html">Map</a></li><li><a href="GeoExt.component.OverviewMap.html">OverviewMap</a></li><li><a href="GeoExt.component.Popup.html">Popup</a></li><li><a href="GeoExt.data.MapfishPrintProvider.html">MapfishPrintProvider</a></li><li><a href="GeoExt.data.model.ArcGISRestServiceLayer.html">ArcGISRestServiceLayer</a></li><li><a href="GeoExt.data.model.Base.html">Base</a></li><li><a href="GeoExt.data.model.Feature.html">Feature</a></li><li><a href="GeoExt.data.model.Layer.html">Layer</a></li><li><a href="GeoExt.data.model.LayerTreeNode.html">LayerTreeNode</a></li><li><a href="GeoExt.data.model.OlObject.html">OlObject</a></li><li><a href="GeoExt.data.model.print.Capability.html">Capability</a></li><li><a href="GeoExt.data.model.print.Layout.html">Layout</a></li><li><a href="GeoExt.data.model.print.LayoutAttribute.html">LayoutAttribute</a></li><li><a href="GeoExt.data.serializer.Base.html">Base</a></li><li><a href="GeoExt.data.serializer.ImageWMS.html">ImageWMS</a></li><li><a href="GeoExt.data.serializer.TileWMS.html">TileWMS</a></li><li><a href="GeoExt.data.serializer.Vector.html">Vector</a></li><li><a href="GeoExt.data.serializer.WMTS.html">WMTS</a></li><li><a href="GeoExt.data.serializer.XYZ.html">XYZ</a></li><li><a href="GeoExt.data.store.ArcGISRestServiceLayer.html">ArcGISRestServiceLayer</a></li><li><a href="GeoExt.data.store.Features.html">Features</a></li><li><a href="GeoExt.data.store.Layers.html">Layers</a></li><li><a href="GeoExt.data.store.LayersTree.html">LayersTree</a></li><li><a href="GeoExt.data.store.OlObjects.html">OlObjects</a></li><li><a href="GeoExt.data.store.WfsFeatures.html">WfsFeatures</a></li><li><a href="GeoExt.form.field.GeocoderComboBox.html">GeocoderComboBox</a></li><li><a href="GeoExt.mixin.SymbolCheck.html">SymbolCheck</a></li><li><a href="GeoExt.plugin.layertreenode.ContextMenu.html">ContextMenu</a></li><li><a href="GeoExt.selection.FeatureCheckboxModel.html">FeatureCheckboxModel</a></li><li><a href="GeoExt.selection.FeatureModel.html">FeatureModel</a></li><li><a href="GeoExt.selection.FeatureModelMixin.html">FeatureModelMixin</a></li><li><a href="GeoExt.state.PermalinkProvider.html">PermalinkProvider</a></li><li><a href="GeoExt.toolbar.WfsPaging.html">WfsPaging</a></li><li><a href="GeoExt.util.Layer.html">Layer</a></li><li><a href="GeoExt.util.OGCFilter.html">OGCFilter</a></li><li><a href="GeoExt.util.Version.html">Version</a></li></ul><h3>Events</h3><ul><li><a href="global.html#event:aftermapmoveTriggeredwhenthe'moveend'eventoftheunderlyingOpenLayersmapisfired.">aftermapmove
+
+Triggered when the 'moveend' event of the underlying OpenLayers map is
+fired.</a></li><li><a href="global.html#event:click">click</a></li><li><a href="global.html#event:pointerrestFiresiftheuserhasleftthepointerforanamountof#pointerRestIntervalmillisecondsatthe*samelocation*.Usetheconfiguration#pointerRestPixelTolerancetoconfigurehowlongapixelisconsideredtobeonthe*samelocation*.Pleasenotethatthiseventwillonlyfireifthemaphas#pointerRestconfiguredwith%2560true%2560.">pointerrest
+
+Fires if the user has left the pointer for an amount
+of #pointerRestInterval milliseconds at the *same location*. Use the
+configuration #pointerRestPixelTolerance to configure how long a pixel is
+considered to be on the *same location*.
+
+Please note that this event will only fire if the map has #pointerRest
+configured with `true`.</a></li><li><a href="global.html#event:pointerrestoutFiresiftheuserfirstwasrestinghispointeronthemapelement,butthenmovedthepointeroutofthemapcompletely.Pleasenotethatthiseventwillonlyfireifthemaphas#pointerRestconfiguredwith%2560true%2560.">pointerrestout
+
+Fires if the user first was resting his pointer on the map element, but
+then moved the pointer out of the map completely.
+
+Please note that this event will only fire if the map has #pointerRest
+configured with `true`.</a></li><li><a href="global.html#event:readyFiresafterthePrintCapabilitystoreisloaded.">ready
+Fires after the PrintCapability store is loaded.</a></li></ul><h3>Global</h3><ul><li><a href="global.html#addLayer">addLayer</a></li><li><a href="global.html#addLayerNode">addLayerNode</a></li><li><a href="global.html#addMapExtentParams">addMapExtentParams</a></li><li><a href="global.html#applyAnchorStyle">applyAnchorStyle</a></li><li><a href="global.html#applyBoxStyle">applyBoxStyle</a></li><li><a href="global.html#applyEnableBoxDrag">applyEnableBoxDrag</a></li><li><a href="global.html#applyPointerRest">applyPointerRest</a></li><li><a href="global.html#applyPointerRestInterval">applyPointerRestInterval</a></li><li><a href="global.html#applyRecenterOnClick">applyRecenterOnClick</a></li><li><a href="global.html#applyState">applyState</a></li><li><a href="global.html#attributesReturnsanExt.data.Storeofreferenced%257B@linkGeoExt.data.model.print.LayoutAttribute%257Ds.">attributes
+Returns an Ext.data.Store of referenced
+{@link GeoExt.data.model.print.LayoutAttribute}s.</a></li><li><a href="global.html#autoLoad">autoLoad</a></li><li><a href="global.html#bindLayer">bindLayer</a></li><li><a href="global.html#bindLayers">bindLayers</a></li><li><a href="global.html#bindMap">bindMap</a></li><li><a href="global.html#bindStateOlEvents">bindStateOlEvents</a></li><li><a href="global.html#cacheFeatureCount">cacheFeatureCount</a></li><li><a href="global.html#capabilityRec">capabilityRec</a></li><li><a href="global.html#cls">cls</a></li><li><a href="global.html#constructor">constructor</a></li><li><a href="global.html#contextUi">contextUi</a></li><li><a href="global.html#convertToCoordinate">convertToCoordinate</a></li><li><a href="global.html#convertToExtent">convertToExtent</a></li><li><a href="global.html#count">count</a></li><li><a href="global.html#createContextUi">createContextUi</a></li><li><a href="global.html#createLayer">createLayer</a></li><li><a href="global.html#createParameters">createParameters</a></li><li><a href="global.html#debounce">debounce</a></li><li><a href="global.html#descriptionProperty">descriptionProperty</a></li><li><a href="global.html#destroy">destroy</a></li><li><a href="global.html#destroyDragBehaviour">destroyDragBehaviour</a></li><li><a href="global.html#disableBoxUpdate">disableBoxUpdate</a></li><li><a href="global.html#displayField">displayField</a></li><li><a href="global.html#displayValueMapping">displayValueMapping</a></li><li><a href="global.html#drawLocationFeatureOnMap">drawLocationFeatureOnMap</a></li><li><a href="global.html#emptyText">emptyText</a></li><li><a href="global.html#enableBoxUpdate">enableBoxUpdate</a></li><li><a href="global.html#featureCountOutputFormat">featureCountOutputFormat</a></li><li><a href="global.html#features">features</a></li><li><a href="global.html#format">format</a></li><li><a href="global.html#getByFeature">getByFeature</a></li><li><a href="global.html#getByLayer">getByLayer</a></li><li><a href="global.html#getCapabilityReturnsthelayoutsparentprintcapabilities.MaybenullifLayoutisinstantiateddirectly.">getCapability
+Returns the layouts parent print capabilities. May be null if Layout is
+instantiated directly.</a></li><li><a href="global.html#getCenter">getCenter</a></li><li><a href="global.html#getExtent">getExtent</a></li><li><a href="global.html#getFeature">getFeature</a></li><li><a href="global.html#getFeatures">getFeatures</a></li><li><a href="global.html#getLayers">getLayers</a></li><li><a href="global.html#getLayoutReturnstheattributeparentlayoutmodel.MaybenullifLayoutAttributeisinstantiateddirectly.">getLayout
+Returns the attribute parent layout model. May be null if
+LayoutAttribute is instantiated directly.</a></li><li><a href="global.html#getOlLayer">getOlLayer</a></li><li><a href="global.html#getOlLayerProp">getOlLayerProp</a></li><li><a href="global.html#getPermalinkHash">getPermalinkHash</a></li><li><a href="global.html#getRefItems">getRefItems</a></li><li><a href="global.html#getRefOwner">getRefOwner</a></li><li><a href="global.html#getStore">getStore</a></li><li><a href="global.html#getView">getView</a></li><li><a href="global.html#initComponent">initComponent</a></li><li><a href="global.html#inverseLayerOrder">inverseLayerOrder</a></li><li><a href="global.html#isMouseOverIgnoreEl">isMouseOverIgnoreEl</a></li><li><a href="global.html#layerAttribution">layerAttribution</a></li><li><a href="global.html#layerOptions">layerOptions</a></li><li><a href="global.html#layoutsReturnsanExt.data.Storeofreferenced%257B@linkGeoExt.data.model.print.Layout%257Ds.">layouts
+Returns an Ext.data.Store of referenced
+{@link GeoExt.data.model.print.Layout}s.</a></li><li><a href="global.html#loadRawData">loadRawData</a></li><li><a href="global.html#locationLayer">locationLayer</a></li><li><a href="global.html#locationLayerStyle">locationLayerStyle</a></li><li><a href="global.html#logicalFilterCombinator">logicalFilterCombinator</a></li><li><a href="global.html#map">map</a></li><li><a href="global.html#minChars">minChars</a></li><li><a href="global.html#name">name</a></li><li><a href="global.html#olClass">olClass</a></li><li><a href="global.html#olCollection">olCollection</a></li><li><a href="global.html#olObject">olObject</a></li><li><a href="global.html#onBeforeDestroy">onBeforeDestroy</a></li><li><a href="global.html#onBindStore">onBindStore</a></li><li><a href="global.html#onFocus">onFocus</a></li><li><a href="global.html#onLayerVisibleChange">onLayerVisibleChange</a></li><li><a href="global.html#onResize">onResize</a></li><li><a href="global.html#outputFormat">outputFormat</a></li><li><a href="global.html#passThroughFilter">passThroughFilter</a></li><li><a href="global.html#position">position</a></li><li><a href="global.html#propertyName">propertyName</a></li><li><a href="global.html#proxy">proxy</a></li><li><a href="global.html#proxyRootProperty">proxyRootProperty</a></li><li><a href="global.html#queryDelay">queryDelay</a></li><li><a href="global.html#queryParam">queryParam</a></li><li><a href="global.html#recenterParentFromBox">recenterParentFromBox</a></li><li><a href="global.html#recreateContextUi">recreateContextUi</a></li><li><a href="global.html#remoteFilter">remoteFilter</a></li><li><a href="global.html#remoteSort">remoteSort</a></li><li><a href="global.html#removeLayer">removeLayer</a></li><li><a href="global.html#removeLocationFeature">removeLocationFeature</a></li><li><a href="global.html#removeMapExtentParams">removeMapExtentParams</a></li><li><a href="global.html#repositionAnchorFeature">repositionAnchorFeature</a></li><li><a href="global.html#request">request</a></li><li><a href="global.html#requestMethod">requestMethod</a></li><li><a href="global.html#restrictExtent">restrictExtent</a></li><li><a href="global.html#restrictToMapExtent">restrictToMapExtent</a></li><li><a href="global.html#resumeCollectionEvents">resumeCollectionEvents</a></li><li><a href="global.html#selectedFeatureAttr">selectedFeatureAttr</a></li><li><a href="global.html#selectedFeatures">selectedFeatures</a></li><li><a href="global.html#service">service</a></li><li><a href="global.html#set">set</a></li><li><a href="global.html#setCenter">setCenter</a></li><li><a href="global.html#setExtent">setExtent</a></li><li><a href="global.html#setOverviewMapProperty">setOverviewMapProperty</a></li><li><a href="global.html#setView">setView</a></li><li><a href="global.html#setupDragBehaviour">setupDragBehaviour</a></li><li><a href="global.html#showContextUi">showContextUi</a></li><li><a href="global.html#showLocationOnMap">showLocationOnMap</a></li><li><a href="global.html#srs">srs</a></li><li><a href="global.html#srsName">srsName</a></li><li><a href="global.html#startIndex">startIndex</a></li><li><a href="global.html#startIndexOffset">startIndexOffset</a></li><li><a href="global.html#store">store</a></li><li><a href="global.html#style">style</a></li><li><a href="global.html#suspendCollectionEvents">suspendCollectionEvents</a></li><li><a href="global.html#synchronize">synchronize</a></li><li><a href="global.html#synchronizedProperties">synchronizedProperties</a></li><li><a href="global.html#textProperty">textProperty</a></li><li><a href="global.html#typeName">typeName</a></li><li><a href="global.html#unRestrictExtent">unRestrictExtent</a></li><li><a href="global.html#unbindLayers">unbindLayers</a></li><li><a href="global.html#unbindMap">unbindMap</a></li><li><a href="global.html#unnamedGroupLayerText">unnamedGroupLayerText</a></li><li><a href="global.html#unnamedLayerText">unnamedLayerText</a></li><li><a href="global.html#unregisterPointerRestEvents">unregisterPointerRestEvents</a></li><li><a href="global.html#update">update</a></li><li><a href="global.html#updateBox">updateBox</a></li><li><a href="global.html#updateExtraParams">updateExtraParams</a></li><li><a href="global.html#url">url</a></li><li><a href="global.html#valueField">valueField</a></li><li><a href="global.html#version">version</a></li><li><a href="global.html#zoom">zoom</a></li></ul>
+</nav>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 4.0.4</a> on Wed Dec 11 2024 10:55:31 GMT+0000 (Coordinated Universal Time)
+</footer>
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>
