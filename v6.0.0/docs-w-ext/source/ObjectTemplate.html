@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <title>The source code</title>
+  <link href="../resources/prettify/prettify.css" type="text/css" rel="stylesheet" />
+  <script type="text/javascript" src="../resources/prettify/prettify.js"></script>
+  <style type="text/css">
+    .highlight { display: block; background-color: #ddd; }
+  </style>
+  <script type="text/javascript">
+    function highlight() {
+      document.getElementById(location.hash.replace(/#/, "")).className = "highlight";
+    }
+  </script>
+</head>
+<body onload="prettyPrint(); highlight();">
+  <pre class="prettyprint lang-js"><span id='Ext-util-ObjectTemplate'>/**
+</span> * This class accepts an object that serves as a template for creating new objects. Like
+ * other templates (`Ext.XTemplate`) this creation step requires a context object to give
+ * the template its values.
+ *
+ * For example:
+ *
+ *      var tpl = new Ext.util.ObjectTemplate({
+ *          property: &#39;Hello {name}&#39;,
+ *          data: {
+ *              value: &#39;{age}&#39;
+ *          }
+ *      });
+ *
+ *      var obj = tpl.apply({
+ *          name: &#39;Bill&#39;,
+ *          age: 42
+ *      });
+ *
+ *      // obj = {
+ *      //     property: &#39;Hello Bill&#39;,
+ *      //     data: {
+ *      //         value: 42
+ *      //     }
+ *      // }
+ *
+ * @since 5.0.0
+ */
+Ext.define(&#39;Ext.util.ObjectTemplate&#39;, {
+    requires: [
+        &#39;Ext.XTemplate&#39;
+    ],
+
+<span id='Ext-util-ObjectTemplate-property-isObjectTemplate'>    isObjectTemplate: true,
+</span>
+<span id='Ext-util-ObjectTemplate-property-excludeProperties'>    excludeProperties: {},
+</span>
+<span id='Ext-util-ObjectTemplate-property-valueRe'>    valueRe: /^[{][a-z\.]+[}]$/i,
+</span>
+    statics: {
+<span id='Ext-util-ObjectTemplate-static-method-create'>        /**
+</span>         * Creates an `ObjectTemplate` given a config object or instance.
+         * @param {Object/Ext.util.ObjectTemplate} template The template object.
+         * @param {Object} [options]
+         * @return {Ext.util.ObjectTemplate}
+         * @since 5.0.0
+         */
+        create: function (template, options) {
+            //&lt;debug&gt;
+            if (!Ext.isObject(template)) {
+                Ext.raise(&#39;The template is not an Object&#39;);
+            }
+            //&lt;/debug&gt;
+
+            return template.isObjectTemplate ? template
+                                : new Ext.util.ObjectTemplate(template, options);
+        }
+    },
+
+<span id='Ext-util-ObjectTemplate-method-constructor'>    /**
+</span>     * Constructs the `ObjectTemplate`. The actual compilation of the object to a ready to
+     * apply form happens on the first call to `apply`.
+     * @param {Object} template
+     * @param {Object} [options]
+     * @since 5.0.0
+     */
+    constructor: function (template, options) {
+        Ext.apply(this, options);
+
+        this.template = template;
+    },
+
+<span id='Ext-util-ObjectTemplate-method-apply'>    /**
+</span>     * Applies the given `context` object to this template and returns a new object with
+     * the appropriate pieces replaced.
+     * @param {Object} context The data used to populate the template.
+     * @return {Object}
+     * @since 5.0.0
+     */
+    apply: function (context) {
+        var me = this;
+
+        delete me.apply;
+
+        me.apply = me.compile(me.template);
+
+        return me.apply(context);
+    },
+
+<span id='Ext-util-ObjectTemplate-property-privates'>    privates: {
+</span><span id='Ext-util-ObjectTemplate-method-compile'>        /**
+</span>         * Compiles the  given template into an `apply` method that is ready to run. This
+         * method is used recursively to process object properties and array elements.
+         * @param {Mixed} template
+         * @return {Function}
+         * @since 5.0.0
+         */
+        compile: function (template) {
+            var me = this,
+                exclude = me.excludeProperties,
+                compiled, i, len, fn;
+
+            // TODO: loops over array or objects
+
+            if (Ext.isString(template)) {
+                if (template.indexOf(&#39;{&#39;) &lt; 0) {
+                    fn = function () {
+                        return template;
+                    };
+                } else if (me.valueRe.test(template)) {
+                    template = template.substring(1, template.length - 1).split(&#39;.&#39;);
+
+                    fn = function (context) {
+                        for (var v = context, i = 0; v &amp;&amp; i &lt; template.length; ++i) {
+                            v = v[template[i]];
+                        }
+                        return v;
+                    };
+                } else {
+                    template = new Ext.XTemplate(template);
+
+                    fn = function (context) {
+                        return template.apply(context);
+                    };
+                }
+            } else if (!template || Ext.isPrimitive(template) || Ext.isFunction(template)) {
+                fn = function () {
+                    return template;
+                };
+            } else if (template instanceof Array) {
+                compiled = [];
+
+                for (i = 0, len = template.length; i &lt; len; ++i) {
+                    compiled[i] = me.compile(template[i]);
+                }
+
+                fn = function (context) {
+                    var ret = [],
+                        i;
+
+                    for (i = 0; i &lt; len; ++i) {
+                        ret[i] = compiled[i](context);
+                    }
+
+                    return ret;
+                };
+            } else {
+                compiled = {};
+
+                for (i in template) {
+                    if (!exclude[i]) {
+                        compiled[i] = me.compile(template[i]);
+                    }
+                }
+
+                fn = function (context) {
+                    var ret = {},
+                        i, v;
+
+                    for (i in template) {
+                        v = exclude[i] ? template[i] : compiled[i](context);
+                        if (v !== undefined) {
+                            ret[i] = v;
+                        }
+                    }
+
+                    return ret;
+                };
+            }
+
+            return fn;
+        }
+    }
+});
+</pre>
+</body>
+</html>

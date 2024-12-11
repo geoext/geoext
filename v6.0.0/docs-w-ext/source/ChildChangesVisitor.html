@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <title>The source code</title>
+  <link href="../resources/prettify/prettify.css" type="text/css" rel="stylesheet" />
+  <script type="text/javascript" src="../resources/prettify/prettify.js"></script>
+  <style type="text/css">
+    .highlight { display: block; background-color: #ddd; }
+  </style>
+  <script type="text/javascript">
+    function highlight() {
+      document.getElementById(location.hash.replace(/#/, "")).className = "highlight";
+    }
+  </script>
+</head>
+<body onload="prettyPrint(); highlight();">
+  <pre class="prettyprint lang-js"><span id='Ext-data-session-ChildChangesVisitor'>/**
+</span> * This visitor class adds extra capability to consider changes as 
+ * they would be considered for a parent session.
+ * @protected
+ * @since 5.0.0
+ */
+Ext.define(&#39;Ext.data.session.ChildChangesVisitor&#39;, {
+    extend: &#39;Ext.data.session.ChangesVisitor&#39;,
+
+<span id='Ext-data-session-ChildChangesVisitor-method-constructor'>    constructor: function() {
+</span>        this.seen = {};
+        this.callParent(arguments);
+    },
+
+<span id='Ext-data-session-ChildChangesVisitor-method-setupOptions'>    setupOptions: function(options) {
+</span>        this.callParent([options]);
+        options.serialize = false;
+    },
+
+<span id='Ext-data-session-ChildChangesVisitor-method-onDirtyRecord'>    onDirtyRecord: function(record) {
+</span>        if (this.callParent(arguments) !== false) {
+            // We have a record that we have updated in ourselves, but not in the parent.
+            // We need to read it in
+            if (!record.$source &amp;&amp; (record.dropped || !record.phantom)) {
+                this.readEntity(record);
+            }
+        }
+    },
+
+<span id='Ext-data-session-ChildChangesVisitor-method-readEntity'>    readEntity: function(record) {
+</span>        var me = this,
+            readKey = me.readKey,
+            name = record.entityName,
+            id = record.id,
+            seen = me.seen,
+            seenKey = name + id,
+            result, bucket;
+
+        // Already read it, jump out
+        if (seen[seenKey]) {
+            return;
+        }
+        seen[seenKey] = true;
+
+        result = me.result || (me.result = {});
+        bucket = result[name]  || (result[name] = {});
+        bucket = bucket[readKey] || (bucket[readKey] = []);
+        bucket.push(Ext.apply({}, record.modified, record.data));
+    }
+});</pre>
+</body>
+</html>

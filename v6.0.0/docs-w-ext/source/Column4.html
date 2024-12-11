@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <title>The source code</title>
+  <link href="../resources/prettify/prettify.css" type="text/css" rel="stylesheet" />
+  <script type="text/javascript" src="../resources/prettify/prettify.js"></script>
+  <style type="text/css">
+    .highlight { display: block; background-color: #ddd; }
+  </style>
+  <script type="text/javascript">
+    function highlight() {
+      document.getElementById(location.hash.replace(/#/, "")).className = "highlight";
+    }
+  </script>
+</head>
+<body onload="prettyPrint(); highlight();">
+  <pre class="prettyprint lang-js">Ext.define(&#39;Ext.rtl.grid.column.Column&#39;, {
+    override: &#39;Ext.grid.column.Column&#39;,
+
+    isAtStartEdge: function(e, margin) {
+        var me = this,
+            offset;
+
+        if (!me.getInherited().rtl !== !Ext.rootInheritedState.rtl) { // jshint ignore:line
+            offset = me.getX() + me.getWidth() - e.getXY()[0];
+            
+            // To the right of the first column, not over
+            if (offset &lt; 0 &amp;&amp; this.getIndex() === 0) {
+                return false;
+            }
+
+            return (offset &lt;= me.getHandleWidth(e));
+        } else {
+            return me.callParent([e, margin]);
+        }
+    },
+
+    isAtEndEdge: function(e, margin) {
+        var me = this;
+        return (!me.getInherited().rtl !== !Ext.rootInheritedState.rtl) ? // jshint ignore:line
+            (e.getXY()[0] - me.getX() &lt;= me.getHandleWidth(e)) : me.callParent([e, margin]);
+    },
+
+    privates: {
+        _alignMap: {
+            start: &#39;right&#39;,
+            end: &#39;left&#39;
+        }
+    }
+});
+</pre>
+</body>
+</html>

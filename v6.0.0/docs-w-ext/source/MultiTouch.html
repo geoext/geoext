@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <title>The source code</title>
+  <link href="../resources/prettify/prettify.css" type="text/css" rel="stylesheet" />
+  <script type="text/javascript" src="../resources/prettify/prettify.js"></script>
+  <style type="text/css">
+    .highlight { display: block; background-color: #ddd; }
+  </style>
+  <script type="text/javascript">
+    function highlight() {
+      document.getElementById(location.hash.replace(/#/, "")).className = "highlight";
+    }
+  </script>
+</head>
+<body onload="prettyPrint(); highlight();">
+  <pre class="prettyprint lang-js"><span id='Ext-event-gesture-MultiTouch'>/**
+</span> * A base class for gesture recognizers that involve multiple simultaneous contact points
+ * between the screen and the input-device, e.g. &#39;pinch&#39; and &#39;rotate&#39;
+ * @abstract
+ * @private
+ */
+Ext.define(&#39;Ext.event.gesture.MultiTouch&#39;, {
+    extend: &#39;Ext.event.gesture.Recognizer&#39;,
+
+<span id='Ext-event-gesture-MultiTouch-property-requiredTouchesCount'>    requiredTouchesCount: 2,
+</span>
+<span id='Ext-event-gesture-MultiTouch-property-isTracking'>    isTracking: false,
+</span>
+<span id='Ext-event-gesture-MultiTouch-property-isMultiTouch'>    isMultiTouch: true,
+</span>
+<span id='Ext-event-gesture-MultiTouch-method-onTouchStart'>    onTouchStart: function(e) {
+</span>        var me = this,
+            requiredTouchesCount = me.requiredTouchesCount,
+            touches = e.touches,
+            touchesCount = touches.length;
+
+        if (touchesCount === requiredTouchesCount) {
+            me.isTracking = true;
+        } else if (touchesCount &gt; requiredTouchesCount) {
+            return me.cancel(e);
+        }
+    },
+
+<span id='Ext-event-gesture-MultiTouch-method-reset'>    reset: function() {
+</span>        this.isTracking = false;
+        return this.callParent();
+    }
+});
+</pre>
+</body>
+</html>

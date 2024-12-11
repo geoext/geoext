@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <title>The source code</title>
+  <link href="../resources/prettify/prettify.css" type="text/css" rel="stylesheet" />
+  <script type="text/javascript" src="../resources/prettify/prettify.js"></script>
+  <style type="text/css">
+    .highlight { display: block; background-color: #ddd; }
+  </style>
+  <script type="text/javascript">
+    function highlight() {
+      document.getElementById(location.hash.replace(/#/, "")).className = "highlight";
+    }
+  </script>
+</head>
+<body onload="prettyPrint(); highlight();">
+  <pre class="prettyprint lang-js"><span id='Ext-container-ButtonGroup'>/**
+</span> * Provides a container for arranging a group of related Buttons in a tabular manner.
+ *
+ *     @example
+ *     Ext.create(&#39;Ext.panel.Panel&#39;, {
+ *         title: &#39;Panel with ButtonGroup&#39;,
+ *         width: 300,
+ *         height:200,
+ *         renderTo: document.body,
+ *         bodyPadding: 10,
+ *         html: &#39;HTML Panel Content&#39;,
+ *         tbar: [{
+ *             xtype: &#39;buttongroup&#39;,
+ *             columns: 3,
+ *             title: &#39;Clipboard&#39;,
+ *             items: [{
+ *                 text: &#39;Paste&#39;,
+ *                 scale: &#39;large&#39;,
+ *                 rowspan: 3,
+ *                 iconCls: &#39;add&#39;,
+ *                 iconAlign: &#39;top&#39;,
+ *                 cls: &#39;btn-as-arrow&#39;
+ *             },{
+ *                 xtype:&#39;splitbutton&#39;,
+ *                 text: &#39;Menu Button&#39;,
+ *                 scale: &#39;large&#39;,
+ *                 rowspan: 3,
+ *                 iconCls: &#39;add&#39;,
+ *                 iconAlign: &#39;top&#39;,
+ *                 arrowAlign:&#39;bottom&#39;,
+ *                 menu: [{ text: &#39;Menu Item 1&#39; }]
+ *             },{
+ *                 xtype:&#39;splitbutton&#39;, text: &#39;Cut&#39;, iconCls: &#39;add16&#39;, menu: [{text: &#39;Cut Menu Item&#39;}]
+ *             },{
+ *                 text: &#39;Copy&#39;, iconCls: &#39;add16&#39;
+ *             },{
+ *                 text: &#39;Format&#39;, iconCls: &#39;add16&#39;
+ *             }]
+ *         }]
+ *     });
+ *
+ */
+Ext.define(&#39;Ext.container.ButtonGroup&#39;, {
+    extend: &#39;Ext.panel.Panel&#39;,
+    alias: &#39;widget.buttongroup&#39;,
+    alternateClassName: &#39;Ext.ButtonGroup&#39;,
+    
+    requires: [
+        &#39;Ext.layout.container.Table&#39;
+    ],
+
+    mixins: [
+        &#39;Ext.util.FocusableContainer&#39;
+    ],
+    
+<span id='Ext-container-ButtonGroup-cfg-columns'>    /**
+</span>     * @cfg {Number} columns
+     * The `columns` configuration property passed to the {@link #layout configured layout manager}.
+     * See {@link Ext.layout.container.Table#columns}.
+     */
+
+<span id='Ext-container-ButtonGroup-cfg-baseCls'>    /**
+</span>     * @cfg {String} baseCls
+     * @inheritdoc
+     */
+    baseCls: Ext.baseCSSPrefix + &#39;btn-group&#39;,
+
+<span id='Ext-container-ButtonGroup-cfg-layout'>    /**
+</span>     * @cfg {Ext.enums.Layout/Object} layout
+     * @inheritdoc
+     */
+    layout: {
+        type: &#39;table&#39;
+    },
+
+<span id='Ext-container-ButtonGroup-cfg-defaultType'>    defaultType: &#39;button&#39;,
+</span>
+<span id='Ext-container-ButtonGroup-cfg-frame'>    /**
+</span>     * @cfg {Boolean} frame
+     * @inheritdoc
+     */
+    frame: true,
+
+<span id='Ext-container-ButtonGroup-cfg-defaultButtonUI'>    /**
+</span>     * @cfg {String} defaultButtonUI
+     * A default {@link Ext.Component#ui ui} to use for {@link Ext.button.Button Button} items
+     */
+
+    frameHeader: false,
+
+<span id='Ext-container-ButtonGroup-cfg-titleAlign'>    /**
+</span>     * @cfg {String} titleAlign
+     * The alignment of the title text within the available space between the icon and the tools.
+     */
+    titleAlign: &#39;center&#39;,
+
+<span id='Ext-container-ButtonGroup-property-noTitleCls'>    noTitleCls: &#39;notitle&#39;,
+</span>    
+<span id='Ext-container-ButtonGroup-property-bodyAriaRole'>    bodyAriaRole: &#39;toolbar&#39;,
+</span><span id='Ext-container-ButtonGroup-property-focusableContainerEl'>    focusableContainerEl: &#39;body&#39;,
+</span>
+<span id='Ext-container-ButtonGroup-method-initComponent'>    initComponent: function() {
+</span>        // Copy the component&#39;s columns config to the layout if specified
+        var me = this,
+            cols = me.columns;
+
+        if (cols) {
+            me.layout = Ext.apply({}, {columns: cols}, me.layout);
+        }
+
+        if (!me.title) {
+            me.addClsWithUI(me.noTitleCls);
+        }
+        
+        me.callParent();
+    },
+
+<span id='Ext-container-ButtonGroup-method-onBeforeAdd'>    /**
+</span>     * @private
+     */
+    onBeforeAdd: function(component) {
+        if (component.isButton) {
+            if (this.defaultButtonUI &amp;&amp; component.ui === &#39;default&#39; &amp;&amp;
+                !component.hasOwnProperty(&#39;ui&#39;)) {
+                component.ui = this.defaultButtonUI;
+            } else {
+                component.ui = component.ui + &#39;-toolbar&#39;;
+            }
+        }
+        this.callParent(arguments);
+    },
+    
+<span id='Ext-container-ButtonGroup-method-beforeRender'>    beforeRender: function() {
+</span>        var me = this,
+            ariaAttr;
+        
+        me.callParent();
+        
+        // If header is off we need to set aria-label
+        if (me.afterHeaderInit &amp;&amp; !me.header &amp;&amp; me.title) {
+            ariaAttr = me.bodyAriaRenderAttributes || (me.bodyAriaRenderAttributes = {});
+            ariaAttr[&#39;aria-label&#39;] = me.title;
+        }
+    },
+    
+<span id='Ext-container-ButtonGroup-method-updateHeader'>    updateHeader: function(force) {
+</span>        var me = this,
+            bodyEl = me.body,
+            header, ariaAttr;
+        
+        me.callParent([force]);
+        
+        header = me.header;
+        
+        if (header) {
+            if (bodyEl) {
+                bodyEl.dom.setAttribute(&#39;aria-labelledby&#39;, header.id + &#39;-title-textEl&#39;);
+                bodyEl.dom.removeAttribute(&#39;aria-label&#39;);
+            }
+            else {
+                ariaAttr = me.bodyAriaRenderAttributes || (me.bodyAriaRenderAttributes = {});
+                ariaAttr[&#39;aria-labelledby&#39;] = header.id + &#39;-title-textEl&#39;;
+                delete ariaAttr[&#39;aria-label&#39;];
+            }
+        }
+        else if (me.title) {
+            if (bodyEl) {
+                bodyEl.dom.setAttribute(&#39;aria-label&#39;, me.title);
+                bodyEl.dom.removeAttribute(&#39;aria-labelledby&#39;);
+            }
+            else {
+                ariaAttr = me.bodyAriaRenderAttributes || (me.bodyAriaRenderAttributes = {});
+                ariaAttr[&#39;aria-label&#39;] = me.title;
+                delete ariaAttr[&#39;aria-labelledby&#39;];
+            }
+        }
+    },
+
+<span id='Ext-container-ButtonGroup-property-privates'>    privates: {
+</span>        applyDefaults: function (c) {
+            if (!Ext.isString(c)) {
+                c = this.callParent(arguments);
+            }
+            return c;
+        }
+    }
+
+<span id='Ext-container-ButtonGroup-cfg-tools'>    /**
+</span>     * @cfg {Array} tools
+     * @private
+     */
+<span id='Ext-container-ButtonGroup-cfg-collapsible'>    /**
+</span>     * @cfg {Boolean} collapsible
+     * @private
+     */
+<span id='Ext-container-ButtonGroup-cfg-collapseMode'>    /**
+</span>     * @cfg {Boolean} collapseMode
+     * @private
+     */
+<span id='Ext-container-ButtonGroup-cfg-animCollapse'>    /**
+</span>     * @cfg {Boolean} animCollapse
+     * @private
+     */
+<span id='Ext-container-ButtonGroup-cfg-closable'>    /**
+</span>     * @cfg {Boolean} closable
+     * @private
+     */
+});
+</pre>
+</body>
+</html>

@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <title>The source code</title>
+  <link href="../resources/prettify/prettify.css" type="text/css" rel="stylesheet" />
+  <script type="text/javascript" src="../resources/prettify/prettify.js"></script>
+  <style type="text/css">
+    .highlight { display: block; background-color: #ddd; }
+  </style>
+  <script type="text/javascript">
+    function highlight() {
+      document.getElementById(location.hash.replace(/#/, "")).className = "highlight";
+    }
+  </script>
+</head>
+<body onload="prettyPrint(); highlight();">
+  <pre class="prettyprint lang-js"><span id='Ext-data-identifier-Sequential'>/**
+</span> * This class is a sequential id generator. A simple use of this class would be like so:
+ *
+ *     Ext.define(&#39;MyApp.data.MyModel&#39;, {
+ *         extend: &#39;Ext.data.Model&#39;,
+ *         identifier: &#39;sequential&#39;
+ *     });
+ *     // assign id&#39;s of 1, 2, 3, etc.
+ *
+ * An example of a configured generator would be:
+ *
+ *     Ext.define(&#39;MyApp.data.MyModel&#39;, {
+ *         extend: &#39;Ext.data.Model&#39;,
+ *         identifier: {
+ *             type: &#39;sequential&#39;,
+ *             prefix: &#39;ID_&#39;,
+ *             seed: 1000,
+ *             increment: 10
+ *         }
+ *     });
+ *     // assign id&#39;s of ID_1000, ID_1010, ID_1020, etc.
+ *
+ */
+Ext.define(&#39;Ext.data.identifier.Sequential&#39;, {
+    extend: &#39;Ext.data.identifier.Generator&#39;,
+
+    alias: &#39;data.identifier.sequential&#39;,
+
+    config: {
+<span id='Ext-data-identifier-Sequential-cfg-increment'>        /**
+</span>         * @cfg {Number} increment
+         * The number by which to adjust the `seed` after for the next sequential id.
+         */
+        increment: 1,
+
+<span id='Ext-data-identifier-Sequential-cfg-prefix'>        /**
+</span>         * @cfg {String} prefix
+         * The string to place in front of the sequential number for each generated id.
+         */
+        prefix: null,
+
+<span id='Ext-data-identifier-Sequential-cfg-seed'>        /**
+</span>         * @cfg {Number} seed
+         * The number at which to start generating sequential id&#39;s.
+         */
+        seed: 1
+    },
+
+<span id='Ext-data-identifier-Sequential-method-generate'>    /**
+</span>     * Generates and returns the next id.
+     * @return {String/Number} The next id. If a {@link #prefix} was specified, returns
+     * a String, otherwise returns a Number.
+     */
+    generate: function () {
+        var me = this,
+            seed = me._seed,
+            prefix = me._prefix;
+
+        me._seed += me._increment;
+
+        return (prefix !== null) ? prefix + seed : seed;
+    }
+});
+</pre>
+</body>
+</html>

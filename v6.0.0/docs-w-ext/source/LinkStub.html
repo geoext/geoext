@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <title>The source code</title>
+  <link href="../resources/prettify/prettify.css" type="text/css" rel="stylesheet" />
+  <script type="text/javascript" src="../resources/prettify/prettify.js"></script>
+  <style type="text/css">
+    .highlight { display: block; background-color: #ddd; }
+  </style>
+  <script type="text/javascript">
+    function highlight() {
+      document.getElementById(location.hash.replace(/#/, "")).className = "highlight";
+    }
+  </script>
+</head>
+<body onload="prettyPrint(); highlight();">
+  <pre class="prettyprint lang-js"><span id='Ext-app-bind-LinkStub'>/**
+</span> * This class manages stubs associated with `link` requests. These bind to some other
+ * descriptor and forward changes from there.
+ * @private
+ */
+Ext.define(&#39;Ext.app.bind.LinkStub&#39;, {
+    extend: &#39;Ext.app.bind.Stub&#39;,
+
+<span id='Ext-app-bind-LinkStub-property-isLinkStub'>    isLinkStub: true,
+</span>
+<span id='Ext-app-bind-LinkStub-property-binding'>    binding: null,
+</span>
+<span id='Ext-app-bind-LinkStub-method-destroy'>    destroy: function () {
+</span>        var me = this,
+            binding = me.binding,
+            owner = me.owner;
+
+        if (binding) {
+            me.binding = null;
+            binding.destroy();
+            if (owner) {
+                delete owner.linkData[me.name];
+            }
+        }
+        me.target = null;
+
+        me.callParent();
+    },
+
+<span id='Ext-app-bind-LinkStub-method-getFullName'>    getFullName: function () {
+</span>        var me = this;
+        return me.fullName ||
+              (me.fullName = &#39;(&#39; + me.callParent() + &#39; -&gt; &#39; + me.binding.getFullName() + &#39;)&#39;);
+    },
+
+<span id='Ext-app-bind-LinkStub-method-getDataObject'>    getDataObject: function () {
+</span>        var binding = this.binding;
+        return binding &amp;&amp; binding.getDataObject();
+    },
+
+<span id='Ext-app-bind-LinkStub-method-getRawValue'>    getRawValue: function () {
+</span>        var binding = this.binding;
+        return binding &amp;&amp; binding.getRawValue();
+    },
+
+<span id='Ext-app-bind-LinkStub-method-getValue'>    getValue: function () {
+</span>        var binding = this.binding;
+
+        return binding &amp;&amp; binding.getValue();
+    },
+
+<span id='Ext-app-bind-LinkStub-method-getTargetStub'>    getTargetStub: function () {
+</span>        var binding = this.binding;
+        return binding &amp;&amp; binding.stub;
+    },
+
+<span id='Ext-app-bind-LinkStub-method-isLoading'>    isLoading: function () {
+</span>        var binding = this.binding;
+
+        return binding ? binding.isLoading() : false;
+    },
+
+<span id='Ext-app-bind-LinkStub-method-link'>    link: function (bindDescriptor, target) {
+</span>        var me = this,
+            binding = me.binding;
+
+        if (binding) {
+            binding.destroy();
+        }
+
+        target = me.target = target || me.owner; 
+        me.linkDescriptor = bindDescriptor;
+        me.binding = target.bind(bindDescriptor, me.onChange, me);
+        me.binding.deep = true;
+    },
+
+<span id='Ext-app-bind-LinkStub-method-onChange'>    onChange: function () {
+</span>        this.invalidate(true);
+    },
+
+<span id='Ext-app-bind-LinkStub-method-react'>    react: function () {
+</span>        var me = this,
+            linkData = me.owner.linkData;
+
+        linkData[me.name] = me.getValue();
+        me.callParent();
+    },
+    
+<span id='Ext-app-bind-LinkStub-property-privates'>    privates: {
+</span>        collect: function() {
+            var me = this,
+                result = me.callParent(),
+                binding = me.binding ? 1 : 0;
+            
+            return result + binding;
+        },
+        
+        sort: function () {
+            var binding = this.binding;
+
+            if (binding) {
+                // We want to make sure our binding reacts before we do so that it can provide
+                // whatever value we might need first.
+                this.scheduler.sortItem(binding);
+            }
+        }
+    }
+});
+</pre>
+</body>
+</html>
