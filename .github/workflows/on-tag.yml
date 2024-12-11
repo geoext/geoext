@@ -48,25 +48,15 @@ jobs:
         if (test ! -f ext-7.0.0-gpl.zip); then wget -q "http://cdn.sencha.com/ext/gpl/ext-7.0.0-gpl.zip" -O ext-7.0.0-gpl.zip; fi
         if (test ! -d ext-7.0.0); then unzip -qo ext-7.0.0-gpl.zip; fi
 
-    - name: Install ruby
-      uses: ruby/setup-ruby@v1
-      with:
-        ruby-version: '2.6'
-
-    - name: Install jsduck
-      run: gem install jsduck
-
     - name: Cleanup and prepare pages
       run: |
         rm -rf ${GITHUB_REF##*/}
         mkdir -p ${GITHUB_REF##*/}/docs
-        mkdir -p ${GITHUB_REF##*/}/docs-w-ext
         cp -r examples ${GITHUB_REF##*/}/
         cp -r resources ${GITHUB_REF##*/}/
         cp -r src ${GITHUB_REF##*/}/
         cp -r classic ${GITHUB_REF##*/}/
         npm run generate:docs:tag
-        npm run generate:docs-w-ext:tag
 
     - name: Deploy gh-pages
       uses: peaceiris/actions-gh-pages@v3
