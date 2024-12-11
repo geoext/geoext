@@ -5,8 +5,8 @@ exports.handlers = {
      * a "class-like" syntax for JSDoc to parse.
      */
     beforeParse(e) {
-        const classRegex = /Ext\.define\(['"]([^'"]+)['"],\s*(\{[\s\S]*.*\})\);/g;
-        console.log(e.filename);
+        const classRegex = /\nExt\.define\(['"]([^'"]+)['"],\s*(\{[\s\S]*.*\})\);/g;
+        // console.log(e.filename);
         // console.log(e.source);
         e.source = e.source.replace(classRegex, (match, className, classBody) => {
 
