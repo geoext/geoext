@@ -8,6 +8,7 @@
   "rules": {
     "consistent-this": [ 1, "me" ],
     "no-var": "error",
+    "no-multi-assign": "off",
     "prefer-const": "error",
     "max-len": [ 2, 100, 4 ],
     "one-var": [ 2, "never" ],
@@ -21,10 +22,9 @@
     "jsdoc/require-property-name": "warn",
     "jsdoc/require-property-type": "warn",
     "jsdoc/require-property-description": "warn",
-    "jsdoc/require-returns-check": "warn",
+    "jsdoc/require-returns-check": "off",
     "jsdoc/check-param-names": "warn",
     "jsdoc/empty-tags": "warn",
-    "no-multi-assign": "warn",
     "valid-jsdoc": [
       2,
       {

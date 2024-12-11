@@ -52,7 +52,7 @@ Ext.define('GeoExt.data.store.Features', {
      * has an ol.Collection (constructor option `features` was set to
      * an ol.Collection).
      *
-     * @property {ol.layer.Vector}
+     * @property {ol.layer.Vector} layer Layer to be in sync with store
      * @readonly
      */
     layer: null,
@@ -77,7 +77,7 @@ Ext.define('GeoExt.data.store.Features', {
    * Shows if the #layer has been created by constructor.
    *
    * @private
-   * @property {boolean}
+   * @property {boolean} layerCreated Layer created flag
    */
   layerCreated: false,
 

@@ -88,7 +88,7 @@ Ext.define('GeoExt.data.store.LayersTree', {
    * reversed. The default behaviour and what most users expect is
    * that mapLayers on top are also on top in the tree.
    *
-   * @property {boolean}
+   * @property {boolean} inverseLayerOrder Reverse order of layers in tree
    */
   inverseLayerOrder: true,
 
@@ -96,7 +96,7 @@ Ext.define('GeoExt.data.store.LayersTree', {
    * Whether the treestore currently shall handle openlayers collection
    * change events. See #suspendCollectionEvents and #resumeCollectionEvents.
    *
-   * @property {boolean}
+   * @property {boolean} collectionEventsSuspended Suspend OL collection events
    * @private
    */
   collectionEventsSuspended: false,

@@ -46,7 +46,7 @@ Ext.define('GeoExt.data.serializer.Base', {
      * @param {number} viewRes The resolution of the mapview.
      * @return {Object} A serialized representation of source and layer.
      */
-    serialize: function () {
+    serialize: function (layer, source, viewRes) {
       Ext.raise('This method must be overridden by subclasses.');
       return null; // so that we can have a shared JSDoc comment.
     },

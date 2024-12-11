@@ -164,13 +164,13 @@ Ext.define('GeoExt.component.Map', {
    * Whether we already rendered an ol.Map in this component. Will be
    * updated in #onResize, after the first rendering happened.
    *
-   * @property {boolean} mapRendered
+   * @property {boolean} mapRendered Map already rendered flag
    * @private
    */
   mapRendered: false,
 
   /**
-   * @property {GeoExt.data.store.Layers} layerStore
+   * @property {GeoExt.data.store.Layers} layerStore The map's layer store
    * @private
    */
   layerStore: null,
@@ -179,7 +179,7 @@ Ext.define('GeoExt.component.Map', {
    * The location of the last mousemove which we track to be able to fire
    * the #pointerrest event. Only usable if #pointerRest is `true`.
    *
-   * @property {ol.Pixel} lastPointerPixel
+   * @property {ol.Pixel} lastPointerPixel Location of last mousemove
    * @private
    */
   lastPointerPixel: null,
@@ -188,7 +188,7 @@ Ext.define('GeoExt.component.Map', {
    * Whether the pointer is currently over the map component. Only usable if
    * the configuration #pointerRest is `true`.
    *
-   * @property {boolean} isMouseOverMapEl
+   * @property {boolean} isMouseOverMapEl Pointer is over map component flag
    * @private
    */
   isMouseOverMapEl: null,

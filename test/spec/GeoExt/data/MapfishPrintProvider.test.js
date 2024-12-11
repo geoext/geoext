@@ -460,7 +460,7 @@ describe('GeoExt.data.MapfishPrintProvider', function () {
   describe('creates stores from url (async)', function () {
     describe('layouts', function () {
       it('creates a store for layouts', function (done) {
-        var provider = Ext.create('GeoExt.data.MapfishPrintProvider', {
+        const provider = Ext.create('GeoExt.data.MapfishPrintProvider', {
           url: jsonpCapabilitiesUrl,
           listeners: {
             ready: function () {
